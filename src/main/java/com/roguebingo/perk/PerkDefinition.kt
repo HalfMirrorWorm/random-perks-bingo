@@ -1,8 +1,11 @@
 package com.roguebingo.perk
 
 import com.roguebingo.state.PlayerPerkState
+import net.minecraft.block.BlockState
+import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.math.BlockPos
 
 /**
  * 词条上下文: 传给词条的生命周期回调, 提供玩家与状态访问。
@@ -41,6 +44,12 @@ interface PerkDefinition {
 
     /** 本队完成一个 bingo 格子时 */
     fun onTeamScored(ctx: PerkContext, objectiveId: String) {}
+
+    /** 该玩家击杀了一个生物 */
+    fun onKill(ctx: PerkContext, victim: LivingEntity) {}
+
+    /** 该玩家破坏了一个方块 */
+    fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {}
 
     /** 词条被移除 / 对局结束时清理 */
     fun onRemove(ctx: PerkContext) {}

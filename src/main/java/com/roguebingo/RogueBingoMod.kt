@@ -1,10 +1,11 @@
 package com.roguebingo
 
 import com.roguebingo.game.PerkTickService
+import com.roguebingo.game.PerkWorldEventService
 import com.roguebingo.lifecycle.BingoLifecycle
 import com.roguebingo.network.PerkNetworking
 import com.roguebingo.perk.PerkRegistry
-import com.roguebingo.perk.content.TestPerks
+import com.roguebingo.perk.content.PerkContent
 import com.roguebingo.server.ServerHolder
 import com.roguebingo.state.PerkStateManager
 import net.fabricmc.api.ModInitializer
@@ -19,8 +20,8 @@ object RogueBingoMod : ModInitializer {
     override fun onInitialize() {
         logger.info("[RogueBingo] initializing")
 
-        // 词条注册 (M2 阶段为 3 个测试词条, M5 扩展为完整词条库)
-        TestPerks.registerAll()
+        // 词条注册
+        PerkContent.registerAll()
 
         // 网络层 (payload 注册必须在启动期完成)
         PerkNetworking.registerServer()
@@ -37,6 +38,9 @@ object RogueBingoMod : ModInitializer {
 
         // 驱动词条周期回调与重生重挂
         PerkTickService.register()
+
+        // 世界事件 (击杀 / 破坏方块) → 词条
+        PerkWorldEventService.register()
 
         logger.info("[RogueBingo] ready — {} perk(s) registered", PerkRegistry.size())
     }
