@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "rogue-bingo",
+  "version": "$version",
+  "name": "Rogue Bingo",
+  "description": "肉鸽 Bingo 扩展: 完成 bingo 格子后从随机词条中三选一, 构筑本局专属流派。 / Roguelike perk system for Yet Another Bingo.",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "com.roguebingo.RogueBingoMod"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "com.roguebingo.client.RogueBingoClient"
+      }
+    ]
+  },
+  "mixins": [
+    {
+      "config": "mixins.roguebingo.json",
+      "environment": "*"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": ">=1.21.6 <1.21.9",
+    "java": ">=21",
+    "fabric-api": "*",
+    "fabric-language-kotlin": ">=1.13.7+kotlin.2.2.21",
+    "yet-another-minecraft-bingo": ">=2.9.6 <2.10"
+  },
+  "contact": {
+    "homepage": "https://gitlab.com/horrificdev/bingo"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "category.rogue-bingo": "Rogue Bingo",
+  "key.rogue-bingo.open_choices": "Open Perk Choices",
+  "key.rogue-bingo.open_perk_list": "View My Perks",
+
+  "rogue-bingo.screen.choose_perk": "Choose a Perk",
+
+  "rogue-bingo.rarity.blue": "Common",
+  "rogue-bingo.rarity.purple": "Rare",
+  "rogue-bingo.rarity.gold": "Legendary",
+
+  "rogue-bingo.message.gained_choice": "★ Perk choice available! (%s pending) — press X",
+  "rogue-bingo.message.choices_available": "You have %s perk choice(s) waiting.",
+  "rogue-bingo.message.game_started": "Rogue Bingo: you start with 1 free perk choice!",
+  "rogue-bingo.message.acquired": "Acquired %s %s",
+
+  "rogue-bingo.perk.swift_speed.name": "Light Feet",
+  "rogue-bingo.perk.swift_speed.desc": "+8% movement speed.",
+  "rogue-bingo.perk.artisan_supply.name": "Field Supply",
+  "rogue-bingo.perk.artisan_supply.desc": "Instantly gain 16 bread and a water bucket.",
+  "rogue-bingo.perk.delver_haste.name": "Deep Focus",
+  "rogue-bingo.perk.delver_haste.desc": "Permanent Haste II while mining."
+}

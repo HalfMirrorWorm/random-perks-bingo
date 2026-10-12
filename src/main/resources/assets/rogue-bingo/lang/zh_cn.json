@@ -1,0 +1,23 @@
+{
+  "category.rogue-bingo": "肉鸽 Bingo",
+  "key.rogue-bingo.open_choices": "打开词条选择",
+  "key.rogue-bingo.open_perk_list": "查看已获得词条",
+
+  "rogue-bingo.screen.choose_perk": "选择一个词条",
+
+  "rogue-bingo.rarity.blue": "普通",
+  "rogue-bingo.rarity.purple": "稀有",
+  "rogue-bingo.rarity.gold": "传说",
+
+  "rogue-bingo.message.gained_choice": "★ 获得一次词条选择! (待选 %s 次) —— 按 X 打开",
+  "rogue-bingo.message.choices_available": "你有 %s 次词条选择待选。",
+  "rogue-bingo.message.game_started": "肉鸽 Bingo: 开局赠送 1 次词条选择!",
+  "rogue-bingo.message.acquired": "获得 %s %s",
+
+  "rogue-bingo.perk.swift_speed.name": "轻装疾行",
+  "rogue-bingo.perk.swift_speed.desc": "移动速度 +8%。",
+  "rogue-bingo.perk.artisan_supply.name": "战地补给",
+  "rogue-bingo.perk.artisan_supply.desc": "立即获得 16 个面包和一个水桶。",
+  "rogue-bingo.perk.delver_haste.name": "深掘专注",
+  "rogue-bingo.perk.delver_haste.desc": "挖掘时永久获得急迫 II。"
+}

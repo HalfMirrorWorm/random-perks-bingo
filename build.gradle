@@ -1,0 +1,100 @@
+plugins {
+    id 'fabric-loom' version '1.14-SNAPSHOT'
+    id 'org.jetbrains.kotlin.jvm' version '2.2.21'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+
+    maven {
+        name = 'Fabric'
+        url = 'https://maven.fabricmc.net/'
+    }
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+    // Yet Another Bingo API
+    maven {
+        name = 'Yet Another Bingo'
+        url = 'https://gitlab.com/api/v4/projects/48318565/packages/maven'
+        content { includeGroup 'me.jfenn.bingo' }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin_version}"
+
+    // ---- Yet Another Bingo ----
+    // 编译期依赖主 jar: 提供 mixin 目标类 (ScoreUpdateService 等) 与内部类型
+    // 注意: 绝不能 include / shadow 进本 mod 的 jar (会导致 mod id 重复崩溃)
+    modCompileOnly "maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}"
+    // 开发环境运行时加载真正的 bingo (Loom 会自动 remap 到 dev 环境)
+    modLocalRuntime "maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}"
+    // 公开 API (BingoEvents 等)
+    modCompileOnly "me.jfenn.bingo:api:${project.bingo_api_version}"
+
+    // bingo 的 Jar-in-Jar 依赖在开发环境不会被 Loom 自动加载, 手动补齐 (仅开发环境, 不会打进本 mod)
+    localRuntime "com.zaxxer:HikariCP:7.0.2"
+    localRuntime "org.xerial:sqlite-jdbc:3.50.3.0"
+    localRuntime "app.cash.sqldelight:runtime-jvm:2.0.2"
+    localRuntime "app.cash.sqldelight:jdbc-driver:2.0.2"
+
+    // Kotlin stdlib 由 fabric-language-kotlin 在运行时提供 (与 bingo 的惯例一致)
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_version}"
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        "rogue-bingo" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+java {
+    withSourcesJar()
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+kotlin {
+    jvmToolchain(21)
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
