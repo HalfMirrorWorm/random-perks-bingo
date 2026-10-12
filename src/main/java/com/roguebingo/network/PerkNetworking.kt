@@ -15,8 +15,10 @@ object PerkNetworking {
     fun registerServer() {
         PayloadTypeRegistry.playS2C().register(PerkNotifyS2C.ID, PerkNotifyS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(PerkOfferS2C.ID, PerkOfferS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(PerkListS2C.ID, PerkListS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkRequestC2S.ID, PerkRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -30,6 +32,13 @@ object PerkNetworking {
             val index = payload.index
             context.server().execute {
                 PerkOfferService.handlePick(player, index)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(PerkListRequestC2S.ID) { _, context ->
+            val player = context.player()
+            context.server().execute {
+                PerkOfferService.handleListRequest(player)
             }
         }
     }
@@ -46,5 +55,12 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, PerkOfferS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkOfferS2C(options)) }
             .onFailure { RogueBingoMod.logger.warn("[RogueBingo] failed to send offer: {}", it.toString()) }
+    }
+
+    /** 下发已获得词条列表 */
+    fun sendPerkList(player: ServerPlayerEntity, pendingCount: Int, perks: List<PerkOptionData>) {
+        if (!ServerPlayNetworking.canSend(player, PerkListS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, PerkListS2C(pendingCount, perks)) }
+            .onFailure { RogueBingoMod.logger.warn("[RogueBingo] failed to send perk list: {}", it.toString()) }
     }
 }

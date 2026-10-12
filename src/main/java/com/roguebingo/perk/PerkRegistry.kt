@@ -15,4 +15,9 @@ object PerkRegistry {
     val all: Collection<PerkDefinition> get() = perks.values
 
     fun size(): Int = perks.size
+
+    /** 仅供单元测试使用 */
+    internal fun clear() {
+        perks.clear()
+    }
 }

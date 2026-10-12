@@ -14,6 +14,9 @@ object Keybinds {
     lateinit var openChoices: KeyBinding
         private set
 
+    lateinit var openPerkList: KeyBinding
+        private set
+
     fun register() {
         openChoices = KeyBindingHelper.registerKeyBinding(
             KeyBinding(
@@ -24,10 +27,24 @@ object Keybinds {
             )
         )
 
+        openPerkList = KeyBindingHelper.registerKeyBinding(
+            KeyBinding(
+                "key.rogue-bingo.open_perk_list",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_C,
+                CATEGORY,
+            )
+        )
+
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             while (openChoices.wasPressed()) {
                 if (client.currentScreen == null && ClientPerkNetworking.pendingChoices > 0) {
                     ClientPerkNetworking.requestOffer()
+                }
+            }
+            while (openPerkList.wasPressed()) {
+                if (client.currentScreen == null) {
+                    ClientPerkNetworking.requestPerkList()
                 }
             }
         }

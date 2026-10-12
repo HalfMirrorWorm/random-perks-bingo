@@ -1,5 +1,6 @@
 package com.roguebingo
 
+import com.roguebingo.game.PerkTickService
 import com.roguebingo.lifecycle.BingoLifecycle
 import com.roguebingo.network.PerkNetworking
 import com.roguebingo.perk.PerkRegistry
@@ -33,6 +34,9 @@ object RogueBingoMod : ModInitializer {
 
         // 对接 bingo 游戏生命周期 (开局赠送 / 结束清理)
         BingoLifecycle.register()
+
+        // 驱动词条周期回调与重生重挂
+        PerkTickService.register()
 
         logger.info("[RogueBingo] ready — {} perk(s) registered", PerkRegistry.size())
     }

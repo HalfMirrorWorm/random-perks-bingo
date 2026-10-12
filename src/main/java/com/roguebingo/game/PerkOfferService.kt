@@ -34,7 +34,17 @@ object PerkOfferService {
         state.pendingOffer = options.map { it.id }
         PerkNetworking.sendOffer(
             player,
-            options.map { PerkOptionData(it.id, it.rarity.ordinal, it.icon()) },
+            options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon()) },
+        )
+    }
+
+    /** 玩家请求查看已获得词条列表 */
+    fun handleListRequest(player: ServerPlayerEntity) {
+        val state = PerkStateManager.getOrCreate(player.uuid)
+        PerkNetworking.sendPerkList(
+            player,
+            state.pendingChoices,
+            state.ownedPerks.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon()) },
         )
     }
 

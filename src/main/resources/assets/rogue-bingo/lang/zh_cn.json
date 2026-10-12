@@ -4,10 +4,21 @@
   "key.rogue-bingo.open_perk_list": "查看已获得词条",
 
   "rogue-bingo.screen.choose_perk": "选择一个词条",
+  "rogue-bingo.screen.choose_perk.hint": "点击卡牌选择 · Esc 稍后再选",
+  "rogue-bingo.screen.my_perks": "我的词条",
+  "rogue-bingo.list.pending": "待选机会: %s 次",
+  "rogue-bingo.list.empty": "还没有获得任何词条。",
 
   "rogue-bingo.rarity.blue": "普通",
   "rogue-bingo.rarity.purple": "稀有",
   "rogue-bingo.rarity.gold": "传说",
+
+  "rogue-bingo.archetype.swift": "疾风",
+  "rogue-bingo.archetype.delver": "深掘",
+  "rogue-bingo.archetype.harvest": "丰饶",
+  "rogue-bingo.archetype.hunter": "猎杀",
+  "rogue-bingo.archetype.seeker": "秘藏",
+  "rogue-bingo.archetype.artisan": "匠造",
 
   "rogue-bingo.message.gained_choice": "★ 获得一次词条选择! (待选 %s 次) —— 按 X 打开",
   "rogue-bingo.message.choices_available": "你有 %s 次词条选择待选。",

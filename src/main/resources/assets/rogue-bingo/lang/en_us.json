@@ -4,10 +4,21 @@
   "key.rogue-bingo.open_perk_list": "View My Perks",
 
   "rogue-bingo.screen.choose_perk": "Choose a Perk",
+  "rogue-bingo.screen.choose_perk.hint": "Click a card to pick • Esc to save it for later",
+  "rogue-bingo.screen.my_perks": "My Perks",
+  "rogue-bingo.list.pending": "Pending choices: %s",
+  "rogue-bingo.list.empty": "No perks acquired yet.",
 
   "rogue-bingo.rarity.blue": "Common",
   "rogue-bingo.rarity.purple": "Rare",
   "rogue-bingo.rarity.gold": "Legendary",
+
+  "rogue-bingo.archetype.swift": "Swift",
+  "rogue-bingo.archetype.delver": "Delver",
+  "rogue-bingo.archetype.harvest": "Harvest",
+  "rogue-bingo.archetype.hunter": "Hunter",
+  "rogue-bingo.archetype.seeker": "Seeker",
+  "rogue-bingo.archetype.artisan": "Artisan",
 
   "rogue-bingo.message.gained_choice": "★ Perk choice available! (%s pending) — press X",
   "rogue-bingo.message.choices_available": "You have %s perk choice(s) waiting.",

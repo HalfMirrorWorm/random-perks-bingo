@@ -1,6 +1,9 @@
 package com.roguebingo.client.net
 
 import com.roguebingo.client.screen.PerkChoiceScreen
+import com.roguebingo.client.screen.PerkListScreen
+import com.roguebingo.network.PerkListRequestC2S
+import com.roguebingo.network.PerkListS2C
 import com.roguebingo.network.PerkNotifyS2C
 import com.roguebingo.network.PerkOfferS2C
 import com.roguebingo.network.PerkOptionData
@@ -41,6 +44,12 @@ object ClientPerkNetworking {
                 context.client().setScreen(PerkChoiceScreen(payload.options))
             }
         }
+
+        ClientPlayNetworking.registerGlobalReceiver(PerkListS2C.ID) { payload, context ->
+            context.client().execute {
+                context.client().setScreen(PerkListScreen(payload.pendingCount, payload.perks))
+            }
+        }
     }
 
     /** 请求服务端生成并下发三选一 */
@@ -48,6 +57,12 @@ object ClientPerkNetworking {
         if (pendingChoices <= 0) return
         if (!ClientPlayNetworking.canSend(PerkRequestC2S.ID)) return
         ClientPlayNetworking.send(PerkRequestC2S())
+    }
+
+    /** 请求已获得词条列表 */
+    fun requestPerkList() {
+        if (!ClientPlayNetworking.canSend(PerkListRequestC2S.ID)) return
+        ClientPlayNetworking.send(PerkListRequestC2S())
     }
 
     /** 提交选择 */
