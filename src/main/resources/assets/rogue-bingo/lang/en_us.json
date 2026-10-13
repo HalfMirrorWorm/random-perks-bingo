@@ -87,7 +87,7 @@
   "rogue-bingo.perk.artisan_enchanter.desc": "Gain a random useful enchanted book.",
 
   "rogue-bingo.perk.seeker_scout.name": "Scout",
-  "rogue-bingo.perk.seeker_scout.desc": "Gain a spyglass (the mob or player you aim at is highlighted for 1 minute), a compass and a treasure map.",
+  "rogue-bingo.perk.seeker_scout.desc": "Gain a spyglass (the mob or player you aim at is highlighted for 1 minute, visible to everyone), a compass and a treasure map.",
   "rogue-bingo.perk.seeker_supply_line.name": "Supply Line",
   "rogue-bingo.perk.seeker_supply_line.desc": "Gain a random supply now, then every 2 minutes.",
   "rogue-bingo.perk.seeker_ender_supply.name": "Ender Supply",
