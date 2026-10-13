@@ -34,7 +34,7 @@ object Keybinds {
             KeyBinding(
                 "key.rogue-bingo.open_perk_list",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_C,
+                GLFW.GLFW_KEY_V,
                 CATEGORY,
             )
         )
@@ -43,7 +43,7 @@ object Keybinds {
             KeyBinding(
                 "key.rogue-bingo.open_catalog",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_B,
+                GLFW.GLFW_KEY_K,
                 CATEGORY,
             )
         )
