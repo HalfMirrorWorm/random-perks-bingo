@@ -24,6 +24,7 @@
   "rogue-bingo.message.choices_available": "你有 %s 次词条选择待选。",
   "rogue-bingo.message.game_started": "肉鸽 Bingo: 开局赠送 1 次词条选择!",
   "rogue-bingo.message.acquired": "获得 %s %s",
+  "rogue-bingo.message.already_owned": "你已经拥有 %s 了, 请选择其他词条。",
   "rogue-bingo.message.loot_bag": "★ 战利品袋!",
 
   "rogue-bingo.perk.swift_speed.name": "轻装疾行",

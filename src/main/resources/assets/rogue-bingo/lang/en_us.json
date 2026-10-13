@@ -24,6 +24,7 @@
   "rogue-bingo.message.choices_available": "You have %s perk choice(s) waiting.",
   "rogue-bingo.message.game_started": "Rogue Bingo: you start with 1 free perk choice!",
   "rogue-bingo.message.acquired": "Acquired %s %s",
+  "rogue-bingo.message.already_owned": "You already own %s — pick another perk.",
   "rogue-bingo.message.loot_bag": "★ Loot bag!",
 
   "rogue-bingo.perk.swift_speed.name": "Light Feet",

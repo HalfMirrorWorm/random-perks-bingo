@@ -37,7 +37,10 @@ object RogueBingoCommands {
                             }, false)
                             states.forEach { s ->
                                 ctx.source.sendFeedback({
-                                    Text.literal("  ${s.uuid}: owned=${s.ownedPerks.joinToString { it.id }}, pending=${s.pendingChoices}")
+                                    Text.literal(
+                                        "  ${s.uuid}: owned=${s.ownedPerks.joinToString { it.id }}, " +
+                                            "pending=${s.pendingChoices}, current=${s.currentOffer()}"
+                                    )
                                 }, false)
                             }
                             1
@@ -70,11 +73,10 @@ object RogueBingoCommands {
                             ).executes { ctx ->
                                 val player = ctx.source.player ?: return@executes 0
                                 val index = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "index")
-                                // 服务端直接执行"请求 + 选择" (跳过客户端, 用于自动化测试)
-                                PerkOfferService.handleRequest(player)
+                                // 服务端直接执行"选择" (跳过客户端, 用于自动化测试)
                                 val state = PerkStateManager.getOrCreate(player.uuid)
                                 ctx.source.sendFeedback({
-                                    Text.literal("[RogueBingo] rolled offer: ${state.pendingOffer}")
+                                    Text.literal("[RogueBingo] current offer: ${state.currentOffer()}")
                                 }, false)
                                 PerkOfferService.handlePick(player, index)
                                 1

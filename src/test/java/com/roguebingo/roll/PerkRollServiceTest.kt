@@ -107,15 +107,43 @@ class PerkRollServiceTest {
     fun `owned perk state resets fully`() {
         val state = newState()
         state.ownedPerks.add(BlueA)
-        state.pendingChoices = 5
+        state.pendingOffers.add(listOf("blue_a", "blue_b", "blue_c"))
         state.cooldowns["x"] = 1L
-        state.pendingOffer = listOf("blue_a")
 
         state.reset()
 
         assertEquals(0, state.pendingChoices)
         assertTrue(state.ownedPerks.isEmpty())
         assertTrue(state.cooldowns.isEmpty())
-        assertEquals(null, state.pendingOffer)
+        assertEquals(null, state.currentOffer())
+    }
+
+    @Test
+    fun `consuming an offer keeps the remaining queue in order`() {
+        val state = newState()
+        state.pendingOffers.add(listOf("a"))
+        state.pendingOffers.add(listOf("b"))
+
+        assertEquals(2, state.pendingChoices)
+        assertEquals(listOf("a"), state.currentOffer())
+
+        state.consumeOffer()
+        assertEquals(1, state.pendingChoices)
+        assertEquals(listOf("b"), state.currentOffer())
+    }
+
+    @Test
+    fun `each player rolls independently`() {
+        val a = newState()
+        val b = newState()
+        a.ownedPerks.add(BlueA)
+
+        // A 的候选不应包含自己已有的; B 的候选不受 A 影响
+        repeat(30) {
+            val optionsA = PerkRollService.rollOptions(a, 3, Random(it))
+            assertTrue(optionsA.none { it.id == BlueA.id })
+        }
+        val optionsB = PerkRollService.rollOptions(b, 3, Random(1))
+        assertEquals(3, optionsB.size)
     }
 }

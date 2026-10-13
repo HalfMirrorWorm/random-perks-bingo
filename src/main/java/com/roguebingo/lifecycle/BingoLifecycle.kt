@@ -1,7 +1,7 @@
 package com.roguebingo.lifecycle
 
 import com.roguebingo.RogueBingoMod
-import com.roguebingo.network.PerkNetworking
+import com.roguebingo.game.PerkGrantService
 import com.roguebingo.perk.PerkContext
 import com.roguebingo.server.ServerHolder
 import com.roguebingo.state.PerkStateManager
@@ -26,19 +26,23 @@ object BingoLifecycle {
         PerkStateManager.resetAll()
 
         val server = ServerHolder.server ?: return
-        for (player in server.playerManager.playerList) {
-            val state = PerkStateManager.getOrCreate(player.uuid)
-            state.pendingChoices = 1 // 开局免费送 1 次
-            PerkNetworking.sendNotify(player, state.pendingChoices)
-            player.sendMessage(
-                net.minecraft.text.Text.translatable("rogue-bingo.message.game_started"),
-                false,
-            )
+        val players = server.playerManager.playerList
+        if (players.isEmpty()) return
+
+        // 开局赠送: 每位玩家一次选择机会 (各自独立随机)
+        val granted = PerkGrantService.grantOffer(players)
+        if (granted) {
+            for (player in players) {
+                player.sendMessage(
+                    net.minecraft.text.Text.translatable("rogue-bingo.message.game_started"),
+                    false,
+                )
+            }
         }
 
         RogueBingoMod.logger.info(
             "[RogueBingo] game started → granted 1 free choice to {} player(s)",
-            server.playerManager.playerList.size,
+            players.size,
         )
     }
 

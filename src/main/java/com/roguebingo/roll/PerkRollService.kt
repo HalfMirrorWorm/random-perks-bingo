@@ -12,13 +12,15 @@ import kotlin.random.Random
 object PerkRollService {
 
     /**
-     * 为玩家生成 [count] 个候选词条 (默认 3 个, 互不相同, 排除已获得的)。
+     * 为单个玩家生成候选 (排除该玩家已获得的词条)。
      *
-     * 规则: 每个选项独立按品质权重 roll 品质, 再从该品质的可用池中挑一个;
-     * 该品质池为空时退化为从整体可用池中挑。
+     * 每位玩家独立抽取 —— 每位队员的选项互不相同。
      */
-    fun rollOptions(state: PlayerPerkState, count: Int = 3, random: Random = Random.Default): List<PerkDefinition> {
-        val pool = PerkRegistry.all.filterNot { state.hasPerk(it.id) }.toMutableList()
+    fun rollOptions(state: PlayerPerkState, count: Int = 3, random: Random = Random.Default): List<PerkDefinition> =
+        rollOptionsExcluding(state.ownedPerks.mapTo(mutableSetOf()) { it.id }, count, random)
+
+    private fun rollOptionsExcluding(excluded: Set<String>, count: Int, random: Random): List<PerkDefinition> {
+        val pool = PerkRegistry.all.filterNot { it.id in excluded }.toMutableList()
         val result = mutableListOf<PerkDefinition>()
 
         repeat(minOf(count, pool.size)) {
