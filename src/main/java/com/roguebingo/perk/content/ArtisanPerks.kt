@@ -28,7 +28,7 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 工具保养: 获得全套铁质工具 */
+    /** 蓝 · 工具保养: 获得一把效率 I 的铁镐 */
     object Toolkit : PerkDefinition {
         override val id = "artisan_toolkit"
         override val rarity = PerkRarity.BLUE
@@ -36,9 +36,9 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.IRON_PICKAXE)
 
         override fun onAcquire(ctx: PerkContext) {
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.IRON_PICKAXE))
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.IRON_SHOVEL))
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.IRON_SWORD))
+            val pickaxe = ItemStack(Items.IRON_PICKAXE)
+            PerkEffects.enchant(ctx.player, pickaxe, Enchantments.EFFICIENCY, 1)
+            PerkEffects.giveStack(ctx.player, pickaxe)
         }
     }
 
@@ -57,10 +57,10 @@ object ArtisanPerks {
         }
     }
 
-    /** 紫 · 附魔学徒: 获得一本随机实用附魔书 */
+    /** 蓝 · 附魔学徒: 获得一本随机实用附魔书 */
     object Enchanter : PerkDefinition {
         override val id = "artisan_enchanter"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.ENCHANTED_BOOK)
 

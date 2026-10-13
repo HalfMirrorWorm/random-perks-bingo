@@ -28,15 +28,15 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 伐木工: 获得效率 III 铁斧 */
+    /** 蓝 · 伐木工: 获得效率 III 的石斧 */
     object Lumberjack : PerkDefinition {
         override val id = "harvest_lumberjack"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
-        override fun icon() = ItemStack(Items.IRON_AXE)
+        override fun icon() = ItemStack(Items.STONE_AXE)
 
         override fun onAcquire(ctx: PerkContext) {
-            val axe = ItemStack(Items.IRON_AXE)
+            val axe = ItemStack(Items.STONE_AXE)
             PerkEffects.enchant(ctx.player, axe, Enchantments.EFFICIENCY, 3)
             PerkEffects.giveStack(ctx.player, axe)
         }
