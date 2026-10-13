@@ -56,7 +56,7 @@
   "rogue-bingo.perk.harvest_herder.name": "Herder",
   "rogue-bingo.perk.harvest_herder.desc": "Gain shears and 16 wool.",
   "rogue-bingo.perk.harvest_timber.name": "Timber!",
-  "rogue-bingo.perk.harvest_timber.desc": "20% chance of an extra log when chopping.",
+  "rogue-bingo.perk.harvest_timber.desc": "50% chance of an extra log when chopping.",
   "rogue-bingo.perk.harvest_bounty.name": "Bounty",
   "rogue-bingo.perk.harvest_bounty.desc": "Gain 32 carrots and an Efficiency III hoe.",
 
@@ -85,5 +85,5 @@
   "rogue-bingo.perk.seeker_supply_line.name": "Supply Line",
   "rogue-bingo.perk.seeker_supply_line.desc": "Gain a random supply now, then every 45s.",
   "rogue-bingo.perk.seeker_ender_supply.name": "Ender Supply",
-  "rogue-bingo.perk.seeker_ender_supply.desc": "Gain an ender pearl now, then one every 90s."
+  "rogue-bingo.perk.seeker_ender_supply.desc": "Gain an ender pearl now, then one every 5 minutes."
 }

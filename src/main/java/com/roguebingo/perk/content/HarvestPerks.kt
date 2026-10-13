@@ -55,7 +55,7 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 樵夫之手: 破坏原木时 20% 概率额外掉落一个原木 */
+    /** 紫 · 樵夫之手: 破坏原木时 50% 概率额外掉落一个原木 */
     object Timber : PerkDefinition {
         override val id = "harvest_timber"
         override val rarity = PerkRarity.PURPLE
@@ -64,7 +64,7 @@ object HarvestPerks {
 
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: net.minecraft.block.BlockState) {
             if (!blockState.isIn(net.minecraft.registry.tag.BlockTags.LOGS)) return
-            if (ctx.player.random.nextFloat() >= 0.20f) return
+            if (ctx.player.random.nextFloat() >= 0.50f) return
             PerkEffects.giveStack(ctx.player, ItemStack(blockState.block))
         }
     }

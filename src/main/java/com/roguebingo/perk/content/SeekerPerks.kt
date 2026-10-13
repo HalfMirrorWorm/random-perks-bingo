@@ -29,10 +29,10 @@ object SeekerPerks {
         }
     }
 
-    /** 蓝 · 补给线: 立即获得一份随机补给, 之后每 45 秒再获得一份 */
+    /** 紫 · 补给线: 立即获得一份随机补给, 之后每 45 秒再获得一份 */
     object SupplyLine : PerkDefinition {
         override val id = "seeker_supply_line"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.ENDER_CHEST)
 
@@ -70,14 +70,14 @@ object SeekerPerks {
         }
     }
 
-    /** 紫 · 末影补给: 立即获得 1 枚末影珍珠, 之后每 90 秒再获得 1 枚 */
+    /** 紫 · 末影补给: 立即获得 1 枚末影珍珠, 之后每 5 分钟再获得 1 枚 */
     object EnderSupply : PerkDefinition {
         override val id = "seeker_ender_supply"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.ENDER_PEARL)
 
-        private const val COOLDOWN_TICKS = 90 * 20
+        private const val COOLDOWN_TICKS = 5 * 60 * 20
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.ENDER_PEARL))

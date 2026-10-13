@@ -56,7 +56,7 @@
   "rogue-bingo.perk.harvest_herder.name": "牧羊人",
   "rogue-bingo.perk.harvest_herder.desc": "获得剪刀和 16 块羊毛。",
   "rogue-bingo.perk.harvest_timber.name": "樵夫之手",
-  "rogue-bingo.perk.harvest_timber.desc": "砍原木时 20% 概率额外掉落一个。",
+  "rogue-bingo.perk.harvest_timber.desc": "砍原木时 50% 概率额外掉落一个。",
   "rogue-bingo.perk.harvest_bounty.name": "丰收之息",
   "rogue-bingo.perk.harvest_bounty.desc": "获得 32 根胡萝卜和一把效率 III 的锄头。",
 
@@ -85,5 +85,5 @@
   "rogue-bingo.perk.seeker_supply_line.name": "补给线",
   "rogue-bingo.perk.seeker_supply_line.desc": "立即获得一份随机补给, 之后每 45 秒再获得一份。",
   "rogue-bingo.perk.seeker_ender_supply.name": "末影补给",
-  "rogue-bingo.perk.seeker_ender_supply.desc": "立即获得一枚末影珍珠, 之后每 90 秒再获得一枚。"
+  "rogue-bingo.perk.seeker_ender_supply.desc": "立即获得一枚末影珍珠, 之后每 5 分钟再获得一枚。"
 }
