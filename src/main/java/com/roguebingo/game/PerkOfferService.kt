@@ -90,4 +90,14 @@ object PerkOfferService {
             state.ownedPerks.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon()) },
         )
     }
+
+    /** 玩家请求词条百科: 下发全部词条定义 + 已收集标记 */
+    fun handleCatalogRequest(player: ServerPlayerEntity) {
+        val state = PerkStateManager.getOrCreate(player.uuid)
+        PerkNetworking.sendCatalog(
+            player,
+            state.ownedPerks.map { it.id },
+            PerkRegistry.all.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon()) },
+        )
+    }
 }

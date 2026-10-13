@@ -1,6 +1,7 @@
 package com.roguebingo.client
 
 import com.roguebingo.client.net.ClientPerkNetworking
+import com.roguebingo.client.screen.PerkCatalogScreen
 import com.roguebingo.client.screen.PerkChoiceScreen
 import com.roguebingo.client.screen.PerkListScreen
 import com.roguebingo.network.PerkOptionData
@@ -77,8 +78,19 @@ object RogueBingoClient : ClientModInitializer {
                         ) { text -> logger.info("[RogueBingo] screenshot(list): {}", text.string) }
                     }
                     340 -> {
+                        val owned = listPerks.take(6).map { it.id }.toSet()
+                        client.setScreen(PerkCatalogScreen(owned, listPerks))
+                        logger.info("[RogueBingo] UI self-test: perk catalog screen opened")
+                    }
+                    400 -> {
+                        net.minecraft.client.util.ScreenshotRecorder.saveScreenshot(
+                            client.runDirectory,
+                            client.framebuffer,
+                        ) { text -> logger.info("[RogueBingo] screenshot(catalog): {}", text.string) }
+                    }
+                    460 -> {
                         client.setScreen(null)
-                        logger.info("[RogueBingo] UI self-test: PASSED (both screens rendered without crash)")
+                        logger.info("[RogueBingo] UI self-test: PASSED (all screens rendered without crash)")
                     }
                 }
             }

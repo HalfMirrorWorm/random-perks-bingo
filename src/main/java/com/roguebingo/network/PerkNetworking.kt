@@ -16,9 +16,11 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(PerkNotifyS2C.ID, PerkNotifyS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(PerkOfferS2C.ID, PerkOfferS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(PerkListS2C.ID, PerkListS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(PerkCatalogS2C.ID, PerkCatalogS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkRequestC2S.ID, PerkRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -39,6 +41,13 @@ object PerkNetworking {
             val player = context.player()
             context.server().execute {
                 PerkOfferService.handleListRequest(player)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(PerkCatalogRequestC2S.ID) { _, context ->
+            val player = context.player()
+            context.server().execute {
+                PerkOfferService.handleCatalogRequest(player)
             }
         }
     }
@@ -62,5 +71,12 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, PerkListS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkListS2C(pendingCount, perks)) }
             .onFailure { RogueBingoMod.logger.warn("[RogueBingo] failed to send perk list: {}", it.toString()) }
+    }
+
+    /** 下发词条百科 (全部词条 + 已收集 id) */
+    fun sendCatalog(player: ServerPlayerEntity, ownedIds: List<String>, allPerks: List<PerkOptionData>) {
+        if (!ServerPlayNetworking.canSend(player, PerkCatalogS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, PerkCatalogS2C(ownedIds, allPerks)) }
+            .onFailure { RogueBingoMod.logger.warn("[RogueBingo] failed to send catalog: {}", it.toString()) }
     }
 }

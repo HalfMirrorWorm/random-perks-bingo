@@ -2,10 +2,14 @@
   "category.rogue-bingo": "肉鸽 Bingo",
   "key.rogue-bingo.open_choices": "打开词条选择",
   "key.rogue-bingo.open_perk_list": "查看已获得词条",
+  "key.rogue-bingo.open_catalog": "打开词条百科",
 
   "rogue-bingo.screen.choose_perk": "选择一个词条",
   "rogue-bingo.screen.choose_perk.hint": "点击卡牌选择 · Esc 稍后再选",
   "rogue-bingo.screen.my_perks": "我的词条",
+  "rogue-bingo.screen.catalog": "词条百科",
+  "rogue-bingo.catalog.all": "全部",
+  "rogue-bingo.catalog.progress": "已收集 %s / %s",
   "rogue-bingo.list.pending": "待选机会: %s 次",
   "rogue-bingo.list.empty": "还没有获得任何词条。",
 

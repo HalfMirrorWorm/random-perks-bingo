@@ -123,3 +123,41 @@ class PerkListS2C(
 
     override fun getId() = ID
 }
+
+/** C2S: 玩家请求打开词条百科 (全部词条 + 已收集标记) */
+class PerkCatalogRequestC2S : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<PerkCatalogRequestC2S>(Identifier.of("rogue-bingo", "perk_catalog_request"))
+        val CODEC: PacketCodec<RegistryByteBuf, PerkCatalogRequestC2S> = PacketCodec.of(
+            { _, _ -> },
+            { _ -> PerkCatalogRequestC2S() },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** S2C: 词条百科数据 —— 全部词条定义 + 玩家已收集的 id 集合 */
+class PerkCatalogS2C(
+    val ownedIds: List<String>,
+    val allPerks: List<PerkOptionData>,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<PerkCatalogS2C>(Identifier.of("rogue-bingo", "perk_catalog"))
+        val CODEC: PacketCodec<RegistryByteBuf, PerkCatalogS2C> = PacketCodec.of(
+            { value, buf ->
+                buf.writeVarInt(value.ownedIds.size)
+                for (id in value.ownedIds) buf.writeString(id)
+                writeCards(buf, value.allPerks)
+            },
+            { buf ->
+                val size = buf.readVarInt()
+                val owned = ArrayList<String>(size)
+                repeat(size) { owned.add(buf.readString()) }
+                PerkCatalogS2C(owned, readCards(buf))
+            },
+        )
+    }
+
+    override fun getId() = ID
+}

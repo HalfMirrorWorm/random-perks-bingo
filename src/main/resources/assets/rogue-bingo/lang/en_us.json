@@ -2,10 +2,14 @@
   "category.rogue-bingo": "Rogue Bingo",
   "key.rogue-bingo.open_choices": "Open Perk Choices",
   "key.rogue-bingo.open_perk_list": "View My Perks",
+  "key.rogue-bingo.open_catalog": "Open Perk Catalog",
 
   "rogue-bingo.screen.choose_perk": "Choose a Perk",
   "rogue-bingo.screen.choose_perk.hint": "Click a card to pick • Esc to save it for later",
   "rogue-bingo.screen.my_perks": "My Perks",
+  "rogue-bingo.screen.catalog": "Perk Catalog",
+  "rogue-bingo.catalog.all": "All",
+  "rogue-bingo.catalog.progress": "Collected %s / %s",
   "rogue-bingo.list.pending": "Pending choices: %s",
   "rogue-bingo.list.empty": "No perks acquired yet.",
 
