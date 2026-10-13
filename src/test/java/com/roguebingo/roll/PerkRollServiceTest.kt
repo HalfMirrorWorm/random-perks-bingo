@@ -88,7 +88,7 @@ class PerkRollServiceTest {
         val samples = 60_000
         val counts = mutableMapOf<PerkRarity, Int>()
         repeat(samples) {
-            val r = PerkRollService.rollRarity(random)
+            val r = PerkRollService.rollRarity(PerkRarity.entries, random)
             counts[r] = (counts[r] ?: 0) + 1
         }
 
@@ -101,6 +101,26 @@ class PerkRollServiceTest {
                 "rarity $rarity expected≈$expected actual=$actual",
             )
         }
+    }
+
+    @Test
+    fun `subsequent offers never repeat perks already in the queue`() {
+        val state = newState()
+
+        // 测试池共 6 个词条 -> 连续发放 2 组 (每组 3 个) 恰好覆盖
+        val seen = mutableSetOf<String>()
+        repeat(2) { i ->
+            val offer = PerkRollService.rollOptions(state, 3, Random(i)).map { it.id }
+            assertEquals(3, offer.size)
+            for (id in offer) {
+                assertTrue(id !in seen, "perk $id already appeared in an earlier pending offer")
+            }
+            seen.addAll(offer)
+            state.pendingOffers.add(offer)
+        }
+
+        // 池子已被队列耗尽 -> 无法再发放
+        assertTrue(PerkRollService.rollOptions(state, 3, Random(2)).isEmpty())
     }
 
     @Test
