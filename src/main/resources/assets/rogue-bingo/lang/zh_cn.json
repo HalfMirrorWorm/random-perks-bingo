@@ -71,7 +71,7 @@
   "rogue-bingo.perk.hunter_vitality.name": "强壮体魄",
   "rogue-bingo.perk.hunter_vitality.desc": "最大生命 +4。",
   "rogue-bingo.perk.hunter_vampire.name": "战地急救",
-  "rogue-bingo.perk.hunter_vampire.desc": "击杀生物回复 3 点生命。",
+  "rogue-bingo.perk.hunter_vampire.desc": "击杀生物回复 2 点生命。",
   "rogue-bingo.perk.hunter_scavenger.name": "剥皮专家",
   "rogue-bingo.perk.hunter_scavenger.desc": "击杀怪物 30% 概率额外掉落战利品。",
   "rogue-bingo.perk.hunter_soul_harvest.name": "灵魂收割",
@@ -87,7 +87,7 @@
   "rogue-bingo.perk.artisan_enchanter.desc": "获得一本随机实用附魔书。",
 
   "rogue-bingo.perk.seeker_scout.name": "侦察兵",
-  "rogue-bingo.perk.seeker_scout.desc": "获得望远镜 (使用时高亮标记周围生物与玩家)、指南针和一张藏宝图。",
+  "rogue-bingo.perk.seeker_scout.desc": "获得望远镜 (瞄准时高亮标记该生物或玩家)、指南针和一张藏宝图。",
   "rogue-bingo.perk.seeker_supply_line.name": "补给线",
   "rogue-bingo.perk.seeker_supply_line.desc": "立即获得一份随机补给, 之后每 45 秒再获得一份。",
   "rogue-bingo.perk.seeker_ender_supply.name": "末影补给",

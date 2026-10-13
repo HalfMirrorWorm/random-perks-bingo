@@ -11,18 +11,20 @@ import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.projectile.ProjectileUtil
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.item.map.MapDecorationTypes
 import net.minecraft.item.map.MapState
-import net.minecraft.registry.tag.StructureTags
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.entry.RegistryEntryList
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.gen.structure.StructureKeys
 
 /**
  * 秘藏 SEEKER —— 补给 / 信息 / 找物 (HUD 信息类效果将在后续里程碑加入)。
@@ -36,11 +38,11 @@ object SeekerPerks {
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.SPYGLASS)
 
-        /** 望远镜标记的半径 (格) */
-        private const val SCAN_RADIUS = 128.0
+        /** 标记持续时间 (tick): 瞄准时持续刷新, 移开视线后约 1.5 秒消失 */
+        private const val GLOW_DURATION = 30
 
-        /** 发光持续时间 (tick), 略长于刷新间隔以避免闪烁 */
-        private const val GLOW_DURATION = 50
+        /** 望远镜最大瞄准距离 (格) */
+        private const val REACH = 128.0
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.SPYGLASS))
@@ -49,51 +51,49 @@ object SeekerPerks {
                 ?: PerkEffects.giveStack(ctx.player, ItemStack(Items.MAP))
         }
 
-        /** 使用望远镜时, 高亮标记周围所有生物与玩家 (发光轮廓可透视看到) */
+        /** 使用望远镜时, 高亮标记**视线瞄准的**生物或玩家 (发光轮廓可透视看到) */
         override fun onTick(ctx: PerkContext) {
             val player = ctx.player
             if (!player.isUsingSpyglass) return
 
-            val world = player.world as? ServerWorld ?: return
-            val nearby = world.getEntitiesByClass(
-                LivingEntity::class.java,
-                player.boundingBox.expand(SCAN_RADIUS),
-            ) { entity ->
-                entity !== player && entity.isAlive && !(entity is PlayerEntity && entity.isSpectator)
-            }
+            val eyePos = player.eyePos
+            val lookVec = player.rotationVector
+            val endPos = eyePos.add(lookVec.multiply(REACH))
+            val searchBox = player.boundingBox.stretch(lookVec.multiply(REACH)).expand(1.0)
 
-            for (entity in nearby) {
-                entity.addStatusEffect(
-                    StatusEffectInstance(StatusEffects.GLOWING, GLOW_DURATION, 0, true, false, false)
-                )
-            }
+            val hit = ProjectileUtil.raycast(
+                player, eyePos, endPos, searchBox,
+                { entity ->
+                    entity !== player && entity is LivingEntity && entity.isAlive &&
+                        !(entity is PlayerEntity && entity.isSpectator)
+                },
+                REACH * REACH,
+            )
+
+            val target = hit?.entity as? LivingEntity ?: return
+            target.addStatusEffect(
+                StatusEffectInstance(StatusEffects.GLOWING, GLOW_DURATION, 0, true, false, false)
+            )
         }
 
-        /** 生成一张标记了最近结构的藏宝图 (红叉标记); 找不到结构时返回 null */
+        /** 生成原版沉船式藏宝图: 指向最近"埋藏的宝藏"(沙滩下的宝箱), 红叉标记; 找不到时返回 null */
         private fun createTreasureMap(player: ServerPlayerEntity): ItemStack? {
             val world = player.world as? ServerWorld ?: return null
 
-            // 按优先级尝试: 藏宝图结构(船难/埋藏宝藏) -> 村庄 -> 废弃传送门
-            val structureTags = listOf(
-                StructureTags.ON_TREASURE_MAPS,
-                StructureTags.VILLAGE,
-                StructureTags.RUINED_PORTAL,
-                StructureTags.SHIPWRECK,
-            )
+            val pos = runCatching {
+                val structureRegistry = world.registryManager.getOrThrow(RegistryKeys.STRUCTURE)
+                val buriedTreasure = structureRegistry.getOrThrow(StructureKeys.BURIED_TREASURE)
+                world.chunkManager.chunkGenerator.locateStructure(
+                    world,
+                    RegistryEntryList.of(buriedTreasure),
+                    player.blockPos,
+                    100,
+                    false,
+                )?.first
+            }.getOrNull() ?: return null
 
-            var targetPos: BlockPos? = null
-            for (tag in structureTags) {
-                targetPos = runCatching {
-                    world.locateStructure(tag, player.blockPos, 40, false)
-                }.getOrNull()
-                if (targetPos != null) break
-            }
-            val pos = targetPos ?: return null
-
-            // 以玩家位置为中心创建地图, 并在目标结构处加红叉标记
-            val mapStack = FilledMapItem.createMap(
-                world, player.blockPos.x, player.blockPos.z, 1.toByte(), true, true,
-            )
+            // 地图以宝藏位置为中心, 打开即可看到红叉
+            val mapStack = FilledMapItem.createMap(world, pos.x, pos.z, 1.toByte(), true, true)
             MapState.addDecorationsNbt(mapStack, pos, "rogue-bingo:treasure", MapDecorationTypes.RED_X)
             mapStack.set(
                 DataComponentTypes.CUSTOM_NAME,

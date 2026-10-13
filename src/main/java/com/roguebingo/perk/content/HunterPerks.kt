@@ -60,7 +60,7 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_HEALTH)
     }
 
-    /** 蓝 · 战地急救: 击杀生物回复 3 生命 */
+    /** 蓝 · 战地急救: 击杀生物回复 2 生命 */
     object Vampire : PerkDefinition {
         override val id = "hunter_vampire"
         override val rarity = PerkRarity.BLUE
@@ -68,7 +68,7 @@ object HunterPerks {
         override fun icon() = ItemStack(Items.RED_DYE)
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
-            ctx.player.heal(3f)
+            ctx.player.heal(2f)
         }
     }
 

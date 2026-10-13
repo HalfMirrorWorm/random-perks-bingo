@@ -71,7 +71,7 @@
   "rogue-bingo.perk.hunter_vitality.name": "Vitality",
   "rogue-bingo.perk.hunter_vitality.desc": "+4 max health.",
   "rogue-bingo.perk.hunter_vampire.name": "Field Medic",
-  "rogue-bingo.perk.hunter_vampire.desc": "Heal 3 HP per kill.",
+  "rogue-bingo.perk.hunter_vampire.desc": "Heal 2 HP per kill.",
   "rogue-bingo.perk.hunter_scavenger.name": "Scavenger",
   "rogue-bingo.perk.hunter_scavenger.desc": "30% chance of extra loot from mobs.",
   "rogue-bingo.perk.hunter_soul_harvest.name": "Soul Harvest",
@@ -87,7 +87,7 @@
   "rogue-bingo.perk.artisan_enchanter.desc": "Gain a random useful enchanted book.",
 
   "rogue-bingo.perk.seeker_scout.name": "Scout",
-  "rogue-bingo.perk.seeker_scout.desc": "Gain a spyglass (highlights nearby mobs & players while scoping), a compass and a treasure map.",
+  "rogue-bingo.perk.seeker_scout.desc": "Gain a spyglass (highlights the mob or player you aim at), a compass and a treasure map.",
   "rogue-bingo.perk.seeker_supply_line.name": "Supply Line",
   "rogue-bingo.perk.seeker_supply_line.desc": "Gain a random supply now, then every 45s.",
   "rogue-bingo.perk.seeker_ender_supply.name": "Ender Supply",
