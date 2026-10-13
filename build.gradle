@@ -52,6 +52,8 @@ dependencies {
     localRuntime "org.xerial:sqlite-jdbc:3.50.3.0"
     localRuntime "app.cash.sqldelight:runtime-jvm:2.0.2"
     localRuntime "app.cash.sqldelight:jdbc-driver:2.0.2"
+    // 开发环境: Carpet 假玩家, 用于自动化端到端测试 (不会打进本 mod)
+    modLocalRuntime "maven.modrinth:carpet:1.4.177"
 
     // Kotlin stdlib 由 fabric-language-kotlin 在运行时提供 (与 bingo 的惯例一致)
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_version}"

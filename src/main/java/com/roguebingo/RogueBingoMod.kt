@@ -1,5 +1,6 @@
 package com.roguebingo
 
+import com.roguebingo.command.RogueBingoCommands
 import com.roguebingo.game.PerkTickService
 import com.roguebingo.game.PerkWorldEventService
 import com.roguebingo.lifecycle.BingoLifecycle
@@ -41,6 +42,9 @@ object RogueBingoMod : ModInitializer {
 
         // 世界事件 (击杀 / 破坏方块) → 词条
         PerkWorldEventService.register()
+
+        // 调试命令
+        RogueBingoCommands.register()
 
         logger.info("[RogueBingo] ready — {} perk(s) registered", PerkRegistry.size())
     }

@@ -39,14 +39,41 @@
 
 - [x] **M1** 工程骨架 + mixin 注入验证
   - 开发服务器启动即打印 `[RogueBingo] mixin applied to bingo ScoreUpdateService — scoring hook is ACTIVE`
-- [x] **M2** 最小闭环代码（完成格子 → 发放机会 → 三选一 → 效果生效）— 待游戏内实测
-- [ ] **M3** 正式三选一 UI（品质色卡牌/图标/描述排版）
-- [ ] **M4** 词条系统完整化（品质概率/去重池/生命周期）
-- [ ] **M5** 36 个词条内容填充
-- [ ] **M6** 打磨与平衡
+- [x] **M2** 最小闭环（完成格子 → 发放机会 → 三选一 → 效果生效）— 已通过自动化端到端测试
+- [x] **M3** 三选一 UI（品质色卡牌/图标/流派标签/悬停）+ 词条列表界面（按键 C）
+- [x] **M4** 词条系统完整化（品质概率/去重池/生命周期/tick 驱动/重生重挂/单元测试）
+- [x] **M5**（第一批）27 个词条，覆盖 6 流派（金色词条暂 1 个）
+- [ ] **M6** 打磨与平衡（主动技能系统、信息类 HUD、更多金词条）
 
 ## 开发环境注意事项
 
 - bingo 的 Jar-in-Jar 依赖（HikariCP / sqlite-jdbc / sqldelight）在开发环境不会被 Loom 自动加载，
   已在 `build.gradle` 用 `localRuntime` 补齐（仅开发用，不会打进本 mod）。
 - 首次构建后可直接 `./gradlew runServer` 或 `./gradlew runClient`（会自动带上 bingo 2.9.6）。
+- 开发环境附带 **Carpet**（假玩家，仅开发用）。注意 bingo 与 Carpet 在 `HungerManager` 上有 mixin
+  冲突（Carpet 优先，bingo 的 setExhaustion 被跳过），仅影响开发环境，正式游玩不要同时装 Carpet。
+
+## 自动化端到端测试
+
+无需真人即可验证完整链路（完成格子 → 发机会 → 三选一 → 效果生效）：
+
+```powershell
+# 1. 启动开发服务器（首次需在 run/server.properties 启用 RCON:
+#    enable-rcon=true, rcon.password=roguebingo_test）
+./gradlew runServer
+
+# 2. 另开终端运行测试脚本（用 Carpet 假玩家 + RCON 驱动）
+./scripts/e2e-test.ps1
+```
+
+脚本会：生成假玩家 → 创建队伍 → 开局（验证开局送 1 次机会）→ 用物品触发格子完成
+（验证 Mixin hook 与机会发放）→ 执行三选一（验证抽取/选择/效果）。
+
+调试命令：`/roguebingo status | grant [n] | simulate | pick <0-2>`（需要 OP 权限）。
+
+### 已知的测试技巧
+
+- 假玩家不发送移动包，bingo 的 `WaitUntilLoadedController` 会卡在 LOADING 状态；
+  `e2e-test.ps1` 通过"开局后暂时让假玩家离队"让该检查通过（须在 40 秒内完成）。
+- RCON 以控制台身份执行命令，`/roguebingo pick` 这类需要玩家的命令要用
+  `/execute as <player> run ...` 指定玩家。
