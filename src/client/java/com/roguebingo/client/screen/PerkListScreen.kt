@@ -13,6 +13,10 @@ class PerkListScreen(
     private val perks: List<PerkOptionData>,
 ) : Screen(Text.translatable("rogue-bingo.screen.my_perks")) {
 
+    private companion object {
+        const val DIM_BACKGROUND = 0x90000000.toInt()
+    }
+
     private val cardWidth = 150
     private val cardHeight = 40
     private val gap = 8
@@ -28,7 +32,8 @@ class PerkListScreen(
     private fun cardY(index: Int) = startY + index * (cardHeight + gap)
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderBackground(context, mouseX, mouseY, delta)
+        // 同 PerkChoiceScreen: 不调 renderBackground, 避免 1.21.6+ 的二次 blur 崩溃
+        context.fill(0, 0, width, height, DIM_BACKGROUND)
 
         // 标题与待选数
         context.drawCenteredTextWithShadow(
@@ -40,7 +45,7 @@ class PerkListScreen(
             textRenderer,
             Text.translatable("rogue-bingo.list.pending", pendingCount),
             width / 2, 40,
-            if (pendingCount > 0) 0x55FF55 else ScreenStyle.TEXT_DIM,
+            if (pendingCount > 0) ScreenStyle.TEXT_HIGHLIGHT else ScreenStyle.TEXT_DIM,
         )
 
         if (perks.isEmpty()) {

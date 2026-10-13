@@ -13,6 +13,10 @@ class PerkChoiceScreen(
     private val options: List<PerkOptionData>,
 ) : Screen(Text.translatable("rogue-bingo.screen.choose_perk")) {
 
+    private companion object {
+        const val DIM_BACKGROUND = 0x90000000.toInt()
+    }
+
     private val cardWidth = 130
     private val cardHeight = 190
     private val gap = 14
@@ -29,7 +33,9 @@ class PerkChoiceScreen(
     private fun cardX(index: Int) = startX + index * (cardWidth + gap)
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderBackground(context, mouseX, mouseY, delta)
+        // 注意: 1.21.6+ 的渲染管线会自动模糊屏幕背景,
+        // 这里不能再调 renderBackground() (会造成二次 blur 崩溃), 用自绘遮罩代替
+        context.fill(0, 0, width, height, DIM_BACKGROUND)
 
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, cardY - 30, ScreenStyle.TEXT_NAME)
         context.drawCenteredTextWithShadow(
