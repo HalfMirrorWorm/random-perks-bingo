@@ -34,9 +34,22 @@ object RogueBingoClient : ClientModInitializer {
                 PerkOptionData("delver_haste", PerkRarity.PURPLE.ordinal, PerkArchetype.DELVER.ordinal, ItemStack(Items.DIAMOND_PICKAXE)),
             )
             val listPerks = listOf(
+                PerkOptionData("swift_speed", PerkRarity.BLUE.ordinal, PerkArchetype.SWIFT.ordinal, ItemStack(Items.FEATHER)),
                 PerkOptionData("swift_tailwind", PerkRarity.PURPLE.ordinal, PerkArchetype.SWIFT.ordinal, ItemStack(Items.PHANTOM_MEMBRANE)),
+                PerkOptionData("swift_wind_stride", PerkRarity.PURPLE.ordinal, PerkArchetype.SWIFT.ordinal, ItemStack(Items.SUGAR)),
+                PerkOptionData("delver_haste", PerkRarity.PURPLE.ordinal, PerkArchetype.DELVER.ordinal, ItemStack(Items.DIAMOND_PICKAXE)),
+                PerkOptionData("delver_night_vision", PerkRarity.BLUE.ordinal, PerkArchetype.DELVER.ordinal, ItemStack(Items.GOLDEN_HELMET)),
+                PerkOptionData("delver_vein_scent", PerkRarity.PURPLE.ordinal, PerkArchetype.DELVER.ordinal, ItemStack(Items.RAW_IRON)),
                 PerkOptionData("harvest_bounty", PerkRarity.PURPLE.ordinal, PerkArchetype.HARVEST.ordinal, ItemStack(Items.CARROT)),
+                PerkOptionData("harvest_timber", PerkRarity.PURPLE.ordinal, PerkArchetype.HARVEST.ordinal, ItemStack(Items.OAK_LOG)),
+                PerkOptionData("harvest_gardener", PerkRarity.BLUE.ordinal, PerkArchetype.HARVEST.ordinal, ItemStack(Items.WHEAT)),
+                PerkOptionData("hunter_soul_harvest", PerkRarity.GOLD.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.NETHER_STAR)),
+                PerkOptionData("hunter_vampire", PerkRarity.BLUE.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.RED_DYE)),
+                PerkOptionData("hunter_strength", PerkRarity.BLUE.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.IRON_SWORD)),
+                PerkOptionData("seeker_scout", PerkRarity.BLUE.ordinal, PerkArchetype.SEEKER.ordinal, ItemStack(Items.SPYGLASS)),
+                PerkOptionData("seeker_ender_supply", PerkRarity.PURPLE.ordinal, PerkArchetype.SEEKER.ordinal, ItemStack(Items.ENDER_PEARL)),
                 PerkOptionData("artisan_supply", PerkRarity.BLUE.ordinal, PerkArchetype.ARTISAN.ordinal, ItemStack(Items.BREAD)),
+                PerkOptionData("artisan_enchanter", PerkRarity.PURPLE.ordinal, PerkArchetype.ARTISAN.ordinal, ItemStack(Items.ENCHANTED_BOOK)),
             )
 
             ClientTickEvents.END_CLIENT_TICK.register { client ->
