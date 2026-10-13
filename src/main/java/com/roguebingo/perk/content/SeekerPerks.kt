@@ -38,8 +38,8 @@ object SeekerPerks {
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.SPYGLASS)
 
-        /** 标记持续时间 (tick): 瞄准时持续刷新, 移开视线后约 1.5 秒消失 */
-        private const val GLOW_DURATION = 30
+        /** 标记持续时间: 瞄准一次即标记 1 分钟 */
+        private const val GLOW_DURATION = 60 * 20
 
         /** 望远镜最大瞄准距离 (格) */
         private const val REACH = 128.0
@@ -103,14 +103,14 @@ object SeekerPerks {
         }
     }
 
-    /** 紫 · 补给线: 立即获得一份随机补给, 之后每 45 秒再获得一份 */
+    /** 紫 · 补给线: 立即获得一份随机补给, 之后每 2 分钟再获得一份 */
     object SupplyLine : PerkDefinition {
         override val id = "seeker_supply_line"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.ENDER_CHEST)
 
-        private const val COOLDOWN_TICKS = 45 * 20
+        private const val COOLDOWN_TICKS = 2 * 60 * 20
 
         private val pool: List<Pair<Item, Int>> = listOf(
             Items.TORCH to 16,

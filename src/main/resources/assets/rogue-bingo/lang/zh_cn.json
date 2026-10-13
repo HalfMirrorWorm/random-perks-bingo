@@ -87,9 +87,9 @@
   "rogue-bingo.perk.artisan_enchanter.desc": "获得一本随机实用附魔书。",
 
   "rogue-bingo.perk.seeker_scout.name": "侦察兵",
-  "rogue-bingo.perk.seeker_scout.desc": "获得望远镜 (瞄准时高亮标记该生物或玩家)、指南针和一张藏宝图。",
+  "rogue-bingo.perk.seeker_scout.desc": "获得望远镜 (瞄准的生物或玩家会被高亮标记 1 分钟)、指南针和一张藏宝图。",
   "rogue-bingo.perk.seeker_supply_line.name": "补给线",
-  "rogue-bingo.perk.seeker_supply_line.desc": "立即获得一份随机补给, 之后每 45 秒再获得一份。",
+  "rogue-bingo.perk.seeker_supply_line.desc": "立即获得一份随机补给, 之后每 2 分钟再获得一份。",
   "rogue-bingo.perk.seeker_ender_supply.name": "末影补给",
   "rogue-bingo.perk.seeker_ender_supply.desc": "立即获得一枚末影珍珠, 之后每 5 分钟再获得一枚。"
 }
