@@ -31,6 +31,8 @@
   "rogue-bingo.message.already_owned": "You already own %s — pick another perk.",
   "rogue-bingo.message.loot_bag": "★ Loot bag!",
 
+  "rogue-bingo.item.treasure_map": "Treasure Map",
+
   "rogue-bingo.perk.swift_speed.name": "Light Feet",
   "rogue-bingo.perk.swift_speed.desc": "+8% movement speed.",
   "rogue-bingo.perk.swift_feather_fall.name": "Soft Soles",
@@ -85,7 +87,7 @@
   "rogue-bingo.perk.artisan_enchanter.desc": "Gain a random useful enchanted book.",
 
   "rogue-bingo.perk.seeker_scout.name": "Scout",
-  "rogue-bingo.perk.seeker_scout.desc": "Gain a spyglass, compass and map.",
+  "rogue-bingo.perk.seeker_scout.desc": "Gain a spyglass (highlights nearby mobs & players while scoping), a compass and a treasure map.",
   "rogue-bingo.perk.seeker_supply_line.name": "Supply Line",
   "rogue-bingo.perk.seeker_supply_line.desc": "Gain a random supply now, then every 45s.",
   "rogue-bingo.perk.seeker_ender_supply.name": "Ender Supply",
