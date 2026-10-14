@@ -1,6 +1,7 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
 
 /**
@@ -11,4 +12,12 @@ object PerkBoostQuery {
     /** 玩家是否持有"贪婪之手" (受到其他生物 2 倍伤害) */
     fun hasFragileToMobs(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_greedy_hands") == true
+
+    /** 玩家是否持有"美食家" (进食恢复 +25%) */
+    fun hasEatBoost(player: PlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("harvest_gourmet") == true
+
+    /** 玩家是否持有"救生桶" (摔落伤害时副手水桶当图腾) */
+    fun hasFallBucket(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("swift_life_bucket") == true
 }

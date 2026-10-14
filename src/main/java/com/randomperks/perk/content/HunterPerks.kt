@@ -17,6 +17,7 @@ import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.mob.HostileEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -270,6 +271,52 @@ object HunterPerks {
         // "受到其他生物 2 倍伤害" 由 LivingEntityDamageMixin 实现
     }
 
+    /** 蓝 · 猎杀: 每击杀一只生物, 立即恢复 2 点饥饿值与 2 点饱和度 */
+    object Predator : PerkDefinition {
+        override val id = "hunter_predator"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.COOKED_BEEF)
+
+        override fun onKill(ctx: PerkContext, victim: LivingEntity) {
+            // add(food, saturationModifier): 饱和度增量 = food * saturationModifier * 2
+            ctx.player.hungerManager.add(2, 0.5f)
+        }
+    }
+
+    /** 紫 · 猎杀: 每击杀一名其他玩家, 永久 +1 最大生命 (可叠加, 重生保留) */
+    object Headhunter : PerkDefinition {
+        override val id = "hunter_headhunter"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.PLAYER_HEAD)
+
+        private val MOD_MAX_HEALTH = Identifier.of("random-perks-bingo", "headhunter_health")
+        private const val BONUS_KEY = "headhunter_bonus"
+
+        override fun onAcquire(ctx: PerkContext) = applyBonus(ctx)
+        override fun onRespawn(ctx: PerkContext) = applyBonus(ctx)
+
+        override fun onKill(ctx: PerkContext, victim: LivingEntity) {
+            if (victim !is ServerPlayerEntity) return
+            val bonus = (ctx.state.memory[BONUS_KEY]?.toDoubleOrNull() ?: 0.0) + 1.0
+            ctx.state.memory[BONUS_KEY] = bonus.toString()
+            applyBonus(ctx)
+            ctx.player.heal(1f)
+        }
+
+        private fun applyBonus(ctx: PerkContext) {
+            val bonus = ctx.state.memory[BONUS_KEY]?.toDoubleOrNull() ?: return
+            PerkEffects.setAttribute(
+                ctx.player, EntityAttributes.MAX_HEALTH, MOD_MAX_HEALTH,
+                bonus, EntityAttributeModifier.Operation.ADD_VALUE,
+            )
+        }
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_MAX_HEALTH)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -279,5 +326,7 @@ object HunterPerks {
         PerkRegistry.register(BareRage)
         PerkRegistry.register(MarkedPrey)
         PerkRegistry.register(GreedyHands)
+        PerkRegistry.register(Predator)
+        PerkRegistry.register(Headhunter)
     }
 }
