@@ -51,6 +51,9 @@ interface PerkDefinition {
     /** 该玩家破坏了一个方块 */
     fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {}
 
+    /** 装备槽变化时 (穿/脱护甲等) —— 用于即时重算装备相关效果 */
+    fun onEquipmentChange(ctx: PerkContext) {}
+
     /** 词条被移除 / 对局结束时清理 */
     fun onRemove(ctx: PerkContext) {}
 

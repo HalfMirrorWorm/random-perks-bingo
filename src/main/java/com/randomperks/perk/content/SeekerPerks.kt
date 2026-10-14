@@ -326,6 +326,16 @@ object SeekerPerks {
             trader.setDespawnDelay(48000) // 与它自然刷出时的滞留时间一致 (2 游戏日)
             trader.setPersistent()
             world.spawnEntity(trader)
+
+            // 与自然刷新一致的商队: 2 只被拴绳牵着、跟随商人的商队羊驼
+            repeat(2) { i ->
+                val llama = net.minecraft.entity.passive.TraderLlamaEntity(
+                    net.minecraft.entity.EntityType.TRADER_LLAMA, world,
+                )
+                llama.setPosition(trader.x + (i - 0.5) * 2.0, player.y, trader.z + (i - 0.5) * 2.0)
+                llama.attachLeash(trader, true)
+                world.spawnEntity(llama)
+            }
         }
     }
 

@@ -50,6 +50,11 @@ object DelverPerks {
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        /** 每秒校验: 被不死图腾/牛奶等清除后自动重挂 */
+        override fun onTick(ctx: PerkContext) =
+            PerkEffects.ensurePermanentEffect(ctx.player, StatusEffects.NIGHT_VISION, 0)
+
         private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, StatusEffects.NIGHT_VISION, 0)
 
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.NIGHT_VISION)
@@ -64,6 +69,11 @@ object DelverPerks {
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        /** 每秒校验: 被不死图腾/牛奶等清除后自动重挂 */
+        override fun onTick(ctx: PerkContext) =
+            PerkEffects.ensurePermanentEffect(ctx.player, StatusEffects.RESISTANCE, 0)
+
         private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, StatusEffects.RESISTANCE, 0)
 
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.RESISTANCE)
@@ -78,6 +88,11 @@ object DelverPerks {
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        /** 每秒校验: 被不死图腾/牛奶等清除后自动重挂 */
+        override fun onTick(ctx: PerkContext) =
+            PerkEffects.ensurePermanentEffect(ctx.player, StatusEffects.HASTE, 1)
+
         private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, StatusEffects.HASTE, 1)
 
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.HASTE)
@@ -105,7 +120,7 @@ object DelverPerks {
         }
     }
 
-    /** 蓝 · 深掘: 未穿护甲时获得 +10 护甲值 (鞘翅不算护甲) */
+    /** 蓝 · 深掘: 未穿护甲时获得 +5 护甲值 (鞘翅不算护甲) */
     object IronSkin : PerkDefinition {
         override val id = "delver_iron_skin"
         override val rarity = PerkRarity.BLUE
@@ -117,14 +132,17 @@ object DelverPerks {
         override fun onAcquire(ctx: PerkContext) = refresh(ctx)
         override fun onRespawn(ctx: PerkContext) = refresh(ctx)
 
-        /** 每秒校验装备状态, 穿/脱护甲时自动生效或失效 */
+        /** 穿/脱护甲的瞬间即时重算 (不再等每秒轮询) */
+        override fun onEquipmentChange(ctx: PerkContext) = refresh(ctx)
+
+        /** 兜底: 每秒校验一次装备状态 */
         override fun onTick(ctx: PerkContext) = refresh(ctx)
 
         private fun refresh(ctx: PerkContext) {
             if (PerkEffects.hasNoArmor(ctx.player)) {
                 PerkEffects.setAttribute(
                     ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN,
-                    10.0, EntityAttributeModifier.Operation.ADD_VALUE,
+                    5.0, EntityAttributeModifier.Operation.ADD_VALUE,
                 )
             } else {
                 PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)

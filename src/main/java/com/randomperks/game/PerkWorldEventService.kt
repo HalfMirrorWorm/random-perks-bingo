@@ -9,7 +9,7 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.minecraft.server.network.ServerPlayerEntity
 
 /**
- * 把世界事件 (击杀 / 破坏方块) 分发给玩家已获得的词条。
+ * 把世界事件 (击杀 / 破坏方块 / 装备变化) 分发给玩家已获得的词条。
  */
 object PerkWorldEventService {
 
@@ -25,6 +25,11 @@ object PerkWorldEventService {
             if (player !is ServerPlayerEntity) return@register
             dispatch(player) { ctx, perk -> perk.onBlockBreak(ctx, pos, state) }
         }
+    }
+
+    /** 装备变化 (由 EquipmentChangeMixin 注入原版 equipStack 调用) —— 即时重算装备相关词条 */
+    fun dispatchEquipmentChange(player: ServerPlayerEntity) {
+        dispatch(player) { ctx, perk -> perk.onEquipmentChange(ctx) }
     }
 
     private inline fun dispatch(

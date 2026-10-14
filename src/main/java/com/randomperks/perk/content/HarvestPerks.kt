@@ -6,7 +6,6 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
-import net.minecraft.entity.passive.CatEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -152,61 +151,12 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: 一只隐形的猫跟随你 —— 苦力怕会像害怕猫一样远离你 */
+    /** 蓝 · 丰饶: 苦力怕会像害怕猫一样害怕你并主动远离 (不生成猫; 效果由 CatAuraMixin 实现) */
     object CatAura : PerkDefinition {
         override val id = "harvest_cat_aura"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.CAT_SPAWN_EGG)
-
-        private const val CAT_KEY = "cat_aura_entity"
-
-        override fun onAcquire(ctx: PerkContext) = ensureCat(ctx)
-        override fun onTick(ctx: PerkContext) = ensureCat(ctx)
-        override fun onRespawn(ctx: PerkContext) = ensureCat(ctx)
-
-        /** 确保隐形猫存在 (跨世界/丢失时重建), 过远时拉回身边 */
-        private fun ensureCat(ctx: PerkContext) {
-            val player = ctx.player
-            val server = player.server ?: return
-            val catId = ctx.state.memory[CAT_KEY]?.toIntOrNull()
-
-            val cat = catId?.let { id ->
-                server.worlds.firstNotNullOfOrNull { it.getEntityById(id) as? CatEntity }
-            }
-
-            if (cat != null && !cat.isRemoved) {
-                if (cat.world !== player.world) {
-                    // 跨世界: 清理旧的, 重建
-                    cat.discard()
-                } else {
-                    // 太远则拉回身边
-                    if (cat.squaredDistanceTo(player) > 40.0 * 40.0) {
-                        cat.refreshPositionAndAngles(player.x, player.y, player.z, cat.yaw, cat.pitch)
-                    }
-                    return
-                }
-            }
-
-            val newCat = CatEntity(net.minecraft.entity.EntityType.CAT, player.world as? ServerWorld ?: return)
-            newCat.setPosition(player.x, player.y, player.z)
-            newCat.setInvisible(true)
-            newCat.setSilent(true)
-            newCat.setInvulnerable(true)
-            newCat.setPersistent()
-            newCat.setTamed(true, true)
-            newCat.setOwner(player)
-            newCat.isSitting = false
-            player.world.spawnEntity(newCat)
-            ctx.state.memory[CAT_KEY] = newCat.id.toString()
-        }
-
-        override fun onRemove(ctx: PerkContext) {
-            val catId = ctx.state.memory.remove(CAT_KEY)?.toIntOrNull() ?: return
-            ctx.player.server?.worlds?.forEach { world ->
-                world.getEntityById(catId)?.discard()
-            }
-        }
     }
 
     /** 蓝 · 丰饶: 立即在脚下召唤一匹属于你的马 (自带鞍) */
