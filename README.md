@@ -15,14 +15,35 @@
 | Kotlin / FLK | 2.2.21 / 1.13.7+kotlin.2.2.21 |
 | Java | 21 |
 
-## 功能开关
+## 玩法与按键
 
-词条系统可以整体启用/禁用（不想用扩展时无需卸载）：
+- 团队完成一个 bingo 格子 → **每位队员**获得一次「三选一」词条机会（每人独立随机、互不影响）
+- 每局开局每人免费获得 1 次选择机会
+- 词条分三档品质（普通 / 稀有 / 传说），按六种流派设计（疾风 / 深掘 / 丰饶 / 猎杀 / 秘藏 / 匠造），同流派词条之间有配合
 
-- **命令**（OP）：`/randomperks enable` / `/randomperks disable`
-  - 禁用时会**清空所有玩家当前的词条与效果**，且不再发放新的选择机会
-- **配置文件**：`config/random-perks-bingo.json`（`{"enabled": true}`）
-  - 服务器启动时读取；命令切换会实时写回该文件
+| 按键 | 功能 |
+|---|---|
+| `X` | 打开词条选择（有待选机会时） |
+| `V` | 查看已获得的词条 |
+| `K` | 词条百科（全部词条 + 收集进度，未获得的显示为暗色） |
+
+按键可在「选项 → 按键控制 → 随机词条 Bingo」中自定义。
+
+## 指令（需要 OP 权限）
+
+```mcfunction
+/randomperks status                        # 系统状态: 开关/词条总数/各玩家词条与待选
+/randomperks enable                        # 启用词条系统
+/randomperks disable                       # 禁用词条系统 (清空所有玩家当前词条与效果)
+/randomperks grant [次数]                   # 给自己发放选择机会
+/randomperks perk list                     # 列出全部词条 id
+/randomperks perk add <玩家> <词条id>       # 给玩家添加词条 (效果即时生效, 词条id 可 Tab 补全)
+/randomperks perk remove <玩家> <词条id>    # 移除词条 (附带效果会被清理)
+/randomperks perk clear <玩家>              # 清空玩家全部词条
+```
+
+词条系统的开关也会持久化到配置文件 `config/random-perks-bingo.json`（`{"enabled": true}`），
+`enable`/`disable` 命令切换时会实时写回该文件。
 
 ## 构建
 
@@ -31,9 +52,6 @@
 ./gradlew runServer      # 开发服务器（自动加载 bingo 2.9.6）
 ./gradlew runClient      # 开发客户端
 ```
-
-**国内网络**：首次构建需要代理拉取 Gradle 发行版与依赖。已在
-`~/.gradle/gradle.properties` 中配置（127.0.0.1:7890）。若代理端口不同，请修改该文件。
 
 ## 技术结构
 
