@@ -45,6 +45,8 @@
   "random-perks-bingo.message.waypoint_teleport": "Teleported to your waypoint!",
   "random-perks-bingo.message.waypoint_cooldown": "Waypoint on cooldown: %ss",
   "random-perks-bingo.message.waypoint_world_gone": "The waypoint's world no longer exists.",
+  "random-perks-bingo.message.waypoint_too_far": "Too far from the waypoint (%s blocks away, limit is 2000).",
+  "random-perks-bingo.message.waypoint_cross_world": "The waypoint is in another world — cannot teleport.",
 
   "random-perks-bingo.item.treasure_map": "Treasure Map",
 
@@ -142,7 +144,7 @@
   "random-perks-bingo.perk.harvest_rancher.name": "Rancher",
   "random-perks-bingo.perk.harvest_rancher.desc": "Gain 4 random spawn eggs (all different).",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
-  "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click to set a waypoint, right-click again to teleport back (10 min cooldown; sneak+right-click to reset).",
+  "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click to set a waypoint, right-click again to teleport back (10 min cooldown, within 2000 blocks; sneak+right-click to reset).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
   "random-perks-bingo.perk.mythic_creative_flash.desc": "Instantly gain 1 second of creative mode! Globally unique — only one player can own it.",
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",

@@ -45,6 +45,8 @@
   "random-perks-bingo.message.waypoint_teleport": "已传送回传送点!",
   "random-perks-bingo.message.waypoint_cooldown": "传送冷却中: %s 秒",
   "random-perks-bingo.message.waypoint_world_gone": "传送点所在的世界已不存在。",
+  "random-perks-bingo.message.waypoint_too_far": "距离传送点太远 (当前 %s 格, 上限 2000 格)。",
+  "random-perks-bingo.message.waypoint_cross_world": "传送点与你不在同一个世界, 无法传送。",
 
   "random-perks-bingo.item.treasure_map": "藏宝图",
 
@@ -142,7 +144,7 @@
   "random-perks-bingo.perk.harvest_rancher.name": "牧场主",
   "random-perks-bingo.perk.harvest_rancher.desc": "立即获得 4 个随机的生物蛋 (互不相同)。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
-  "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 首次右键设置传送点, 之后右键传送回去 (10 分钟冷却; 潜行右键可重设)。",
+  "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 首次右键设置传送点, 之后右键传送回去 (10 分钟冷却, 仅限 2000 格内; 潜行右键可重设)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",
   "random-perks-bingo.perk.mythic_creative_flash.desc": "立即获得 1 秒创造模式! 全局唯一 —— 同时只能有一名玩家拥有。",
   "random-perks-bingo.perk.seeker_supply_line.name": "补给线",

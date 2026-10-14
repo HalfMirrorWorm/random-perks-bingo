@@ -75,6 +75,20 @@ object WaypointService {
             return true
         }
 
+        // 距离限制: 仅允许 2000 格以内传送; 不在同一世界视为超出
+        if (targetWorld !== player.world) {
+            player.sendMessage(Text.translatable("random-perks-bingo.message.waypoint_cross_world"), true)
+            return true
+        }
+        val distance = player.pos.distanceTo(net.minecraft.util.math.Vec3d(x, y, z))
+        if (distance > 2000.0) {
+            player.sendMessage(
+                Text.translatable("random-perks-bingo.message.waypoint_too_far", distance.toInt()),
+                true,
+            )
+            return true
+        }
+
         // 传送 (保留视角)
         player.teleport(targetWorld, x, y, z, emptySet(), player.yaw, player.pitch, false)
         state.cooldowns[COOLDOWN_KEY] = now + COOLDOWN_TICKS
