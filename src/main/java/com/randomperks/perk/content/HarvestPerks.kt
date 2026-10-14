@@ -86,7 +86,7 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: 饱食度全满时, 随机获得一种"谜之炖菜"的正面效果 */
+    /** 蓝 · 丰饶: 每当饱食度回满时, 获得一次谜之炖菜的纯正面效果 (时长与原版炖菜一致) */
     object BountifulMeal : PerkDefinition {
         override val id = "harvest_bountiful_meal"
         override val rarity = PerkRarity.BLUE
@@ -102,17 +102,26 @@ object HarvestPerks {
             StatusEffects.REGENERATION,
         )
 
+        /** 与原版谜之炖菜一致的效果时长 (6 秒) */
+        private const val STEW_DURATION = 6 * 20
+
+        /** 记录"上一 tick 是否满饱食度" (存放在 cooldowns 里, 值 1=满 0=未满) */
+        private const val FULL_FLAG = "bountiful_meal_full"
+
         override fun onTick(ctx: PerkContext) {
             val player = ctx.player
-            // 仅在饱食度全满时生效
-            if (player.hungerManager.foodLevel < 20) return
-            // 已有任一炖菜效果时等待其结束 (结束后会自动重新随机)
-            if (STEW_EFFECTS.any { player.hasStatusEffect(it) }) return
+            val isFull = player.hungerManager.foodLevel >= 20
+            val wasFull = (ctx.state.cooldowns[FULL_FLAG] ?: 0L) > 0L
 
-            val pick = STEW_EFFECTS[player.random.nextInt(STEW_EFFECTS.size)]
-            player.addStatusEffect(
-                StatusEffectInstance(pick, 30 * 20, 0, true, false, true)
-            )
+            // 仅在饥饿度"刚回满"的瞬间给予一次效果
+            if (isFull && !wasFull) {
+                val pick = STEW_EFFECTS[player.random.nextInt(STEW_EFFECTS.size)]
+                player.addStatusEffect(
+                    StatusEffectInstance(pick, STEW_DURATION, 0, true, false, true)
+                )
+            }
+
+            ctx.state.cooldowns[FULL_FLAG] = if (isFull) 1L else 0L
         }
     }
 

@@ -109,10 +109,10 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_TAILWIND)
     }
 
-    /** 紫 · 疾风 · 主动: 空中可以再跳跃一次 (客户端按键触发, 服务端验证) */
+    /** 金 · 疾风 · 质变: 空中可以再跳跃一次 (客户端按键触发, 服务端验证) */
     object DoubleJump : PerkDefinition {
         override val id = "swift_double_jump"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.SLIME_BALL)
         // 效果由 PerkAbilityService (双击跳跃 C2S 包) 处理
