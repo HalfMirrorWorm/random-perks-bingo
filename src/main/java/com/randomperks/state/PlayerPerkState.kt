@@ -26,6 +26,9 @@ class PlayerPerkState(val uuid: UUID) {
     /** 主动技能/触发效果的冷却到期时间 (游戏 tick 时间) */
     val cooldowns: MutableMap<String, Long> = mutableMapOf()
 
+    /** 词条自定义数据 (如"猎杀印记"记录的目标 UUID、偷窃目标等) */
+    val memory: MutableMap<String, String> = mutableMapOf()
+
     fun hasPerk(id: String): Boolean = ownedPerks.any { it.id == id }
 
     /** 当前应展示的候选 (队列第一个, 未选择前不变) */
@@ -40,5 +43,6 @@ class PlayerPerkState(val uuid: UUID) {
         pendingOffers.clear()
         ownedPerks.clear()
         cooldowns.clear()
+        memory.clear()
     }
 }

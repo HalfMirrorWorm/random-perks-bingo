@@ -52,6 +52,9 @@ object BingoLifecycle {
             }
         }
 
+        // 清空后的能力状态同步给客户端
+        players.forEach { PerkGrantService.syncAbilities(it) }
+
         RandomPerksMod.logger.info(
             "[RandomPerks] game started → granted 1 free choice to {} player(s)",
             players.size,
@@ -76,5 +79,8 @@ object BingoLifecycle {
         }
         PerkStateManager.resetAll()
         RandomPerksMod.logger.info("[RandomPerks] perk state cleared")
+
+        // 清空后同步能力状态 (客户端关闭矿透等)
+        server?.playerManager?.playerList?.forEach { PerkGrantService.syncAbilities(it) }
     }
 }

@@ -10,10 +10,14 @@ import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.mob.HostileEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import java.util.UUID
 
 /**
  * 猎杀 HUNTER —— 战斗 / 怪物掉落。
@@ -143,6 +147,107 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
     }
 
+    /** 紫 · 猎杀: 随机标记一名敌方玩家 —— 持续显示其方位/坐标/距离并高亮轮廓; 朝目标移动时移速 +50% */
+    object MarkedPrey : PerkDefinition {
+        override val id = "hunter_marked_prey"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.COMPASS)
+
+        private val MOD_SPEED = Identifier.of("random-perks-bingo", "marked_prey_speed")
+        private const val TARGET_KEY = "marked_prey_target"
+        private const val LAST_DIST_KEY = "marked_prey_last_dist"
+
+        override fun onAcquire(ctx: PerkContext) = markTarget(ctx)
+
+        override fun onTick(ctx: PerkContext) = refresh(ctx)
+
+        override fun onRespawn(ctx: PerkContext) = refresh(ctx)
+
+        private fun refresh(ctx: PerkContext) {
+            val player = ctx.player
+            val targetId = ctx.state.memory[TARGET_KEY]?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+            val target = targetId?.let { player.server?.playerManager?.getPlayer(it) }
+
+            if (target == null) {
+                // 目标离线/不在场: 清除加速并尝试重新标记
+                PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+                if (targetId != null) {
+                    ctx.state.memory.remove(TARGET_KEY)
+                    ctx.state.memory.remove(LAST_DIST_KEY)
+                    markTarget(ctx)
+                }
+                return
+            }
+
+            // 轮廓高亮 (每秒刷新, 所有人可见)
+            target.addStatusEffect(StatusEffectInstance(StatusEffects.GLOWING, 100, 0, true, false, false))
+
+            // 距离变化 → 接近中则 +50% 移速
+            val dist = player.pos.distanceTo(target.pos).toInt()
+            val previous = ctx.state.memory[LAST_DIST_KEY]?.toIntOrNull()
+            ctx.state.memory[LAST_DIST_KEY] = dist.toString()
+
+            if (previous != null && dist < previous) {
+                PerkEffects.setAttribute(
+                    player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
+                    0.5, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+                )
+            } else {
+                PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+            }
+
+            // actionbar: 方位 + 坐标 + 距离
+            player.sendMessage(
+                Text.translatable(
+                    "random-perks-bingo.message.prey_tracker",
+                    target.name,
+                    dist,
+                    target.blockPos.x,
+                    target.blockPos.z,
+                    directionHint(player.pos.x, player.pos.z, target.pos.x, target.pos.z),
+                ),
+                true,
+            )
+        }
+
+        /** 随机标记一名其他队伍的在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌) */
+        private fun markTarget(ctx: PerkContext) {
+            val player = ctx.player
+            val server = player.server ?: return
+            val myTeam = player.scoreboardTeam?.name
+            val candidates = server.playerManager.playerList.filter { other ->
+                other.uuid != player.uuid && (myTeam == null || other.scoreboardTeam?.name != myTeam)
+            }
+            val target = candidates.randomOrNull() ?: return
+            ctx.state.memory[TARGET_KEY] = target.uuid.toString()
+            ctx.state.memory.remove(LAST_DIST_KEY)
+        }
+
+        /** 方位提示 (N/S/E/W 组合; MC 中 +Z 为南, +X 为东) */
+        private fun directionHint(px: Double, pz: Double, tx: Double, tz: Double): String {
+            val dx = tx - px
+            val dz = tz - pz
+            val ns = when {
+                dz > 8.0 -> "S"
+                dz < -8.0 -> "N"
+                else -> ""
+            }
+            val ew = when {
+                dx > 8.0 -> "E"
+                dx < -8.0 -> "W"
+                else -> ""
+            }
+            return (ns + ew).ifEmpty { "~" }
+        }
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+            ctx.state.memory.remove(TARGET_KEY)
+            ctx.state.memory.remove(LAST_DIST_KEY)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -150,5 +255,6 @@ object HunterPerks {
         PerkRegistry.register(Scavenger)
         PerkRegistry.register(SoulHarvest)
         PerkRegistry.register(BareRage)
+        PerkRegistry.register(MarkedPrey)
     }
 }

@@ -20,6 +20,9 @@ object Keybinds {
     lateinit var openCatalog: KeyBinding
         private set
 
+    lateinit var stealKey: KeyBinding
+        private set
+
     fun register() {
         openChoices = KeyBindingHelper.registerKeyBinding(
             KeyBinding(
@@ -48,6 +51,15 @@ object Keybinds {
             )
         )
 
+        stealKey = KeyBindingHelper.registerKeyBinding(
+            KeyBinding(
+                "key.random-perks-bingo.steal",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_G,
+                CATEGORY,
+            )
+        )
+
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             while (openChoices.wasPressed()) {
                 if (client.currentScreen == null && ClientPerkNetworking.pendingChoices > 0) {
@@ -62,6 +74,11 @@ object Keybinds {
             while (openCatalog.wasPressed()) {
                 if (client.currentScreen == null) {
                     ClientPerkNetworking.requestCatalog()
+                }
+            }
+            while (stealKey.wasPressed()) {
+                if (client.currentScreen == null && ClientPerkNetworking.hasPerk("seeker_pickpocket")) {
+                    ClientPerkNetworking.requestSteal()
                 }
             }
         }

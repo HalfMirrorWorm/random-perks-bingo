@@ -3,6 +3,8 @@ package com.randomperks.client.net
 import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
+import com.randomperks.client.screen.StealScreen
+import com.randomperks.network.PerkAbilitySyncS2C
 import com.randomperks.network.PerkCatalogRequestC2S
 import com.randomperks.network.PerkCatalogS2C
 import com.randomperks.network.PerkListRequestC2S
@@ -12,6 +14,9 @@ import com.randomperks.network.PerkOfferS2C
 import com.randomperks.network.PerkOptionData
 import com.randomperks.network.PerkPickC2S
 import com.randomperks.network.PerkRequestC2S
+import com.randomperks.network.StealOpenS2C
+import com.randomperks.network.StealPickC2S
+import com.randomperks.network.StealRequestC2S
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.text.Text
 
@@ -23,6 +28,12 @@ object ClientPerkNetworking {
     /** 当前待选机会数 (由服务端同步) */
     var pendingChoices: Int = 0
         private set
+
+    /** 当前拥有的词条 id 集合 (由服务端同步, 供客户端能力使用: 矿透渲染/偷窃按键等) */
+    var ownedPerkIds: Set<String> = emptySet()
+        private set
+
+    fun hasPerk(id: String): Boolean = id in ownedPerkIds
 
     /** 当前正在展示的三选一候选 */
     var currentOptions: List<PerkOptionData>? = null
@@ -59,6 +70,18 @@ object ClientPerkNetworking {
                 context.client().setScreen(PerkCatalogScreen(payload.ownedIds.toSet(), payload.allPerks))
             }
         }
+
+        ClientPlayNetworking.registerGlobalReceiver(PerkAbilitySyncS2C.ID) { payload, context ->
+            context.client().execute {
+                ownedPerkIds = payload.perkIds.toSet()
+            }
+        }
+
+        ClientPlayNetworking.registerGlobalReceiver(StealOpenS2C.ID) { payload, context ->
+            context.client().execute {
+                context.client().setScreen(StealScreen(payload.targetName, payload.items))
+            }
+        }
     }
 
     /** 请求服务端生成并下发三选一 */
@@ -78,6 +101,18 @@ object ClientPerkNetworking {
     fun requestCatalog() {
         if (!ClientPlayNetworking.canSend(PerkCatalogRequestC2S.ID)) return
         ClientPlayNetworking.send(PerkCatalogRequestC2S())
+    }
+
+    /** 请求打开偷窃界面 (需持有"顺手牵羊"词条) */
+    fun requestSteal() {
+        if (!ClientPlayNetworking.canSend(StealRequestC2S.ID)) return
+        ClientPlayNetworking.send(StealRequestC2S())
+    }
+
+    /** 选择偷取第 index 格的物品 */
+    fun pickSteal(index: Int) {
+        if (!ClientPlayNetworking.canSend(StealPickC2S.ID)) return
+        ClientPlayNetworking.send(StealPickC2S(index))
     }
 
     /** 提交选择 */

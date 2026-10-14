@@ -3,8 +3,10 @@ package com.randomperks.network
 import com.randomperks.RandomPerksMod
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkOfferService
+import com.randomperks.game.StealService
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.item.ItemStack
 import net.minecraft.server.network.ServerPlayerEntity
 
 /**
@@ -18,11 +20,15 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(PerkOfferS2C.ID, PerkOfferS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(PerkListS2C.ID, PerkListS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(PerkCatalogS2C.ID, PerkCatalogS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(PerkAbilitySyncS2C.ID, PerkAbilitySyncS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkRequestC2S.ID, PerkRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(DoubleJumpC2S.ID, DoubleJumpC2S.CODEC)
+        PayloadTypeRegistry.playS2C().register(StealOpenS2C.ID, StealOpenS2C.CODEC)
+        PayloadTypeRegistry.playC2S().register(StealRequestC2S.ID, StealRequestC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(StealPickC2S.ID, StealPickC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -59,6 +65,21 @@ object PerkNetworking {
                 PerkAbilityService.handleDoubleJump(player)
             }
         }
+
+        ServerPlayNetworking.registerGlobalReceiver(StealRequestC2S.ID) { _, context ->
+            val player = context.player()
+            context.server().execute {
+                StealService.handleRequest(player)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(StealPickC2S.ID) { payload, context ->
+            val player = context.player()
+            val index = payload.index
+            context.server().execute {
+                StealService.handlePick(player, index)
+            }
+        }
     }
 
     /** 通知玩家当前待选机会数 (客户端未安装本 mod 时静默跳过) */
@@ -87,5 +108,19 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, PerkCatalogS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkCatalogS2C(ownedIds, allPerks)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send catalog: {}", it.toString()) }
+    }
+
+    /** 同步玩家的词条能力列表 (客户端用于启用矿透/偷窃等能力) */
+    fun sendAbilitySync(player: ServerPlayerEntity, perkIds: List<String>) {
+        if (!ServerPlayNetworking.canSend(player, PerkAbilitySyncS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, PerkAbilitySyncS2C(perkIds)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send ability sync: {}", it.toString()) }
+    }
+
+    /** 下发偷窃目标信息与背包内容 */
+    fun sendStealOpen(player: ServerPlayerEntity, targetName: String, items: List<ItemStack>) {
+        if (!ServerPlayNetworking.canSend(player, StealOpenS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, StealOpenS2C(targetName, items)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send steal open: {}", it.toString()) }
     }
 }

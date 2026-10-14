@@ -6,12 +6,16 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
+import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
+import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.registry.tag.ItemTags
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 
 /**
@@ -131,6 +135,63 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
     }
 
+    /** 紫 · 深掘: 20 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 50% 概率消失 */
+    object XrayVision : PerkDefinition {
+        override val id = "delver_xray_vision"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.ENDER_EYE)
+
+        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
+            val player = ctx.player
+            // 惩罚只在手持镐子挖掘时生效 (1.21.2+ 无 PickaxeItem 类, 用原版物品标签判断)
+            if (!player.mainHandStack.isIn(ItemTags.PICKAXES)) return
+            if (player.random.nextFloat() >= 0.5f) return
+
+            // 移除该方块刚生成的掉落物 (位置邻近 + age 很小)
+            val world = player.world as? ServerWorld ?: return
+            val box = net.minecraft.util.math.Box(pos).expand(1.5)
+            world.getEntitiesByClass(ItemEntity::class.java, box) { it.age <= 1 }
+                .forEach { it.discard() }
+        }
+    }
+
+    /** 紫 · 深掘: 用镐子挖方块时, 按镐子等级概率获得随机物品 (木0.1% 石0.5% 铁1% 钻/下界合金10%) */
+    object LuckyDigger : PerkDefinition {
+        override val id = "delver_lucky_digger"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.GOLDEN_PICKAXE)
+
+        private val LOOT_POOL = listOf(
+            ItemStack(Items.IRON_INGOT, 2),
+            ItemStack(Items.GOLD_INGOT),
+            ItemStack(Items.DIAMOND),
+            ItemStack(Items.EMERALD),
+            ItemStack(Items.REDSTONE, 4),
+            ItemStack(Items.LAPIS_LAZULI, 4),
+            ItemStack(Items.COPPER_INGOT, 4),
+            ItemStack(Items.FLINT),
+            ItemStack(Items.BLAZE_POWDER, 2),
+            ItemStack(Items.ENDER_PEARL),
+            ItemStack(Items.GOLDEN_APPLE),
+        )
+
+        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
+            val chance = when (ctx.player.mainHandStack.item) {
+                Items.WOODEN_PICKAXE -> 0.001f
+                Items.STONE_PICKAXE -> 0.005f
+                Items.IRON_PICKAXE -> 0.01f
+                Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE -> 0.10f
+                else -> return
+            }
+            if (ctx.player.random.nextFloat() >= chance) return
+
+            val prize = LOOT_POOL[ctx.player.random.nextInt(LOOT_POOL.size)]
+            PerkEffects.giveStack(ctx.player, prize.copy())
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Mining)
         PerkRegistry.register(NightVision)
@@ -138,5 +199,7 @@ object DelverPerks {
         PerkRegistry.register(Haste)
         PerkRegistry.register(VeinScent)
         PerkRegistry.register(IronSkin)
+        PerkRegistry.register(XrayVision)
+        PerkRegistry.register(LuckyDigger)
     }
 }

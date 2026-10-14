@@ -5,7 +5,6 @@ import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
-
 /** 一个词条卡片的数据 (服务端 → 客户端 展示用; 同时用于"三选一候选"与"已获得列表") */
 data class PerkOptionData(
     val id: String,
@@ -118,6 +117,84 @@ class PerkListS2C(
                 val pending = buf.readVarInt()
                 PerkListS2C(pending, readCards(buf))
             },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** S2C: 同步玩家当前拥有的词条 id 列表 (客户端据此启用能力: 矿透渲染 / 偷窃按键等) */
+class PerkAbilitySyncS2C(val perkIds: List<String>) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<PerkAbilitySyncS2C>(Identifier.of("random-perks-bingo", "ability_sync"))
+        val CODEC: PacketCodec<RegistryByteBuf, PerkAbilitySyncS2C> = PacketCodec.of(
+            { value, buf ->
+                buf.writeVarInt(value.perkIds.size)
+                for (id in value.perkIds) buf.writeString(id)
+            },
+            { buf ->
+                val size = buf.readVarInt()
+                val list = ArrayList<String>(size)
+                repeat(size) { list.add(buf.readString()) }
+                PerkAbilitySyncS2C(list)
+            },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** C2S: 客户端请求打开偷窃界面 (需持有"顺手牵羊"词条) */
+class StealRequestC2S : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<StealRequestC2S>(Identifier.of("random-perks-bingo", "steal_request"))
+        val CODEC: PacketCodec<RegistryByteBuf, StealRequestC2S> = PacketCodec.of(
+            { _, _ -> },
+            { _ -> StealRequestC2S() },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** S2C: 下发偷窃目标的信息与背包内容 (36 格) */
+class StealOpenS2C(
+    val targetName: String,
+    val items: List<ItemStack>,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<StealOpenS2C>(Identifier.of("random-perks-bingo", "steal_open"))
+        val CODEC: PacketCodec<RegistryByteBuf, StealOpenS2C> = PacketCodec.of(
+            { value, buf ->
+                buf.writeString(value.targetName)
+                buf.writeVarInt(value.items.size)
+                for (item in value.items) {
+                    buf.writeBoolean(!item.isEmpty)
+                    if (!item.isEmpty) ItemStack.PACKET_CODEC.encode(buf, item)
+                }
+            },
+            { buf ->
+                val name = buf.readString()
+                val size = buf.readVarInt()
+                val items = ArrayList<ItemStack>(size)
+                repeat(size) {
+                    items.add(if (buf.readBoolean()) ItemStack.PACKET_CODEC.decode(buf) else ItemStack.EMPTY)
+                }
+                StealOpenS2C(name, items)
+            },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** C2S: 偷取目标背包中第 index 格的物品 */
+class StealPickC2S(val index: Int) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<StealPickC2S>(Identifier.of("random-perks-bingo", "steal_pick"))
+        val CODEC: PacketCodec<RegistryByteBuf, StealPickC2S> = PacketCodec.of(
+            { value, buf -> buf.writeVarInt(value.index) },
+            { buf -> StealPickC2S(buf.readVarInt()) },
         )
     }
 

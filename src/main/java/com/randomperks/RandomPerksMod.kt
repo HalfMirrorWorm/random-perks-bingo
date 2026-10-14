@@ -2,6 +2,7 @@ package com.randomperks
 
 import com.randomperks.command.RandomPerksCommands
 import com.randomperks.config.PerkConfig
+import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.PerkWorldEventService
 import com.randomperks.lifecycle.BingoLifecycle
@@ -46,6 +47,11 @@ object RandomPerksMod : ModInitializer {
 
         // 世界事件 (击杀 / 破坏方块) → 词条
         PerkWorldEventService.register()
+
+        // 玩家加入时同步词条能力状态 (断线重连后恢复)
+        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
+            PerkGrantService.syncAbilities(handler.player)
+        }
 
         // 调试命令
         RandomPerksCommands.register()

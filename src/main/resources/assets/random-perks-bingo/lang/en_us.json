@@ -3,11 +3,14 @@
   "key.random-perks-bingo.open_choices": "Open Perk Choices",
   "key.random-perks-bingo.open_perk_list": "View My Perks",
   "key.random-perks-bingo.open_catalog": "Open Perk Catalog",
+  "key.random-perks-bingo.steal": "Steal Item (Pickpocket)",
 
   "random-perks-bingo.screen.choose_perk": "Choose a Perk",
   "random-perks-bingo.screen.choose_perk.hint": "Click a card to pick • Esc to save it for later",
   "random-perks-bingo.screen.my_perks": "My Perks",
   "random-perks-bingo.screen.catalog": "Perk Catalog",
+  "random-perks-bingo.screen.steal": "Steal from %s",
+  "random-perks-bingo.steal.hint": "Click an item to steal it (only once)",
   "random-perks-bingo.catalog.all": "All",
   "random-perks-bingo.catalog.progress": "Collected %s / %s",
   "random-perks-bingo.list.pending": "Pending choices: %s",
@@ -30,6 +33,11 @@
   "random-perks-bingo.message.acquired": "Acquired %s %s",
   "random-perks-bingo.message.already_owned": "You already own %s — pick another perk.",
   "random-perks-bingo.message.loot_bag": "★ Loot bag!",
+  "random-perks-bingo.message.prey_tracker": "Prey: %s · %sm · (%s, %s) %s",
+  "random-perks-bingo.message.steal_marked": "Pickpocket: you are eyeing %s — press G to open their inventory.",
+  "random-perks-bingo.message.steal_success": "Stole %s!",
+  "random-perks-bingo.message.steal_victim": "Your %s was stolen!",
+  "random-perks-bingo.message.steal_no_target": "The pickpocket target is offline.",
 
   "random-perks-bingo.item.treasure_map": "Treasure Map",
 
@@ -58,6 +66,10 @@
   "random-perks-bingo.perk.delver_haste.desc": "Permanent Haste II.",
   "random-perks-bingo.perk.delver_vein_scent.name": "Vein Scent",
   "random-perks-bingo.perk.delver_vein_scent.desc": "8% chance to get a bonus drop when mining stone.",
+  "random-perks-bingo.perk.delver_xray_vision.name": "X-Ray Vision",
+  "random-perks-bingo.perk.delver_xray_vision.desc": "Ores within 20 blocks glow through walls; cost: 50% of items you mine with a pickaxe vanish.",
+  "random-perks-bingo.perk.delver_lucky_digger.name": "Lucky Digger",
+  "random-perks-bingo.perk.delver_lucky_digger.desc": "Mining with a pickaxe has a level-based chance for a bonus item (wood 0.1% / stone 0.5% / iron 1% / diamond+ 10%).",
   "random-perks-bingo.perk.delver_iron_skin.name": "Emperor's New Clothes",
   "random-perks-bingo.perk.delver_iron_skin.desc": "+10 armor while wearing no armor.",
 
@@ -84,6 +96,8 @@
   "random-perks-bingo.perk.hunter_scavenger.desc": "30% chance of extra loot from mobs.",
   "random-perks-bingo.perk.hunter_soul_harvest.name": "Soul Harvest",
   "random-perks-bingo.perk.hunter_soul_harvest.desc": "8% chance for a loot bag (random powerful item) on kill.",
+  "random-perks-bingo.perk.hunter_marked_prey.name": "Hunter's Mark",
+  "random-perks-bingo.perk.hunter_marked_prey.desc": "A random enemy is marked: their direction, coordinates and distance are shown and their outline glows; +50% speed while moving toward them.",
   "random-perks-bingo.perk.hunter_bare_rage.name": "Glass Cannon",
   "random-perks-bingo.perk.hunter_bare_rage.desc": "+30% attack damage while wearing no armor.",
 
@@ -98,6 +112,8 @@
 
   "random-perks-bingo.perk.seeker_scout.name": "Scout",
   "random-perks-bingo.perk.seeker_scout.desc": "Gain a spyglass (the mob or player you aim at is highlighted for 1 minute, visible to everyone), a compass and a treasure map.",
+  "random-perks-bingo.perk.seeker_pickpocket.name": "Pickpocket",
+  "random-perks-bingo.perk.seeker_pickpocket.desc": "Eye a random enemy player; press G to open their inventory and steal one item of your choice (single use).",
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",
   "random-perks-bingo.perk.seeker_supply_line.desc": "Gain a random supply now, then every 2 minutes.",
   "random-perks-bingo.perk.seeker_ender_supply.name": "Ender Supply",

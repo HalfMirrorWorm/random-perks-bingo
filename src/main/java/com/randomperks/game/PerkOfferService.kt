@@ -75,6 +75,7 @@ object PerkOfferService {
         )
 
         PerkNetworking.sendNotify(player, state.pendingChoices)
+        PerkGrantService.syncAbilities(player)
         RandomPerksMod.logger.info(
             "[RandomPerks] {} acquired perk {} ({}), {} choice(s) left",
             player.name.string, perk.id, perk.rarity, state.pendingChoices,

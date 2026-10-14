@@ -3,11 +3,14 @@
   "key.random-perks-bingo.open_choices": "打开词条选择",
   "key.random-perks-bingo.open_perk_list": "查看已获得词条",
   "key.random-perks-bingo.open_catalog": "打开词条百科",
+  "key.random-perks-bingo.steal": "偷取物品 (顺手牵羊)",
 
   "random-perks-bingo.screen.choose_perk": "选择一个词条",
   "random-perks-bingo.screen.choose_perk.hint": "点击卡牌选择 · Esc 稍后再选",
   "random-perks-bingo.screen.my_perks": "我的词条",
   "random-perks-bingo.screen.catalog": "词条百科",
+  "random-perks-bingo.screen.steal": "偷取 %s 的物品",
+  "random-perks-bingo.steal.hint": "点击一格物品偷走 (只能偷一次)",
   "random-perks-bingo.catalog.all": "全部",
   "random-perks-bingo.catalog.progress": "已收集 %s / %s",
   "random-perks-bingo.list.pending": "待选机会: %s 次",
@@ -30,6 +33,11 @@
   "random-perks-bingo.message.acquired": "获得 %s %s",
   "random-perks-bingo.message.already_owned": "你已经拥有 %s 了, 请选择其他词条。",
   "random-perks-bingo.message.loot_bag": "★ 战利品袋!",
+  "random-perks-bingo.message.prey_tracker": "目标 %s · %s格 · (%s, %s) %s",
+  "random-perks-bingo.message.steal_marked": "顺手牵羊: 盯上了 %s —— 按 G 打开他的背包。",
+  "random-perks-bingo.message.steal_success": "偷到了 %s!",
+  "random-perks-bingo.message.steal_victim": "你的 %s 被偷走了!",
+  "random-perks-bingo.message.steal_no_target": "偷窃目标当前不在线。",
 
   "random-perks-bingo.item.treasure_map": "藏宝图",
 
@@ -58,6 +66,10 @@
   "random-perks-bingo.perk.delver_haste.desc": "永久急迫 II (挖掘加速)。",
   "random-perks-bingo.perk.delver_vein_scent.name": "矿脉嗅觉",
   "random-perks-bingo.perk.delver_vein_scent.desc": "挖掘石头类方块时 8% 概率额外掉落一份。",
+  "random-perks-bingo.perk.delver_xray_vision.name": "透视之眼",
+  "random-perks-bingo.perk.delver_xray_vision.desc": "20 格内的矿石会发光显示 (可穿透方块); 代价: 用镐子挖到的物品有 50% 概率消失。",
+  "random-perks-bingo.perk.delver_lucky_digger.name": "幸运矿工",
+  "random-perks-bingo.perk.delver_lucky_digger.desc": "用镐子挖方块时, 按镐子等级概率获得随机物品 (木 0.1% / 石 0.5% / 铁 1% / 钻石及以上 10%)。",
   "random-perks-bingo.perk.delver_iron_skin.name": "皇帝新衣",
   "random-perks-bingo.perk.delver_iron_skin.desc": "未穿护甲时获得 +10 护甲值。",
 
@@ -84,6 +96,8 @@
   "random-perks-bingo.perk.hunter_scavenger.desc": "击杀怪物 30% 概率额外掉落战利品。",
   "random-perks-bingo.perk.hunter_soul_harvest.name": "灵魂收割",
   "random-perks-bingo.perk.hunter_soul_harvest.desc": "击杀怪物 8% 概率掉落战利品袋 (随机强力物品)。",
+  "random-perks-bingo.perk.hunter_marked_prey.name": "猎杀印记",
+  "random-perks-bingo.perk.hunter_marked_prey.desc": "随机标记一名敌方玩家: 持续显示其方位与距离并高亮轮廓; 朝他移动时移速 +50%。",
   "random-perks-bingo.perk.hunter_bare_rage.name": "玻璃小炮",
   "random-perks-bingo.perk.hunter_bare_rage.desc": "未穿护甲时攻击力 +30%。",
 
@@ -98,6 +112,8 @@
 
   "random-perks-bingo.perk.seeker_scout.name": "侦察兵",
   "random-perks-bingo.perk.seeker_scout.desc": "获得望远镜 (瞄准的生物或玩家会被高亮标记 1 分钟, 所有人可见)、指南针和一张藏宝图。",
+  "random-perks-bingo.perk.seeker_pickpocket.name": "顺手牵羊",
+  "random-perks-bingo.perk.seeker_pickpocket.desc": "随机盯上一名敌方玩家, 按 G 打开其背包偷走一格自选物品 (一次性)。",
   "random-perks-bingo.perk.seeker_supply_line.name": "补给线",
   "random-perks-bingo.perk.seeker_supply_line.desc": "立即获得一份随机补给, 之后每 2 分钟再获得一份。",
   "random-perks-bingo.perk.seeker_ender_supply.name": "末影补给",

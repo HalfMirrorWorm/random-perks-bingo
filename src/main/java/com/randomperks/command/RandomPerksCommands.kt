@@ -191,6 +191,7 @@ object RandomPerksCommands {
         state.ownedPerks.add(perk)
         runCatching { perk.onAcquire(PerkContext(target, state)) }
             .onFailure { ctx.source.sendError(Text.literal("应用效果时出错: ${it.message}")) }
+        PerkGrantService.syncAbilities(target)
 
         ctx.source.sendFeedback({
             Text.literal("已为 ${target.name.string} 添加词条: ${perk.id} (${perk.rarity})")
@@ -211,6 +212,7 @@ object RandomPerksCommands {
         state.ownedPerks.remove(perk)
         runCatching { perk.onRemove(PerkContext(target, state)) }
             .onFailure { ctx.source.sendError(Text.literal("清理效果时出错: ${it.message}")) }
+        PerkGrantService.syncAbilities(target)
 
         ctx.source.sendFeedback({
             Text.literal("已移除 ${target.name.string} 的词条: ${perk.id}")
@@ -228,6 +230,7 @@ object RandomPerksCommands {
         for (perk in perks) {
             runCatching { perk.onRemove(PerkContext(target, state)) }
         }
+        PerkGrantService.syncAbilities(target)
 
         ctx.source.sendFeedback({
             Text.literal("已清空 ${target.name.string} 的 $count 个词条")

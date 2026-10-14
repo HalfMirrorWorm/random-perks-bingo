@@ -82,6 +82,12 @@ object PerkGrantService {
         notifyChoicesAvailable(player, state.pendingChoices)
     }
 
+    /** 把玩家的词条能力列表同步给其客户端 (矿透渲染/偷窃按键等客户端能力依赖它) */
+    fun syncAbilities(player: ServerPlayerEntity) {
+        val state = PerkStateManager.getOrCreate(player.uuid)
+        PerkNetworking.sendAbilitySync(player, state.ownedPerks.map { it.id })
+    }
+
     private fun notifyChoicesAvailable(player: ServerPlayerEntity, pending: Int) {
         PerkNetworking.sendNotify(player, pending)
         player.sendMessage(
