@@ -271,10 +271,10 @@ object HunterPerks {
         // "受到其他生物 2 倍伤害" 由 LivingEntityDamageMixin 实现
     }
 
-    /** 蓝 · 猎杀: 每击杀一只生物, 立即恢复 2 点饥饿值与 2 点饱和度 */
+    /** 紫 · 猎杀: 每击杀一只生物, 立即恢复 2 点饥饿值与 2 点饱和度 */
     object Predator : PerkDefinition {
         override val id = "hunter_predator"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.COOKED_BEEF)
 
@@ -284,10 +284,10 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: 每击杀一名其他玩家, 永久 +1 最大生命 (可叠加, 重生保留) */
+    /** 金 · 猎杀: 每击杀一名其他玩家, 永久 +1 最大生命 (可叠加, 重生保留) */
     object Headhunter : PerkDefinition {
         override val id = "hunter_headhunter"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.PLAYER_HEAD)
 
