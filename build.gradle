@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '1.14-SNAPSHOT'
     id 'org.jetbrains.kotlin.jvm' version '2.2.21'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.2.21'
 }
 
 version = project.mod_version
@@ -57,6 +58,8 @@ dependencies {
 
     // Kotlin stdlib 由 fabric-language-kotlin 在运行时提供 (与 bingo 的惯例一致)
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_version}"
+    // kotlinx-serialization: 版本必须与 fabric-language-kotlin 内置版本一致 (同 bingo)
+    compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0"
 
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit5"
     testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
@@ -67,7 +70,7 @@ loom {
     splitEnvironmentSourceSets()
 
     mods {
-        "rogue-bingo" {
+        "random-perks-bingo" {
             sourceSet sourceSets.main
             sourceSet sourceSets.client
         }

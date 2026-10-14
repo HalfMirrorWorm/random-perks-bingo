@@ -2,7 +2,7 @@
 #
 # 前置条件:
 #   1. 开发服务器已启动: ./gradlew runServer
-#   2. run/server.properties 已启用 RCON (enable-rcon=true, rcon.password=roguebingo_test)
+#   2. run/server.properties 已启用 RCON (enable-rcon=true, rcon.password=randomperks_test)
 #   3. 依赖 Carpet 假玩家 (build.gradle 中已配置为 modLocalRuntime)
 #
 # 用法:
@@ -62,15 +62,15 @@ Rcon $cmds | Out-Null
 Start-Sleep -Seconds 4
 
 Step "7/7 verify choices granted"
-Rcon @('roguebingo status')
+Rcon @('randomperks status')
 
 Step "pick a perk (index 0) as Steve"
-Rcon @('execute as Steve run roguebingo pick 0')
+Rcon @('execute as Steve run randomperks pick 0')
 Start-Sleep -Seconds 2
-Rcon @('roguebingo status')
+Rcon @('randomperks status')
 
 Write-Host ""
 Write-Host "验证要点:" -ForegroundColor Green
-Write-Host "  - 服务器日志出现: [RogueBingo] team '...' scored '...' → N member(s)   (mixin hook 被触发)"
+Write-Host "  - 服务器日志出现: [RandomPerks] team '...' scored '...' → N member(s)   (mixin hook 被触发)"
 Write-Host "  - 服务器日志出现: [ScoredItemCheck] ... got ...                       (bingo 正常计分)"
-Write-Host "  - roguebingo status 显示 owned=<词条>, pending 相应减少"
+Write-Host "  - randomperks status 显示 owned=<词条>, pending 相应减少"

@@ -1,10 +1,10 @@
 # 简易 RCON 客户端 (用于开发环境自动化测试)
-# 用法: ./rcon.ps1 -Commands @('roguebingo status', 'list')
+# 用法: ./rcon.ps1 -Commands @('randomperks status', 'list')
 param(
     [string]$Host_ = '127.0.0.1',
     [int]$Port = 25575,
-    [string]$Password = 'roguebingo_test',
-    [string[]]$Commands = @('roguebingo status')
+    [string]$Password = 'randomperks_test',
+    [string[]]$Commands = @('randomperks status')
 )
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
