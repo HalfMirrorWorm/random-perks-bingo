@@ -11,10 +11,13 @@ import java.nio.file.Path
 private data class ConfigData(val enabled: Boolean = true)
 
 /**
- * 词条系统的总开关 (持久化到 `config/random-perks-bingo.json`)。
+ * 词条系统的开关配置 (持久化到 `config/random-perks-bingo.json`)。
  *
- * - enabled = true (默认): 正常发放选择机会
- * - enabled = false: 不发放任何机会; 切换时会清空所有玩家的词条与效果
+ * 开关**每局生效**: 对局开始时从本配置快照一次 (见 [com.randomperks.game.PerkSession]),
+ * 局中通过 `/randomperks enable|disable` 修改只影响**下一局**。
+ *
+ * - enabled = true (默认): 下一局正常发放选择机会
+ * - enabled = false: 下一局不发放任何机会
  */
 object PerkConfig {
 

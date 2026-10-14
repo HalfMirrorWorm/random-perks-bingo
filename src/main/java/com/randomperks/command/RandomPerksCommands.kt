@@ -3,7 +3,7 @@ package com.randomperks.command
 import com.randomperks.config.PerkConfig
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkOfferService
-import com.randomperks.lifecycle.BingoLifecycle
+import com.randomperks.game.PerkSession
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.state.PerkStateManager
@@ -38,8 +38,9 @@ object RandomPerksCommands {
                             val pending = states.sumOf { it.pendingChoices }
                             ctx.source.sendFeedback({
                                 Text.literal(
-                                    "[RandomPerks] enabled=${PerkConfig.enabled}, perks=${PerkRegistry.size()}, " +
-                                        "players=${states.size}, owned=$owned, pending=$pending"
+                                    "[RandomPerks] 本局=${if (PerkSession.isEnabled()) "启用" else "禁用"}, " +
+                                        "下局=${if (PerkConfig.enabled) "启用" else "禁用"}, " +
+                                        "perks=${PerkRegistry.size()}, players=${states.size}, owned=$owned, pending=$pending"
                                 )
                             }, false)
                             states.forEach { s ->
@@ -57,7 +58,7 @@ object RandomPerksCommands {
                         literal("enable").executes { ctx ->
                             PerkConfig.set(true)
                             ctx.source.sendFeedback({
-                                Text.literal("[RandomPerks] 词条系统已启用")
+                                Text.literal("[RandomPerks] 词条系统已启用 —— 将于【下一局】生效 (当前对局不受影响)")
                             }, true)
                             1
                         }
@@ -65,9 +66,8 @@ object RandomPerksCommands {
                     .then(
                         literal("disable").executes { ctx ->
                             PerkConfig.set(false)
-                            BingoLifecycle.clearAllPerkState()
                             ctx.source.sendFeedback({
-                                Text.literal("[RandomPerks] 词条系统已禁用 (已清空当前所有词条与效果)")
+                                Text.literal("[RandomPerks] 词条系统已禁用 —— 将于【下一局】生效 (当前对局继续运行)")
                             }, true)
                             1
                         }

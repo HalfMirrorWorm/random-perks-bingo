@@ -1,7 +1,6 @@
 package com.randomperks.game
 
 import com.randomperks.RandomPerksMod
-import com.randomperks.config.PerkConfig
 import com.randomperks.network.PerkNetworking
 import com.randomperks.perk.PerkContext
 import com.randomperks.roll.PerkRollService
@@ -25,7 +24,7 @@ object PerkGrantService {
      * 团队完成了一个 bingo 格子: 给每位队员发放一次选择机会 (各自独立随机), 并触发词条联动回调。
      */
     fun onTeamScored(memberUuids: List<UUID>, objectiveId: String) {
-        if (!PerkConfig.enabled) return
+        if (!PerkSession.isEnabled()) return
         val server = ServerHolder.server ?: return
         val players = memberUuids.mapNotNull { server.playerManager.getPlayer(it) }
         if (players.isEmpty()) return

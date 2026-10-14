@@ -3,6 +3,7 @@ package com.randomperks.lifecycle
 import com.randomperks.RandomPerksMod
 import com.randomperks.config.PerkConfig
 import com.randomperks.game.PerkGrantService
+import com.randomperks.game.PerkSession
 import com.randomperks.perk.PerkContext
 import com.randomperks.server.ServerHolder
 import com.randomperks.state.PerkStateManager
@@ -18,14 +19,23 @@ object BingoLifecycle {
 
     fun register() {
         BingoEvents.GAME_STARTED.register { onGameStarted() }
-        BingoEvents.GAME_ENDED.register { clearAllPerkState() }
+        BingoEvents.GAME_ENDED.register {
+            clearAllPerkState()
+            PerkSession.reset()
+        }
         BingoEvents.GAME_RESET.register { PerkStateManager.resetAll() }
         BingoEvents.CLOSE.register { PerkStateManager.resetAll() }
     }
 
     private fun onGameStarted() {
         PerkStateManager.resetAll()
-        if (!PerkConfig.enabled) return
+
+        // 开关每局生效: 开局时从配置快照, 局中修改不影响本局
+        PerkSession.beginRound()
+        if (!PerkSession.isEnabled()) {
+            RandomPerksMod.logger.info("[RandomPerks] perk system is disabled for this round — no choices granted")
+            return
+        }
 
         val server = ServerHolder.server ?: return
         val players = server.playerManager.playerList

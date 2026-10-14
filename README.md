@@ -32,9 +32,9 @@
 ## 指令（需要 OP 权限）
 
 ```mcfunction
-/randomperks status                        # 系统状态: 开关/词条总数/各玩家词条与待选
-/randomperks enable                        # 启用词条系统
-/randomperks disable                       # 禁用词条系统 (清空所有玩家当前词条与效果)
+/randomperks status                        # 系统状态: 本局/下局开关, 词条总数, 各玩家词条与待选
+/randomperks enable                        # 启用词条系统 (下一局生效)
+/randomperks disable                       # 禁用词条系统 (下一局生效, 当前对局继续运行)
 /randomperks grant [次数]                   # 给自己发放选择机会
 /randomperks perk list                     # 列出全部词条 id
 /randomperks perk add <玩家> <词条id>       # 给玩家添加词条 (效果即时生效, 词条id 可 Tab 补全)
@@ -42,7 +42,8 @@
 /randomperks perk clear <玩家>              # 清空玩家全部词条
 ```
 
-词条系统的开关也会持久化到配置文件 `config/random-perks-bingo.json`（`{"enabled": true}`），
+词条系统的开关是**每局生效**的：对局开始时读取配置快照，局中切换只影响**下一局**。
+开关持久化到配置文件 `config/random-perks-bingo.json`（`{"enabled": true}`），
 `enable`/`disable` 命令切换时会实时写回该文件。
 
 ## 构建
