@@ -329,10 +329,10 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: 在你所在位置召唤一次闪电; 16 格内若有引雷针, 闪电会被引导过去 */
+    /** 蓝 · 猎杀: 在你所在位置召唤一次闪电; 16 格内若有引雷针, 闪电会被引导过去 */
     object CallLightning : PerkDefinition {
         override val id = "hunter_call_lightning"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.LIGHTNING_ROD)
 
