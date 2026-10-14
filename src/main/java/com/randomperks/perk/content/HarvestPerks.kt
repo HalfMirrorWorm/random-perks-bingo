@@ -11,6 +11,7 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.registry.Registries
 
 /**
  * 丰饶 HARVEST —— 作物 / 树木 / 动物。
@@ -133,6 +134,22 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.GOLDEN_CARROT)
     }
 
+    /** 蓝 · 丰饶: 立即获得 4 个随机生物蛋 (互不相同) */
+    object Rancher : PerkDefinition {
+        override val id = "harvest_rancher"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.EGG)
+
+        override fun onAcquire(ctx: PerkContext) {
+            val eggs = Registries.ITEM
+                .filter { Registries.ITEM.getId(it).path.endsWith("_spawn_egg") }
+                .shuffled()
+                .take(4)
+            eggs.forEach { PerkEffects.giveStack(ctx.player, ItemStack(it)) }
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -141,5 +158,6 @@ object HarvestPerks {
         PerkRegistry.register(Bounty)
         PerkRegistry.register(BountifulMeal)
         PerkRegistry.register(Gourmet)
+        PerkRegistry.register(Rancher)
     }
 }

@@ -5,6 +5,7 @@ import com.randomperks.config.PerkConfig
 import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
+import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
 import com.randomperks.lifecycle.BingoLifecycle
 import com.randomperks.network.PerkNetworking
@@ -48,6 +49,9 @@ object RandomPerksMod : ModInitializer {
 
         // 神话词条的创造闪光调度
         CreativeFlashService.register()
+
+        // 传送时钟的右键逻辑
+        WaypointService.register()
 
         // 世界事件 (击杀 / 破坏方块) → 词条
         PerkWorldEventService.register()

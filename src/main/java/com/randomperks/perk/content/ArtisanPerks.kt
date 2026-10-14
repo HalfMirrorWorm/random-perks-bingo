@@ -76,10 +76,24 @@ object ArtisanPerks {
         }
     }
 
+    /** 紫 · 匠造: 获得一个"传送时钟" —— 首次右键设置传送点, 之后右键传送回去 (10 分钟冷却; 潜行右键重设) */
+    object WaypointClock : PerkDefinition {
+        override val id = "artisan_waypoint_clock"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.CLOCK)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.CLOCK))
+        }
+        // 右键逻辑由 WaypointService (UseItemCallback) 处理
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
         PerkRegistry.register(Builder)
         PerkRegistry.register(Enchanter)
+        PerkRegistry.register(WaypointClock)
     }
 }

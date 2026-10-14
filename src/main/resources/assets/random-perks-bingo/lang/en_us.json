@@ -41,6 +41,10 @@
   "random-perks-bingo.message.steal_no_target": "The pickpocket target is offline.",
   "random-perks-bingo.message.creative_flash": "⭐ Creative Flash! 1 second of creative mode!",
   "random-perks-bingo.message.mythic_taken": "That mythic perk was taken by another player — your choice was rerolled.",
+  "random-perks-bingo.message.waypoint_set": "⭐ Waypoint set!",
+  "random-perks-bingo.message.waypoint_teleport": "Teleported to your waypoint!",
+  "random-perks-bingo.message.waypoint_cooldown": "Waypoint on cooldown: %ss",
+  "random-perks-bingo.message.waypoint_world_gone": "The waypoint's world no longer exists.",
 
   "random-perks-bingo.item.treasure_map": "Treasure Map",
 
@@ -133,6 +137,12 @@
   "random-perks-bingo.perk.seeker_life_vision.desc": "All mobs within 64 blocks are permanently outlined through walls (players excluded).",
   "random-perks-bingo.perk.seeker_ender_cache.name": "Ender Cache",
   "random-perks-bingo.perk.seeker_ender_cache.desc": "Gain an ender chest now, then one every 8 minutes.",
+  "random-perks-bingo.perk.seeker_alchemist.name": "Alchemist",
+  "random-perks-bingo.perk.seeker_alchemist.desc": "Gain a random potion now, then one every 2 minutes.",
+  "random-perks-bingo.perk.harvest_rancher.name": "Rancher",
+  "random-perks-bingo.perk.harvest_rancher.desc": "Gain 4 random spawn eggs (all different).",
+  "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
+  "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click to set a waypoint, right-click again to teleport back (10 min cooldown; sneak+right-click to reset).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
   "random-perks-bingo.perk.mythic_creative_flash.desc": "Instantly gain 1 second of creative mode! Globally unique — only one player can own it.",
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",

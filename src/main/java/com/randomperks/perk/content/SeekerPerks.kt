@@ -9,6 +9,7 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.PotionContentsComponent
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
@@ -20,6 +21,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.item.map.MapDecorationTypes
 import net.minecraft.item.map.MapState
+import net.minecraft.potion.Potions
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.entry.RegistryEntryList
 import net.minecraft.server.network.ServerPlayerEntity
@@ -260,6 +262,49 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
+    /** 紫 · 秘藏: 立即获得 1 瓶随机药水, 之后每 2 分钟再获得 1 瓶 */
+    object Alchemist : PerkDefinition {
+        override val id = "seeker_alchemist"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.BREWING_STAND)
+
+        private const val COOLDOWN_TICKS = 2 * 60 * 20
+
+        /** 随机药水池 (纯正面/中性) */
+        private val POTIONS = listOf(
+            Potions.HEALING,
+            Potions.REGENERATION,
+            Potions.STRENGTH,
+            Potions.SWIFTNESS,
+            Potions.NIGHT_VISION,
+            Potions.INVISIBILITY,
+            Potions.FIRE_RESISTANCE,
+            Potions.LEAPING,
+            Potions.WATER_BREATHING,
+            Potions.SLOW_FALLING,
+        )
+
+        override fun onAcquire(ctx: PerkContext) {
+            grant(ctx)
+            ctx.state.cooldowns[id] = now(ctx) + COOLDOWN_TICKS
+        }
+
+        override fun onTick(ctx: PerkContext) {
+            val current = now(ctx)
+            if (current < (ctx.state.cooldowns[id] ?: 0L)) return
+            ctx.state.cooldowns[id] = current + COOLDOWN_TICKS
+            grant(ctx)
+        }
+
+        private fun grant(ctx: PerkContext) {
+            val potion = POTIONS[ctx.player.random.nextInt(POTIONS.size)]
+            PerkEffects.giveStack(ctx.player, PotionContentsComponent.createStack(Items.POTION, potion))
+        }
+
+        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+    }
+
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
@@ -267,5 +312,6 @@ object SeekerPerks {
         PerkRegistry.register(Pickpocket)
         PerkRegistry.register(LifeVision)
         PerkRegistry.register(EnderCache)
+        PerkRegistry.register(Alchemist)
     }
 }

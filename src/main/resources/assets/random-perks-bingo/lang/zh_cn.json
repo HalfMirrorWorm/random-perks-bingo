@@ -41,6 +41,10 @@
   "random-perks-bingo.message.steal_no_target": "偷窃目标当前不在线。",
   "random-perks-bingo.message.creative_flash": "⭐ 创造闪光! 获得 1 秒创造模式!",
   "random-perks-bingo.message.mythic_taken": "该神话词条已被其他玩家选走, 你的选项已刷新。",
+  "random-perks-bingo.message.waypoint_set": "⭐ 传送点已设置!",
+  "random-perks-bingo.message.waypoint_teleport": "已传送回传送点!",
+  "random-perks-bingo.message.waypoint_cooldown": "传送冷却中: %s 秒",
+  "random-perks-bingo.message.waypoint_world_gone": "传送点所在的世界已不存在。",
 
   "random-perks-bingo.item.treasure_map": "藏宝图",
 
@@ -133,6 +137,12 @@
   "random-perks-bingo.perk.seeker_life_vision.desc": "永久高亮标记 64 格内的所有生物 (不含玩家), 可穿透方块看到。",
   "random-perks-bingo.perk.seeker_ender_cache.name": "末影仓库",
   "random-perks-bingo.perk.seeker_ender_cache.desc": "立即获得一个末影箱, 之后每 8 分钟再获得一个。",
+  "random-perks-bingo.perk.seeker_alchemist.name": "药剂师",
+  "random-perks-bingo.perk.seeker_alchemist.desc": "立即获得 1 瓶随机药水, 之后每 2 分钟再获得 1 瓶。",
+  "random-perks-bingo.perk.harvest_rancher.name": "牧场主",
+  "random-perks-bingo.perk.harvest_rancher.desc": "立即获得 4 个随机的生物蛋 (互不相同)。",
+  "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
+  "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 首次右键设置传送点, 之后右键传送回去 (10 分钟冷却; 潜行右键可重设)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",
   "random-perks-bingo.perk.mythic_creative_flash.desc": "立即获得 1 秒创造模式! 全局唯一 —— 同时只能有一名玩家拥有。",
   "random-perks-bingo.perk.seeker_supply_line.name": "补给线",
