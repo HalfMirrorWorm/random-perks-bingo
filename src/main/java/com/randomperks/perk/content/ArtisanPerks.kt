@@ -7,8 +7,11 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import net.minecraft.enchantment.Enchantments
+import net.minecraft.entity.attribute.EntityAttributeModifier
+import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.util.Identifier
 
 /**
  * 匠造 ARTISAN —— 工具 / 建造 / 功能性物品。
@@ -89,11 +92,36 @@ object ArtisanPerks {
         // 右键逻辑由 WaypointService (UseItemCallback) 处理
     }
 
+    /** 蓝 · 匠造: 方块与实体交互距离 +4 格 */
+    object LongArms : PerkDefinition {
+        override val id = "artisan_long_arms"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.ARMOR_STAND)
+
+        private val MOD_BLOCK = Identifier.of("random-perks-bingo", "long_arms_block")
+        private val MOD_ENTITY = Identifier.of("random-perks-bingo", "long_arms_entity")
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        private fun apply(ctx: PerkContext) {
+            PerkEffects.setAttribute(ctx.player, EntityAttributes.BLOCK_INTERACTION_RANGE, MOD_BLOCK, 4.0)
+            PerkEffects.setAttribute(ctx.player, EntityAttributes.ENTITY_INTERACTION_RANGE, MOD_ENTITY, 4.0)
+        }
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_INTERACTION_RANGE, MOD_BLOCK)
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.ENTITY_INTERACTION_RANGE, MOD_ENTITY)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
         PerkRegistry.register(Builder)
         PerkRegistry.register(Enchanter)
         PerkRegistry.register(WaypointClock)
+        PerkRegistry.register(LongArms)
     }
 }

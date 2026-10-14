@@ -317,6 +317,18 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_MAX_HEALTH)
     }
 
+    /** 紫 · 猎杀: 获得 3 个火焰弹 —— 手持右键即可像恶魂一样发射火球 (发射逻辑见 FireballService) */
+    object Fireball : PerkDefinition {
+        override val id = "hunter_fireball"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.FIRE_CHARGE)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.FIRE_CHARGE, 3))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -328,5 +340,6 @@ object HunterPerks {
         PerkRegistry.register(GreedyHands)
         PerkRegistry.register(Predator)
         PerkRegistry.register(Headhunter)
+        PerkRegistry.register(Fireball)
     }
 }

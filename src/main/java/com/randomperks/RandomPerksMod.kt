@@ -3,6 +3,7 @@ package com.randomperks
 import com.randomperks.command.RandomPerksCommands
 import com.randomperks.config.PerkConfig
 import com.randomperks.game.CreativeFlashService
+import com.randomperks.game.FireballService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.WaypointService
@@ -52,6 +53,9 @@ object RandomPerksMod : ModInitializer {
 
         // 传送时钟的右键逻辑
         WaypointService.register()
+
+        // 烈焰喷射的右键逻辑
+        FireballService.register()
 
         // 世界事件 (击杀 / 破坏方块) → 词条
         PerkWorldEventService.register()
