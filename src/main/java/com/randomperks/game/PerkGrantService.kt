@@ -58,7 +58,11 @@ object PerkGrantService {
 
         for (player in players) {
             val state = PerkStateManager.getOrCreate(player.uuid)
-            val offer = PerkRollService.rollOptions(state).map { it.id }
+            // 排除已被任何人持有的神话词条 (全局唯一)
+            val offer = PerkRollService.rollOptions(
+                state,
+                extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
+            ).map { it.id }
             if (offer.isEmpty()) continue
 
             state.pendingOffers.add(offer)
@@ -76,7 +80,10 @@ object PerkGrantService {
     fun grantChoice(player: ServerPlayerEntity, count: Int) {
         val state = PerkStateManager.getOrCreate(player.uuid)
         repeat(count) {
-            val offer = PerkRollService.rollOptions(state).map { it.id }
+            val offer = PerkRollService.rollOptions(
+                state,
+                extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
+            ).map { it.id }
             if (offer.isNotEmpty()) state.pendingOffers.add(offer)
         }
         notifyChoicesAvailable(player, state.pendingChoices)

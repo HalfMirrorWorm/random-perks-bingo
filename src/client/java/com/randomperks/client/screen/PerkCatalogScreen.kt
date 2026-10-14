@@ -161,12 +161,12 @@ class PerkCatalogScreen(
 
     private fun drawCard(context: DrawContext, perk: PerkOptionData, x: Int, y: Int, isHovered: Boolean) {
         val owned = perk.id in ownedIds
-        val rarity = ScreenStyle.rarity(perk.rarityOrdinal)
+        val displayColor = ScreenStyle.rarityDisplayColor(perk.rarityOrdinal)
         val archetype = ScreenStyle.archetype(perk.archetypeOrdinal)
 
         context.fill(x, y, x + cardWidth, y + CARD_HEIGHT, if (isHovered) ScreenStyle.CARD_BG_HOVER else ScreenStyle.CARD_BG)
         // 左侧品质条 (未获得的减淡)
-        context.fill(x, y, x + 3, y + CARD_HEIGHT, if (owned) rarity.color else dim(rarity.color))
+        context.fill(x, y, x + 3, y + CARD_HEIGHT, if (owned) displayColor else dim(displayColor))
         if (isHovered) {
             context.fill(x + 3, y, x + cardWidth, y + 1, ScreenStyle.BORDER_HOVER)
             context.fill(x + 3, y + CARD_HEIGHT - 1, x + cardWidth, y + CARD_HEIGHT, ScreenStyle.BORDER_HOVER)
@@ -182,7 +182,7 @@ class PerkCatalogScreen(
             textRenderer,
             Text.translatable("random-perks-bingo.perk.${perk.id}.name"),
             x + 27, y + 5,
-            if (owned) rarity.color else LOCKED_NAME,
+            if (owned) displayColor else LOCKED_NAME,
         )
         context.drawTextWithShadow(
             textRenderer,

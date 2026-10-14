@@ -14,14 +14,24 @@ object PerkRollService {
     /**
      * 为单个玩家生成候选 (每位玩家独立抽取)。
      *
-     * 排除: 该玩家**已获得**的词条 + **待选队列里已出现**的词条 ——
-     * 后者避免攒了多次机会时, 连续两次选择出现重复词条而浪费选项位。
+     * 排除: 该玩家**已获得**的词条 + **待选队列里已出现**的词条 + [extraExcluded]
+     * (后者用于排除已被其他玩家持有的全局唯一词条, 如神话品质)。
      */
-    fun rollOptions(state: PlayerPerkState, count: Int = 3, random: Random = Random.Default): List<PerkDefinition> {
+    fun rollOptions(
+        state: PlayerPerkState,
+        count: Int = 3,
+        random: Random = Random.Default,
+        extraExcluded: Set<String> = emptySet(),
+    ): List<PerkDefinition> {
         val excluded = state.ownedPerks.mapTo(mutableSetOf()) { it.id }
+        excluded.addAll(extraExcluded)
         state.pendingOffers.forEach { excluded.addAll(it) }
         return rollOptionsExcluding(excluded, count, random)
     }
+
+    /** 从排除集合之外随机抽一个词条 (用于"神话被抢后刷新选项位"等场景) */
+    fun rollSingle(excluded: Set<String>, random: Random = Random.Default): PerkDefinition? =
+        rollOptionsExcluding(excluded, 1, random).firstOrNull()
 
     private fun rollOptionsExcluding(excluded: Set<String>, count: Int, random: Random): List<PerkDefinition> {
         val pool = PerkRegistry.all.filterNot { it.id in excluded }.toMutableList()

@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
+import com.randomperks.network.PerkNetworking
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -211,10 +212,60 @@ object SeekerPerks {
         }
     }
 
+    /** 金 · 秘藏 · 质变: 永久透视 —— 高亮标记 64 格内的所有生物 (不含玩家) */
+    object LifeVision : PerkDefinition {
+        override val id = "seeker_life_vision"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.SPIDER_EYE)
+
+        private const val RANGE = 64.0
+
+        override fun onTick(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+            val creatures = world.getEntitiesByClass(
+                LivingEntity::class.java,
+                player.boundingBox.expand(RANGE),
+            ) { it !== player && it !is PlayerEntity && it.isAlive }
+
+            // 每秒重发 (标记 5 秒有效, 过期自动消失); 仅自己可见
+            if (creatures.isNotEmpty()) {
+                PerkNetworking.sendGlowMark(player, creatures.map { it.id }, 5_000L)
+            }
+        }
+    }
+
+    /** 紫 · 秘藏: 立即获得一个末影箱, 之后每 8 分钟再获得一个 */
+    object EnderCache : PerkDefinition {
+        override val id = "seeker_ender_cache"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.ENDER_CHEST)
+
+        private const val COOLDOWN_TICKS = 8 * 60 * 20
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.ENDER_CHEST))
+            ctx.state.cooldowns[id] = now(ctx) + COOLDOWN_TICKS
+        }
+
+        override fun onTick(ctx: PerkContext) {
+            val current = now(ctx)
+            if (current < (ctx.state.cooldowns[id] ?: 0L)) return
+            ctx.state.cooldowns[id] = current + COOLDOWN_TICKS
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.ENDER_CHEST))
+        }
+
+        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+    }
+
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
         PerkRegistry.register(EnderSupply)
         PerkRegistry.register(Pickpocket)
+        PerkRegistry.register(LifeVision)
+        PerkRegistry.register(EnderCache)
     }
 }

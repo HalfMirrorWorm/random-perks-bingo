@@ -192,6 +192,37 @@ object DelverPerks {
         }
     }
 
+    /** 紫 · 深掘: 挖掘时相当于时运 II (40% 概率额外掉落一份), 但挖掘速度降低 50% (不影响攻速) */
+    object Collector : PerkDefinition {
+        override val id = "delver_collector"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.DIAMOND)
+
+        private val MOD_MINING = Identifier.of("random-perks-bingo", "collector_mining")
+        private const val EXTRA_DROP_CHANCE = 0.40f
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        private fun apply(ctx: PerkContext) = PerkEffects.setAttribute(
+            ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING,
+            -0.5, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+        )
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
+
+        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
+            if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return
+            // 模拟时运 II: 复制一份刚生成的掉落物
+            val world = ctx.player.world as? ServerWorld ?: return
+            val box = net.minecraft.util.math.Box(pos).expand(1.5)
+            world.getEntitiesByClass(ItemEntity::class.java, box) { it.age <= 1 }
+                .forEach { world.spawnEntity(ItemEntity(world, it.x, it.y, it.z, it.stack.copy())) }
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Mining)
         PerkRegistry.register(NightVision)
@@ -201,5 +232,6 @@ object DelverPerks {
         PerkRegistry.register(IronSkin)
         PerkRegistry.register(XrayVision)
         PerkRegistry.register(LuckyDigger)
+        PerkRegistry.register(Collector)
     }
 }

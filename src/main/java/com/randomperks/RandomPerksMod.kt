@@ -2,6 +2,7 @@ package com.randomperks
 
 import com.randomperks.command.RandomPerksCommands
 import com.randomperks.config.PerkConfig
+import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.PerkWorldEventService
@@ -44,6 +45,9 @@ object RandomPerksMod : ModInitializer {
 
         // 驱动词条周期回调与重生重挂
         PerkTickService.register()
+
+        // 神话词条的创造闪光调度
+        CreativeFlashService.register()
 
         // 世界事件 (击杀 / 破坏方块) → 词条
         PerkWorldEventService.register()

@@ -19,6 +19,7 @@
   "random-perks-bingo.rarity.blue": "Common",
   "random-perks-bingo.rarity.purple": "Rare",
   "random-perks-bingo.rarity.gold": "Legendary",
+  "random-perks-bingo.rarity.mythic": "Mythic",
 
   "random-perks-bingo.archetype.swift": "Swift",
   "random-perks-bingo.archetype.delver": "Delver",
@@ -38,6 +39,8 @@
   "random-perks-bingo.message.steal_success": "Stole %s!",
   "random-perks-bingo.message.steal_victim": "Your %s was stolen!",
   "random-perks-bingo.message.steal_no_target": "The pickpocket target is offline.",
+  "random-perks-bingo.message.creative_flash": "⭐ Creative Flash! 1 second of creative mode!",
+  "random-perks-bingo.message.mythic_taken": "That mythic perk was taken by another player — your choice was rerolled.",
 
   "random-perks-bingo.item.treasure_map": "Treasure Map",
 
@@ -70,6 +73,8 @@
   "random-perks-bingo.perk.delver_xray_vision.desc": "Ores within 20 blocks glow through walls; cost: 50% of items you mine with a pickaxe vanish.",
   "random-perks-bingo.perk.delver_lucky_digger.name": "Lucky Digger",
   "random-perks-bingo.perk.delver_lucky_digger.desc": "Mining with a pickaxe has a level-based chance for a bonus item (wood 0.1% / stone 0.5% / iron 1% / diamond+ 10%).",
+  "random-perks-bingo.perk.delver_collector.name": "Collector",
+  "random-perks-bingo.perk.delver_collector.desc": "Mining rolls like Fortune II (40% extra drops); but mining speed is halved (attack speed unaffected).",
   "random-perks-bingo.perk.delver_iron_skin.name": "Emperor's New Clothes",
   "random-perks-bingo.perk.delver_iron_skin.desc": "+10 armor while wearing no armor.",
 
@@ -98,6 +103,8 @@
   "random-perks-bingo.perk.hunter_soul_harvest.desc": "8% chance for a loot bag (random powerful item) on kill.",
   "random-perks-bingo.perk.hunter_marked_prey.name": "Hunter's Mark",
   "random-perks-bingo.perk.hunter_marked_prey.desc": "A random enemy is marked: their direction, coordinates and distance are shown and their outline glows; +50% speed while moving toward them.",
+  "random-perks-bingo.perk.hunter_greedy_hands.name": "Greedy Hands",
+  "random-perks-bingo.perk.hunter_greedy_hands.desc": "Kill drops roll like Looting III; but you take double damage from mobs.",
   "random-perks-bingo.perk.hunter_bare_rage.name": "Glass Cannon",
   "random-perks-bingo.perk.hunter_bare_rage.desc": "+30% attack damage while wearing no armor.",
 
@@ -114,6 +121,12 @@
   "random-perks-bingo.perk.seeker_scout.desc": "Gain a spyglass (the mob or player you aim at is highlighted for 1 minute, visible to everyone), a compass and a treasure map.",
   "random-perks-bingo.perk.seeker_pickpocket.name": "Pickpocket",
   "random-perks-bingo.perk.seeker_pickpocket.desc": "Eye a random enemy player; press G to open their inventory and steal one item of your choice (single use).",
+  "random-perks-bingo.perk.seeker_life_vision.name": "Life Vision",
+  "random-perks-bingo.perk.seeker_life_vision.desc": "All mobs within 64 blocks are permanently outlined through walls (players excluded).",
+  "random-perks-bingo.perk.seeker_ender_cache.name": "Ender Cache",
+  "random-perks-bingo.perk.seeker_ender_cache.desc": "Gain an ender chest now, then one every 8 minutes.",
+  "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
+  "random-perks-bingo.perk.mythic_creative_flash.desc": "Instantly gain 1 second of creative mode! Globally unique — only one player can own it.",
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",
   "random-perks-bingo.perk.seeker_supply_line.desc": "Gain a random supply now, then every 2 minutes.",
   "random-perks-bingo.perk.seeker_ender_supply.name": "Ender Supply",

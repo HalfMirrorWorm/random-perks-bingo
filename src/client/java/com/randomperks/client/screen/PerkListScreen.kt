@@ -125,12 +125,12 @@ class PerkListScreen(
     }
 
     private fun drawRow(context: DrawContext, perk: PerkOptionData, x: Int, y: Int, isHovered: Boolean) {
-        val rarity = ScreenStyle.rarity(perk.rarityOrdinal)
+        val displayColor = ScreenStyle.rarityDisplayColor(perk.rarityOrdinal)
         val archetype = ScreenStyle.archetype(perk.archetypeOrdinal)
 
         // 卡片背景 + 左侧品质条
         context.fill(x, y, x + cardWidth, y + CARD_HEIGHT, if (isHovered) ScreenStyle.CARD_BG_HOVER else ScreenStyle.CARD_BG)
-        context.fill(x, y, x + 3, y + CARD_HEIGHT, rarity.color)
+        context.fill(x, y, x + 3, y + CARD_HEIGHT, displayColor)
         if (isHovered) {
             context.fill(x + 3, y, x + cardWidth, y + 1, ScreenStyle.BORDER_HOVER)
             context.fill(x + 3, y + CARD_HEIGHT - 1, x + cardWidth, y + CARD_HEIGHT, ScreenStyle.BORDER_HOVER)
@@ -144,7 +144,7 @@ class PerkListScreen(
         context.drawTextWithShadow(
             textRenderer,
             Text.translatable("random-perks-bingo.perk.${perk.id}.name"),
-            x + 30, y + 5, rarity.color,
+            x + 30, y + 5, displayColor,
         )
         context.drawTextWithShadow(
             textRenderer,

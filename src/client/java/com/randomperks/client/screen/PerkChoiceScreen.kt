@@ -58,19 +58,20 @@ class PerkChoiceScreen(
     private fun drawCard(context: DrawContext, option: PerkOptionData, x: Int, y: Int, isHovered: Boolean) {
         val rarity = ScreenStyle.rarity(option.rarityOrdinal)
         val archetype = ScreenStyle.archetype(option.archetypeOrdinal)
+        val displayColor = ScreenStyle.rarityDisplayColor(option.rarityOrdinal)
 
         // 卡片主体
         context.fill(x, y, x + cardWidth, y + cardHeight, if (isHovered) ScreenStyle.CARD_BG_HOVER else ScreenStyle.CARD_BG)
 
         // 品质色边框 (悬停时白色)
-        val border = if (isHovered) ScreenStyle.BORDER_HOVER else rarity.color
+        val border = if (isHovered) ScreenStyle.BORDER_HOVER else displayColor
         context.fill(x, y, x + cardWidth, y + 2, border)
         context.fill(x, y + cardHeight - 2, x + cardWidth, y + cardHeight, border)
         context.fill(x, y, x + 2, y + cardHeight, border)
         context.fill(x + cardWidth - 2, y, x + cardWidth, y + cardHeight, border)
 
         // 顶部品质条带
-        context.fill(x + 2, y + 2, x + cardWidth - 2, y + 9, rarity.color)
+        context.fill(x + 2, y + 2, x + cardWidth - 2, y + 9, displayColor)
 
         // 图标区
         val centerX = x + cardWidth / 2
@@ -88,7 +89,7 @@ class PerkChoiceScreen(
         context.drawCenteredTextWithShadow(
             textRenderer,
             Text.translatable("random-perks-bingo.rarity.${rarity.name.lowercase()}"),
-            centerX, y + 90, rarity.color,
+            centerX, y + 90, displayColor,
         )
         context.drawCenteredTextWithShadow(
             textRenderer,

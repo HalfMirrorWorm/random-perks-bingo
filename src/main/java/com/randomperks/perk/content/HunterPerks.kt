@@ -8,6 +8,7 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import net.minecraft.enchantment.Enchantments
+import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
@@ -16,6 +17,7 @@ import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.mob.HostileEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import java.util.UUID
@@ -249,6 +251,25 @@ object HunterPerks {
         }
     }
 
+    /** 紫 · 猎杀: 击杀生物相当于抢夺 III (50% 概率额外掉落一份), 但受到其他生物 2 倍伤害 */
+    object GreedyHands : PerkDefinition {
+        override val id = "hunter_greedy_hands"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.GOLDEN_SWORD)
+
+        private const val EXTRA_DROP_CHANCE = 0.5f
+
+        override fun onKill(ctx: PerkContext, victim: LivingEntity) {
+            if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return
+            val world = ctx.player.world as? ServerWorld ?: return
+            val box = victim.boundingBox.expand(1.0)
+            world.getEntitiesByClass(ItemEntity::class.java, box) { it.age <= 1 }
+                .forEach { world.spawnEntity(ItemEntity(world, it.x, it.y, it.z, it.stack.copy())) }
+        }
+        // "受到其他生物 2 倍伤害" 由 LivingEntityDamageMixin 实现
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -257,5 +278,6 @@ object HunterPerks {
         PerkRegistry.register(SoulHarvest)
         PerkRegistry.register(BareRage)
         PerkRegistry.register(MarkedPrey)
+        PerkRegistry.register(GreedyHands)
     }
 }

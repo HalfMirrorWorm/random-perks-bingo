@@ -20,4 +20,19 @@ object ScreenStyle {
 
     fun archetype(ordinal: Int): PerkArchetype =
         PerkArchetype.entries.getOrElse(ordinal) { PerkArchetype.SWIFT }
+
+    /**
+     * 品质的显示色: 神话品质为动态彩虹色 (随时间循环), 其余为固定品质色。
+     */
+    fun rarityDisplayColor(ordinal: Int): Int {
+        val rarity = rarity(ordinal)
+        if (rarity == PerkRarity.MYTHIC) return rainbowColor()
+        return rarity.color
+    }
+
+    /** 动态彩虹色 (约 3.6 秒一轮) */
+    private fun rainbowColor(): Int {
+        val hue = (System.currentTimeMillis() % 3600L) / 3600f
+        return java.awt.Color.HSBtoRGB(hue, 0.85f, 1f) or 0xFF000000.toInt()
+    }
 }
