@@ -74,7 +74,7 @@
   "random-perks-bingo.perk.delver_lucky_digger.name": "幸运矿工",
   "random-perks-bingo.perk.delver_lucky_digger.desc": "用镐子挖方块时, 按镐子等级概率获得随机物品 (木 0.1% / 石 0.5% / 铁 1% / 钻石及以上 10%)。",
   "random-perks-bingo.perk.delver_collector.name": "收藏家",
-  "random-perks-bingo.perk.delver_collector.desc": "挖掘时相当于时运 II (40% 概率额外掉落一份); 但挖掘速度降低 50% (不影响攻速)。",
+  "random-perks-bingo.perk.delver_collector.desc": "挖掘方块时 40% 概率额外掉落一份; 但挖掘速度降低 50% (不影响攻速)。",
   "random-perks-bingo.perk.delver_iron_skin.name": "皇帝新衣",
   "random-perks-bingo.perk.delver_iron_skin.desc": "未穿护甲时获得 +10 护甲值。",
 
@@ -104,7 +104,7 @@
   "random-perks-bingo.perk.hunter_marked_prey.name": "猎杀印记",
   "random-perks-bingo.perk.hunter_marked_prey.desc": "随机标记一名敌方玩家: 持续显示其方位与距离并高亮轮廓; 朝他移动时移速 +50%。",
   "random-perks-bingo.perk.hunter_greedy_hands.name": "贪婪之手",
-  "random-perks-bingo.perk.hunter_greedy_hands.desc": "击杀掉落相当于抢夺 III; 但你受到其他生物 2 倍伤害。",
+  "random-perks-bingo.perk.hunter_greedy_hands.desc": "击杀生物时 50% 概率额外掉落一份战利品; 但你受到其他生物 2 倍伤害。",
   "random-perks-bingo.perk.hunter_bare_rage.name": "玻璃小炮",
   "random-perks-bingo.perk.hunter_bare_rage.desc": "未穿护甲时攻击力 +30%。",
 

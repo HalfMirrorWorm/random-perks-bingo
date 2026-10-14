@@ -74,7 +74,7 @@
   "random-perks-bingo.perk.delver_lucky_digger.name": "Lucky Digger",
   "random-perks-bingo.perk.delver_lucky_digger.desc": "Mining with a pickaxe has a level-based chance for a bonus item (wood 0.1% / stone 0.5% / iron 1% / diamond+ 10%).",
   "random-perks-bingo.perk.delver_collector.name": "Collector",
-  "random-perks-bingo.perk.delver_collector.desc": "Mining rolls like Fortune II (40% extra drops); but mining speed is halved (attack speed unaffected).",
+  "random-perks-bingo.perk.delver_collector.desc": "40% chance of an extra drop when mining; but mining speed is halved (attack speed unaffected).",
   "random-perks-bingo.perk.delver_iron_skin.name": "Emperor's New Clothes",
   "random-perks-bingo.perk.delver_iron_skin.desc": "+10 armor while wearing no armor.",
 
@@ -104,7 +104,7 @@
   "random-perks-bingo.perk.hunter_marked_prey.name": "Hunter's Mark",
   "random-perks-bingo.perk.hunter_marked_prey.desc": "A random enemy is marked: their direction, coordinates and distance are shown and their outline glows; +50% speed while moving toward them.",
   "random-perks-bingo.perk.hunter_greedy_hands.name": "Greedy Hands",
-  "random-perks-bingo.perk.hunter_greedy_hands.desc": "Kill drops roll like Looting III; but you take double damage from mobs.",
+  "random-perks-bingo.perk.hunter_greedy_hands.desc": "50% chance of an extra loot drop on kill; but you take double damage from mobs.",
   "random-perks-bingo.perk.hunter_bare_rage.name": "Glass Cannon",
   "random-perks-bingo.perk.hunter_bare_rage.desc": "+30% attack damage while wearing no armor.",
 
