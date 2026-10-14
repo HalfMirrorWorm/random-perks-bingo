@@ -1,9 +1,11 @@
 package com.randomperks.client.net
 
+import com.randomperks.client.GlowMarkState
 import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
 import com.randomperks.client.screen.StealScreen
+import com.randomperks.network.GlowMarkS2C
 import com.randomperks.network.PerkAbilitySyncS2C
 import com.randomperks.network.PerkCatalogRequestC2S
 import com.randomperks.network.PerkCatalogS2C
@@ -80,6 +82,12 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(StealOpenS2C.ID) { payload, context ->
             context.client().execute {
                 context.client().setScreen(StealScreen(payload.targetName, payload.items))
+            }
+        }
+
+        ClientPlayNetworking.registerGlobalReceiver(GlowMarkS2C.ID) { payload, context ->
+            context.client().execute {
+                GlowMarkState.mark(payload.entityIds, payload.durationMillis)
             }
         }
     }

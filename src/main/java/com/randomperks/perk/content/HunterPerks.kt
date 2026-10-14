@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.GlowMarkService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -180,8 +181,8 @@ object HunterPerks {
                 return
             }
 
-            // 轮廓高亮 (每秒刷新, 所有人可见)
-            target.addStatusEffect(StatusEffectInstance(StatusEffects.GLOWING, 100, 0, true, false, false))
+            // 轮廓高亮: 仅同队可见 (每秒刷新, 5 秒过期)
+            GlowMarkService.markFor(GlowMarkService.teamViewers(player), target, 5_000L)
 
             // 距离变化 → 接近中则 +50% 移速
             val dist = player.pos.distanceTo(target.pos).toInt()

@@ -6,6 +6,9 @@
   "mixins": [
     "ScoreUpdateServiceMixin"
   ],
+  "client": [
+    "EntityGlowMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

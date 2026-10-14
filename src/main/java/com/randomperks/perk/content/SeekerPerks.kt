@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.GlowMarkService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -38,8 +39,8 @@ object SeekerPerks {
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.SPYGLASS)
 
-        /** 标记持续时间: 瞄准一次即标记 1 分钟 */
-        private const val GLOW_DURATION = 60 * 20
+        /** 标记持续时间: 瞄准一次即标记 1 分钟 (毫秒; 仅同队可见) */
+        private const val GLOW_MARK_MILLIS = 60_000L
 
         /** 望远镜最大瞄准距离 (格) */
         private const val REACH = 128.0
@@ -71,9 +72,8 @@ object SeekerPerks {
             )
 
             val target = hit?.entity as? LivingEntity ?: return
-            target.addStatusEffect(
-                StatusEffectInstance(StatusEffects.GLOWING, GLOW_DURATION, 0, true, false, false)
-            )
+            // 团队可见的发光标记 (代替原版全局发光)
+            GlowMarkService.markFor(GlowMarkService.teamViewers(player), target, GLOW_MARK_MILLIS)
         }
 
         /** 生成原版沉船式藏宝图: 指向最近"埋藏的宝藏"(沙滩下的宝箱), 红叉标记; 找不到时返回 null */
@@ -169,10 +169,10 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 紫 · 秘藏: 随机盯上一名敌方玩家, 按 G 打开其背包偷走一格自选物品 (一次性) */
+    /** 金 · 秘藏 · 质变: 随机盯上一名敌方玩家, 按 G 打开其背包偷走一格自选物品 (一次性) */
     object Pickpocket : PerkDefinition {
         override val id = "seeker_pickpocket"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.LEAD)
 

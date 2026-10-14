@@ -123,6 +123,31 @@ class PerkListS2C(
     override fun getId() = ID
 }
 
+/** S2C: 让客户端把指定实体显示为"发光标记" (仅发给同队玩家, 代替原版全局发光效果) */
+class GlowMarkS2C(
+    val entityIds: List<Int>,
+    val durationMillis: Long,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<GlowMarkS2C>(Identifier.of("random-perks-bingo", "glow_mark"))
+        val CODEC: PacketCodec<RegistryByteBuf, GlowMarkS2C> = PacketCodec.of(
+            { value, buf ->
+                buf.writeVarInt(value.entityIds.size)
+                for (id in value.entityIds) buf.writeVarInt(id)
+                buf.writeLong(value.durationMillis)
+            },
+            { buf ->
+                val size = buf.readVarInt()
+                val ids = ArrayList<Int>(size)
+                repeat(size) { ids.add(buf.readVarInt()) }
+                GlowMarkS2C(ids, buf.readLong())
+            },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** S2C: 同步玩家当前拥有的词条 id 列表 (客户端据此启用能力: 矿透渲染 / 偷窃按键等) */
 class PerkAbilitySyncS2C(val perkIds: List<String>) : CustomPayload {
     companion object {
