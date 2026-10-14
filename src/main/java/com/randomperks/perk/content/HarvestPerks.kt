@@ -1,12 +1,15 @@
 package com.randomperks.perk.content
 
+import com.randomperks.effect.ChainBreak
 import com.randomperks.effect.PerkEffects
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
+import net.minecraft.block.BlockState
 import net.minecraft.entity.passive.CatEntity
+import net.minecraft.registry.tag.BlockTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -14,6 +17,8 @@ import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
+import net.minecraft.text.Text
+import net.minecraft.util.math.BlockPos
 
 /**
  * 丰饶 HARVEST —— 作物 / 树木 / 动物。
@@ -229,6 +234,26 @@ object HarvestPerks {
         }
     }
 
+    /** 金 · 丰饶 · 质变: 砍掉一个原木时, 整棵树会一起倒下 (最多 64 个原木) */
+    object TreeFeller : PerkDefinition {
+        override val id = "harvest_tree_feller"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.NETHERITE_AXE)
+
+        private const val CAP = 64
+
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
+            if (!blockState.isIn(BlockTags.LOGS)) return
+            val broken = ChainBreak.run(ctx.player, pos, CAP) { it.isIn(BlockTags.LOGS) }
+            if (broken >= 3) {
+                ctx.player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.tree_feller", broken), true,
+                )
+            }
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -240,5 +265,6 @@ object HarvestPerks {
         PerkRegistry.register(Rancher)
         PerkRegistry.register(CatAura)
         PerkRegistry.register(SummonHorse)
+        PerkRegistry.register(TreeFeller)
     }
 }

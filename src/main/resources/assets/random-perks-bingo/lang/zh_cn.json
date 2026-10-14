@@ -165,5 +165,18 @@
   "random-perks-bingo.perk.seeker_supply_line.name": "补给线",
   "random-perks-bingo.perk.seeker_supply_line.desc": "立即获得一份随机补给, 之后每 2 分钟再获得一份。",
   "random-perks-bingo.perk.seeker_ender_supply.name": "末影补给",
-  "random-perks-bingo.perk.seeker_ender_supply.desc": "立即获得一枚末影珍珠, 之后每 5 分钟再获得一枚。"
+  "random-perks-bingo.perk.seeker_ender_supply.desc": "立即获得一枚末影珍珠, 之后每 5 分钟再获得一枚。",
+  "random-perks-bingo.perk.delver_vein_lord.name": "矿脉之主",
+  "random-perks-bingo.perk.delver_vein_lord.desc": "挖掉一个矿石时, 相连的同种矿石会一起崩落 (最多 32 个)。",
+  "random-perks-bingo.perk.harvest_tree_feller.name": "树倒了",
+  "random-perks-bingo.perk.harvest_tree_feller.desc": "砍掉一个原木时, 整棵树会一起倒下 (最多 64 个原木)。",
+  "random-perks-bingo.perk.artisan_steady_hand.name": "巧手",
+  "random-perks-bingo.perk.artisan_steady_hand.desc": "挖掘方块时 50% 概率不消耗主手工具的耐久。",
+  "random-perks-bingo.perk.artisan_soul_smith.name": "铁匠之魂",
+  "random-perks-bingo.perk.artisan_soul_smith.desc": "主手工具耐久即将耗尽 (≤10) 时自动修复至满, 10 分钟冷却。",
+  "random-perks-bingo.perk.seeker_angler.name": "渔夫",
+  "random-perks-bingo.perk.seeker_angler.desc": "获得一把海之眷顾 III + 耐久 II 的钓鱼竿, 以及 8 条烤鳕鱼。",
+  "random-perks-bingo.message.vein_lord": "矿脉之主: 连带崩落 %s 个矿石",
+  "random-perks-bingo.message.tree_feller": "树倒了: 连带倒下 %s 个原木",
+  "random-perks-bingo.message.soul_smith": "铁匠之魂: 工具已自动修复至满耐久"
 }

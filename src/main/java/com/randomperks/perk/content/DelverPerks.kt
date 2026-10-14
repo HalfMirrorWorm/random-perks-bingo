@@ -1,11 +1,13 @@
 package com.randomperks.perk.content
 
+import com.randomperks.effect.ChainBreak
 import com.randomperks.effect.PerkEffects
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
+import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.entity.ItemEntity
@@ -14,9 +16,14 @@ import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.registry.Registries
+import net.minecraft.registry.tag.BlockTags
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
 
 /**
  * 深掘 DELVER —— 挖矿 / 地下探索。
@@ -142,17 +149,20 @@ object DelverPerks {
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.ENDER_EYE)
 
-        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
             val player = ctx.player
             // 惩罚只在手持镐子挖掘时生效 (1.21.2+ 无 PickaxeItem 类, 用原版物品标签判断)
             if (!player.mainHandStack.isIn(ItemTags.PICKAXES)) return
             if (player.random.nextFloat() >= 0.5f) return
 
-            // 移除该方块刚生成的掉落物 (位置邻近 + age 很小)
+            // 注意: Fabric 的 AFTER 事件在原版 afterBreak (掉落物生成) 之前触发,
+            // 此刻还没有掉落物可清理 —— 延迟到下一 tick 再清 (物品拾取有延迟, 尚不会被捡走)
             val world = player.world as? ServerWorld ?: return
-            val box = net.minecraft.util.math.Box(pos).expand(1.5)
-            world.getEntitiesByClass(ItemEntity::class.java, box) { it.age <= 1 }
-                .forEach { it.discard() }
+            val target = pos.toImmutable()
+            player.server?.execute {
+                world.getEntitiesByClass(ItemEntity::class.java, Box(target).expand(1.5)) { it.age <= 1 }
+                    .forEach { it.discard() }
+            }
         }
     }
 
@@ -213,13 +223,53 @@ object DelverPerks {
         override fun onRemove(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
 
-        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
+            if (ctx.player.isCreative) return
             if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return
-            // 模拟时运 II: 复制一份刚生成的掉落物
+            // 模拟时运 II: 额外给予一份该方块的原版掉落
+            // (掉落物在原版 afterBreak 才生成, 事件里扫描不到实体 —— 直接用战利品表计算)
             val world = ctx.player.world as? ServerWorld ?: return
-            val box = net.minecraft.util.math.Box(pos).expand(1.5)
-            world.getEntitiesByClass(ItemEntity::class.java, box) { it.age <= 1 }
-                .forEach { world.spawnEntity(ItemEntity(world, it.x, it.y, it.z, it.stack.copy())) }
+            Block.getDroppedStacks(blockState, world, pos, null, ctx.player, ctx.player.mainHandStack)
+                .forEach { PerkEffects.giveStack(ctx.player, it) }
+        }
+    }
+
+    /** 金 · 深掘 · 质变: 挖掉一个矿石时, 相连的同种矿石会一起崩落 (最多 32 个) */
+    object VeinLord : PerkDefinition {
+        override val id = "delver_vein_lord"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.DIAMOND_ORE)
+
+        private const val CAP = 32
+
+        /** 原版各矿石标签 (没有总标签, 逐一列出; modded 矿石靠名称兜底) */
+        private val ORE_TAGS = listOf(
+            BlockTags.COAL_ORES,
+            BlockTags.IRON_ORES,
+            BlockTags.COPPER_ORES,
+            BlockTags.GOLD_ORES,
+            BlockTags.REDSTONE_ORES,
+            BlockTags.LAPIS_ORES,
+            BlockTags.DIAMOND_ORES,
+            BlockTags.EMERALD_ORES,
+        )
+
+        private fun isOre(state: BlockState): Boolean {
+            if (ORE_TAGS.any { state.isIn(it) }) return true
+            val path = Registries.BLOCK.getId(state.block).path
+            return path.contains("ore") || path == "ancient_debris"
+        }
+
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
+            if (!isOre(blockState)) return
+            val oreBlock = blockState.block
+            val broken = ChainBreak.run(ctx.player, pos, CAP) { it.block == oreBlock }
+            if (broken >= 3) {
+                ctx.player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.vein_lord", broken), true,
+                )
+            }
         }
     }
 
@@ -233,5 +283,6 @@ object DelverPerks {
         PerkRegistry.register(XrayVision)
         PerkRegistry.register(LuckyDigger)
         PerkRegistry.register(Collector)
+        PerkRegistry.register(VeinLord)
     }
 }

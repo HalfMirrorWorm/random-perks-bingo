@@ -11,6 +11,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 /**
@@ -79,6 +80,40 @@ object ArtisanPerks {
         }
     }
 
+    /** 紫 · 匠造: 挖掘方块时 50% 概率不消耗主手工具的耐久 (效果由 SteadyHandMixin 实现) */
+    object SteadyHand : PerkDefinition {
+        override val id = "artisan_steady_hand"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.GRINDSTONE)
+    }
+
+    /** 紫 · 匠造: 主手工具耐久即将耗尽 (≤10) 时自动修复至满, 10 分钟冷却 */
+    object SoulSmith : PerkDefinition {
+        override val id = "artisan_soul_smith"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.ANVIL)
+
+        private const val THRESHOLD = 10
+        private const val COOLDOWN_TICKS = 10 * 60 * 20
+
+        override fun onTick(ctx: PerkContext) {
+            val player = ctx.player
+            val now = player.server?.ticks?.toLong() ?: return
+            if (now < (ctx.state.cooldowns[id] ?: 0L)) return
+
+            val tool = player.mainHandStack
+            if (tool.isEmpty || !tool.isDamageable) return
+            val remaining = tool.maxDamage - tool.damage
+            if (remaining > THRESHOLD || remaining <= 0) return
+
+            tool.setDamage(0)
+            ctx.state.cooldowns[id] = now + COOLDOWN_TICKS
+            player.sendMessage(Text.translatable("random-perks-bingo.message.soul_smith"), true)
+        }
+    }
+
     /** 金 · 匠造: 获得一个"传送时钟" —— 首次右键设置传送点, 之后右键传送回去 (10 分钟冷却, 限 2000 格内; 潜行右键重设) */
     object WaypointClock : PerkDefinition {
         override val id = "artisan_waypoint_clock"
@@ -121,6 +156,8 @@ object ArtisanPerks {
         PerkRegistry.register(Toolkit)
         PerkRegistry.register(Builder)
         PerkRegistry.register(Enchanter)
+        PerkRegistry.register(SteadyHand)
+        PerkRegistry.register(SoulSmith)
         PerkRegistry.register(WaypointClock)
         PerkRegistry.register(LongArms)
     }
