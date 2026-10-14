@@ -305,6 +305,66 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
+    /** 蓝 · 秘藏: 立即在附近触发一次流浪商人刷新 */
+    object WanderingTrader : PerkDefinition {
+        override val id = "seeker_wandering_trader"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.EMERALD)
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+
+            val x = player.x + (player.random.nextDouble() - 0.5) * 8
+            val z = player.z + (player.random.nextDouble() - 0.5) * 8
+
+            val trader = net.minecraft.entity.passive.WanderingTraderEntity(
+                net.minecraft.entity.EntityType.WANDERING_TRADER, world,
+            )
+            trader.setPosition(x, player.y, z)
+            trader.setDespawnDelay(48000) // 与它自然刷出时的滞留时间一致 (2 游戏日)
+            trader.setPersistent()
+            world.spawnEntity(trader)
+        }
+    }
+
+    /** 紫 · 秘藏: 获得一个指向最近村庄的磁石指针 */
+    object VillageCompass : PerkDefinition {
+        override val id = "seeker_village_compass"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.COMPASS)
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+
+            val pos = runCatching {
+                world.locateStructure(net.minecraft.registry.tag.StructureTags.VILLAGE, player.blockPos, 100, false)
+            }.getOrNull()
+
+            if (pos == null) {
+                PerkEffects.giveStack(player, ItemStack(Items.COMPASS))
+                player.sendMessage(
+                    net.minecraft.text.Text.translatable("random-perks-bingo.message.village_not_found"),
+                    true,
+                )
+                return
+            }
+
+            val stack = ItemStack(Items.COMPASS)
+            stack.set(
+                DataComponentTypes.LODESTONE_TRACKER,
+                net.minecraft.component.type.LodestoneTrackerComponent(
+                    java.util.Optional.of(net.minecraft.util.math.GlobalPos.create(world.registryKey, pos)),
+                    false,
+                ),
+            )
+            PerkEffects.giveStack(player, stack)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
@@ -313,5 +373,7 @@ object SeekerPerks {
         PerkRegistry.register(LifeVision)
         PerkRegistry.register(EnderCache)
         PerkRegistry.register(Alchemist)
+        PerkRegistry.register(WanderingTrader)
+        PerkRegistry.register(VillageCompass)
     }
 }

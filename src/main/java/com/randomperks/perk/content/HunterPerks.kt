@@ -329,6 +329,55 @@ object HunterPerks {
         }
     }
 
+    /** 紫 · 猎杀: 在你所在位置召唤一次闪电; 16 格内若有引雷针, 闪电会被引导过去 */
+    object CallLightning : PerkDefinition {
+        override val id = "hunter_call_lightning"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.LIGHTNING_ROD)
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+
+            val rod = findNearbyLightningRod(world, player.blockPos, 16)
+            val lightning = net.minecraft.entity.EntityType.LIGHTNING_BOLT
+                .create(world, net.minecraft.entity.SpawnReason.TRIGGERED) ?: return
+
+            if (rod != null) {
+                lightning.refreshPositionAfterTeleport(rod.x + 0.5, rod.y.toDouble(), rod.z + 0.5)
+            } else {
+                lightning.refreshPositionAfterTeleport(player.x, player.y, player.z)
+            }
+            world.spawnEntity(lightning)
+        }
+
+        /** 在半径内寻找最近的引雷针 (找不到返回 null) */
+        private fun findNearbyLightningRod(
+            world: ServerWorld,
+            center: net.minecraft.util.math.BlockPos,
+            radius: Int,
+        ): net.minecraft.util.math.BlockPos? {
+            var best: net.minecraft.util.math.BlockPos? = null
+            var bestDist = Int.MAX_VALUE
+
+            for (dx in -radius..radius) {
+                for (dy in -radius..radius) {
+                    for (dz in -radius..radius) {
+                        val pos = center.add(dx, dy, dz)
+                        if (!world.getBlockState(pos).isOf(net.minecraft.block.Blocks.LIGHTNING_ROD)) continue
+                        val dist = dx * dx + dy * dy + dz * dz
+                        if (dist < bestDist) {
+                            bestDist = dist
+                            best = pos.toImmutable()
+                        }
+                    }
+                }
+            }
+            return best
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -341,5 +390,6 @@ object HunterPerks {
         PerkRegistry.register(Predator)
         PerkRegistry.register(Headhunter)
         PerkRegistry.register(Fireball)
+        PerkRegistry.register(CallLightning)
     }
 }

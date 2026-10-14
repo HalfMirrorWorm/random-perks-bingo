@@ -209,6 +209,26 @@ object HarvestPerks {
         }
     }
 
+    /** 蓝 · 丰饶: 立即在脚下召唤一匹属于你的马 (自带鞍) */
+    object SummonHorse : PerkDefinition {
+        override val id = "harvest_summon_horse"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.SADDLE)
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+
+            val horse = net.minecraft.entity.passive.HorseEntity(net.minecraft.entity.EntityType.HORSE, world)
+            horse.setPosition(player.x, player.y, player.z)
+            horse.setOwner(player) // 设置主人即视为驯服 (1.21+)
+            horse.equipStack(net.minecraft.entity.EquipmentSlot.SADDLE, ItemStack(Items.SADDLE))
+            horse.setPersistent()
+            world.spawnEntity(horse)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -219,5 +239,6 @@ object HarvestPerks {
         PerkRegistry.register(Gourmet)
         PerkRegistry.register(Rancher)
         PerkRegistry.register(CatAura)
+        PerkRegistry.register(SummonHorse)
     }
 }
