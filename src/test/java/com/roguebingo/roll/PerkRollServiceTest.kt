@@ -104,6 +104,22 @@ class PerkRollServiceTest {
     }
 
     @Test
+    fun `players are fully independent - another player owning a perk does not remove it from your pool`() {
+        val a = newState()
+        val b = newState()
+
+        // A 拥有 BlueA 与 GoldA (含传说词条)
+        a.ownedPerks.add(BlueA)
+        a.ownedPerks.add(GoldA)
+
+        // B 的候选池与 A 无关: 仍可获得这些词条
+        val optionsB = PerkRollService.rollOptions(b, 6, Random(1)).map { it.id }
+        assertEquals(6, optionsB.size)
+        assertTrue(BlueA.id in optionsB, "perk owned by player A must still be available to player B")
+        assertTrue(GoldA.id in optionsB, "gold perk owned by player A must still be available to player B")
+    }
+
+    @Test
     fun `subsequent offers never repeat perks already in the queue`() {
         val state = newState()
 
