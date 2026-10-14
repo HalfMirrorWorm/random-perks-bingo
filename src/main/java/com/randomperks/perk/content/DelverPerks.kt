@@ -101,11 +101,42 @@ object DelverPerks {
         }
     }
 
+    /** 蓝 · 深掘: 未穿护甲时获得 +10 护甲值 (鞘翅不算护甲) */
+    object IronSkin : PerkDefinition {
+        override val id = "delver_iron_skin"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.IRON_CHESTPLATE)
+
+        private val MOD_IRON_SKIN = Identifier.of("random-perks-bingo", "delver_iron_skin")
+
+        override fun onAcquire(ctx: PerkContext) = refresh(ctx)
+        override fun onRespawn(ctx: PerkContext) = refresh(ctx)
+
+        /** 每秒校验装备状态, 穿/脱护甲时自动生效或失效 */
+        override fun onTick(ctx: PerkContext) = refresh(ctx)
+
+        private fun refresh(ctx: PerkContext) {
+            if (PerkEffects.hasNoArmor(ctx.player)) {
+                PerkEffects.setAttribute(
+                    ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN,
+                    10.0, EntityAttributeModifier.Operation.ADD_VALUE,
+                )
+            } else {
+                PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
+            }
+        }
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Mining)
         PerkRegistry.register(NightVision)
         PerkRegistry.register(Toughness)
         PerkRegistry.register(Haste)
         PerkRegistry.register(VeinScent)
+        PerkRegistry.register(IronSkin)
     }
 }

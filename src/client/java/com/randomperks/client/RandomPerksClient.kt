@@ -22,6 +22,7 @@ object RandomPerksClient : ClientModInitializer {
 
         ClientPerkNetworking.registerClient()
         Keybinds.register()
+        AbilityHandler.register()
 
         // UI 渲染自测 (开发用): 环境变量 randomperks_UITEST=true 时
         // 启动后自动打开两个界面并各渲染约 2 秒, 用于验证渲染代码不崩溃

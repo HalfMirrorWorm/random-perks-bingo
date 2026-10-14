@@ -1,11 +1,13 @@
 package com.randomperks.effect
 
 import net.minecraft.enchantment.Enchantment
+import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttribute
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.entry.RegistryEntry
@@ -71,4 +73,23 @@ object PerkEffects {
         val entry = registry.getEntry(key.value).orElse(null) ?: return
         stack.addEnchantment(entry, level)
     }
+
+    /**
+     * 玩家是否**没有穿着任何护甲**。
+     * 以装备槽判断 (而非护甲值, 避免与"无甲给甲"类词条形成循环); 鞘翅不视为护甲。
+     */
+    fun hasNoArmor(player: ServerPlayerEntity): Boolean {
+        for (slot in ARMOR_SLOTS) {
+            val stack = player.getEquippedStack(slot)
+            if (!stack.isEmpty && !stack.isOf(Items.ELYTRA)) return false
+        }
+        return true
+    }
+
+    private val ARMOR_SLOTS = listOf(
+        EquipmentSlot.HEAD,
+        EquipmentSlot.CHEST,
+        EquipmentSlot.LEGS,
+        EquipmentSlot.FEET,
+    )
 }

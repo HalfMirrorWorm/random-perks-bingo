@@ -43,6 +43,10 @@
   "random-perks-bingo.perk.swift_wind_stride.desc": "疾跑时持续获得速度提升。",
   "random-perks-bingo.perk.swift_tailwind.name": "顺风而行",
   "random-perks-bingo.perk.swift_tailwind.desc": "移动速度 +10%; 每拥有一个其他疾风词条再 +3%。",
+  "random-perks-bingo.perk.swift_double_jump.name": "二段跳",
+  "random-perks-bingo.perk.swift_double_jump.desc": "空中可以再跳跃一次。",
+  "random-perks-bingo.perk.swift_elytra_bond.name": "风之翼",
+  "random-perks-bingo.perk.swift_elytra_bond.desc": "胸甲位永久绑定鞘翅 (可飞行), 但移动速度减半。",
 
   "random-perks-bingo.perk.delver_mining.name": "矿工手腕",
   "random-perks-bingo.perk.delver_mining.desc": "挖掘速度 +20%。",
@@ -54,6 +58,8 @@
   "random-perks-bingo.perk.delver_haste.desc": "永久急迫 II (挖掘加速)。",
   "random-perks-bingo.perk.delver_vein_scent.name": "矿脉嗅觉",
   "random-perks-bingo.perk.delver_vein_scent.desc": "挖掘石头类方块时 8% 概率额外掉落一份。",
+  "random-perks-bingo.perk.delver_iron_skin.name": "铁布衫",
+  "random-perks-bingo.perk.delver_iron_skin.desc": "未穿护甲时获得 +10 护甲值。",
 
   "random-perks-bingo.perk.harvest_gardener.name": "园艺家",
   "random-perks-bingo.perk.harvest_gardener.desc": "获得 16 个面包和 16 份小麦种子。",
@@ -65,6 +71,8 @@
   "random-perks-bingo.perk.harvest_timber.desc": "砍原木时 50% 概率额外掉落一个。",
   "random-perks-bingo.perk.harvest_bounty.name": "丰收之息",
   "random-perks-bingo.perk.harvest_bounty.desc": "获得 32 根胡萝卜和一把效率 III 的锄头。",
+  "random-perks-bingo.perk.harvest_bountiful_meal.name": "丰盛大餐",
+  "random-perks-bingo.perk.harvest_bountiful_meal.desc": "饱食度全满时, 随机获得一种谜之炖菜的正面效果。",
 
   "random-perks-bingo.perk.hunter_strength.name": "猎人直觉",
   "random-perks-bingo.perk.hunter_strength.desc": "攻击力 +15%。",
@@ -76,6 +84,8 @@
   "random-perks-bingo.perk.hunter_scavenger.desc": "击杀怪物 30% 概率额外掉落战利品。",
   "random-perks-bingo.perk.hunter_soul_harvest.name": "灵魂收割",
   "random-perks-bingo.perk.hunter_soul_harvest.desc": "击杀怪物 8% 概率掉落战利品袋 (随机强力物品)。",
+  "random-perks-bingo.perk.hunter_bare_rage.name": "背水一战",
+  "random-perks-bingo.perk.hunter_bare_rage.desc": "未穿护甲时攻击力 +30%。",
 
   "random-perks-bingo.perk.artisan_supply.name": "战地补给",
   "random-perks-bingo.perk.artisan_supply.desc": "获得 16 个面包和一个水桶。",

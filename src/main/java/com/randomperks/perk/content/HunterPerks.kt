@@ -113,11 +113,42 @@ object HunterPerks {
         }
     }
 
+    /** 紫 · 猎杀: 未穿护甲时攻击力 +30% (高风险高收益; 鞘翅不算护甲) */
+    object BareRage : PerkDefinition {
+        override val id = "hunter_bare_rage"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.DIAMOND_SWORD)
+
+        private val MOD_BARE_RAGE = Identifier.of("random-perks-bingo", "hunter_bare_rage")
+
+        override fun onAcquire(ctx: PerkContext) = refresh(ctx)
+        override fun onRespawn(ctx: PerkContext) = refresh(ctx)
+
+        /** 每秒校验装备状态, 穿/脱护甲时自动生效或失效 */
+        override fun onTick(ctx: PerkContext) = refresh(ctx)
+
+        private fun refresh(ctx: PerkContext) {
+            if (PerkEffects.hasNoArmor(ctx.player)) {
+                PerkEffects.setAttribute(
+                    ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE,
+                    0.30, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE,
+                )
+            } else {
+                PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
+            }
+        }
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
         PerkRegistry.register(Vampire)
         PerkRegistry.register(Scavenger)
         PerkRegistry.register(SoulHarvest)
+        PerkRegistry.register(BareRage)
     }
 }

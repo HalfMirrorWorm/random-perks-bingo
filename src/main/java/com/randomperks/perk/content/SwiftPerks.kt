@@ -5,6 +5,7 @@ import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
+import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -108,11 +109,67 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_TAILWIND)
     }
 
+    /** 紫 · 疾风 · 主动: 空中可以再跳跃一次 (客户端按键触发, 服务端验证) */
+    object DoubleJump : PerkDefinition {
+        override val id = "swift_double_jump"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.SLIME_BALL)
+        // 效果由 PerkAbilityService (双击跳跃 C2S 包) 处理
+    }
+
+    /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度减半 */
+    object ElytraBond : PerkDefinition {
+        override val id = "swift_elytra_bond"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.ELYTRA)
+
+        private val MOD_SPEED = Identifier.of("random-perks-bingo", "elytra_bond_speed")
+
+        override fun onAcquire(ctx: PerkContext) = enforce(ctx)
+        override fun onRespawn(ctx: PerkContext) = enforce(ctx)
+
+        /** 每秒校验一次: 移速减半 + 胸甲槽必须为鞘翅 (被换下则重新绑定) */
+        override fun onTick(ctx: PerkContext) = enforce(ctx)
+
+        private fun enforce(ctx: PerkContext) {
+            val player = ctx.player
+
+            // 移动速度减半 (总速度 x0.5)
+            PerkEffects.setAttribute(
+                player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
+                -0.5, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+            )
+
+            // 胸甲槽强制为鞘翅; 被顶下来的装备退回背包 (放不下则会掉落)
+            val current = player.getEquippedStack(EquipmentSlot.CHEST)
+            if (current.isOf(Items.ELYTRA)) return
+
+            player.equipStack(EquipmentSlot.CHEST, ItemStack(Items.ELYTRA))
+            if (!current.isEmpty) {
+                player.giveItemStack(current)
+            }
+        }
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+            // 取下鞘翅并放回背包 (放不下则掉落)
+            val chest = ctx.player.getEquippedStack(EquipmentSlot.CHEST)
+            if (chest.isOf(Items.ELYTRA)) {
+                ctx.player.equipStack(EquipmentSlot.CHEST, ItemStack.EMPTY)
+                ctx.player.giveItemStack(chest)
+            }
+        }
+    }
+
     fun registerAll() {
         com.randomperks.perk.PerkRegistry.register(Speed)
         com.randomperks.perk.PerkRegistry.register(FeatherFall)
         com.randomperks.perk.PerkRegistry.register(Jump)
         com.randomperks.perk.PerkRegistry.register(WindStride)
         com.randomperks.perk.PerkRegistry.register(Tailwind)
+        com.randomperks.perk.PerkRegistry.register(DoubleJump)
+        com.randomperks.perk.PerkRegistry.register(ElytraBond)
     }
 }

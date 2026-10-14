@@ -43,6 +43,10 @@
   "random-perks-bingo.perk.swift_wind_stride.desc": "Gain Speed while sprinting.",
   "random-perks-bingo.perk.swift_tailwind.name": "Tailwind",
   "random-perks-bingo.perk.swift_tailwind.desc": "+10% movement speed; +3% more for each other Swift perk.",
+  "random-perks-bingo.perk.swift_double_jump.name": "Double Jump",
+  "random-perks-bingo.perk.swift_double_jump.desc": "Jump once more while airborne.",
+  "random-perks-bingo.perk.swift_elytra_bond.name": "Wings of the Wind",
+  "random-perks-bingo.perk.swift_elytra_bond.desc": "Your chest slot is permanently bound to an elytra (flight), but movement speed is halved.",
 
   "random-perks-bingo.perk.delver_mining.name": "Miner's Wrist",
   "random-perks-bingo.perk.delver_mining.desc": "+20% mining speed.",
@@ -54,6 +58,8 @@
   "random-perks-bingo.perk.delver_haste.desc": "Permanent Haste II.",
   "random-perks-bingo.perk.delver_vein_scent.name": "Vein Scent",
   "random-perks-bingo.perk.delver_vein_scent.desc": "8% chance to get a bonus drop when mining stone.",
+  "random-perks-bingo.perk.delver_iron_skin.name": "Iron Skin",
+  "random-perks-bingo.perk.delver_iron_skin.desc": "+10 armor while wearing no armor.",
 
   "random-perks-bingo.perk.harvest_gardener.name": "Gardener",
   "random-perks-bingo.perk.harvest_gardener.desc": "Gain 16 bread and 16 wheat seeds.",
@@ -65,6 +71,8 @@
   "random-perks-bingo.perk.harvest_timber.desc": "50% chance of an extra log when chopping.",
   "random-perks-bingo.perk.harvest_bounty.name": "Bounty",
   "random-perks-bingo.perk.harvest_bounty.desc": "Gain 32 carrots and an Efficiency III hoe.",
+  "random-perks-bingo.perk.harvest_bountiful_meal.name": "Bountiful Meal",
+  "random-perks-bingo.perk.harvest_bountiful_meal.desc": "While at full hunger, randomly gain a positive suspicious-stew effect.",
 
   "random-perks-bingo.perk.hunter_strength.name": "Hunter's Instinct",
   "random-perks-bingo.perk.hunter_strength.desc": "+15% attack damage.",
@@ -76,6 +84,8 @@
   "random-perks-bingo.perk.hunter_scavenger.desc": "30% chance of extra loot from mobs.",
   "random-perks-bingo.perk.hunter_soul_harvest.name": "Soul Harvest",
   "random-perks-bingo.perk.hunter_soul_harvest.desc": "8% chance for a loot bag (random powerful item) on kill.",
+  "random-perks-bingo.perk.hunter_bare_rage.name": "Bare-Knuckle",
+  "random-perks-bingo.perk.hunter_bare_rage.desc": "+30% attack damage while wearing no armor.",
 
   "random-perks-bingo.perk.artisan_supply.name": "Field Supply",
   "random-perks-bingo.perk.artisan_supply.desc": "Gain 16 bread and a water bucket.",

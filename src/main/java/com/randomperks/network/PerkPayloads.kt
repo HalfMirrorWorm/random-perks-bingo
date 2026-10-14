@@ -124,6 +124,19 @@ class PerkListS2C(
     override fun getId() = ID
 }
 
+/** C2S: 客户端请求二段跳 (服务端验证词条与状态) */
+class DoubleJumpC2S : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<DoubleJumpC2S>(Identifier.of("random-perks-bingo", "double_jump"))
+        val CODEC: PacketCodec<RegistryByteBuf, DoubleJumpC2S> = PacketCodec.of(
+            { _, _ -> },
+            { _ -> DoubleJumpC2S() },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** C2S: 玩家请求打开词条百科 (全部词条 + 已收集标记) */
 class PerkCatalogRequestC2S : CustomPayload {
     companion object {

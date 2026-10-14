@@ -7,6 +7,8 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import net.minecraft.enchantment.Enchantments
+import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 
@@ -84,11 +86,42 @@ object HarvestPerks {
         }
     }
 
+    /** 蓝 · 丰饶: 饱食度全满时, 随机获得一种"谜之炖菜"的正面效果 */
+    object BountifulMeal : PerkDefinition {
+        override val id = "harvest_bountiful_meal"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.SUSPICIOUS_STEW)
+
+        /** 谜之炖菜的纯正面效果 */
+        private val STEW_EFFECTS = listOf(
+            StatusEffects.SATURATION,
+            StatusEffects.NIGHT_VISION,
+            StatusEffects.JUMP_BOOST,
+            StatusEffects.FIRE_RESISTANCE,
+            StatusEffects.REGENERATION,
+        )
+
+        override fun onTick(ctx: PerkContext) {
+            val player = ctx.player
+            // 仅在饱食度全满时生效
+            if (player.hungerManager.foodLevel < 20) return
+            // 已有任一炖菜效果时等待其结束 (结束后会自动重新随机)
+            if (STEW_EFFECTS.any { player.hasStatusEffect(it) }) return
+
+            val pick = STEW_EFFECTS[player.random.nextInt(STEW_EFFECTS.size)]
+            player.addStatusEffect(
+                StatusEffectInstance(pick, 30 * 20, 0, true, false, true)
+            )
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
         PerkRegistry.register(Herder)
         PerkRegistry.register(Timber)
         PerkRegistry.register(Bounty)
+        PerkRegistry.register(BountifulMeal)
     }
 }

@@ -1,6 +1,7 @@
 package com.randomperks.network
 
 import com.randomperks.RandomPerksMod
+import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkOfferService
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
@@ -21,6 +22,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(DoubleJumpC2S.ID, DoubleJumpC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -48,6 +50,13 @@ object PerkNetworking {
             val player = context.player()
             context.server().execute {
                 PerkOfferService.handleCatalogRequest(player)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(DoubleJumpC2S.ID) { _, context ->
+            val player = context.player()
+            context.server().execute {
+                PerkAbilityService.handleDoubleJump(player)
             }
         }
     }
