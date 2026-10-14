@@ -10,7 +10,6 @@ import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.PotionContentsComponent
-import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
@@ -366,22 +365,6 @@ object SeekerPerks {
         }
     }
 
-    /** 蓝 · 秘藏: 获得一把海之眷顾 III + 耐久 II 的钓鱼竿, 以及 8 条烤鳕鱼 */
-    object Angler : PerkDefinition {
-        override val id = "seeker_angler"
-        override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.SEEKER
-        override fun icon() = ItemStack(Items.FISHING_ROD)
-
-        override fun onAcquire(ctx: PerkContext) {
-            val rod = ItemStack(Items.FISHING_ROD)
-            PerkEffects.enchant(ctx.player, rod, Enchantments.LUCK_OF_THE_SEA, 3)
-            PerkEffects.enchant(ctx.player, rod, Enchantments.UNBREAKING, 2)
-            PerkEffects.giveStack(ctx.player, rod)
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.COOKED_COD, 8))
-        }
-    }
-
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
@@ -392,6 +375,5 @@ object SeekerPerks {
         PerkRegistry.register(Alchemist)
         PerkRegistry.register(WanderingTrader)
         PerkRegistry.register(VillageCompass)
-        PerkRegistry.register(Angler)
     }
 }

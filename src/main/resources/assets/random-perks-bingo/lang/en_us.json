@@ -165,18 +165,5 @@
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",
   "random-perks-bingo.perk.seeker_supply_line.desc": "Gain a random supply now, then every 2 minutes.",
   "random-perks-bingo.perk.seeker_ender_supply.name": "Ender Supply",
-  "random-perks-bingo.perk.seeker_ender_supply.desc": "Gain an ender pearl now, then one every 5 minutes.",
-  "random-perks-bingo.perk.delver_vein_lord.name": "Vein Lord",
-  "random-perks-bingo.perk.delver_vein_lord.desc": "Breaking an ore destroys all connected ores of the same type (up to 32).",
-  "random-perks-bingo.perk.harvest_tree_feller.name": "Timber!",
-  "random-perks-bingo.perk.harvest_tree_feller.desc": "Chopping one log fells the whole tree (up to 64 logs).",
-  "random-perks-bingo.perk.artisan_steady_hand.name": "Steady Hand",
-  "random-perks-bingo.perk.artisan_steady_hand.desc": "50% chance to not consume tool durability when breaking blocks.",
-  "random-perks-bingo.perk.artisan_soul_smith.name": "Soul Smith",
-  "random-perks-bingo.perk.artisan_soul_smith.desc": "Your held tool is automatically repaired to full when its durability is about to run out (≤10); 10-minute cooldown.",
-  "random-perks-bingo.perk.seeker_angler.name": "Angler",
-  "random-perks-bingo.perk.seeker_angler.desc": "Gain a Luck of the Sea III + Unbreaking II fishing rod, plus 8 cooked cod.",
-  "random-perks-bingo.message.vein_lord": "Vein Lord: %s connected ores crumbled",
-  "random-perks-bingo.message.tree_feller": "Timber! %s connected logs came down",
-  "random-perks-bingo.message.soul_smith": "Soul Smith: your tool was repaired to full durability"
+  "random-perks-bingo.perk.seeker_ender_supply.desc": "Gain an ender pearl now, then one every 5 minutes."
 }

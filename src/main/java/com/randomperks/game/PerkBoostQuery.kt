@@ -20,9 +20,4 @@ object PerkBoostQuery {
     /** 玩家是否持有"救生桶" (摔落伤害时副手水桶当图腾) */
     fun hasFallBucket(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("swift_life_bucket") == true
-
-    /** "巧手": 挖方块时 50% 概率不消耗工具耐久 (由 SteadyHandMixin 在 postMine 头部调用) */
-    fun rollSteadyHand(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("artisan_steady_hand") == true &&
-            player.random.nextFloat() < 0.5f
 }
