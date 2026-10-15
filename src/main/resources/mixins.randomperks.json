@@ -10,7 +10,9 @@
     "FallBucketMixin",
     "CatAuraMixin",
     "EquipmentChangeMixin",
-    "EffectPersistMixin"
+    "EffectPersistMixin",
+    "ServerWorldAccessor",
+    "WanderingTraderManagerInvoker"
   ],
   "client": [
     "EntityGlowMixin"

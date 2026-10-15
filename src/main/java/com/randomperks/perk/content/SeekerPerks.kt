@@ -2,6 +2,8 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
+import com.randomperks.mixin.ServerWorldAccessor
+import com.randomperks.mixin.WanderingTraderManagerInvoker
 import com.randomperks.network.PerkNetworking
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -28,6 +30,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.world.WanderingTraderManager
 import net.minecraft.world.gen.structure.StructureKeys
 
 /**
@@ -313,29 +316,30 @@ object SeekerPerks {
         override fun icon() = ItemStack(Items.EMERALD)
 
         override fun onAcquire(ctx: PerkContext) {
-            val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = ctx.player.world as? ServerWorld ?: return
+            spawnVanillaTrader(world)
+        }
 
-            val x = player.x + (player.random.nextDouble() - 0.5) * 8
-            val z = player.z + (player.random.nextDouble() - 0.5) * 8
+        /**
+         * 执行**原版流浪商人刷新事件** (WanderingTraderManager.trySpawn):
+         * 随机选一名玩家 → 在其 48 格内寻找合法位置 → 生成商人 + 2 只商队羊驼 → 设置漫游目标,
+         * 与自然刷新完全一致 (含生物群系限制等原版判定)。
+         *
+         * 原版该逻辑自带 1/10 概率门槛; 未命中时只消耗一次随机数, 代价可忽略,
+         * 因此循环触发到命中为止 (上限 50 次, 兜底防"生物群系不允许"类死循环)。
+         */
+        private fun spawnVanillaTrader(world: ServerWorld): Boolean {
+            val accessor = world as ServerWorldAccessor
+            val manager = accessor.spawners
+                .filterIsInstance<WanderingTraderManager>()
+                .firstOrNull()
+                ?: WanderingTraderManager(accessor.worldProperties)
+            val invoker = manager as WanderingTraderManagerInvoker
 
-            val trader = net.minecraft.entity.passive.WanderingTraderEntity(
-                net.minecraft.entity.EntityType.WANDERING_TRADER, world,
-            )
-            trader.setPosition(x, player.y, z)
-            trader.setDespawnDelay(48000) // 与它自然刷出时的滞留时间一致 (2 游戏日)
-            trader.setPersistent()
-            world.spawnEntity(trader)
-
-            // 与自然刷新一致的商队: 2 只被拴绳牵着、跟随商人的商队羊驼
-            repeat(2) { i ->
-                val llama = net.minecraft.entity.passive.TraderLlamaEntity(
-                    net.minecraft.entity.EntityType.TRADER_LLAMA, world,
-                )
-                llama.setPosition(trader.x + (i - 0.5) * 2.0, player.y, trader.z + (i - 0.5) * 2.0)
-                llama.attachLeash(trader, true)
-                world.spawnEntity(llama)
+            repeat(50) {
+                if (invoker.invokeTrySpawn(world)) return true
             }
+            return false
         }
     }
 

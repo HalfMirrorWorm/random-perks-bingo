@@ -153,7 +153,7 @@
   "random-perks-bingo.perk.harvest_summon_horse.name": "马来",
   "random-perks-bingo.perk.harvest_summon_horse.desc": "立即在脚下召唤一匹属于你的马 (自带鞍)。",
   "random-perks-bingo.perk.seeker_wandering_trader.name": "流浪拴绳",
-  "random-perks-bingo.perk.seeker_wandering_trader.desc": "立即在附近触发一次完整的流浪商人商队刷新 (商人 + 2 只被拴绳牵着的羊驼)。",
+  "random-perks-bingo.perk.seeker_wandering_trader.desc": "立即触发一次原版的流浪商人刷新事件 (与自然刷新完全一致)。",
   "random-perks-bingo.perk.seeker_village_compass.name": "回村的诱惑",
   "random-perks-bingo.perk.seeker_village_compass.desc": "获得一个指向最近村庄的磁石指针。",
   "random-perks-bingo.perk.hunter_call_lightning.name": "引雷术",

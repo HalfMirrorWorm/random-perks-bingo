@@ -153,7 +153,7 @@
   "random-perks-bingo.perk.harvest_summon_horse.name": "Horse, Come",
   "random-perks-bingo.perk.harvest_summon_horse.desc": "Summon a tamed horse with a saddle at your position.",
   "random-perks-bingo.perk.seeker_wandering_trader.name": "Wandering Leash",
-  "random-perks-bingo.perk.seeker_wandering_trader.desc": "Trigger a full wandering trader caravan nearby (trader + 2 leashed llamas).",
+  "random-perks-bingo.perk.seeker_wandering_trader.desc": "Immediately trigger the vanilla wandering trader spawn (identical to natural spawning).",
   "random-perks-bingo.perk.seeker_village_compass.name": "Homecoming",
   "random-perks-bingo.perk.seeker_village_compass.desc": "Gain a lodestone compass pointing to the nearest village.",
   "random-perks-bingo.perk.hunter_call_lightning.name": "Call Lightning",
