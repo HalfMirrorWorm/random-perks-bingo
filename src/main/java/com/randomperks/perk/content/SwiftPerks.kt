@@ -7,6 +7,8 @@ import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
@@ -121,7 +123,8 @@ object SwiftPerks {
     }
 
     /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度减半。
-     *  绑定为事件驱动: 换下鞘翅的瞬间立即换回; 死亡不掉落绑定鞘翅 (ElytraBondDeathMixin) */
+     *  绑定 = 原版机制组合: 绑定诅咒 (界面层锁死, 拿不下来) + 消失诅咒 (死亡销毁, 不掉落);
+     *  另外保留事件驱动的自动补装, 覆盖鞘翅飞坏/被清空等边界。 */
     object ElytraBond : PerkDefinition {
         override val id = "swift_elytra_bond"
         override val rarity = PerkRarity.GOLD
@@ -140,7 +143,7 @@ object SwiftPerks {
             enforceChest(ctx)
         }
 
-        /** 胸甲槽被换下鞘翅的瞬间立即换回 (由 EquipmentChangeMixin 触发, 不再每秒轮询) */
+        /** 胸甲槽被换下鞘翅的瞬间立即换回 (覆盖飞坏/被清空等非界面路径; 界面路径已被绑定诅咒锁死) */
         override fun onEquipmentChange(ctx: PerkContext) = enforceChest(ctx)
 
         /** 移动速度减半 (总速度 x0.5) */
@@ -151,15 +154,18 @@ object SwiftPerks {
             )
         }
 
-        /** 胸甲槽强制为鞘翅; 被顶下来的装备退回背包 (放不下则会掉落) */
+        /** 胸甲槽强制为鞘翅 (带双诅咒); 被顶下来的装备退回背包 (放不下则会掉落) */
         private fun enforceChest(ctx: PerkContext) {
             val player = ctx.player
-            if (!player.isAlive) return  // 死亡瞬间不补装 (给"不掉落绑定鞘翅"留出空窗)
+            if (!player.isAlive) return  // 死亡瞬间不补装 (消失诅咒会销毁绑定鞘翅)
 
             val current = player.getEquippedStack(EquipmentSlot.CHEST)
             if (current.isOf(Items.ELYTRA)) return
 
-            player.equipStack(EquipmentSlot.CHEST, ItemStack(Items.ELYTRA))
+            val elytra = ItemStack(Items.ELYTRA)
+            PerkEffects.enchant(player, elytra, Enchantments.BINDING_CURSE, 1)   // 界面层锁死: 拿不下来
+            PerkEffects.enchant(player, elytra, Enchantments.VANISHING_CURSE, 1) // 死亡销毁: 不掉落
+            player.equipStack(EquipmentSlot.CHEST, elytra)
             if (!current.isEmpty) {
                 player.giveItemStack(current)
             }
@@ -167,10 +173,11 @@ object SwiftPerks {
 
         override fun onRemove(ctx: PerkContext) {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
-            // 取下鞘翅并放回背包 (放不下则掉落)
+            // 取下鞘翅, 清掉两个诅咒后放回背包 (归还一件干净可用的鞘翅)
             val chest = ctx.player.getEquippedStack(EquipmentSlot.CHEST)
             if (chest.isOf(Items.ELYTRA)) {
                 ctx.player.equipStack(EquipmentSlot.CHEST, ItemStack.EMPTY)
+                chest.remove(DataComponentTypes.ENCHANTMENTS)
                 ctx.player.giveItemStack(chest)
             }
         }

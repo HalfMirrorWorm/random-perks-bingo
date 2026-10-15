@@ -28,10 +28,6 @@ object PerkBoostQuery {
     fun hasCatAura(player: PlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_cat_aura") == true
 
-    /** 玩家是否持有"风之翼" (死亡时保护绑定鞘翅不掉落, 由 ElytraBondDeathMixin 调用) */
-    fun hasElytraBond(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("swift_elytra_bond") == true
-
     // ---- "风之步伐": 疾跑加成 (与原版疾跑修饰符同机制, 由 WindStrideMixin 在疾跑状态切换时调用) ----
 
     private val WIND_STRIDE_MOD = Identifier.of("random-perks-bingo", "wind_stride_sprint")
