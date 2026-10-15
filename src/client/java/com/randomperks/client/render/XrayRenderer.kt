@@ -1,19 +1,22 @@
 package com.randomperks.client.render
 
+import com.mojang.blaze3d.pipeline.RenderPipeline
+import com.mojang.blaze3d.platform.DepthTestFunction
 import com.randomperks.client.net.ClientPerkNetworking
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.block.BlockState
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.render.OutlineVertexConsumerProvider
+import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.render.RenderPhase
 import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.BlockTags
-import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
+import java.util.OptionalDouble
 
 /**
  * "透视之眼"词条的客户端渲染:
@@ -21,20 +24,14 @@ import net.minecraft.util.math.BlockPos
  *  - 每种矿石一个颜色 (煤灰 / 铁米 / 铜橙 / 金黄 / 红石红 / 青金蓝 / 钻青 / 绿宝绿...)
  *  - 相接的同种矿石合并轮廓: 只画外沿棱, 剔除相邻方块之间的共享棱 (体素轮廓规则)
  *
- * 沿用原版"实体发光"机制 (OutlineVertexConsumerProvider + getOutline 渲染层):
- * 纯色、无视深度、穿过方块可见; 仅持有该词条的客户端上渲染, 天然"仅自己可见"。
+ * 线渲染方式与原版调试线一致 (RenderPipelines.LINES 同源管线), 得到**屏幕恒宽**的清晰细线
+ * (远近一样清楚); 自定义管线关掉深度测试 → 无视遮挡、穿墙可见。
  */
 object XrayRenderer {
 
     private const val PERK_ID = "delver_xray_vision"
     private const val RADIUS = 20
     private const val RESCAN_INTERVAL_TICKS = 20
-
-    /** 轮廓线"半径" (格): 0.04 → 线宽约 0.08 格 */
-    private const val EDGE_HALF = 0.04f
-
-    /** outline 渲染层用的纹理 (只要求 alpha 全 1; 原版纯白贴图) */
-    private val OUTLINE_TEXTURE = Identifier.of("minecraft", "textures/misc/white.png")
 
     /** 矿石种类判定 (原版标签优先; modded 矿石按方块 id 兜底) */
     private val ORE_KIND_TAGS = listOf(
@@ -65,6 +62,27 @@ object XrayRenderer {
     /** 垂直于各轴的另两条轴 (用于棱的角位置/邻接判定) */
     private val U_AXIS = intArrayOf(1, 0, 0) // X→Y, Y→X, Z→X
     private val V_AXIS = intArrayOf(2, 2, 1) // X→Z, Y→Z, Z→Y
+
+    /**
+     * 穿墙线框: 原版 LINES 管线 (rendertype_lines) 的同源副本,
+     * 只把深度测试改为 NO_DEPTH_TEST (无视遮挡) —— 1.21.6+ 渲染系统里管线的深度设置
+     * 只能通过自定义 RenderPipeline 达成 (旧的全局深度开关已被移除)。
+     */
+    private val XRAY_LINE_PIPELINE: RenderPipeline = RenderPipeline.builder(RenderPipelines.RENDERTYPE_LINES_SNIPPET)
+        .withLocation("pipeline/randomperks_xray_ore_lines")
+        .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+        .withDepthWrite(false)
+        .build()
+
+    /** 与 RenderLayer.getLines() 相同的层参数, 使用上面的穿墙管线 */
+    private val XRAY_LINES: RenderLayer = RenderLayer.of(
+        "randomperks_xray_ore_lines", 1536, XRAY_LINE_PIPELINE,
+        RenderLayer.MultiPhaseParameters.builder()
+            .lineWidth(RenderPhase.LineWidth(OptionalDouble.empty()))
+            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
+            .target(RenderPhase.ITEM_ENTITY_TARGET)
+            .build(false),
+    )
 
     /** 一次扫描的结果: 矿石种类 → 该组可见轮廓段 */
     private var outlineSegments: Map<String, List<Segment>> = emptyMap()
@@ -163,9 +181,8 @@ object XrayRenderer {
     private fun render(context: WorldRenderContext) {
         if (outlineSegments.isEmpty()) return
         val immediate = context.consumers() as? VertexConsumerProvider.Immediate ?: return
+        val buffer = immediate.getBuffer(XRAY_LINES)
 
-        val outline = OutlineVertexConsumerProvider(immediate)
-        val layer = RenderLayer.getOutline(OUTLINE_TEXTURE)
         val camera = context.camera()
         val camX = camera.pos.x
         val camY = camera.pos.y
@@ -175,26 +192,25 @@ object XrayRenderer {
         for ((kind, segments) in outlineSegments) {
             if (segments.isEmpty()) continue
             val rgb = ORE_COLORS[kind] ?: DEFAULT_COLOR
-            // setColor 影响其后写入的顶点 → 每个种类一批颜色
-            outline.setColor((rgb shr 16) and 0xFF, (rgb shr 8) and 0xFF, rgb and 0xFF, 255)
-            val buffer = outline.getBuffer(layer)
+            val r = (rgb shr 16) and 0xFF
+            val g = (rgb shr 8) and 0xFF
+            val b = rgb and 0xFF
             for (seg in segments) {
                 val p = seg.pos
                 val ox = p.x + 0.5 - camX
                 val oy = p.y + 0.5 - camY
                 val oz = p.z + 0.5 - camZ
                 if (ox * ox + oy * oy + oz * oz > radius2) continue
-                emitSegment(buffer, seg, ox.toFloat(), oy.toFloat(), oz.toFloat())
+                emitSegment(buffer, seg, ox.toFloat(), oy.toFloat(), oz.toFloat(), r, g, b)
             }
         }
-
-        outline.draw()
+        // 无需手动 draw: 本层内容由世界渲染收尾统一刷出
     }
 
-    /** 渲染一条棱段: 两个互相垂直的细面片组成十字 (从任意角度至少一面可见) */
+    /** 画一条棱 (两个顶点); normal 供线的屏幕空间加粗使用 */
     private fun emitSegment(
         buffer: VertexConsumer, seg: Segment,
-        cx: Float, cy: Float, cz: Float,
+        cx: Float, cy: Float, cz: Float, r: Int, g: Int, b: Int,
     ) {
         val axis = seg.axis
         val u = U_AXIS[axis]
@@ -208,37 +224,11 @@ object XrayRenderer {
         val end = floatArrayOf(start[0], start[1], start[2])
         end[axis] = 1f
 
-        val x0 = cx + (start[0] - 0.5f)
-        val y0 = cy + (start[1] - 0.5f)
-        val z0 = cz + (start[2] - 0.5f)
-        val x1 = cx + (end[0] - 0.5f)
-        val y1 = cy + (end[1] - 0.5f)
-        val z1 = cz + (end[2] - 0.5f)
-
-        emitQuad(buffer, cx, cy, cz, x0, y0, z0, x1, y1, z1, u)
-        emitQuad(buffer, cx, cy, cz, x0, y0, z0, x1, y1, z1, v)
-    }
-
-    /** 一条棱沿线轴向 (由 [thicknessAxis] 指定) 扩展 ±EDGE_HALF 形成的四边形面片 */
-    private fun emitQuad(
-        buffer: VertexConsumer, cx: Float, cy: Float, cz: Float,
-        x0: Float, y0: Float, z0: Float, x1: Float, y1: Float, z1: Float,
-        thicknessAxis: Int,
-    ) {
-        val ox = if (thicknessAxis == 0) EDGE_HALF else 0f
-        val oy = if (thicknessAxis == 1) EDGE_HALF else 0f
-        val oz = if (thicknessAxis == 2) EDGE_HALF else 0f
-        putVertex(buffer, cx, cy, cz, x0 - ox, y0 - oy, z0 - oz)
-        putVertex(buffer, cx, cy, cz, x1 - ox, y1 - oy, z1 - oz)
-        putVertex(buffer, cx, cy, cz, x1 + ox, y1 + oy, z1 + oz)
-        putVertex(buffer, cx, cy, cz, x0 + ox, y0 + oy, z0 + oz)
-    }
-
-    private fun putVertex(
-        buffer: VertexConsumer, cx: Float, cy: Float, cz: Float,
-        x: Float, y: Float, z: Float,
-    ) {
-        // 颜色 -1 (白色) 会被 OutlineVertexConsumerProvider 强制替换; 光照/法线在该层无关紧要
-        buffer.vertex(cx + x, cy + y, cz + z, -1, 0f, 0f, 0, 0, 0f, 1f, 0f)
+        buffer.vertex(cx + (start[0] - 0.5f), cy + (start[1] - 0.5f), cz + (start[2] - 0.5f))
+            .color(r, g, b, 255)
+            .normal(0f, 1f, 0f)
+        buffer.vertex(cx + (end[0] - 0.5f), cy + (end[1] - 0.5f), cz + (end[2] - 0.5f))
+            .color(r, g, b, 255)
+            .normal(0f, 1f, 0f)
     }
 }
