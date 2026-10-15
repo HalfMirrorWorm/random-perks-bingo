@@ -12,10 +12,12 @@
     "EquipmentChangeMixin",
     "EffectPersistMixin",
     "ServerWorldAccessor",
-    "WanderingTraderManagerInvoker"
+    "WanderingTraderManagerInvoker",
+    "WindStrideMixin"
   ],
   "client": [
-    "EntityGlowMixin"
+    "EntityGlowMixin",
+    "com.randomperks.client.mixin.WindStrideClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1

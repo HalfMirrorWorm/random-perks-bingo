@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.PerkBoostQuery
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -8,7 +9,6 @@ import com.randomperks.perk.PerkRarity
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -69,21 +69,20 @@ object SwiftPerks {
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.JUMP_BOOST)
     }
 
-    /** 紫 · 风之步伐: 疾跑时持续获得速度 I */
+    /** 紫 · 风之步伐: 疾跑时移动速度额外 +20% —— 与原版疾跑加成同机制 (属性修饰符),
+     *  由 WindStrideMixin / WindStrideClientMixin 在疾跑状态切换时挂/摘 (无轮询, 即开即停) */
     object WindStride : PerkDefinition {
         override val id = "swift_wind_stride"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.SUGAR)
 
-        override fun onTick(ctx: PerkContext) {
-            if (ctx.player.isSprinting) {
-                // 持续刷新 (比 tick 略长, 停止疾跑后自动消失)
-                ctx.player.addStatusEffect(
-                    StatusEffectInstance(StatusEffects.SPEED, 40, 0, true, false, false)
-                )
-            }
+        /** 获得时若正在疾跑, 立即生效 (否则等下一次疾跑状态切换) */
+        override fun onAcquire(ctx: PerkContext) {
+            if (ctx.player.isSprinting) PerkBoostQuery.applyWindStride(ctx.player)
         }
+
+        override fun onRemove(ctx: PerkContext) = PerkBoostQuery.clearWindStride(ctx.player)
     }
 
     /** 紫 · 顺风而行: 移动速度 +10%, 每个其他疾风词条额外 +3% (流派联动) */
