@@ -17,7 +17,8 @@
     "WindStrideMixin",
     "PlayerLandingMixin",
     "ElytraBondDeathMixin",
-    "PlayerInventoryEquipMixin"
+    "PlayerInventoryEquipMixin",
+    "NightVisionControllerMixin"
   ],
   "client": [
     "EntityGlowMixin",

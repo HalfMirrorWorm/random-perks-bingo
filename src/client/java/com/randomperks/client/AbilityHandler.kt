@@ -19,6 +19,9 @@ object AbilityHandler {
     private var jumpHeldLastTick = false
     private var doubleJumpUsedThisAirTime = false
 
+    /** 已连续离地的 tick 数 (用于排除"起跳那一下"同 tick 就触发二段跳) */
+    private var airTicks = 0
+
     fun register() {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val player = client.player
@@ -27,19 +30,23 @@ object AbilityHandler {
                 return@register
             }
 
-            // 落地 / 进入鞘翅飞行时重置
+            // 落地 / 进入鞘翅飞行时重置; 否则累计离地时长
             if (player.isOnGround || player.isGliding) {
                 doubleJumpUsedThisAirTime = false
+                airTicks = 0
+            } else {
+                airTicks++
             }
 
             val jumpPressed = client.options.jumpKey.isPressed
             val justPressed = jumpPressed && !jumpHeldLastTick
             jumpHeldLastTick = jumpPressed
 
-            // 仅持有词条时发送 (未持有者的按键不再产生无谓的网络包)
+            // 仅持有词条时发送 (未持有者的按键不再产生无谓的网络包);
+            // airTicks >= 2 排除"起跳那一下"本身 —— 那个 tick 的按跳是地面跳, 不是二段跳
             if (justPressed && !player.isOnGround && !player.isGliding &&
                 player.getVehicle() == null && !doubleJumpUsedThisAirTime &&
-                ClientPerkNetworking.hasPerk(DOUBLE_JUMP_PERK)
+                airTicks >= 2 && ClientPerkNetworking.hasPerk(DOUBLE_JUMP_PERK)
             ) {
                 doubleJumpUsedThisAirTime = true
 

@@ -28,6 +28,10 @@ object PerkBoostQuery {
     fun hasCatAura(player: PlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_cat_aura") == true
 
+    /** 玩家是否持有"地下视野" (bingo 夜视管制器放行用, 由 NightVisionControllerMixin 调用) */
+    fun hasNightVisionPerk(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("delver_night_vision") == true
+
     // ---- "风之步伐": 疾跑加成 (与原版疾跑修饰符同机制, 由 WindStrideMixin 在疾跑状态切换时调用) ----
 
     private val WIND_STRIDE_MOD = Identifier.of("random-perks-bingo", "wind_stride_sprint")

@@ -3,7 +3,6 @@ package com.randomperks.game
 import com.randomperks.RandomPerksMod
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
-import com.randomperks.perk.content.HarvestPerks
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
@@ -36,22 +35,23 @@ object PerkWorldEventService {
             dispatch(player) { ctx, perk -> perk.onBlockBreak(ctx, pos, state) }
         }
 
-        // "马来"召唤的马的交互:
-        // ① 剪刀右键 → 直接取下鞍 (原版 Java 取鞍不便, 这里给条快捷路)
-        // ② 潜行 + 空手右键 → 打开马的装备界面 (不依赖原版条件, 打开后鞍也可拖出)
+        // "属于你的马"的交互 (含旧版本召唤的马):
+        // ① 潜行 + 空手右键 → 打开马的装备界面 (不依赖原版条件)
+        // ② 剪刀右键 → 直接取下鞍
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
             if (player !is ServerPlayerEntity) return@register ActionResult.PASS
             if (entity !is AbstractHorseEntity) return@register ActionResult.PASS
-            if (!entity.commandTags.contains(HarvestPerks.SummonHorse.TAG)) return@register ActionResult.PASS
+            val owner = entity.ownerReference ?: return@register ActionResult.PASS
+            if (owner.uuid != player.uuid) return@register ActionResult.PASS
 
-            // ② 潜行 + 空手 → 打开马的装备界面 (RideableInventory 的官方入口)
+            // ① 潜行 + 空手 → 打开马的装备界面 (RideableInventory 的官方入口)
             if (player.isSneaking && player.mainHandStack.isEmpty) {
                 entity.openInventory(player)
                 return@register ActionResult.SUCCESS
             }
 
-            // ① 剪刀 → 取下鞍
+            // ② 剪刀 → 取下鞍
             if (!player.mainHandStack.isOf(Items.SHEARS)) return@register ActionResult.PASS
             val saddle = entity.getEquippedStack(EquipmentSlot.SADDLE)
             if (saddle.isEmpty) return@register ActionResult.PASS
