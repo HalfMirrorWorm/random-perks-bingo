@@ -2,6 +2,7 @@ package com.randomperks.effect
 
 import com.randomperks.state.PerkStateManager
 import net.minecraft.entity.effect.StatusEffect
+import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.server.network.ServerPlayerEntity
@@ -9,9 +10,11 @@ import net.minecraft.server.network.ServerPlayerEntity
 /**
  * "本局永久"状态效果的登记与**事件驱动**重挂 (无任何周期轮询)。
  *
- * 效果被原版机制清除 (不死图腾/牛奶等) 时, 由 EffectPersistMixin 通知本对象;
- * 若玩家此刻仍持有对应词条就立即重挂 —— 通过服务端任务队列延迟执行,
- * 这样"词条移除"流程 (onRemove 之前/之后才移出 ownedPerks) 不会被误重挂。
+ * 效果被任何途径移除 (主动驱散/牛奶、清空、以及**自然到期**——例如被同类药水/信标
+ * 覆盖成有限时长后到期) 时, 由 EffectPersistMixin 在 LivingEntity.onStatusEffectsRemoved
+ * 统一通知本对象; 若玩家此刻仍持有对应词条就立即重挂。
+ *
+ * 重挂经服务端任务队列延迟一拍执行, 与"词条移除"流程 (先/后移出 ownedPerks) 不会互相干扰。
  */
 object PermanentEffects {
 
@@ -29,16 +32,15 @@ object PermanentEffects {
         Entry(StatusEffects.JUMP_BOOST, "swift_jump", 0),
     )
 
-    /** 单个效果被移除 (LivingEntity.removeStatusEffect 之后由 mixin 调用) */
-    fun onEffectRemoved(player: ServerPlayerEntity, effect: RegistryEntry<StatusEffect>) {
-        val entry = ENTRIES.firstOrNull { it.effect.value() == effect.value() } ?: return
-        player.server?.execute { applyIfOwned(player, entry) }
-    }
+    /** 效果被移除 (由 EffectPersistMixin 在所有移除路径的汇聚点调用) */
+    fun onEffectsRemoved(player: ServerPlayerEntity, removed: Collection<StatusEffectInstance>) {
+        val affected = ENTRIES.filter { entry ->
+            removed.any { it.effectType.value() == entry.effect.value() }
+        }
+        if (affected.isEmpty()) return
 
-    /** 所有效果被清空 (LivingEntity.clearStatusEffects 之后由 mixin 调用) */
-    fun onEffectsCleared(player: ServerPlayerEntity) {
         player.server?.execute {
-            for (entry in ENTRIES) applyIfOwned(player, entry)
+            for (entry in affected) applyIfOwned(player, entry)
         }
     }
 
