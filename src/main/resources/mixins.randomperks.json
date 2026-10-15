@@ -15,7 +15,8 @@
     "WanderingTraderManagerInvoker",
     "LivingEntityJumpVelocityInvoker",
     "WindStrideMixin",
-    "PlayerLandingMixin"
+    "PlayerLandingMixin",
+    "ElytraBondDeathMixin"
   ],
   "client": [
     "EntityGlowMixin",

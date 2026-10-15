@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.ElytraBondService
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.perk.PerkArchetype
@@ -123,8 +124,9 @@ object SwiftPerks {
     }
 
     /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度减半。
-     *  绑定 = 原版机制组合: 绑定诅咒 (界面层锁死, 拿不下来) + 消失诅咒 (死亡销毁, 不掉落);
-     *  另外保留事件驱动的自动补装, 覆盖鞘翅飞坏/被清空等边界。 */
+     *  绑定 = 绑定诅咒 (界面层锁死, 拿不下来);
+     *  死亡不掉落 = 死亡时暂存、重生原样归还 (ElytraBondService + ElytraBondDeathMixin);
+     *  自动补装兜住飞坏/被清空等界面之外的边界。 */
     object ElytraBond : PerkDefinition {
         override val id = "swift_elytra_bond"
         override val rarity = PerkRarity.GOLD
@@ -140,7 +142,13 @@ object SwiftPerks {
 
         override fun onRespawn(ctx: PerkContext) {
             applySpeed(ctx)
-            enforceChest(ctx)
+            // 死亡暂存的鞘翅原样装回 (同一件, 耐久等数据保留); 没有暂存则重新绑定
+            val saved = ElytraBondService.takeSaved(ctx.player)
+            if (saved != null && saved.isOf(Items.ELYTRA)) {
+                ctx.player.equipStack(EquipmentSlot.CHEST, saved)
+            } else {
+                enforceChest(ctx)
+            }
         }
 
         /** 胸甲槽被换下鞘翅的瞬间立即换回 (覆盖飞坏/被清空等非界面路径; 界面路径已被绑定诅咒锁死) */
@@ -154,17 +162,16 @@ object SwiftPerks {
             )
         }
 
-        /** 胸甲槽强制为鞘翅 (带双诅咒); 被顶下来的装备退回背包 (放不下则会掉落) */
+        /** 胸甲槽强制为鞘翅 (带绑定诅咒, 界面层锁死); 被顶下来的装备退回背包 (放不下则会掉落) */
         private fun enforceChest(ctx: PerkContext) {
             val player = ctx.player
-            if (!player.isAlive) return  // 死亡瞬间不补装 (消失诅咒会销毁绑定鞘翅)
+            if (!player.isAlive) return  // 死亡瞬间不补装 (此时鞘翅已被死亡暂存取走)
 
             val current = player.getEquippedStack(EquipmentSlot.CHEST)
             if (current.isOf(Items.ELYTRA)) return
 
             val elytra = ItemStack(Items.ELYTRA)
-            PerkEffects.enchant(player, elytra, Enchantments.BINDING_CURSE, 1)   // 界面层锁死: 拿不下来
-            PerkEffects.enchant(player, elytra, Enchantments.VANISHING_CURSE, 1) // 死亡销毁: 不掉落
+            PerkEffects.enchant(player, elytra, Enchantments.BINDING_CURSE, 1)  // 界面层锁死: 拿不下来
             player.equipStack(EquipmentSlot.CHEST, elytra)
             if (!current.isEmpty) {
                 player.giveItemStack(current)

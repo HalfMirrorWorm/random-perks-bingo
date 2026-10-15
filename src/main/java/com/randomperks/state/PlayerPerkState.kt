@@ -29,6 +29,12 @@ class PlayerPerkState(val uuid: UUID) {
     /** 词条自定义数据 (如"猎杀印记"记录的目标 UUID、偷窃目标等) */
     val memory: MutableMap<String, String> = mutableMapOf()
 
+    /**
+     * "风之翼"绑定鞘翅的死亡暂存: 死亡时从胸甲槽取下保留 (不掉落), 重生时原样装回。
+     * 局间随状态清空。
+     */
+    var savedChestItem: net.minecraft.item.ItemStack? = null
+
     fun hasPerk(id: String): Boolean = ownedPerks.any { it.id == id }
 
     /** 当前应展示的候选 (队列第一个, 未选择前不变) */
@@ -44,5 +50,6 @@ class PlayerPerkState(val uuid: UUID) {
         ownedPerks.clear()
         cooldowns.clear()
         memory.clear()
+        savedChestItem = null
     }
 }
