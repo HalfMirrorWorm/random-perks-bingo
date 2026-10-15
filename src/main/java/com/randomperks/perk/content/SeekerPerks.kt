@@ -319,28 +319,27 @@ object SeekerPerks {
 
         private const val SPAWNED_KEY = "trader_spawned"
         private const val BIOME_KEY = "trader_last_biome"
-        private const val POS_KEY = "trader_last_pos"
+        private const val CHECK_KEY = "trader_next_check"
+
+        /** 换群系检测间隔: 15 秒 (仅在尚未刷出时) */
+        private const val CHECK_INTERVAL_TICKS = 15 * 20L
 
         override fun onAcquire(ctx: PerkContext) = attempt(ctx)
 
         /**
-         * 仅在尚未刷出时: 检测玩家是否进入了新的生物群系, 是则重试一次 (直到刷出为止)。
-         *
-         * 原版没有"生物群系变化"事件, 这里用最轻量的方式代替:
-         * 位置没变 (连 y 也没变) 就直接短路返回, 位置变化后只做一次生物群系 id 比较;
-         * 刷出成功后第一行就短路, 该方法之后不再做任何事。
+         * 仅在尚未刷出时: 每 15 秒检查一次玩家所在生物群系是否已变化, 变了就重试一次
+         * (直到刷出为止)。原版没有"生物群系变化"事件, 用低频检查替代。
          */
         override fun onTick(ctx: PerkContext) {
             if (ctx.state.memory[SPAWNED_KEY] == "1") return
 
             val player = ctx.player
-            val pos = player.blockPos
-            val posKey = "${pos.x},${pos.y},${pos.z}"
-            if (posKey == ctx.state.memory[POS_KEY]) return
-            ctx.state.memory[POS_KEY] = posKey
+            val now = player.server?.ticks?.toLong() ?: return
+            if (now < (ctx.state.cooldowns[CHECK_KEY] ?: 0L)) return
+            ctx.state.cooldowns[CHECK_KEY] = now + CHECK_INTERVAL_TICKS
 
             val world = player.world as? ServerWorld ?: return
-            val biome = biomeId(world, pos) ?: return
+            val biome = biomeId(world, player.blockPos) ?: return
             if (biome == ctx.state.memory[BIOME_KEY]) return
 
             attempt(ctx)
@@ -354,7 +353,6 @@ object SeekerPerks {
             val world = player.world as? ServerWorld ?: return
             val pos = player.blockPos
 
-            ctx.state.memory[POS_KEY] = "${pos.x},${pos.y},${pos.z}"
             ctx.state.memory[BIOME_KEY] = biomeId(world, pos) ?: ""
 
             if (isBiomeBlocked(world, pos)) {
