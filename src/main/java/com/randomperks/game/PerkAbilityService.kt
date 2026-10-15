@@ -14,15 +14,12 @@ object PerkAbilityService {
 
     private const val DOUBLE_JUMP_PERK_ID = "swift_double_jump"
 
-    /** 二段跳冷却 (tick), 防止包连发刷跳跃 */
-    private const val DOUBLE_JUMP_COOLDOWN = 10L
-
     /** "每段离地只允许一次"标记 (落地/重生时复位) */
     private const val DOUBLE_JUMP_USED_KEY = "double_jump_used"
 
     /**
      * 处理客户端发来的二段跳请求。
-     * 服务端验证: 持有词条 / 在空中 / 未滑翔 / 未骑乘 / 本段离地未用过 / 冷却已过。
+     * 服务端验证: 持有词条 / 在空中 / 未滑翔 / 未骑乘 / 本段离地未用过。
      */
     fun handleDoubleJump(player: ServerPlayerEntity) {
         if (!PerkSession.isEnabled()) return
@@ -37,10 +34,6 @@ object PerkAbilityService {
         if (!state.hasPerk(DOUBLE_JUMP_PERK_ID)) return
         if (state.memory[DOUBLE_JUMP_USED_KEY] == "1") return  // 每段离地只允许一次
 
-        val server = player.server ?: return
-        val now = server.ticks.toLong()
-        if (now < (state.cooldowns["double_jump"] ?: 0L)) return
-        state.cooldowns["double_jump"] = now + DOUBLE_JUMP_COOLDOWN
         state.memory[DOUBLE_JUMP_USED_KEY] = "1"
 
         // 真正的"再跳一次": 在当前垂直速度上**叠加**一次与自身跳跃能力相同的冲量 ——
