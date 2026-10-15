@@ -26,10 +26,12 @@ import net.minecraft.item.map.MapState
 import net.minecraft.potion.Potions
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.entry.RegistryEntryList
+import net.minecraft.registry.tag.BiomeTags
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.WanderingTraderManager
 import net.minecraft.world.gen.structure.StructureKeys
 
@@ -308,17 +310,72 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 蓝 · 秘藏: 立即在附近触发一次流浪商人刷新 */
+    /** 蓝 · 秘藏: 立即触发一次原版流浪商人刷新事件; 生物群系不允许时提示, 换群系后自动重试 */
     object WanderingTrader : PerkDefinition {
         override val id = "seeker_wandering_trader"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.EMERALD)
 
-        override fun onAcquire(ctx: PerkContext) {
-            val world = ctx.player.world as? ServerWorld ?: return
-            spawnVanillaTrader(world)
+        private const val SPAWNED_KEY = "trader_spawned"
+        private const val BIOME_KEY = "trader_last_biome"
+        private const val POS_KEY = "trader_last_pos"
+
+        override fun onAcquire(ctx: PerkContext) = attempt(ctx)
+
+        /**
+         * 仅在尚未刷出时: 检测玩家是否进入了新的生物群系, 是则重试一次 (直到刷出为止)。
+         *
+         * 原版没有"生物群系变化"事件, 这里用最轻量的方式代替:
+         * 位置没变 (连 y 也没变) 就直接短路返回, 位置变化后只做一次生物群系 id 比较;
+         * 刷出成功后第一行就短路, 该方法之后不再做任何事。
+         */
+        override fun onTick(ctx: PerkContext) {
+            if (ctx.state.memory[SPAWNED_KEY] == "1") return
+
+            val player = ctx.player
+            val pos = player.blockPos
+            val posKey = "${pos.x},${pos.y},${pos.z}"
+            if (posKey == ctx.state.memory[POS_KEY]) return
+            ctx.state.memory[POS_KEY] = posKey
+
+            val world = player.world as? ServerWorld ?: return
+            val biome = biomeId(world, pos) ?: return
+            if (biome == ctx.state.memory[BIOME_KEY]) return
+
+            attempt(ctx)
         }
+
+        /** 一次刷新尝试: 生物群系受限 → 提示并等待换群系; 成功 → 记录并停止 */
+        private fun attempt(ctx: PerkContext) {
+            if (ctx.state.memory[SPAWNED_KEY] == "1") return
+
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+            val pos = player.blockPos
+
+            ctx.state.memory[POS_KEY] = "${pos.x},${pos.y},${pos.z}"
+            ctx.state.memory[BIOME_KEY] = biomeId(world, pos) ?: ""
+
+            if (isBiomeBlocked(world, pos)) {
+                player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.trader_biome_blocked"),
+                    false,
+                )
+                return
+            }
+            if (spawnVanillaTrader(world)) {
+                ctx.state.memory[SPAWNED_KEY] = "1"
+            }
+        }
+
+        /** 生物群系 id (用于变化检测; 取不到时返回 null) */
+        private fun biomeId(world: ServerWorld, pos: BlockPos): String? =
+            world.getBiome(pos).key.map { it.value.toString() }.orElse(null)
+
+        /** 玩家所在生物群系是否在原版"禁止流浪商人刷新"标签中 */
+        private fun isBiomeBlocked(world: ServerWorld, pos: BlockPos): Boolean =
+            world.getBiome(pos).isIn(BiomeTags.WITHOUT_WANDERING_TRADER_SPAWNS)
 
         /**
          * 执行**原版流浪商人刷新事件** (WanderingTraderManager.trySpawn):

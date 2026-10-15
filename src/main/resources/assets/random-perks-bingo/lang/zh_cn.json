@@ -48,6 +48,7 @@
   "random-perks-bingo.message.waypoint_too_far": "距离传送点太远 (当前 %s 格, 上限 2000 格)。",
   "random-perks-bingo.message.waypoint_cross_world": "传送点与你不在同一个世界, 无法传送。",
   "random-perks-bingo.message.village_not_found": "附近未找到村庄, 改给你一个普通指南针。",
+  "random-perks-bingo.message.trader_biome_blocked": "此生物群系无法刷新流浪商人 —— 请前往其他生物群系, 换群系后会自动重试。",
 
   "random-perks-bingo.item.treasure_map": "藏宝图",
 
@@ -153,7 +154,7 @@
   "random-perks-bingo.perk.harvest_summon_horse.name": "马来",
   "random-perks-bingo.perk.harvest_summon_horse.desc": "立即在脚下召唤一匹属于你的马 (自带鞍)。",
   "random-perks-bingo.perk.seeker_wandering_trader.name": "流浪拴绳",
-  "random-perks-bingo.perk.seeker_wandering_trader.desc": "立即触发一次原版的流浪商人刷新事件 (与自然刷新完全一致)。",
+  "random-perks-bingo.perk.seeker_wandering_trader.desc": "立即触发一次原版的流浪商人刷新事件 (与自然刷新完全一致); 生物群系不允许时会提示, 换群系后自动重试。",
   "random-perks-bingo.perk.seeker_village_compass.name": "回村的诱惑",
   "random-perks-bingo.perk.seeker_village_compass.desc": "获得一个指向最近村庄的磁石指针。",
   "random-perks-bingo.perk.hunter_call_lightning.name": "引雷术",
