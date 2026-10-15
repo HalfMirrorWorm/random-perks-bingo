@@ -95,6 +95,18 @@ object PerkGrantService {
         PerkNetworking.sendAbilitySync(player, state.ownedPerks.map { it.id })
     }
 
+    /** 词条列表变化后调用: 让已拥有的词条即时重算联动效果 (替代定时轮询) */
+    fun notifyPerkListChanged(player: ServerPlayerEntity) {
+        val state = PerkStateManager.get(player.uuid) ?: return
+        if (state.ownedPerks.isEmpty()) return
+
+        val ctx = PerkContext(player, state)
+        for (perk in state.ownedPerks.toList()) {
+            runCatching { perk.onPerkListChanged(ctx) }
+                .onFailure { RandomPerksMod.logger.error("[RandomPerks] perk {} onPerkListChanged failed", perk.id, it) }
+        }
+    }
+
     private fun notifyChoicesAvailable(player: ServerPlayerEntity, pending: Int) {
         PerkNetworking.sendNotify(player, pending)
         player.sendMessage(

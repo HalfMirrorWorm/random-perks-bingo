@@ -85,7 +85,7 @@ object SwiftPerks {
         override fun onRemove(ctx: PerkContext) = PerkBoostQuery.clearWindStride(ctx.player)
     }
 
-    /** 紫 · 顺风而行: 移动速度 +10%, 每个其他疾风词条额外 +3% (流派联动) */
+    /** 紫 · 顺风而行: 移动速度 +10%, 每个其他疾风词条额外 +3% (流派联动; 词条列表变化时即时重算, 无定时轮询) */
     object Tailwind : PerkDefinition {
         override val id = "swift_tailwind"
         override val rarity = PerkRarity.PURPLE
@@ -95,8 +95,8 @@ object SwiftPerks {
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
 
-        /** 每秒重算, 以响应后续获得的同流派词条 */
-        override fun onTick(ctx: PerkContext) = apply(ctx)
+        /** 获得/移除任一词条时即时重算 (替代每秒轮询) */
+        override fun onPerkListChanged(ctx: PerkContext) = apply(ctx)
 
         private fun apply(ctx: PerkContext) {
             val allies = (ctx.countArchetype(PerkArchetype.SWIFT) - 1).coerceAtLeast(0)

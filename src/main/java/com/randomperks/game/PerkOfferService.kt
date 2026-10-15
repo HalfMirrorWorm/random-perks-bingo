@@ -75,6 +75,8 @@ object PerkOfferService {
         state.consumeOffer()
         state.ownedPerks.add(perk)
         perk.onAcquire(PerkContext(player, state))
+        // 词条列表已变化: 触发"同流派联动"类词条的即时重算
+        PerkGrantService.notifyPerkListChanged(player)
 
         // 反馈
         val rarityName = when (perk.rarity) {

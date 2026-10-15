@@ -54,6 +54,9 @@ interface PerkDefinition {
     /** 装备槽变化时 (穿/脱护甲等) —— 用于即时重算装备相关效果 */
     fun onEquipmentChange(ctx: PerkContext) {}
 
+    /** 该玩家的词条列表发生变化后 (获得/移除任一词条) —— 供"同流派联动"类词条即时重算 */
+    fun onPerkListChanged(ctx: PerkContext) {}
+
     /** 词条被移除 / 对局结束时清理 */
     fun onRemove(ctx: PerkContext) {}
 

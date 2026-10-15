@@ -191,6 +191,7 @@ object RandomPerksCommands {
         state.ownedPerks.add(perk)
         runCatching { perk.onAcquire(PerkContext(target, state)) }
             .onFailure { ctx.source.sendError(Text.literal("应用效果时出错: ${it.message}")) }
+        PerkGrantService.notifyPerkListChanged(target)
         PerkGrantService.syncAbilities(target)
 
         ctx.source.sendFeedback({
@@ -212,6 +213,7 @@ object RandomPerksCommands {
         state.ownedPerks.remove(perk)
         runCatching { perk.onRemove(PerkContext(target, state)) }
             .onFailure { ctx.source.sendError(Text.literal("清理效果时出错: ${it.message}")) }
+        PerkGrantService.notifyPerkListChanged(target)
         PerkGrantService.syncAbilities(target)
 
         ctx.source.sendFeedback({

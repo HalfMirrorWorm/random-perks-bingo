@@ -66,6 +66,7 @@ object StealService {
         state.ownedPerks.remove(perk)
         state.memory.remove(TARGET_KEY)
         runCatching { perk.onRemove(PerkContext(player, state)) }
+        PerkGrantService.notifyPerkListChanged(player)
         PerkGrantService.syncAbilities(player)
 
         player.sendMessage(
