@@ -120,7 +120,8 @@ object SwiftPerks {
         override fun onRespawn(ctx: PerkContext) = PerkAbilityService.clearDoubleJumpUsed(ctx.player)
     }
 
-    /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度减半 */
+    /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度减半。
+     *  绑定为事件驱动: 换下鞘翅的瞬间立即换回; 死亡不掉落绑定鞘翅 (ElytraBondDeathMixin) */
     object ElytraBond : PerkDefinition {
         override val id = "swift_elytra_bond"
         override val rarity = PerkRarity.GOLD
@@ -129,22 +130,32 @@ object SwiftPerks {
 
         private val MOD_SPEED = Identifier.of("random-perks-bingo", "elytra_bond_speed")
 
-        override fun onAcquire(ctx: PerkContext) = enforce(ctx)
-        override fun onRespawn(ctx: PerkContext) = enforce(ctx)
+        override fun onAcquire(ctx: PerkContext) {
+            applySpeed(ctx)
+            enforceChest(ctx)
+        }
 
-        /** 每秒校验一次: 移速减半 + 胸甲槽必须为鞘翅 (被换下则重新绑定) */
-        override fun onTick(ctx: PerkContext) = enforce(ctx)
+        override fun onRespawn(ctx: PerkContext) {
+            applySpeed(ctx)
+            enforceChest(ctx)
+        }
 
-        private fun enforce(ctx: PerkContext) {
-            val player = ctx.player
+        /** 胸甲槽被换下鞘翅的瞬间立即换回 (由 EquipmentChangeMixin 触发, 不再每秒轮询) */
+        override fun onEquipmentChange(ctx: PerkContext) = enforceChest(ctx)
 
-            // 移动速度减半 (总速度 x0.5)
+        /** 移动速度减半 (总速度 x0.5) */
+        private fun applySpeed(ctx: PerkContext) {
             PerkEffects.setAttribute(
-                player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
+                ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
                 -0.5, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
             )
+        }
 
-            // 胸甲槽强制为鞘翅; 被顶下来的装备退回背包 (放不下则会掉落)
+        /** 胸甲槽强制为鞘翅; 被顶下来的装备退回背包 (放不下则会掉落) */
+        private fun enforceChest(ctx: PerkContext) {
+            val player = ctx.player
+            if (!player.isAlive) return  // 死亡瞬间不补装 (给"不掉落绑定鞘翅"留出空窗)
+
             val current = player.getEquippedStack(EquipmentSlot.CHEST)
             if (current.isOf(Items.ELYTRA)) return
 
