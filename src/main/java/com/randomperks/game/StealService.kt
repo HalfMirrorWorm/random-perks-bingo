@@ -29,18 +29,30 @@ object StealService {
             ?.let { runCatching { UUID.fromString(it) }.getOrNull() }
             ?.let { player.server?.playerManager?.getPlayer(it) }
 
-    /** 客户端请求打开偷窃界面 */
+    /** 随机选择一名其他队伍的在线玩家 */
+    private fun pickRandomTarget(player: ServerPlayerEntity): ServerPlayerEntity? {
+        val server = player.server ?: return null
+        val myTeam = player.scoreboardTeam?.name
+        return server.playerManager.playerList
+            .filter { other ->
+                other.uuid != player.uuid && (myTeam == null || other.scoreboardTeam?.name != myTeam)
+            }
+            .randomOrNull()
+    }
+
+    /** 客户端请求打开偷窃界面 (目标在此时随机决定并锁定, 直到选择完成) */
     fun handleRequest(player: ServerPlayerEntity) {
         if (!PerkSession.isEnabled()) return
 
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.hasPerk(PERK_ID)) return
 
-        val target = resolveTarget(player, state)
+        val target = pickRandomTarget(player)
         if (target == null) {
             player.sendMessage(Text.translatable("random-perks-bingo.message.steal_no_target"), true)
             return
         }
+        state.memory[TARGET_KEY] = target.uuid.toString()
 
         val items = (0 until SLOT_COUNT).map { target.inventory.getStack(it).copy() }
         PerkNetworking.sendStealOpen(player, target.name.string, items)

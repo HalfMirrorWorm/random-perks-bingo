@@ -16,7 +16,8 @@
     "LivingEntityJumpVelocityInvoker",
     "WindStrideMixin",
     "PlayerLandingMixin",
-    "ElytraBondDeathMixin"
+    "ElytraBondDeathMixin",
+    "PlayerInventoryEquipMixin"
   ],
   "client": [
     "EntityGlowMixin",

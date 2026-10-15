@@ -3,13 +3,23 @@ package com.randomperks.game
 import com.randomperks.RandomPerksMod
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
+import com.randomperks.perk.content.HarvestPerks
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.fabricmc.fabric.api.event.player.UseEntityCallback
+import net.minecraft.entity.EquipmentSlot
+import net.minecraft.entity.passive.AbstractHorseEntity
+import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.sound.SoundCategory
+import net.minecraft.sound.SoundEvents
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
 
 /**
- * 把世界事件 (击杀 / 破坏方块 / 装备变化) 分发给玩家已获得的词条。
+ * 把世界事件 (击杀 / 破坏方块 / 装备变化 / 实体交互) 分发给玩家已获得的词条。
  */
 object PerkWorldEventService {
 
@@ -24,6 +34,25 @@ object PerkWorldEventService {
         PlayerBlockBreakEvents.AFTER.register { _, player, pos, state, _ ->
             if (player !is ServerPlayerEntity) return@register
             dispatch(player) { ctx, perk -> perk.onBlockBreak(ctx, pos, state) }
+        }
+
+        // "马来"的鞍可取下: 用剪刀右键带词条标签的马 (原版 Java 的鞍取下不了, 这里补上)
+        UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
+            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
+            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
+            if (!player.mainHandStack.isOf(Items.SHEARS)) return@register ActionResult.PASS
+            if (entity !is AbstractHorseEntity) return@register ActionResult.PASS
+            if (!entity.commandTags.contains(HarvestPerks.SummonHorse.TAG)) return@register ActionResult.PASS
+
+            val saddle = entity.getEquippedStack(EquipmentSlot.SADDLE)
+            if (saddle.isEmpty) return@register ActionResult.PASS
+
+            entity.equipStack(EquipmentSlot.SADDLE, ItemStack.EMPTY)
+            player.giveItemStack(saddle)
+            player.playSoundToPlayer(
+                SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), SoundCategory.PLAYERS, 0.8f, 1.0f,
+            )
+            ActionResult.SUCCESS
         }
     }
 

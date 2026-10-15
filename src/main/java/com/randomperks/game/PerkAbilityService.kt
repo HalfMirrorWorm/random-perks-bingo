@@ -1,5 +1,6 @@
 package com.randomperks.game
 
+import com.randomperks.RandomPerksMod
 import com.randomperks.mixin.LivingEntityJumpVelocityInvoker
 import com.randomperks.state.PerkStateManager
 import net.minecraft.server.network.ServerPlayerEntity
@@ -32,7 +33,12 @@ object PerkAbilityService {
 
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.hasPerk(DOUBLE_JUMP_PERK_ID)) return
-        if (state.memory[DOUBLE_JUMP_USED_KEY] == "1") return  // 每段离地只允许一次
+        if (state.memory[DOUBLE_JUMP_USED_KEY] == "1") {  // 每段离地只允许一次
+            RandomPerksMod.logger.info(
+                "[RandomPerks] double jump rejected for {} — already used this airtime", player.name.string,
+            )
+            return
+        }
 
         state.memory[DOUBLE_JUMP_USED_KEY] = "1"
 
@@ -43,6 +49,11 @@ object PerkAbilityService {
         val velocity = player.velocity
         player.velocity = Vec3d(velocity.x, velocity.y + impulse, velocity.z)
         player.velocityModified = true
+
+        RandomPerksMod.logger.info(
+            "[RandomPerks] double jump applied for {} (impulse {}, velY {} → {})",
+            player.name.string, impulse, velocity.y, player.velocity.y,
+        )
 
         player.playSoundToPlayer(
             SoundEvents.ENTITY_BAT_TAKEOFF,

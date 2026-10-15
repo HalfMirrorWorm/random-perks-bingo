@@ -1,9 +1,11 @@
 package com.randomperks.client
 
 import com.randomperks.client.net.ClientPerkNetworking
+import com.randomperks.mixin.LivingEntityJumpVelocityInvoker
 import com.randomperks.network.DoubleJumpC2S
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.minecraft.util.math.Vec3d
 
 /**
  * 客户端主动能力检测 (按键 → C2S 包)。
@@ -40,6 +42,11 @@ object AbilityHandler {
                 ClientPerkNetworking.hasPerk(DOUBLE_JUMP_PERK)
             ) {
                 doubleJumpUsedThisAirTime = true
+
+                // 本地预测: 立即叠加与自身跳跃能力相同的冲量 (移动由客户端结算, 不等服务端回包)
+                val impulse = (player as LivingEntityJumpVelocityInvoker).invokeGetJumpVelocity()
+                player.velocity = Vec3d(player.velocity.x, player.velocity.y + impulse, player.velocity.z)
+
                 if (ClientPlayNetworking.canSend(DoubleJumpC2S.ID)) {
                     ClientPlayNetworking.send(DoubleJumpC2S())
                 }

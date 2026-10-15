@@ -31,7 +31,7 @@ object HunterPerks {
     private val MOD_ATTACK = Identifier.of("random-perks-bingo", "hunter_strength")
     private val MOD_HEALTH = Identifier.of("random-perks-bingo", "hunter_health")
 
-    /** 蓝 · 猎人直觉: 攻击力 +15% */
+    /** 蓝 · 猎人直觉: 攻击力 +25% */
     object Strength : PerkDefinition {
         override val id = "hunter_strength"
         override val rarity = PerkRarity.BLUE
@@ -41,7 +41,7 @@ object HunterPerks {
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_ATTACK, 0.15, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+            PerkEffects.setAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_ATTACK, 0.25, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
 
         override fun onRemove(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_ATTACK)

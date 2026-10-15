@@ -33,6 +33,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.WanderingTraderManager
+import net.minecraft.world.poi.PointOfInterestTypes
 import net.minecraft.world.gen.structure.StructureKeys
 
 /**
@@ -177,46 +178,13 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 金 · 秘藏 · 质变: 随机盯上一名敌方玩家, 按 G 打开其背包偷走一格自选物品 (一次性) */
+    /** 金 · 秘藏 · 质变: 按 G 打开一名随机敌方玩家的背包, 偷走其中一格自选物品 (一次性; 目标在打开时随机决定) */
     object Pickpocket : PerkDefinition {
         override val id = "seeker_pickpocket"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.LEAD)
-
-        private const val TARGET_KEY = "pickpocket_target"
-
-        override fun onAcquire(ctx: PerkContext) = markTarget(ctx)
-
-        override fun onTick(ctx: PerkContext) {
-            // 目标离线时重新盯上一个
-            val targetId = ctx.state.memory[TARGET_KEY]
-                ?.let { runCatching { java.util.UUID.fromString(it) }.getOrNull() }
-            if (targetId != null && ctx.player.server?.playerManager?.getPlayer(targetId) == null) {
-                ctx.state.memory.remove(TARGET_KEY)
-                markTarget(ctx)
-            }
-        }
-
-        /** 随机选择一名其他队伍的在线玩家作为偷窃目标 */
-        private fun markTarget(ctx: PerkContext) {
-            val player = ctx.player
-            val server = player.server ?: return
-            val myTeam = player.scoreboardTeam?.name
-            val candidates = server.playerManager.playerList.filter { other ->
-                other.uuid != player.uuid && (myTeam == null || other.scoreboardTeam?.name != myTeam)
-            }
-            val target = candidates.randomOrNull() ?: return
-            ctx.state.memory[TARGET_KEY] = target.uuid.toString()
-            player.sendMessage(
-                net.minecraft.text.Text.translatable("random-perks-bingo.message.steal_marked", target.name),
-                false,
-            )
-        }
-
-        override fun onRemove(ctx: PerkContext) {
-            ctx.state.memory.remove(TARGET_KEY)
-        }
+        // 交互逻辑由 StealService 处理 (打开时随机选目标, 选择后消耗词条)
     }
 
     /** 金 · 秘藏 · 质变: 永久透视 —— 高亮标记 64 格内的所有生物 (不含玩家) */
@@ -398,7 +366,7 @@ object SeekerPerks {
         }
     }
 
-    /** 紫 · 秘藏: 获得一个指向最近村庄的磁石指针 */
+    /** 紫 · 秘藏: 获得一个指向最近村庄**钟**的磁石指针 (找不到钟则指向村庄结构起点) */
     object VillageCompass : PerkDefinition {
         override val id = "seeker_village_compass"
         override val rarity = PerkRarity.PURPLE
@@ -409,11 +377,11 @@ object SeekerPerks {
             val player = ctx.player
             val world = player.world as? ServerWorld ?: return
 
-            val pos = runCatching {
+            val villagePos = runCatching {
                 world.locateStructure(net.minecraft.registry.tag.StructureTags.VILLAGE, player.blockPos, 100, false)
             }.getOrNull()
 
-            if (pos == null) {
+            if (villagePos == null) {
                 PerkEffects.giveStack(player, ItemStack(Items.COMPASS))
                 player.sendMessage(
                     net.minecraft.text.Text.translatable("random-perks-bingo.message.village_not_found"),
@@ -422,11 +390,22 @@ object SeekerPerks {
                 return
             }
 
+            // 优先指向村庄的钟 (meeting POI); 村庄范围内找不到钟则退回结构起点
+            val bellPos = runCatching {
+                world.pointOfInterestStorage.getNearestPosition(
+                    { entry -> entry.key.map { it == PointOfInterestTypes.MEETING }.orElse(false) },
+                    villagePos,
+                    48,
+                    net.minecraft.world.poi.PointOfInterestStorage.OccupationStatus.ANY,
+                ).orElse(null)
+            }.getOrNull()
+
+            val target = bellPos ?: villagePos
             val stack = ItemStack(Items.COMPASS)
             stack.set(
                 DataComponentTypes.LODESTONE_TRACKER,
                 net.minecraft.component.type.LodestoneTrackerComponent(
-                    java.util.Optional.of(net.minecraft.util.math.GlobalPos.create(world.registryKey, pos)),
+                    java.util.Optional.of(net.minecraft.util.math.GlobalPos.create(world.registryKey, target)),
                     false,
                 ),
             )

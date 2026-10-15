@@ -6,6 +6,7 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
+import net.minecraft.entity.ItemEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -59,7 +60,7 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 樵夫之手: 破坏原木时 50% 概率额外掉落一个原木 */
+    /** 紫 · 樵夫之手: 破坏原木时 50% 概率额外掉落一个原木 (掉落在原方块位置, 不进背包) */
     object Timber : PerkDefinition {
         override val id = "harvest_timber"
         override val rarity = PerkRarity.PURPLE
@@ -69,7 +70,10 @@ object HarvestPerks {
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: net.minecraft.block.BlockState) {
             if (!blockState.isIn(net.minecraft.registry.tag.BlockTags.LOGS)) return
             if (ctx.player.random.nextFloat() >= 0.50f) return
-            PerkEffects.giveStack(ctx.player, ItemStack(blockState.block))
+            val world = ctx.player.world as? ServerWorld ?: return
+            world.spawnEntity(
+                ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, ItemStack(blockState.block)),
+            )
         }
     }
 
@@ -159,12 +163,15 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.CAT_SPAWN_EGG)
     }
 
-    /** 蓝 · 丰饶: 立即在脚下召唤一匹属于你的马 (自带鞍) */
+    /** 蓝 · 丰饶: 立即在脚下召唤一匹属于你的马 (自带鞍; 用剪刀右键可取下鞍) */
     object SummonHorse : PerkDefinition {
         override val id = "harvest_summon_horse"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.SADDLE)
+
+        /** 词条召唤的马身上的命令标签 (供"剪刀取鞍"识别, 不影响其他马) */
+        const val TAG = "randomperks_summoned_horse"
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
@@ -174,6 +181,7 @@ object HarvestPerks {
             horse.setPosition(player.x, player.y, player.z)
             horse.setOwner(player) // 设置主人即视为驯服 (1.21+)
             horse.equipStack(net.minecraft.entity.EquipmentSlot.SADDLE, ItemStack(Items.SADDLE))
+            horse.addCommandTag(TAG)
             horse.setPersistent()
             world.spawnEntity(horse)
         }

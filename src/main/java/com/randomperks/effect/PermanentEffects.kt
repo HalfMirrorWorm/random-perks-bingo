@@ -1,5 +1,6 @@
 package com.randomperks.effect
 
+import com.randomperks.RandomPerksMod
 import com.randomperks.state.PerkStateManager
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -39,6 +40,10 @@ object PermanentEffects {
         }
         if (affected.isEmpty()) return
 
+        RandomPerksMod.logger.info(
+            "[RandomPerks] permanent effect(s) removed from {}: {} → 待重挂",
+            player.name.string, affected.map { it.perkId },
+        )
         player.server?.execute {
             for (entry in affected) applyIfOwned(player, entry)
         }
@@ -48,5 +53,8 @@ object PermanentEffects {
         if (!player.isAlive) return
         if (PerkStateManager.get(player.uuid)?.hasPerk(entry.perkId) != true) return
         PerkEffects.permanentEffect(player, entry.effect, entry.amplifier)
+        RandomPerksMod.logger.info(
+            "[RandomPerks] permanent effect {} re-applied for {}", entry.perkId, player.name.string,
+        )
     }
 }

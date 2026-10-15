@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * "美食家"词条: 食用任意食物时, 恢复的饥饿值与饱和度均提升 25%。
+ * "小鸟胃"词条: 食用任意食物时, 恢复的饥饿值与饱和度均提升 50%。
  * 在原版进食完成后补足差额。
  */
 @Mixin(ConsumableComponent.class)
@@ -34,8 +34,8 @@ public class ConsumableBoostMixin {
         FoodComponent food = stack.get(DataComponentTypes.FOOD);
         if (food == null) return;
 
-        int bonusFood = Math.round(food.nutrition() * 0.25f);
-        float bonusSaturation = food.saturation() * 0.25f;
+        int bonusFood = Math.round(food.nutrition() * 0.5f);
+        float bonusSaturation = food.saturation() * 0.5f;
 
         HungerManager hunger = player.getHungerManager();
         int newFood = Math.min(20, hunger.getFoodLevel() + bonusFood);

@@ -12,7 +12,6 @@ import net.minecraft.util.Hand
  * "传送时钟"词条的右键逻辑:
  * - 首次右键: 设置传送点 (记录维度与坐标)
  * - 之后右键: 传送回传送点 (10 分钟冷却)
- * - 潜行 + 右键: 重新设置传送点
  */
 object WaypointService {
 
@@ -39,8 +38,8 @@ object WaypointService {
         val now = server.ticks.toLong()
         val point = state.memory[POINT_KEY]
 
-        // 尚未设置 / 潜行右键 → (重新)设置传送点
-        if (point == null || player.isSneaking) {
+        // 尚未设置 → 设置传送点 (设置后不可重设)
+        if (point == null) {
             val worldId = player.world.registryKey.value.toString()
             state.memory[POINT_KEY] = "$worldId|${player.x}|${player.y}|${player.z}"
             player.sendMessage(Text.translatable("random-perks-bingo.message.waypoint_set"), true)
