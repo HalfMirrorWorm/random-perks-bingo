@@ -75,6 +75,14 @@ loom {
             sourceSet sourceSets.client
         }
     }
+
+    runs {
+        client {
+            // 固定开发客户端离线用户名: 不指定时 fabric-loader 每次启动都随机生成
+            // "Player###", 服务器上每次都是新玩家 (要重新 OP, 词条/进度也留不住)
+            programArgs('--username', 'Player839')
+        }
+    }
 }
 
 processResources {
