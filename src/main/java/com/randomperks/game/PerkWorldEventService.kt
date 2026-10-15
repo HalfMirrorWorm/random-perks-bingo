@@ -3,6 +3,7 @@ package com.randomperks.game
 import com.randomperks.RandomPerksMod
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
+import com.randomperks.perk.content.HarvestPerks
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
@@ -44,6 +45,12 @@ object PerkWorldEventService {
             if (entity !is AbstractHorseEntity) return@register ActionResult.PASS
             val owner = entity.ownerReference ?: return@register ActionResult.PASS
             if (owner.uuid != player.uuid) return@register ActionResult.PASS
+
+            // 兼容旧版召唤的马: 旧代码只设了主人没设驯服标志, 而未驯服的马会被原版
+            // openInventory 的 isTame 检查拒绝 (表现为"按 E 打不开"), 见到就补上驯服标志
+            if (!entity.isTame && HarvestPerks.SummonHorse.TAG in entity.commandTags) {
+                entity.setTame(true)
+            }
 
             // ① 潜行 + 空手 → 打开马的装备界面 (RideableInventory 的官方入口)
             if (player.isSneaking && player.mainHandStack.isEmpty) {

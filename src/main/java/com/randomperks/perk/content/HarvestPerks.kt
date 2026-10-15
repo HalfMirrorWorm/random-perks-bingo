@@ -179,7 +179,11 @@ object HarvestPerks {
 
             val horse = net.minecraft.entity.passive.HorseEntity(net.minecraft.entity.EntityType.HORSE, world)
             horse.setPosition(player.x, player.y, player.z)
-            horse.setOwner(player) // 设置主人即视为驯服 (1.21+)
+            horse.setOwner(player)
+            // ★ 仅 setOwner 不会设置驯服标志 (Tame 是独立的 horseFlag 位):
+            // 未驯服的马在原版会拒绝打开装备界面 (AbstractHorseEntity.openInventory 的 isTame 检查),
+            // 表现为"骑着马按 E 没反应", 鞍也取不下来
+            horse.setTame(true)
             horse.equipStack(net.minecraft.entity.EquipmentSlot.SADDLE, ItemStack(Items.SADDLE))
             horse.addCommandTag(TAG)
             horse.setPersistent()
