@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -108,13 +109,15 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_TAILWIND)
     }
 
-    /** 金 · 疾风 · 质变: 空中可以再跳跃一次 (客户端按键触发, 服务端验证) */
+    /** 金 · 疾风 · 质变: 空中可以再跳跃一次 (每段离地一次; 由 PerkAbilityService + PlayerLandingMixin 实现) */
     object DoubleJump : PerkDefinition {
         override val id = "swift_double_jump"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.SLIME_BALL)
-        // 效果由 PerkAbilityService (双击跳跃 C2S 包) 处理
+
+        /** 重生后复位"每段离地一次"标记 (新实体的空中状态已重置) */
+        override fun onRespawn(ctx: PerkContext) = PerkAbilityService.clearDoubleJumpUsed(ctx.player)
     }
 
     /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度减半 */

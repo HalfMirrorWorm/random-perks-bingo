@@ -31,7 +31,9 @@ object AbilityHandler {
             val justPressed = jumpPressed && !jumpHeldLastTick
             jumpHeldLastTick = jumpPressed
 
-            if (justPressed && !player.isOnGround && !player.isGliding && !doubleJumpUsedThisAirTime) {
+            if (justPressed && !player.isOnGround && !player.isGliding &&
+                player.getVehicle() == null && !doubleJumpUsedThisAirTime
+            ) {
                 doubleJumpUsedThisAirTime = true
                 if (ClientPlayNetworking.canSend(DoubleJumpC2S.ID)) {
                     ClientPlayNetworking.send(DoubleJumpC2S())

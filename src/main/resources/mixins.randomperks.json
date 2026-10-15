@@ -13,7 +13,8 @@
     "EffectPersistMixin",
     "ServerWorldAccessor",
     "WanderingTraderManagerInvoker",
-    "WindStrideMixin"
+    "WindStrideMixin",
+    "PlayerLandingMixin"
   ],
   "client": [
     "EntityGlowMixin",
