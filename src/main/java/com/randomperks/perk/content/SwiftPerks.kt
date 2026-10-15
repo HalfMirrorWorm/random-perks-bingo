@@ -64,11 +64,6 @@ object SwiftPerks {
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
-
-        /** 每秒校验: 被不死图腾/牛奶等清除后自动重挂 */
-        override fun onTick(ctx: PerkContext) =
-            PerkEffects.ensurePermanentEffect(ctx.player, StatusEffects.JUMP_BOOST, 0)
-
         private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, StatusEffects.JUMP_BOOST, 0)
 
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.JUMP_BOOST)

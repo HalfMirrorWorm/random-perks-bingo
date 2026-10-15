@@ -9,7 +9,8 @@
     "ConsumableBoostMixin",
     "FallBucketMixin",
     "CatAuraMixin",
-    "EquipmentChangeMixin"
+    "EquipmentChangeMixin",
+    "EffectPersistMixin"
   ],
   "client": [
     "EntityGlowMixin"

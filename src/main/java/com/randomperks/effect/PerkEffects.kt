@@ -56,19 +56,6 @@ object PerkEffects {
         player.removeStatusEffect(effect)
     }
 
-    /**
-     * 校验"本局永久"的状态效果是否仍在 —— 被不死图腾/牛奶等清除后自动重挂 (供永久效果类词条在 onTick 里调用)。
-     */
-    fun ensurePermanentEffect(
-        player: ServerPlayerEntity,
-        effect: RegistryEntry<StatusEffect>,
-        amplifier: Int = 0,
-    ) {
-        val current = player.getStatusEffect(effect)
-        if (current != null && current.duration == StatusEffectInstance.INFINITE && current.amplifier >= amplifier) return
-        permanentEffect(player, effect, amplifier)
-    }
-
     /** 强制同步属性/效果到客户端 (部分属性变更需要显式同步) */
     fun syncAttributes(player: ServerPlayerEntity) {
         // forceUpdate 由 add/removeModifier 自动触发; 保留此方法以便后续扩展
