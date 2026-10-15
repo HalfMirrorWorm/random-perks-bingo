@@ -20,7 +20,7 @@
   ],
   "client": [
     "EntityGlowMixin",
-    "com.randomperks.client.mixin.WindStrideClientMixin"
+    "WindStrideClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1
