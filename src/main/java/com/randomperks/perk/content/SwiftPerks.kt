@@ -190,7 +190,8 @@ object SwiftPerks {
         }
     }
 
-    /** 金 · 疾风: 仅在受到摔落伤害时, 副手的水桶会像不死图腾一样救你一命 (消耗水桶, 留下空桶) */
+    /** 金 · 疾风: 仅在受到**致命**摔落伤害时, 副手的水桶会像不死图腾一样救你一命
+     *  (只消耗水, 保留空桶; 带"水桶上浮旋转"的图腾式演出) */
     object LifeBucket : PerkDefinition {
         override val id = "swift_life_bucket"
         override val rarity = PerkRarity.GOLD

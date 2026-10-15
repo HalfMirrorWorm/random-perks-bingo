@@ -22,6 +22,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(PerkCatalogS2C.ID, PerkCatalogS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(PerkAbilitySyncS2C.ID, PerkAbilitySyncS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(GlowMarkS2C.ID, GlowMarkS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(WaterBucketTotemS2C.ID, WaterBucketTotemS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkRequestC2S.ID, PerkRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
@@ -129,5 +130,11 @@ object PerkNetworking {
     fun sendGlowMark(player: ServerPlayerEntity, entityIds: List<Int>, durationMillis: Long) {
         if (!ServerPlayNetworking.canSend(player, GlowMarkS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, GlowMarkS2C(entityIds, durationMillis)) }
+    }
+
+    /** 通知客户端播放"水桶演出" ("落地，水"救命的图腾式动画) */
+    fun sendWaterBucketTotem(player: ServerPlayerEntity) {
+        if (!ServerPlayNetworking.canSend(player, WaterBucketTotemS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, WaterBucketTotemS2C()) }
     }
 }

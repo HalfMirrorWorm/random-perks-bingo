@@ -67,7 +67,7 @@
   "random-perks-bingo.perk.swift_elytra_bond.name": "Wings of the Wind",
   "random-perks-bingo.perk.swift_elytra_bond.desc": "Your chest slot is permanently bound to an elytra (flight), but movement speed is halved.",
   "random-perks-bingo.perk.swift_life_bucket.name": "MLG Water",
-  "random-perks-bingo.perk.swift_life_bucket.desc": "While taking fall damage, a water bucket in your offhand saves you like a totem of undying (consumed, leaves an empty bucket).",
+  "random-perks-bingo.perk.swift_life_bucket.desc": "When a fall would be lethal, a water bucket in your offhand saves you like a totem of undying (only the water is consumed — the bucket stays).",
 
   "random-perks-bingo.perk.delver_mining.name": "Miner's Wrist",
   "random-perks-bingo.perk.delver_mining.desc": "+20% mining speed.",

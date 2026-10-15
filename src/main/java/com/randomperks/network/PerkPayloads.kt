@@ -239,6 +239,19 @@ class DoubleJumpC2S : CustomPayload {
     override fun getId() = ID
 }
 
+/** S2C: "落地，水"触发 —— 客户端播放"水桶上浮旋转"演出 (参照图腾动画, 物品换成水桶) */
+class WaterBucketTotemS2C : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<WaterBucketTotemS2C>(Identifier.of("random-perks-bingo", "water_bucket_totem"))
+        val CODEC: PacketCodec<RegistryByteBuf, WaterBucketTotemS2C> = PacketCodec.of(
+            { _, _ -> },
+            { _ -> WaterBucketTotemS2C() },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** C2S: 玩家请求打开词条百科 (全部词条 + 已收集标记) */
 class PerkCatalogRequestC2S : CustomPayload {
     companion object {

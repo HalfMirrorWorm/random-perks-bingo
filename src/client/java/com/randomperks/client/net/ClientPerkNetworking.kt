@@ -19,6 +19,9 @@ import com.randomperks.network.PerkRequestC2S
 import com.randomperks.network.StealOpenS2C
 import com.randomperks.network.StealPickC2S
 import com.randomperks.network.StealRequestC2S
+import com.randomperks.network.WaterBucketTotemS2C
+import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.text.Text
 
@@ -88,6 +91,13 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(GlowMarkS2C.ID) { payload, context ->
             context.client().execute {
                 GlowMarkState.mark(payload.entityIds, payload.durationMillis)
+            }
+        }
+
+        ClientPlayNetworking.registerGlobalReceiver(WaterBucketTotemS2C.ID) { _, context ->
+            context.client().execute {
+                // "落地，水"救命的演出: 与图腾一致的上浮旋转动画, 物品换成水桶
+                context.client().gameRenderer.showFloatingItem(ItemStack(Items.WATER_BUCKET))
             }
         }
     }
