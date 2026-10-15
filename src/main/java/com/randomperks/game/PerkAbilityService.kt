@@ -1,5 +1,6 @@
 package com.randomperks.game
 
+import com.randomperks.mixin.LivingEntityJumpVelocityInvoker
 import com.randomperks.state.PerkStateManager
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
@@ -15,9 +16,6 @@ object PerkAbilityService {
 
     /** 二段跳冷却 (tick), 防止包连发刷跳跃 */
     private const val DOUBLE_JUMP_COOLDOWN = 10L
-
-    /** 二段跳初速度 (普通跳跃为 0.42) */
-    private const val DOUBLE_JUMP_VELOCITY = 0.55
 
     /** "每段离地只允许一次"标记 (落地/重生时复位) */
     private const val DOUBLE_JUMP_USED_KEY = "double_jump_used"
@@ -45,8 +43,12 @@ object PerkAbilityService {
         state.cooldowns["double_jump"] = now + DOUBLE_JUMP_COOLDOWN
         state.memory[DOUBLE_JUMP_USED_KEY] = "1"
 
+        // 真正的"再跳一次": 在当前垂直速度上**叠加**一次与自身跳跃能力相同的冲量 ——
+        // 起跳后立刻按会跳得更高, 下落中按则先抵消下坠; 冲量随跳跃提升等加成自动变化
+        // (读取的是玩家真实的 getJumpVelocity(), 而不是固定数值)
+        val impulse = (player as LivingEntityJumpVelocityInvoker).invokeGetJumpVelocity()
         val velocity = player.velocity
-        player.velocity = Vec3d(velocity.x, DOUBLE_JUMP_VELOCITY, velocity.z)
+        player.velocity = Vec3d(velocity.x, velocity.y + impulse, velocity.z)
         player.velocityModified = true
 
         player.playSoundToPlayer(

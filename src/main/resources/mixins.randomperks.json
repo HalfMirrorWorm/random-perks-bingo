@@ -13,6 +13,7 @@
     "EffectPersistMixin",
     "ServerWorldAccessor",
     "WanderingTraderManagerInvoker",
+    "LivingEntityJumpVelocityInvoker",
     "WindStrideMixin",
     "PlayerLandingMixin"
   ],
