@@ -152,7 +152,7 @@
   "random-perks-bingo.perk.artisan_long_arms.name": "Long Arms",
   "random-perks-bingo.perk.artisan_long_arms.desc": "+4 blocks of block and entity interaction range.",
   "random-perks-bingo.perk.harvest_summon_horse.name": "Horse, Come",
-  "random-perks-bingo.perk.harvest_summon_horse.desc": "Summon a tamed horse with a saddle at your position (shears-right-click to remove the saddle, sneak-right-click to open its inventory).",
+  "random-perks-bingo.perk.harvest_summon_horse.desc": "Summon a tamed horse with a saddle at your position.",
   "random-perks-bingo.perk.seeker_wandering_trader.name": "Wandering Leash",
   "random-perks-bingo.perk.seeker_wandering_trader.desc": "Immediately trigger the vanilla wandering trader spawn (identical to natural spawning); if the biome forbids it, you are notified and it retries when you change biomes.",
   "random-perks-bingo.perk.seeker_village_compass.name": "Homecoming",

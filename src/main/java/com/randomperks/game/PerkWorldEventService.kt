@@ -8,13 +8,8 @@ import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
-import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.passive.AbstractHorseEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 
@@ -36,9 +31,10 @@ object PerkWorldEventService {
             dispatch(player) { ctx, perk -> perk.onBlockBreak(ctx, pos, state) }
         }
 
-        // "属于你的马"的交互 (含旧版本召唤的马):
-        // ① 潜行 + 空手右键 → 打开马的装备界面 (不依赖原版条件)
-        // ② 剪刀右键 → 直接取下鞍
+        // "属于你的马"交互时的兼容修复 (含旧版本召唤的马):
+        // 旧代码只设了主人没设驯服标志, 未驯服的马会被原版 openInventory 的
+        // isTame 检查拒绝 (表现为"按 E 打不开装备界面"), 见到就补上驯服标志。
+        // 其余交互 (骑乘 / 按 E 或潜行右键开装备界面 / 剪刀剪下装备) 全部交还原版处理。
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
             if (player !is ServerPlayerEntity) return@register ActionResult.PASS
@@ -46,29 +42,11 @@ object PerkWorldEventService {
             val owner = entity.ownerReference ?: return@register ActionResult.PASS
             if (owner.uuid != player.uuid) return@register ActionResult.PASS
 
-            // 兼容旧版召唤的马: 旧代码只设了主人没设驯服标志, 而未驯服的马会被原版
-            // openInventory 的 isTame 检查拒绝 (表现为"按 E 打不开"), 见到就补上驯服标志
             if (!entity.isTame && HarvestPerks.SummonHorse.TAG in entity.commandTags) {
                 entity.setTame(true)
             }
 
-            // ① 潜行 + 空手 → 打开马的装备界面 (RideableInventory 的官方入口)
-            if (player.isSneaking && player.mainHandStack.isEmpty) {
-                entity.openInventory(player)
-                return@register ActionResult.SUCCESS
-            }
-
-            // ② 剪刀 → 取下鞍
-            if (!player.mainHandStack.isOf(Items.SHEARS)) return@register ActionResult.PASS
-            val saddle = entity.getEquippedStack(EquipmentSlot.SADDLE)
-            if (saddle.isEmpty) return@register ActionResult.PASS
-
-            entity.equipStack(EquipmentSlot.SADDLE, ItemStack.EMPTY)
-            player.giveItemStack(saddle)
-            player.playSoundToPlayer(
-                SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), SoundCategory.PLAYERS, 0.8f, 1.0f,
-            )
-            ActionResult.SUCCESS
+            ActionResult.PASS
         }
     }
 
