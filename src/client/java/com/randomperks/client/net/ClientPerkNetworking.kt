@@ -121,12 +121,6 @@ object ClientPerkNetworking {
         ClientPlayNetworking.send(PerkCatalogRequestC2S())
     }
 
-    /** 请求打开偷窃界面 (需持有"顺手牵羊"词条) */
-    fun requestSteal() {
-        if (!ClientPlayNetworking.canSend(StealRequestC2S.ID)) return
-        ClientPlayNetworking.send(StealRequestC2S())
-    }
-
     /** 选择偷取第 index 格的物品 */
     fun pickSteal(index: Int) {
         if (!ClientPlayNetworking.canSend(StealPickC2S.ID)) return

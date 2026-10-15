@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
+import com.randomperks.game.StealService
 import com.randomperks.mixin.ServerWorldAccessor
 import com.randomperks.mixin.WanderingTraderManagerInvoker
 import com.randomperks.network.PerkNetworking
@@ -178,13 +179,15 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 金 · 秘藏 · 质变: 按 G 打开一名随机敌方玩家的背包, 偷走其中一格自选物品 (一次性; 目标在打开时随机决定) */
+    /** 金 · 秘藏 · 质变: **获得时立即**打开一名随机敌方玩家的背包, 偷走其中一格自选物品 (一次性) */
     object Pickpocket : PerkDefinition {
         override val id = "seeker_pickpocket"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.LEAD)
-        // 交互逻辑由 StealService 处理 (打开时随机选目标, 选择后消耗词条)
+
+        /** 立即生效: 获得瞬间随机选一名敌方玩家并打开其背包 (无目标时提示) */
+        override fun onAcquire(ctx: PerkContext) = StealService.handleRequest(ctx.player)
     }
 
     /** 金 · 秘藏 · 质变: 永久透视 —— 高亮标记 64 格内的所有生物 (不含玩家) */
@@ -395,7 +398,7 @@ object SeekerPerks {
                 world.pointOfInterestStorage.getNearestPosition(
                     { entry -> entry.key.map { it == PointOfInterestTypes.MEETING }.orElse(false) },
                     villagePos,
-                    48,
+                    96,
                     net.minecraft.world.poi.PointOfInterestStorage.OccupationStatus.ANY,
                 ).orElse(null)
             }.getOrNull()

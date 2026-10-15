@@ -33,12 +33,31 @@ object PermanentEffects {
         Entry(StatusEffects.JUMP_BOOST, "swift_jump", 0),
     )
 
+    /** [诊断] 上次打印调用栈的 tick (定位"每 0.5 秒被移除"的来源, 定位后可删) */
+    private var lastTraceTick = 0L
+
     /** 效果被移除 (由 EffectPersistMixin 在所有移除路径的汇聚点调用) */
     fun onEffectsRemoved(player: ServerPlayerEntity, removed: Collection<StatusEffectInstance>) {
         val affected = ENTRIES.filter { entry ->
             removed.any { it.effectType.value() == entry.effect.value() }
         }
         if (affected.isEmpty()) return
+
+        // [诊断] 节流打印: 调用栈 + 被移除实例的状态
+        val now = (player.server?.ticks ?: 0).toLong()
+        if (now - lastTraceTick >= 40) {
+            lastTraceTick = now
+            val trace = Thread.currentThread().stackTrace.take(16)
+                .joinToString(" <- ") { "${it.className.substringAfterLast('.')}.${it.methodName}" }
+            RandomPerksMod.logger.info("[RandomPerks][diag] removal stack: {}", trace)
+            for (instance in removed) {
+                RandomPerksMod.logger.info(
+                    "[RandomPerks][diag] removed instance: dur={} amp={} infinite={} ambient={}",
+                    instance.duration, instance.amplifier, instance.isInfinite,
+                    instance.isAmbient,
+                )
+            }
+        }
 
         RandomPerksMod.logger.info(
             "[RandomPerks] permanent effect(s) removed from {}: {} → 待重挂",
