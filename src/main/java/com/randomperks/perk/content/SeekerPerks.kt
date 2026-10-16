@@ -360,6 +360,10 @@ object SeekerPerks {
          * 因此循环触发到命中为止 (上限 50 次, 兜底防"生物群系不允许"类死循环)。
          */
         private fun spawnVanillaTrader(world: ServerWorld): Boolean {
+            // 原版 trySpawn 在"世界无存活玩家"时会返回 true 却什么都不生成 —— 先挡掉, 否则会把词条
+            // 误标为已刷出 (边角情况: 玩家在死亡状态下获得词条, 且服务器上暂无其他存活玩家)
+            if (world.players.none { it.isAlive }) return false
+
             val accessor = world as ServerWorldAccessor
             val manager = accessor.spawners
                 .filterIsInstance<WanderingTraderManager>()
