@@ -121,16 +121,7 @@ object DelverPerks {
             if (ctx.player.random.nextFloat() >= 0.08f) return
 
             val world = ctx.player.world as? ServerWorld ?: return
-            // "该方块的真实掉落" (自动包含时运/精准采集的结果), 以掉落物形态落在方块位置
-            val drops = Block.getDroppedStacks(
-                blockState, world, pos, null,
-                ctx.player, ctx.player.mainHandStack,
-            )
-            for (drop in drops) {
-                val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, drop.copy())
-                entity.setToDefaultPickupDelay()
-                world.spawnEntity(entity)
-            }
+            spawnBlockDropsOnce(ctx.player, world, pos, blockState)
         }
     }
 
@@ -233,7 +224,8 @@ object DelverPerks {
         }
     }
 
-    /** 紫 · 深掘: 挖掘时相当于时运 II (40% 概率额外掉落一份), 但挖掘速度降低 50% (不影响攻速) */
+    /** 紫 · 深掘: 破坏方块时 40% 概率额外生成一份该方块的掉落 (时运 II 风味),
+     *  但挖掘速度降低 50% (不影响攻速); 额外份为掉落物形态, 参与透视之眼惩罚等一切掉落物交互 */
     object Collector : PerkDefinition {
         override val id = "delver_collector"
         override val rarity = PerkRarity.PURPLE
@@ -255,12 +247,28 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
 
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
+            // 联动"透视之眼"代价: 本 tick 该玩家的挖块掉落若被抑制, 额外份一并抑制 (与矿脉嗅觉同范式)
+            val suppressTick = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY]
+            if (suppressTick != null && suppressTick == (ctx.player.server?.ticks ?: -1).toString()) return
             if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return
-            // 模拟时运 II: 复制一份刚生成的掉落物
+
             val world = ctx.player.world as? ServerWorld ?: return
-            val box = net.minecraft.util.math.Box(pos).expand(1.5)
-            world.getEntitiesByClass(ItemEntity::class.java, box) { it.age <= 1 }
-                .forEach { world.spawnEntity(ItemEntity(world, it.x, it.y, it.z, it.stack.copy())) }
+            spawnBlockDropsOnce(ctx.player, world, pos, blockState)
+        }
+    }
+
+    /** 生成一份"该方块的真实掉落"作为掉落物 (自动含时运/精准采集结果; 供矿脉嗅觉/收藏家复用) */
+    private fun spawnBlockDropsOnce(
+        player: net.minecraft.server.network.ServerPlayerEntity,
+        world: ServerWorld,
+        pos: net.minecraft.util.math.BlockPos,
+        blockState: BlockState,
+    ) {
+        val drops = Block.getDroppedStacks(blockState, world, pos, null, player, player.mainHandStack)
+        for (drop in drops) {
+            val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, drop.copy())
+            entity.setToDefaultPickupDelay()
+            world.spawnEntity(entity)
         }
     }
 
