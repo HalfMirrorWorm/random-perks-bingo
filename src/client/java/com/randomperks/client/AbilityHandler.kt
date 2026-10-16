@@ -50,9 +50,10 @@ object AbilityHandler {
             ) {
                 doubleJumpUsedThisAirTime = true
 
-                // 本地预测: 立即叠加与自身跳跃能力相同的冲量 (移动由客户端结算, 不等服务端回包)
+                // 本地预测: 立即把垂直速度**置为**一次标准跳跃冲量 (移动由客户端结算, 不等服务端回包)。
+                // 置位而非叠加 —— 参考 Origins 等主流二段跳做法: 任何时机按下都得到一致的标准跳跃高度
                 val impulse = (player as LivingEntityJumpVelocityInvoker).invokeGetJumpVelocity()
-                player.velocity = Vec3d(player.velocity.x, player.velocity.y + impulse, player.velocity.z)
+                player.velocity = Vec3d(player.velocity.x, impulse.toDouble(), player.velocity.z)
 
                 if (ClientPlayNetworking.canSend(DoubleJumpC2S.ID)) {
                     ClientPlayNetworking.send(DoubleJumpC2S())

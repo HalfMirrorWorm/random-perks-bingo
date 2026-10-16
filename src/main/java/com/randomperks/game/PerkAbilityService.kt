@@ -42,12 +42,12 @@ object PerkAbilityService {
 
         state.memory[DOUBLE_JUMP_USED_KEY] = "1"
 
-        // 真正的"再跳一次": 在当前垂直速度上**叠加**一次与自身跳跃能力相同的冲量 ——
-        // 起跳后立刻按会跳得更高, 下落中按则先抵消下坠; 冲量随跳跃提升等加成自动变化
-        // (读取的是玩家真实的 getJumpVelocity(), 而不是固定数值)
+        // 真正的"再跳一次": 把垂直速度**置为**一次与自身跳跃能力相同的冲量 (置位而非叠加) ——
+        // 任何时机按下都得到一致的标准跳跃高度 (与当前下落速度无关), 水平速度保持不变;
+        // 冲量随跳跃提升等加成自动变化 (读取的是玩家真实的 getJumpVelocity(), 而不是固定数值)
         val impulse = (player as LivingEntityJumpVelocityInvoker).invokeGetJumpVelocity()
         val velocity = player.velocity
-        player.velocity = Vec3d(velocity.x, velocity.y + impulse, velocity.z)
+        player.velocity = Vec3d(velocity.x, impulse.toDouble(), velocity.z)
         player.velocityModified = true
 
         RandomPerksMod.logger.info(
