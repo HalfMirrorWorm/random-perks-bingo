@@ -100,6 +100,8 @@ object XrayRenderer {
     }
 
     fun register() {
+        // 自定义管线注册进全局表 (与原版管线同等待遇: 资源重载后仍可被正确重建)
+        RenderPipelines.register(XRAY_LINE_PIPELINE)
         ClientTickEvents.END_CLIENT_TICK.register { client -> tick(client) }
         WorldRenderEvents.AFTER_TRANSLUCENT.register { context -> render(context) }
     }
@@ -207,7 +209,7 @@ object XrayRenderer {
         // 无需手动 draw: 本层内容由世界渲染收尾统一刷出
     }
 
-    /** 画一条棱 (两个顶点); normal 供线的屏幕空间加粗使用 */
+    /** 画一条棱 (两个顶点); normal 传"线方向"(与原版 VertexRendering.drawOutline 一致) */
     private fun emitSegment(
         buffer: VertexConsumer, seg: Segment,
         cx: Float, cy: Float, cz: Float, r: Int, g: Int, b: Int,
@@ -224,11 +226,16 @@ object XrayRenderer {
         val end = floatArrayOf(start[0], start[1], start[2])
         end[axis] = 1f
 
+        // 线方向向量 (轴对齐线段, 本身就是单位向量) —— 照抄原版轮廓线的 normal 语义
+        val nx = end[0] - start[0]
+        val ny = end[1] - start[1]
+        val nz = end[2] - start[2]
+
         buffer.vertex(cx + (start[0] - 0.5f), cy + (start[1] - 0.5f), cz + (start[2] - 0.5f))
             .color(r, g, b, 255)
-            .normal(0f, 1f, 0f)
+            .normal(nx, ny, nz)
         buffer.vertex(cx + (end[0] - 0.5f), cy + (end[1] - 0.5f), cz + (end[2] - 0.5f))
             .color(r, g, b, 255)
-            .normal(0f, 1f, 0f)
+            .normal(nx, ny, nz)
     }
 }
