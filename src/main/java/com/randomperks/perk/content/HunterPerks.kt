@@ -93,10 +93,10 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.BONE)
 
-        /** 奖池: 常见基础材料 + 中档材料 (末影珍珠 / 恶魂之泪 / 幻翼膜 / 烈焰粉 …) */
+        /** 奖池: 常见基础材料 + 中档材料 (末影珍珠 / 恶魂之泪 / 幻翼膜 / 烈焰粉 / 蜘蛛网 …) */
         private val loot = listOf(
             Items.BONE, Items.STRING, Items.LEATHER, Items.ROTTEN_FLESH, Items.FEATHER, Items.GUNPOWDER,
-            Items.SPIDER_EYE, Items.SLIME_BALL, Items.MAGMA_CREAM,
+            Items.SPIDER_EYE, Items.SLIME_BALL, Items.MAGMA_CREAM, Items.COBWEB,
             Items.PHANTOM_MEMBRANE, Items.BLAZE_POWDER, Items.ENDER_PEARL, Items.GHAST_TEAR,
         )
 
@@ -131,7 +131,9 @@ object HunterPerks {
                     PerkEffects.enchant(ctx.player, it, Enchantments.SHARPNESS, 3)
                 }
             }
-            PerkEffects.giveStack(ctx.player, prize)
+            val world = ctx.player.world as? ServerWorld ?: return
+            // "战利品袋"以真实掉落物形态落在怪物死亡位置 (与"剥皮专家"同口径)
+            victim.dropStack(world, prize)
             ctx.player.sendMessage(net.minecraft.text.Text.translatable("random-perks-bingo.message.loot_bag"), false)
         }
     }
