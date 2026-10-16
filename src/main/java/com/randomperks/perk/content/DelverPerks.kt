@@ -129,7 +129,7 @@ object DelverPerks {
         }
     }
 
-    /** 蓝 · 深掘: 未穿护甲时获得 +5 护甲值 (鞘翅不算护甲) */
+    /** 蓝 · 深掘: 未穿护甲时获得 +7 护甲值 (鞘翅不算护甲) */
     object IronSkin : PerkDefinition {
         override val id = "delver_iron_skin"
         override val rarity = PerkRarity.BLUE
@@ -148,7 +148,7 @@ object DelverPerks {
             if (PerkEffects.hasNoArmor(ctx.player)) {
                 PerkEffects.setAttribute(
                     ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN,
-                    5.0, EntityAttributeModifier.Operation.ADD_VALUE,
+                    7.0, EntityAttributeModifier.Operation.ADD_VALUE,
                 )
             } else {
                 PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
