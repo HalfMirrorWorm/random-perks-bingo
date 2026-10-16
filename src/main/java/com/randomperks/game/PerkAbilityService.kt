@@ -1,6 +1,5 @@
 package com.randomperks.game
 
-import com.randomperks.RandomPerksMod
 import com.randomperks.mixin.LivingEntityJumpVelocityInvoker
 import com.randomperks.state.PerkStateManager
 import net.minecraft.particle.ParticleTypes
@@ -35,12 +34,7 @@ object PerkAbilityService {
 
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.hasPerk(DOUBLE_JUMP_PERK_ID)) return
-        if (state.memory[DOUBLE_JUMP_USED_KEY] == "1") {  // 每段离地只允许一次
-            RandomPerksMod.logger.info(
-                "[RandomPerks] double jump rejected for {} — already used this airtime", player.name.string,
-            )
-            return
-        }
+        if (state.memory[DOUBLE_JUMP_USED_KEY] == "1") return  // 每段离地只允许一次
 
         state.memory[DOUBLE_JUMP_USED_KEY] = "1"
 
@@ -51,11 +45,6 @@ object PerkAbilityService {
         val velocity = player.velocity
         player.velocity = Vec3d(velocity.x, impulse.toDouble(), velocity.z)
         player.velocityModified = true
-
-        RandomPerksMod.logger.info(
-            "[RandomPerks] double jump applied for {} (impulse {}, velY {} → {})",
-            player.name.string, impulse, velocity.y, player.velocity.y,
-        )
 
         // 反馈 (参考社区通行做法: 升空音效 + 跳跃位置喷一小团云):
         // 音效 = 烟花升空的"咻"; 粒子 = 脚下 cloud burst (服务端生成 → 附近玩家都能看到)
