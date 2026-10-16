@@ -164,8 +164,9 @@ object HunterPerks {
         override fun onAcquire(ctx: PerkContext) = refresh(ctx)
         override fun onRespawn(ctx: PerkContext) = refresh(ctx)
 
-        /** 每秒校验装备状态, 穿/脱护甲时自动生效或失效 */
-        override fun onTick(ctx: PerkContext) = refresh(ctx)
+        /** 穿/脱护甲的**瞬间**重算 —— EquipmentChangeMixin(手上换) + PlayerInventoryEquipMixin(界面里拖)
+         *  两条路径都分发事件, 与"铁皮"同一机制, 不再每秒轮询 */
+        override fun onEquipmentChange(ctx: PerkContext) = refresh(ctx)
 
         private fun refresh(ctx: PerkContext) {
             if (PerkEffects.hasNoArmor(ctx.player)) {
