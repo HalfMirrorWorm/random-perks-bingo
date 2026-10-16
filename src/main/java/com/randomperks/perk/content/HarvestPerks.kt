@@ -166,7 +166,8 @@ object HarvestPerks {
             val world = player.world as? ServerWorld ?: return
 
             val horse = net.minecraft.entity.passive.HorseEntity(net.minecraft.entity.EntityType.HORSE, world)
-            horse.setPosition(player.x, player.y, player.z)
+            // 位置 + 朝向都跟随玩家 (原版生成走 refreshPositionAndAngles)
+            horse.refreshPositionAndAngles(player.x, player.y, player.z, player.yaw, player.pitch)
             horse.setOwner(player)
             // ★ 仅 setOwner 不会设置驯服标志 (Tame 是独立的 horseFlag 位):
             // 未驯服的马在原版会拒绝打开装备界面 (AbstractHorseEntity.openInventory 的 isTame 检查),
@@ -175,6 +176,18 @@ object HarvestPerks {
             horse.equipStack(net.minecraft.entity.EquipmentSlot.SADDLE, ItemStack(Items.SADDLE))
             horse.addCommandTag(TAG)
             horse.setPersistent()
+            // ★ 必须走一遍原版生成初始化: 随机花色 + 随机属性
+            // (15~30 血 / 0.4~1.0 跳跃力 / 0.1125~0.3375 速度)。
+            // 原版把这两件事都放在 initialize → AbstractHorseEntity.initialize → initAttributes(random),
+            // 而 initAttributes 只被 initialize 调用 (构造函数不调) —— 漏掉的话马会停在注册表默认值
+            // (53 血 / 0.7 跳跃 / 0.225 速度 / 固定花色), 比自然生成的马强一倍以上且永远同款。
+            // 参数与 /summon 完全同构 (SpawnReason.COMMAND 也传 null entityData)。
+            horse.initialize(
+                world,
+                world.getLocalDifficulty(horse.blockPos),
+                net.minecraft.entity.SpawnReason.MOB_SUMMONED,
+                null,
+            )
             world.spawnEntity(horse)
         }
     }
