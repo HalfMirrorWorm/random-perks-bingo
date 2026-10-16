@@ -8,7 +8,6 @@ import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
-import net.minecraft.component.DataComponentTypes
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributeModifier
@@ -126,7 +125,7 @@ object SwiftPerks {
     /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度减半。
      *  绑定 = 绑定诅咒 (界面层锁死, 拿不下来);
      *  死亡不掉落 = 死亡时暂存、重生原样归还 (ElytraBondService + ElytraBondDeathMixin);
-     *  自动补装兜住飞坏/被清空等界面之外的边界。 */
+     *  词条移除时直接收回鞘翅 (不归还)。 */
     object ElytraBond : PerkDefinition {
         override val id = "swift_elytra_bond"
         override val rarity = PerkRarity.GOLD
@@ -151,7 +150,8 @@ object SwiftPerks {
             }
         }
 
-        /** 胸甲槽被换下鞘翅的瞬间立即换回 (覆盖飞坏/被清空等非界面路径; 界面路径已被绑定诅咒锁死) */
+        /** 胸甲槽被换下鞘翅的瞬间立即换回 (覆盖被替换/清空等非界面路径; 界面路径已被绑定诅咒锁死。
+         *  注: 鞘翅"飞坏"(同一件耐久耗尽) 不触发补装 —— 玩家需自行用幻翼膜修复) */
         override fun onEquipmentChange(ctx: PerkContext) = enforceChest(ctx)
 
         /** 移动速度减半 (总速度 x0.5) */
@@ -180,12 +180,12 @@ object SwiftPerks {
 
         override fun onRemove(ctx: PerkContext) {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
-            // 取下鞘翅, 清掉两个诅咒后放回背包 (归还一件干净可用的鞘翅)
+            // 词条移除: 直接收回这只由词条发放的鞘翅 (不归还 —— 对局结束/命令移除统一语义;
+            // 死亡暂存中的那只也一并作废)
+            ctx.state.savedChestItem = null
             val chest = ctx.player.getEquippedStack(EquipmentSlot.CHEST)
             if (chest.isOf(Items.ELYTRA)) {
                 ctx.player.equipStack(EquipmentSlot.CHEST, ItemStack.EMPTY)
-                chest.remove(DataComponentTypes.ENCHANTMENTS)
-                ctx.player.giveItemStack(chest)
             }
         }
     }

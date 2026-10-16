@@ -71,7 +71,12 @@ object BingoLifecycle {
             for (state in PerkStateManager.all()) {
                 val player = server.playerManager.getPlayer(state.uuid) ?: continue
                 val ctx = PerkContext(player, state)
-                for (perk in state.ownedPerks.toList()) {
+                // 先从列表移除再逐个 onRemove —— 与命令/偷窃路径的约定一致:
+                // onRemove 里的装备操作会同步触发"装备变化→词条回调"分发, 若此时词条仍在
+                // 列表中, "风之翼"等词条会把自己的回收操作当成"装备被换下"而立即补装
+                val perks = state.ownedPerks.toList()
+                state.ownedPerks.clear()
+                for (perk in perks) {
                     runCatching { perk.onRemove(ctx) }
                         .onFailure { RandomPerksMod.logger.error("[RandomPerks] perk {} onRemove failed", perk.id, it) }
                 }
