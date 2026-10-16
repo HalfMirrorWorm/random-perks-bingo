@@ -21,6 +21,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.world.World
 import java.util.UUID
 
 /**
@@ -206,13 +207,27 @@ object HunterPerks {
             val target = targetId?.let { player.server?.playerManager?.getPlayer(it) }
 
             if (target == null) {
-                // 目标离线/不在场: 清除加速并尝试重新标记
+                // 目标离线/不在场 (或从未标记成功): 清加速后**无论有没有旧目标都重试标记** ——
+                // 否则"获得词条时敌人不在线"会让 TARGET_KEY 永远是 null, 后续每秒都直接 return, 词条永久失效
                 PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
-                if (targetId != null) {
-                    ctx.state.memory.remove(TARGET_KEY)
-                    ctx.state.memory.remove(LAST_DIST_KEY)
-                    markTarget(ctx)
-                }
+                ctx.state.memory.remove(TARGET_KEY)
+                ctx.state.memory.remove(LAST_DIST_KEY)
+                markTarget(ctx)
+                return
+            }
+
+            // 跨维度: 两个世界的坐标硬算出来的距离/方位没有意义 → 只提示目标在哪个维度, 不给加速
+            if (target.world !== player.world) {
+                PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+                ctx.state.memory.remove(LAST_DIST_KEY)
+                player.sendMessage(
+                    Text.translatable(
+                        "random-perks-bingo.message.prey_tracker_dimension",
+                        target.name,
+                        dimensionName(target.world),
+                    ),
+                    true,
+                )
                 return
             }
 
@@ -275,6 +290,14 @@ object HunterPerks {
                 else -> ""
             }
             return (ns + ew).ifEmpty { "~" }
+        }
+
+        /** 维度显示名 (原版三维度走本地化; 其他维度直接显示 id) */
+        private fun dimensionName(world: World): Text = when (world.registryKey) {
+            World.OVERWORLD -> Text.translatable("random-perks-bingo.dimension.overworld")
+            World.NETHER -> Text.translatable("random-perks-bingo.dimension.nether")
+            World.END -> Text.translatable("random-perks-bingo.dimension.end")
+            else -> Text.literal(world.registryKey.value.toString())
         }
 
         override fun onRemove(ctx: PerkContext) {

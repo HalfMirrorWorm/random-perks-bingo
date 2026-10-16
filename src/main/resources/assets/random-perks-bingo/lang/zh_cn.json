@@ -35,6 +35,7 @@
   "random-perks-bingo.message.already_owned": "你已经拥有 %s 了, 请选择其他词条。",
   "random-perks-bingo.message.loot_bag": "★ 战利品袋!",
   "random-perks-bingo.message.prey_tracker": "目标 %s · %s格 · (%s, %s) %s",
+  "random-perks-bingo.message.prey_tracker_dimension": "目标 %s 在 %s · 不同维度, 无法定位",
   "random-perks-bingo.message.steal_marked": "顺手牵羊: 盯上了 %s —— 按 G 打开他的背包。",
   "random-perks-bingo.message.steal_success": "偷到了 %s!",
   "random-perks-bingo.message.steal_victim": "你的 %s 被偷走了!",
@@ -49,6 +50,9 @@
   "random-perks-bingo.message.waypoint_cross_world": "传送点与你不在同一个世界, 无法传送。",
   "random-perks-bingo.message.village_not_found": "附近未找到村庄, 改给你一个普通指南针。",
   "random-perks-bingo.message.trader_biome_blocked": "此生物群系无法刷新流浪商人 —— 请前往其他生物群系, 换群系后会自动重试。",
+  "random-perks-bingo.dimension.overworld": "主世界",
+  "random-perks-bingo.dimension.nether": "下界",
+  "random-perks-bingo.dimension.end": "末地",
 
   "random-perks-bingo.item.treasure_map": "藏宝图",
 
@@ -114,7 +118,7 @@
   "random-perks-bingo.perk.hunter_soul_harvest.name": "灵魂收割",
   "random-perks-bingo.perk.hunter_soul_harvest.desc": "击杀怪物 8% 概率掉落战利品袋 (随机强力物品)。",
   "random-perks-bingo.perk.hunter_marked_prey.name": "猎杀印记",
-  "random-perks-bingo.perk.hunter_marked_prey.desc": "随机标记一名敌方玩家: 持续显示其方位与距离并高亮轮廓; 朝他移动时移速 +50%。",
+  "random-perks-bingo.perk.hunter_marked_prey.desc": "随机标记一名敌方玩家: 持续显示其方位、坐标与距离并高亮轮廓; 朝他移动时移速 +50%。",
   "random-perks-bingo.perk.hunter_greedy_hands.name": "贪婪之手",
   "random-perks-bingo.perk.hunter_greedy_hands.desc": "击杀生物时 50% 概率额外掉落一份战利品; 但你受到其他生物 2 倍伤害。",
   "random-perks-bingo.perk.hunter_predator.name": "我饥饿",

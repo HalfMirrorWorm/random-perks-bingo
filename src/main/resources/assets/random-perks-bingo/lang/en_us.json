@@ -35,6 +35,7 @@
   "random-perks-bingo.message.already_owned": "You already own %s — pick another perk.",
   "random-perks-bingo.message.loot_bag": "★ Loot bag!",
   "random-perks-bingo.message.prey_tracker": "Prey: %s · %sm · (%s, %s) %s",
+  "random-perks-bingo.message.prey_tracker_dimension": "Marked enemy %s is in the %s · another dimension",
   "random-perks-bingo.message.steal_marked": "Pickpocket: you are eyeing %s — press G to open their inventory.",
   "random-perks-bingo.message.steal_success": "Stole %s!",
   "random-perks-bingo.message.steal_victim": "Your %s was stolen!",
@@ -49,6 +50,9 @@
   "random-perks-bingo.message.waypoint_cross_world": "The waypoint is in another world — cannot teleport.",
   "random-perks-bingo.message.village_not_found": "No village found nearby — you got a plain compass instead.",
   "random-perks-bingo.message.trader_biome_blocked": "Wandering traders cannot spawn in this biome — move to another biome and it will retry automatically.",
+  "random-perks-bingo.dimension.overworld": "Overworld",
+  "random-perks-bingo.dimension.nether": "Nether",
+  "random-perks-bingo.dimension.end": "End",
 
   "random-perks-bingo.item.treasure_map": "Treasure Map",
 
