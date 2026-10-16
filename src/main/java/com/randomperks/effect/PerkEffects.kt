@@ -67,9 +67,11 @@ object PerkEffects {
         player.sendAbilitiesUpdate()
     }
 
-    /** 给玩家物品 (背包放不下时掉落) */
+    /** 给玩家物品 (背包放不下时**掉在脚下**)。
+     *  ★ 必须用 offerOrDrop: PlayerEntity.giveItemStack 内部只是 inventory.insertStack,
+     *  塞不下的部分会留在传入对象里被静默丢弃 —— 原版"给不下就掉"的 API 是 PlayerInventory.offerOrDrop。 */
     fun giveStack(player: ServerPlayerEntity, stack: ItemStack) {
-        player.giveItemStack(stack)
+        player.inventory.offerOrDrop(stack)
     }
 
     /** 生成一份"该方块的真实掉落"作为掉落物 (自动含时运/精准采集结果; 标准拾取延迟)。

@@ -1,6 +1,7 @@
 package com.randomperks.game
 
 import com.randomperks.RandomPerksMod
+import com.randomperks.effect.PerkEffects
 import com.randomperks.network.PerkNetworking
 import com.randomperks.perk.PerkContext
 import com.randomperks.state.PerkStateManager
@@ -40,14 +41,16 @@ object StealService {
             .randomOrNull()
     }
 
-    /** 客户端请求打开偷窃界面 (目标在此时随机决定并锁定, 直到选择完成) */
+    /** 客户端请求打开偷窃界面 (目标一经确定即**锁定**, 直到选择完成) */
     fun handleRequest(player: ServerPlayerEntity) {
         if (!PerkSession.isEnabled()) return
 
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.hasPerk(PERK_ID)) return
 
-        val target = pickRandomTarget(player)
+        // 锁定: 已有目标且仍在线就复用, 不重掷 —— 否则反复按 G 能翻遍所有敌人的背包,
+        // 把"随机偷一名敌人"变成"全场侦察 + 精准偷取"; 只有旧目标离线时才重新随机选一名
+        val target = resolveTarget(player, state) ?: pickRandomTarget(player)
         if (target == null) {
             player.sendMessage(Text.translatable("random-perks-bingo.message.steal_no_target"), true)
             return
@@ -66,13 +69,18 @@ object StealService {
         val state = PerkStateManager.get(player.uuid) ?: return
         val perk = state.ownedPerks.find { it.id == PERK_ID } ?: return
 
-        val target = resolveTarget(player, state) ?: return
+        val target = resolveTarget(player, state)
+        if (target == null) {
+            // 目标已离线: 给个提示 (以前是静默无反应, 玩家点了会以为卡了)
+            player.sendMessage(Text.translatable("random-perks-bingo.message.steal_no_target"), true)
+            return
+        }
         val stack = target.inventory.getStack(index)
         if (stack.isEmpty) return
 
-        // 转移物品 (偷窃者的背包放不下则会掉落)
+        // 转移物品 (PerkEffects.giveStack 内部用 offerOrDrop: 偷窃者的背包放不下会掉在脚下, 不会蒸发)
         val taken = target.inventory.removeStack(index)
-        player.giveItemStack(taken)
+        PerkEffects.giveStack(player, taken)
 
         // 一次性: 消耗词条
         state.ownedPerks.remove(perk)
