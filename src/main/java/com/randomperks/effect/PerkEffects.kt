@@ -1,7 +1,10 @@
 package com.randomperks.effect
 
+import net.minecraft.block.Block
+import net.minecraft.block.BlockState
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.entity.EquipmentSlot
+import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.attribute.EntityAttribute
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.effect.StatusEffect
@@ -12,7 +15,9 @@ import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
 
 /**
  * 词条效果的工具函数 (属性 / 状态效果 / 物品)。
@@ -65,6 +70,22 @@ object PerkEffects {
     /** 给玩家物品 (背包放不下时掉落) */
     fun giveStack(player: ServerPlayerEntity, stack: ItemStack) {
         player.giveItemStack(stack)
+    }
+
+    /** 生成一份"该方块的真实掉落"作为掉落物 (自动含时运/精准采集结果; 标准拾取延迟)。
+     *  供"矿脉嗅觉 / 收藏家 / 樵夫之手"等"额外掉落"类词条复用。 */
+    fun spawnBlockDrops(
+        player: ServerPlayerEntity,
+        world: ServerWorld,
+        pos: BlockPos,
+        blockState: BlockState,
+    ) {
+        val drops = Block.getDroppedStacks(blockState, world, pos, null, player, player.mainHandStack)
+        for (drop in drops) {
+            val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, drop.copy())
+            entity.setToDefaultPickupDelay()
+            world.spawnEntity(entity)
+        }
     }
 
     /** 给物品附魔 (自动把 RegistryKey 解析为 RegistryEntry; 附魔在 1.21+ 是数据驱动注册表) */

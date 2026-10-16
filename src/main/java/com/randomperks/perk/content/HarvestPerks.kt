@@ -6,7 +6,6 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
-import net.minecraft.entity.ItemEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -71,9 +70,8 @@ object HarvestPerks {
             if (!blockState.isIn(net.minecraft.registry.tag.BlockTags.LOGS)) return
             if (ctx.player.random.nextFloat() >= 0.50f) return
             val world = ctx.player.world as? ServerWorld ?: return
-            world.spawnEntity(
-                ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, ItemStack(blockState.block)),
-            )
+            // 标准掉落物实体 (含默认拾取延迟), 与矿脉嗅觉/收藏家同范式
+            PerkEffects.spawnBlockDrops(ctx.player, world, pos, blockState)
         }
     }
 

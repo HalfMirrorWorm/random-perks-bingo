@@ -7,7 +7,6 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
-import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.entity.ItemEntity
@@ -107,7 +106,7 @@ object DelverPerks {
             if (ctx.player.random.nextFloat() >= chance) return
 
             val world = ctx.player.world as? ServerWorld ?: return
-            spawnBlockDropsOnce(ctx.player, world, pos, blockState)
+            PerkEffects.spawnBlockDrops(ctx.player, world, pos, blockState)
         }
     }
 
@@ -241,7 +240,7 @@ object DelverPerks {
             if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return
 
             val world = ctx.player.world as? ServerWorld ?: return
-            spawnBlockDropsOnce(ctx.player, world, pos, blockState)
+            PerkEffects.spawnBlockDrops(ctx.player, world, pos, blockState)
         }
     }
 
@@ -267,21 +266,6 @@ object DelverPerks {
     private fun isStoneBlock(state: BlockState): Boolean =
         state.isIn(BlockTags.BASE_STONE_OVERWORLD) ||
             state.isOf(Blocks.COBBLESTONE) || state.isOf(Blocks.COBBLED_DEEPSLATE)
-
-    /** 生成一份"该方块的真实掉落"作为掉落物 (自动含时运/精准采集结果; 供矿脉嗅觉/收藏家复用) */
-    private fun spawnBlockDropsOnce(
-        player: net.minecraft.server.network.ServerPlayerEntity,
-        world: ServerWorld,
-        pos: net.minecraft.util.math.BlockPos,
-        blockState: BlockState,
-    ) {
-        val drops = Block.getDroppedStacks(blockState, world, pos, null, player, player.mainHandStack)
-        for (drop in drops) {
-            val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, drop.copy())
-            entity.setToDefaultPickupDelay()
-            world.spawnEntity(entity)
-        }
-    }
 
     fun registerAll() {
         PerkRegistry.register(Mining)
