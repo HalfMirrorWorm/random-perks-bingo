@@ -14,7 +14,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.entity.mob.HostileEntity
+import net.minecraft.entity.mob.Monster
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
@@ -85,19 +85,28 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 剥皮专家: 击杀怪物 30% 额外掉落战利品 */
+    /** 紫 · 剥皮专家: 击杀怪物 30% 额外掉落一件战利品
+     *  —— 以**真实掉落物**形态落在怪物死亡位置 (带默认拾取延迟), 奖池为常见材料 + 中档材料 */
     object Scavenger : PerkDefinition {
         override val id = "hunter_scavenger"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.BONE)
 
-        private val loot = listOf(Items.BONE, Items.STRING, Items.LEATHER, Items.ROTTEN_FLESH, Items.FEATHER, Items.GUNPOWDER)
+        /** 奖池: 常见基础材料 + 中档材料 (末影珍珠 / 恶魂之泪 / 幻翼膜 / 烈焰粉 …) */
+        private val loot = listOf(
+            Items.BONE, Items.STRING, Items.LEATHER, Items.ROTTEN_FLESH, Items.FEATHER, Items.GUNPOWDER,
+            Items.SPIDER_EYE, Items.SLIME_BALL, Items.MAGMA_CREAM,
+            Items.PHANTOM_MEMBRANE, Items.BLAZE_POWDER, Items.ENDER_PEARL, Items.GHAST_TEAR,
+        )
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
-            if (victim !is HostileEntity) return
+            // "怪物"必须用 Monster 接口判定: HostileEntity 只是个抽象类, 史莱姆 / 岩浆怪 / 恶魂 /
+            // 幻翼 / 潜影贝 / 疣猪兽 / 末影龙 都只实现 Monster 接口而不继承它, 用类判定会把这批全漏掉
+            if (victim !is Monster) return
             if (ctx.player.random.nextFloat() >= 0.30f) return
-            PerkEffects.giveStack(ctx.player, ItemStack(loot[ctx.player.random.nextInt(loot.size)]))
+            val world = ctx.player.world as? ServerWorld ?: return
+            victim.dropStack(world, ItemStack(loot[ctx.player.random.nextInt(loot.size)]))
         }
     }
 
@@ -109,7 +118,8 @@ object HunterPerks {
         override fun icon() = ItemStack(Items.NETHER_STAR)
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
-            if (victim !is HostileEntity) return
+            // 同"剥皮专家": 用 Monster 接口判定 (HostileEntity 会漏掉史莱姆/恶魂/幻翼/末影龙等)
+            if (victim !is Monster) return
             if (ctx.player.random.nextFloat() >= 0.08f) return
 
             val roll = ctx.player.random.nextInt(4)
