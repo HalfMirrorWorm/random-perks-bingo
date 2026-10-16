@@ -59,7 +59,12 @@ object HunterPerks {
             ctx.player.heal(4f)
         }
 
-        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) {
+            apply(ctx)
+            // 原版重生会把血量设成"当时的最大值"(20) —— ServerPlayerEntity.copyFrom 的 alive=false 分支,
+            // 而 Fabric 的 AFTER_RESPAWN 在 copyFrom 之后才触发; 不补的话重生后永远是 20/24
+            ctx.player.heal(4f)
+        }
 
         private fun apply(ctx: PerkContext) =
             PerkEffects.setAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_HEALTH, 4.0, EntityAttributeModifier.Operation.ADD_VALUE)
