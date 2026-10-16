@@ -2,18 +2,19 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
+import com.randomperks.mixin.MobLootInvoker
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import net.minecraft.enchantment.Enchantments
-import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.mob.Monster
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -21,6 +22,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.world.GameRules
 import net.minecraft.world.World
 import java.util.UUID
 
@@ -307,7 +309,8 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: 击杀生物相当于抢夺 III (50% 概率额外掉落一份), 但受到其他生物 2 倍伤害 */
+    /** 紫 · 猎杀: 击杀生物时 50% 概率让它的**掉落表再滚一次** (= 额外掉落一份它自己的战利品),
+     *  但受到其他生物 2 倍伤害。掉落由生物自己结算 (与"剥皮专家/灵魂收割"同范式, 不扫地面物品) */
     object GreedyHands : PerkDefinition {
         override val id = "hunter_greedy_hands"
         override val rarity = PerkRarity.PURPLE
@@ -317,11 +320,13 @@ object HunterPerks {
         private const val EXTRA_DROP_CHANCE = 0.5f
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
-            if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return
+            if (victim !is MobEntity) return                                    // 只有生物有掉落表 (玩家/盔甲架没有)
+            if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return      // 每次击杀掷一次, 不是每件物品
             val world = ctx.player.world as? ServerWorld ?: return
-            val box = victim.boundingBox.expand(1.0)
-            world.getEntitiesByClass(ItemEntity::class.java, box) { it.age <= 1 }
-                .forEach { world.spawnEntity(ItemEntity(world, it.x, it.y, it.z, it.stack.copy())) }
+            if (!world.gameRules.getBoolean(GameRules.DO_MOB_LOOT)) return      // 跟随原版"生物掉落"游戏规则
+            val source = victim.recentDamageSource ?: return
+            // 让这只怪的掉落表再滚一次 —— 掉落物直接从它自己身上出来; 与原版死亡掉落同一套结算
+            (victim as MobLootInvoker).invokeDropLoot(world, source, true)
         }
         // "受到其他生物 2 倍伤害" 由 LivingEntityDamageMixin 实现
     }

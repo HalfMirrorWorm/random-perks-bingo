@@ -20,7 +20,8 @@
     "PlayerInventoryEquipMixin",
     "NightVisionControllerMixin",
     "XrayDropSuppressMixin",
-    "HungerRefillMixin"
+    "HungerRefillMixin",
+    "MobLootInvoker"
   ],
   "client": [
     "EntityGlowMixin",
