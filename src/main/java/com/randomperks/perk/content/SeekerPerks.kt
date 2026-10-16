@@ -199,17 +199,22 @@ object SeekerPerks {
 
         private const val RANGE = 64.0
 
+        /** 标记有效期: 2 秒 —— 每秒续期不会闪烁, 又不会在生物离开范围后残留太久 */
+        private const val GLOW_MARK_MILLIS = 2_000L
+
         override fun onTick(ctx: PerkContext) {
             val player = ctx.player
             val world = player.world as? ServerWorld ?: return
             val creatures = world.getEntitiesByClass(
                 LivingEntity::class.java,
                 player.boundingBox.expand(RANGE),
-            ) { it !== player && it !is PlayerEntity && it.isAlive }
+            ) { it !== player && it !is PlayerEntity && it.isAlive &&
+                // 盒子查询只是粗筛, 这里再按**球面**判一次: 否则斜角方向能到 ~111 格 (描述写的是 64 格)
+                it.squaredDistanceTo(player) <= RANGE * RANGE }
 
-            // 每秒重发 (标记 5 秒有效, 过期自动消失); 仅自己可见
+            // 每秒重发 (仅自己可见)
             if (creatures.isNotEmpty()) {
-                PerkNetworking.sendGlowMark(player, creatures.map { it.id }, 5_000L)
+                PerkNetworking.sendGlowMark(player, creatures.map { it.id }, GLOW_MARK_MILLIS)
             }
         }
     }
