@@ -64,10 +64,18 @@ object PerkBoostQuery {
 
     private const val XRAY_PERK = "delver_xray_vision"
 
+    /** 记录"该玩家本 tick 的挖块掉落被透视惩罚抑制"的 tick (供矿脉嗅觉等联动词条查询) */
+    const val XRAY_SUPPRESS_TICK_KEY = "xray_suppress_tick"
+
     /** 用镐破坏方块时是否应抑制本次掉落生成 (持有词条 + 手持镐 + 50%) */
     fun shouldSuppressXrayDrop(player: ServerPlayerEntity, tool: ItemStack): Boolean {
-        if (PerkStateManager.get(player.uuid)?.hasPerk(XRAY_PERK) != true) return false
+        val state = PerkStateManager.get(player.uuid) ?: return false
+        if (!state.hasPerk(XRAY_PERK)) return false
         if (!tool.isIn(ItemTags.PICKAXES)) return false
-        return player.random.nextFloat() < 0.5f
+        if (player.random.nextFloat() >= 0.5f) return false
+        // 抑制生效: 留下本 tick 的标记 —— "矿脉嗅觉"等额外掉落会据此一并抑制, 保证
+        // 额外份同样被 X-Ray 惩罚 (不生成式下唯一能让联动成立的方式)
+        state.memory[XRAY_SUPPRESS_TICK_KEY] = (player.server?.ticks ?: 0).toString()
+        return true
     }
 }

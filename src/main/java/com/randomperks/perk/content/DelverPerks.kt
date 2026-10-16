@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.PerkBoostQuery
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -112,6 +113,9 @@ object DelverPerks {
 
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: net.minecraft.block.BlockState) {
             if (!isOre(blockState)) return
+            // 联动"透视之眼"代价: 本 tick 该玩家的挖块掉落若被抑制, 额外份一并抑制
+            val suppressTick = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY]
+            if (suppressTick != null && suppressTick == (ctx.player.server?.ticks ?: -1).toString()) return
             if (ctx.player.random.nextFloat() >= 0.08f) return
 
             val world = ctx.player.world as? ServerWorld ?: return
