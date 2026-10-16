@@ -4,6 +4,8 @@ import com.randomperks.state.PerkStateManager
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.item.ItemStack
+import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 
@@ -56,5 +58,16 @@ object PerkBoostQuery {
     /** 清除疾跑加成 */
     fun clearWindStride(player: ServerPlayerEntity) {
         player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)?.removeModifier(WIND_STRIDE_MOD)
+    }
+
+    // ---- "透视之眼"的代价: 50% 不掉落 (由 XrayDropSuppressMixin 在 Block.dropStacks 拦截) ----
+
+    private const val XRAY_PERK = "delver_xray_vision"
+
+    /** 用镐破坏方块时是否应抑制本次掉落生成 (持有词条 + 手持镐 + 50%) */
+    fun shouldSuppressXrayDrop(player: ServerPlayerEntity, tool: ItemStack): Boolean {
+        if (PerkStateManager.get(player.uuid)?.hasPerk(XRAY_PERK) != true) return false
+        if (!tool.isIn(ItemTags.PICKAXES)) return false
+        return player.random.nextFloat() < 0.5f
     }
 }

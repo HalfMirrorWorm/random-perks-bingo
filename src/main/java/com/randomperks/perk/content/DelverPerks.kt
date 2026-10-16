@@ -16,7 +16,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.BlockTags
-import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 
@@ -159,25 +158,14 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
     }
 
-    /** 紫 · 深掘: 20 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 50% 概率消失 */
+    /** 紫 · 深掘: 20 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 50% 概率消失
+     *  (由 XrayDropSuppressMixin 在掉落生成处直接抑制 —— 不生成, 而非事后删除) */
     object XrayVision : PerkDefinition {
         override val id = "delver_xray_vision"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.ENDER_EYE)
-
-        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
-            val player = ctx.player
-            // 惩罚只在手持镐子挖掘时生效 (1.21.2+ 无 PickaxeItem 类, 用原版物品标签判断)
-            if (!player.mainHandStack.isIn(ItemTags.PICKAXES)) return
-            if (player.random.nextFloat() >= 0.5f) return
-
-            // 移除该方块刚生成的掉落物 (位置邻近 + age 很小)
-            val world = player.world as? ServerWorld ?: return
-            val box = net.minecraft.util.math.Box(pos).expand(1.5)
-            world.getEntitiesByClass(ItemEntity::class.java, box) { it.age <= 1 }
-                .forEach { it.discard() }
-        }
+        // 透视渲染在客户端 (XrayRenderer); 掉落抑制在 XrayDropSuppressMixin
     }
 
     /** 紫 · 深掘: 用镐子挖方块时, 按镐子等级概率获得随机物品 (木0.1% 石0.5% 铁1% 钻/下界合金10%) */

@@ -18,7 +18,8 @@
     "PlayerLandingMixin",
     "ElytraBondDeathMixin",
     "PlayerInventoryEquipMixin",
-    "NightVisionControllerMixin"
+    "NightVisionControllerMixin",
+    "XrayDropSuppressMixin"
   ],
   "client": [
     "EntityGlowMixin",
