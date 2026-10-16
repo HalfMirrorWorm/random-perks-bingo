@@ -84,7 +84,7 @@
   "random-perks-bingo.perk.delver_lucky_digger.name": "幸运矿工",
   "random-perks-bingo.perk.delver_lucky_digger.desc": "用镐子挖方块时, 按方块的需求镐子等级概率掉落随机物品 (木 0.1% / 石 0.5% / 铁 1% / 钻石及以上 10%); 奖品来自整个 Minecraft 物品库, 不会出现只能通过指令获取的物品。",
   "random-perks-bingo.perk.delver_collector.name": "收藏家",
-  "random-perks-bingo.perk.delver_collector.desc": "挖掘方块时 40% 概率额外掉落一份; 但挖掘速度降低 50% (不影响攻速)。",
+  "random-perks-bingo.perk.delver_collector.desc": "挖掘矿石或石头时 40% 概率额外掉落一份; 但挖掘速度降低 50% (不影响攻速)。",
   "random-perks-bingo.perk.delver_iron_skin.name": "皇帝新衣",
   "random-perks-bingo.perk.delver_iron_skin.desc": "未穿护甲时获得 +7 护甲值。",
 

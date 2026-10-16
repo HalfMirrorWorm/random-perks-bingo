@@ -9,6 +9,7 @@ import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
+import net.minecraft.block.Blocks
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
@@ -95,26 +96,8 @@ object DelverPerks {
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.RAW_IRON)
 
-        /** 矿石判定: 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */
-        private val ORE_TAGS = listOf(
-            BlockTags.COAL_ORES,
-            BlockTags.IRON_ORES,
-            BlockTags.COPPER_ORES,
-            BlockTags.GOLD_ORES,
-            BlockTags.REDSTONE_ORES,
-            BlockTags.LAPIS_ORES,
-            BlockTags.DIAMOND_ORES,
-            BlockTags.EMERALD_ORES,
-        )
-
-        private fun isOre(state: BlockState): Boolean {
-            if (ORE_TAGS.any { state.isIn(it) }) return true
-            val path = Registries.BLOCK.getId(state.block).path
-            return path == "ancient_debris" || path.contains("ore")
-        }
-
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: net.minecraft.block.BlockState) {
-            if (!isOre(blockState)) return
+            if (!isOreBlock(blockState)) return
             // 联动"透视之眼"代价: 本 tick 该玩家的挖块掉落若被抑制, 额外份一并抑制
             val suppressTick = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY]
             if (suppressTick != null && suppressTick == (ctx.player.server?.ticks ?: -1).toString()) return
@@ -227,7 +210,7 @@ object DelverPerks {
         }
     }
 
-    /** 紫 · 深掘: 破坏方块时 40% 概率额外生成一份该方块的掉落 (时运 II 风味),
+    /** 紫 · 深掘: 破坏矿石或石头时 40% 概率额外生成一份该方块的掉落 (时运 II 风味),
      *  但挖掘速度降低 50% (不影响攻速); 额外份为掉落物形态, 参与透视之眼惩罚等一切掉落物交互 */
     object Collector : PerkDefinition {
         override val id = "delver_collector"
@@ -250,6 +233,8 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
 
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
+            // 只对矿石与石头生效
+            if (!isOreBlock(blockState) && !isStoneBlock(blockState)) return
             // 联动"透视之眼"代价: 本 tick 该玩家的挖块掉落若被抑制, 额外份一并抑制 (与矿脉嗅觉同范式)
             val suppressTick = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY]
             if (suppressTick != null && suppressTick == (ctx.player.server?.ticks ?: -1).toString()) return
@@ -259,6 +244,29 @@ object DelverPerks {
             spawnBlockDropsOnce(ctx.player, world, pos, blockState)
         }
     }
+
+    /** 矿石判定 (矿脉嗅觉/收藏家共用): 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */
+    private val ORE_CHECK_TAGS = listOf(
+        BlockTags.COAL_ORES,
+        BlockTags.IRON_ORES,
+        BlockTags.COPPER_ORES,
+        BlockTags.GOLD_ORES,
+        BlockTags.REDSTONE_ORES,
+        BlockTags.LAPIS_ORES,
+        BlockTags.DIAMOND_ORES,
+        BlockTags.EMERALD_ORES,
+    )
+
+    private fun isOreBlock(state: BlockState): Boolean {
+        if (ORE_CHECK_TAGS.any { state.isIn(it) }) return true
+        val path = Registries.BLOCK.getId(state.block).path
+        return path == "ancient_debris" || path.contains("ore")
+    }
+
+    /** "石头"判定: 自然石头 (石头/花岗岩/闪长岩/安山岩/凝灰岩/深板岩) + 两种圆石 */
+    private fun isStoneBlock(state: BlockState): Boolean =
+        state.isIn(BlockTags.BASE_STONE_OVERWORLD) ||
+            state.isOf(Blocks.COBBLESTONE) || state.isOf(Blocks.COBBLED_DEEPSLATE)
 
     /** 生成一份"该方块的真实掉落"作为掉落物 (自动含时运/精准采集结果; 供矿脉嗅觉/收藏家复用) */
     private fun spawnBlockDropsOnce(
