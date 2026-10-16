@@ -3,7 +3,9 @@ package com.randomperks.game
 import com.randomperks.RandomPerksMod
 import com.randomperks.mixin.LivingEntityJumpVelocityInvoker
 import com.randomperks.state.PerkStateManager
+import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.math.Vec3d
@@ -55,11 +57,18 @@ object PerkAbilityService {
             player.name.string, impulse, velocity.y, player.velocity.y,
         )
 
+        // 反馈 (参考社区通行做法: 升空音效 + 跳跃位置喷一小团云):
+        // 音效 = 烟花升空的"咻"; 粒子 = 脚下 cloud burst (服务端生成 → 附近玩家都能看到)
         player.playSoundToPlayer(
-            SoundEvents.ENTITY_BAT_TAKEOFF,
+            SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH,
             SoundCategory.PLAYERS,
-            0.7f,
-            1.4f,
+            0.6f,
+            1.2f,
+        )
+        (player.world as? ServerWorld)?.spawnParticles(
+            ParticleTypes.CLOUD,
+            player.x, player.y + 0.05, player.z,
+            10, 0.25, 0.05, 0.25, 0.01,
         )
     }
 
