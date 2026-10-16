@@ -78,7 +78,7 @@
   "random-perks-bingo.perk.delver_haste.name": "深层专注",
   "random-perks-bingo.perk.delver_haste.desc": "永久急迫 II (挖掘加速)。",
   "random-perks-bingo.perk.delver_vein_scent.name": "矿脉嗅觉",
-  "random-perks-bingo.perk.delver_vein_scent.desc": "挖掘石头类方块时 8% 概率额外掉落一份。",
+  "random-perks-bingo.perk.delver_vein_scent.desc": "挖掘矿石时 8% 概率额外掉落一份。",
   "random-perks-bingo.perk.delver_xray_vision.name": "透视之眼",
   "random-perks-bingo.perk.delver_xray_vision.desc": "20 格内的矿石会发光显示 (可穿透方块); 代价: 用镐子挖到的物品有 50% 概率消失。",
   "random-perks-bingo.perk.delver_lucky_digger.name": "幸运矿工",

@@ -6,14 +6,16 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
+import net.minecraft.block.Block
 import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.registry.Registries
+import net.minecraft.registry.tag.BlockTags
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
@@ -83,25 +85,47 @@ object DelverPerks {
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.HASTE)
     }
 
-    /** 紫 · 矿脉嗅觉: 挖掘石头类方块时有 8% 概率额外掉落一份 (含矿石) */
+    /** 紫 · 矿脉嗅觉: 挖掘矿石时有 8% 概率额外掉落一份 —— 以**掉落物**形态落在地上,
+     *  因此会参与"透视之眼"的 50% 消失惩罚、"收藏家"的复制加成等一切掉落物交互 */
     object VeinScent : PerkDefinition {
         override val id = "delver_vein_scent"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.RAW_IRON)
 
+        /** 矿石判定: 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */
+        private val ORE_TAGS = listOf(
+            BlockTags.COAL_ORES,
+            BlockTags.IRON_ORES,
+            BlockTags.COPPER_ORES,
+            BlockTags.GOLD_ORES,
+            BlockTags.REDSTONE_ORES,
+            BlockTags.LAPIS_ORES,
+            BlockTags.DIAMOND_ORES,
+            BlockTags.EMERALD_ORES,
+        )
+
+        private fun isOre(state: BlockState): Boolean {
+            if (ORE_TAGS.any { state.isIn(it) }) return true
+            val path = Registries.BLOCK.getId(state.block).path
+            return path == "ancient_debris" || path.contains("ore")
+        }
+
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: net.minecraft.block.BlockState) {
-            // 只对石头/深板岩生效, 避免刷木头刷土
-            val block = blockState.block
-            if (block != Blocks.STONE && block != Blocks.DEEPSLATE && block != Blocks.COBBLESTONE && block != Blocks.COBBLED_DEEPSLATE) return
+            if (!isOre(blockState)) return
             if (ctx.player.random.nextFloat() >= 0.08f) return
 
-            val drop = if (block == Blocks.DEEPSLATE || block == Blocks.COBBLED_DEEPSLATE) {
-                ItemStack(Blocks.COBBLED_DEEPSLATE)
-            } else {
-                ItemStack(Blocks.COBBLESTONE)
+            val world = ctx.player.world as? ServerWorld ?: return
+            // "该方块的真实掉落" (自动包含时运/精准采集的结果), 以掉落物形态落在方块位置
+            val drops = Block.getDroppedStacks(
+                blockState, world, pos, null,
+                ctx.player, ctx.player.mainHandStack,
+            )
+            for (drop in drops) {
+                val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, drop.copy())
+                entity.setToDefaultPickupDelay()
+                world.spawnEntity(entity)
             }
-            PerkEffects.giveStack(ctx.player, drop)
         }
     }
 
