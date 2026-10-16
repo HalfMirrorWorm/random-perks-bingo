@@ -1,0 +1,70 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 打 tag 发版时, 校验 tag 与 gradle.properties 的 mod_version 一致,
+      # 避免出现 "tag 是 v0.0.3, 但包里写的是 0.0.2" 这种低级错误
+      - name: Check tag matches mod_version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          VER="$(grep -E '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')"
+          TAG="${GITHUB_REF_NAME#v}"
+          echo "mod_version=$VER  tag=$TAG"
+          if [ "$VER" != "$TAG" ]; then
+            echo "::error::tag ($TAG) 与 gradle.properties 的 mod_version ($VER) 不一致"
+            exit 1
+          fi
+
+      - name: Build
+        run: ./gradlew build --no-daemon
+
+      - name: Collect jars (排除 sources)
+        run: |
+          mkdir -p dist
+          find build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
+          ls -lh dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mod-jar
+          path: dist/*.jar
+          if-no-files-found: error
+
+      # 只有推 tag (v*) 时才发布 Release; 平时 push/PR 只构建 + 传 artifact
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Random Perks Bingo ${{ github.ref_name }}
+          files: dist/*.jar
+          generate_release_notes: true
