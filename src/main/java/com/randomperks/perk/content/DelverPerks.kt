@@ -151,16 +151,17 @@ object DelverPerks {
     }
 
     /** 紫 · 深掘: 用镐子挖方块时, 按**方块所需的镐等级**概率掉落一件随机物品
-     *  (需求木/石/铁/钻石镐的方块分别为 0.1% / 0.5% / 1% / 10%); 奖品取自全部原版物品,
-     *  排除只能通过指令/创造获取的物品。以掉落物形态落地 —— 与"矿脉嗅觉"同范式,
-     *  参与透视之眼的惩罚与收藏家的复制等一切掉落物交互。 */
+     *  (需求木/石/铁/钻石镐的方块分别为 0.1% / 0.5% / 1% / 10%); 奖品取自全部原版物品
+     *  (**含刷怪蛋**), 只排除纯指令方块/工具与"无组件即废品"的模板物品。
+     *  以掉落物形态落地 —— 与"矿脉嗅觉"同范式, 参与透视之眼的惩罚与收藏家的复制等一切掉落物交互。 */
     object LuckyDigger : PerkDefinition {
         override val id = "delver_lucky_digger"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.GOLDEN_PICKAXE)
 
-        /** 不可作为奖品的物品: 只能指令/创造获取的, 以及"无数据组件即为废品"的模板物品 */
+        /** 不可作为奖品的物品: 纯指令方块/工具, 以及"无数据组件即为废品"的模板物品。
+         *  刷怪蛋**在奖池里** (原版只能创造/指令获取, 这里刻意当奖品) */
         private val EXCLUDED_ITEMS = setOf(
             Items.AIR,
             Items.COMMAND_BLOCK, Items.CHAIN_COMMAND_BLOCK, Items.REPEATING_COMMAND_BLOCK,
@@ -172,13 +173,11 @@ object DelverPerks {
             Items.FILLED_MAP, Items.WRITTEN_BOOK,
         )
 
-        /** 全部原版物品的奖池 (排除清单 + 刷怪蛋), 首次使用时构建 */
+        /** 全部原版物品的奖池 (排除清单), 首次使用时构建 */
         private val LOOT_POOL: List<Item> by lazy {
             Registries.ITEM.filter { item ->
                 Registries.ITEM.getId(item).let { id ->
-                    id.namespace == "minecraft" &&
-                        item !in EXCLUDED_ITEMS &&
-                        !id.path.endsWith("_spawn_egg")
+                    id.namespace == "minecraft" && item !in EXCLUDED_ITEMS
                 }
             }
         }
