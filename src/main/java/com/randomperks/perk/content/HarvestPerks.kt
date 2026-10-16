@@ -75,7 +75,7 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 丰收之息: 获得 32 胡萝卜 + 锄头(效率III) */
+    /** 紫 · 丰收之息: 获得 32 胡萝卜 + 锄头(时运III) */
     object Bounty : PerkDefinition {
         override val id = "harvest_bounty"
         override val rarity = PerkRarity.PURPLE
@@ -85,7 +85,7 @@ object HarvestPerks {
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.CARROT, 32))
             val hoe = ItemStack(Items.IRON_HOE)
-            PerkEffects.enchant(ctx.player, hoe, Enchantments.EFFICIENCY, 3)
+            PerkEffects.enchant(ctx.player, hoe, Enchantments.FORTUNE, 3)
             PerkEffects.giveStack(ctx.player, hoe)
         }
     }
