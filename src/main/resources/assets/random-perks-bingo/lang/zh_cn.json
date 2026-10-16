@@ -124,7 +124,7 @@
   "random-perks-bingo.perk.hunter_predator.name": "我饥饿",
   "random-perks-bingo.perk.hunter_predator.desc": "每击杀一只生物, 立即恢复 2 点饥饿值和 2 点饱和度。",
   "random-perks-bingo.perk.hunter_headhunter.name": "SMP玩家",
-  "random-perks-bingo.perk.hunter_headhunter.desc": "每击杀一名其他玩家, 永久 +1 最大生命 (可叠加, 重生保留)。",
+  "random-perks-bingo.perk.hunter_headhunter.desc": "每击杀一名敌方玩家, 永久 +1 最大生命 (可叠加, 重生保留)。",
   "random-perks-bingo.perk.hunter_bare_rage.name": "玻璃小炮",
   "random-perks-bingo.perk.hunter_bare_rage.desc": "未穿护甲时攻击力 +30%。",
 

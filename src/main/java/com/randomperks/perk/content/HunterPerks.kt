@@ -344,7 +344,7 @@ object HunterPerks {
         }
     }
 
-    /** 金 · 猎杀: 每击杀一名其他玩家, 永久 +1 最大生命 (可叠加, 重生保留) */
+    /** 金 · 猎杀: 每击杀一名**敌方玩家** (非自己/非同队), 永久 +1 最大生命 (可叠加, 重生保留) */
     object Headhunter : PerkDefinition {
         override val id = "hunter_headhunter"
         override val rarity = PerkRarity.GOLD
@@ -355,10 +355,22 @@ object HunterPerks {
         private const val BONUS_KEY = "headhunter_bonus"
 
         override fun onAcquire(ctx: PerkContext) = applyBonus(ctx)
-        override fun onRespawn(ctx: PerkContext) = applyBonus(ctx)
+
+        override fun onRespawn(ctx: PerkContext) {
+            applyBonus(ctx)
+            // 原版重生把血量设成"当时的最大值"(20), 而 Fabric 的 AFTER_RESPAWN 在其后才触发,
+            // 不补的话重生后血条永远缺 N 点 (与"强壮体魄"同一处理)
+            val bonus = ctx.state.memory[BONUS_KEY]?.toDoubleOrNull() ?: return
+            ctx.player.heal(bonus.toFloat())
+        }
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             if (victim !is ServerPlayerEntity) return
+            if (victim.uuid == ctx.player.uuid) return                     // 自爆不算 ("每击杀一名其他玩家")
+            // 只算敌方: 与"猎杀印记"同一口径 (同队不算; 自己无队伍时视为全体为敌)
+            val myTeam = ctx.player.scoreboardTeam?.name
+            if (myTeam != null && victim.scoreboardTeam?.name == myTeam) return
+
             val bonus = (ctx.state.memory[BONUS_KEY]?.toDoubleOrNull() ?: 0.0) + 1.0
             ctx.state.memory[BONUS_KEY] = bonus.toString()
             applyBonus(ctx)
