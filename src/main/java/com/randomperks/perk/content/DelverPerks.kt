@@ -13,10 +13,12 @@ import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.BlockTags
+import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 
@@ -172,39 +174,62 @@ object DelverPerks {
         // 透视渲染在客户端 (XrayRenderer); 掉落抑制在 XrayDropSuppressMixin
     }
 
-    /** 紫 · 深掘: 用镐子挖方块时, 按镐子等级概率获得随机物品 (木0.1% 石0.5% 铁1% 钻/下界合金10%) */
+    /** 紫 · 深掘: 用镐子挖方块时, 按**方块所需的镐等级**概率掉落一件随机物品
+     *  (需求木/石/铁/钻石镐的方块分别为 0.1% / 0.5% / 1% / 10%); 奖品取自全部原版物品,
+     *  排除只能通过指令/创造获取的物品。以掉落物形态落地 —— 与"矿脉嗅觉"同范式,
+     *  参与透视之眼的惩罚与收藏家的复制等一切掉落物交互。 */
     object LuckyDigger : PerkDefinition {
         override val id = "delver_lucky_digger"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.GOLDEN_PICKAXE)
 
-        private val LOOT_POOL = listOf(
-            ItemStack(Items.IRON_INGOT, 2),
-            ItemStack(Items.GOLD_INGOT),
-            ItemStack(Items.DIAMOND),
-            ItemStack(Items.EMERALD),
-            ItemStack(Items.REDSTONE, 4),
-            ItemStack(Items.LAPIS_LAZULI, 4),
-            ItemStack(Items.COPPER_INGOT, 4),
-            ItemStack(Items.FLINT),
-            ItemStack(Items.BLAZE_POWDER, 2),
-            ItemStack(Items.ENDER_PEARL),
-            ItemStack(Items.GOLDEN_APPLE),
+        /** 不可作为奖品的物品: 只能指令/创造获取的, 以及"无数据组件即为废品"的模板物品 */
+        private val EXCLUDED_ITEMS = setOf(
+            Items.AIR,
+            Items.COMMAND_BLOCK, Items.CHAIN_COMMAND_BLOCK, Items.REPEATING_COMMAND_BLOCK,
+            Items.COMMAND_BLOCK_MINECART, Items.BARRIER, Items.STRUCTURE_VOID,
+            Items.STRUCTURE_BLOCK, Items.JIGSAW, Items.LIGHT, Items.DEBUG_STICK,
+            Items.KNOWLEDGE_BOOK, Items.PLAYER_HEAD,
+            Items.POTION, Items.SPLASH_POTION, Items.LINGERING_POTION,  // 裸药水无效果
+            Items.TIPPED_ARROW, Items.ENCHANTED_BOOK, Items.FIREWORK_ROCKET, // 无组件即废品
+            Items.FILLED_MAP, Items.WRITTEN_BOOK,
         )
 
+        /** 全部原版物品的奖池 (排除清单 + 刷怪蛋), 首次使用时构建 */
+        private val LOOT_POOL: List<Item> by lazy {
+            Registries.ITEM.filter { item ->
+                Registries.ITEM.getId(item).let { id ->
+                    id.namespace == "minecraft" &&
+                        item !in EXCLUDED_ITEMS &&
+                        !id.path.endsWith("_spawn_egg")
+                }
+            }
+        }
+
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
-            val chance = when (ctx.player.mainHandStack.item) {
-                Items.WOODEN_PICKAXE -> 0.001f
-                Items.STONE_PICKAXE -> 0.005f
-                Items.IRON_PICKAXE -> 0.01f
-                Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE -> 0.10f
-                else -> return
+            if (!ctx.player.mainHandStack.isIn(ItemTags.PICKAXES)) return   // 用镐子挖
+
+            // 按"方块的需求镐等级"分档 (从高到低判; 1.21 没有"木镐"需求标签,
+            // 以"掉落需要正确工具"兜底为木档 —— 石头/煤等)
+            val chance = when {
+                blockState.isIn(BlockTags.NEEDS_DIAMOND_TOOL) -> 0.10f
+                blockState.isIn(BlockTags.NEEDS_IRON_TOOL) -> 0.01f
+                blockState.isIn(BlockTags.NEEDS_STONE_TOOL) -> 0.005f
+                blockState.isToolRequired -> 0.001f
+                else -> return   // 无需工具的方块 (土/木/沙等) 不触发
             }
             if (ctx.player.random.nextFloat() >= chance) return
 
+            // 联动"透视之眼"代价: 本 tick 该玩家的挖块掉落若被抑制, 奖品一并抑制 (与矿脉嗅觉同范式)
+            val suppressTick = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY]
+            if (suppressTick != null && suppressTick == (ctx.player.server?.ticks ?: -1).toString()) return
+
+            val world = ctx.player.world as? ServerWorld ?: return
             val prize = LOOT_POOL[ctx.player.random.nextInt(LOOT_POOL.size)]
-            PerkEffects.giveStack(ctx.player, prize.copy())
+            val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, ItemStack(prize))
+            entity.setToDefaultPickupDelay()
+            world.spawnEntity(entity)
         }
     }
 
