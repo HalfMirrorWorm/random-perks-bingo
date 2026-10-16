@@ -90,42 +90,32 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: 每当饱食度回满时, 获得一次谜之炖菜的纯正面效果 (时长与原版炖菜一致) */
+    /** 蓝 · 丰饶: 每当饱食度回满时, 随机获得一种谜之炖菜的纯正面效果 (时长逐项与原版炖菜一致)
+     *  —— 触发点由 HungerRefillMixin 注入原版 HungerManager.update, 抓"不满 → 满"的那一次跳变;
+     *  "满"的判定与原版"饱和回血"分支同源 (foodLevel >= 20), 不做周期轮询, 也不需要标志位。 */
     object BountifulMeal : PerkDefinition {
         override val id = "harvest_bountiful_meal"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.SUSPICIOUS_STEW)
 
-        /** 谜之炖菜的纯正面效果 */
+        /** 谜之炖菜的 5 种纯正面效果 + 各自的**原版时长** (tick)。
+         *  数值取自原版 data/minecraft/recipe/suspicious_stew_from_*.json ——
+         *  饱和 7t(蒲公英/蓝兰花) / 抗火 60t(绒球葱) / 夜视 100t(虞美人/火把花)
+         *  / 跳跃提升 100t(矢车菊) / 生命恢复 140t(滨菊); 原版并没有"统一 6 秒"这回事。 */
         private val STEW_EFFECTS = listOf(
-            StatusEffects.SATURATION,
-            StatusEffects.NIGHT_VISION,
-            StatusEffects.JUMP_BOOST,
-            StatusEffects.FIRE_RESISTANCE,
-            StatusEffects.REGENERATION,
+            StatusEffects.SATURATION to 7,
+            StatusEffects.FIRE_RESISTANCE to 60,
+            StatusEffects.NIGHT_VISION to 100,
+            StatusEffects.JUMP_BOOST to 100,
+            StatusEffects.REGENERATION to 140,
         )
 
-        /** 与原版谜之炖菜一致的效果时长 (6 秒) */
-        private const val STEW_DURATION = 6 * 20
-
-        /** 记录"上一 tick 是否满饱食度" (存放在 cooldowns 里, 值 1=满 0=未满) */
-        private const val FULL_FLAG = "bountiful_meal_full"
-
-        override fun onTick(ctx: PerkContext) {
+        override fun onHungerRefilled(ctx: PerkContext) {
             val player = ctx.player
-            val isFull = player.hungerManager.foodLevel >= 20
-            val wasFull = (ctx.state.cooldowns[FULL_FLAG] ?: 0L) > 0L
-
-            // 仅在饥饿度"刚回满"的瞬间给予一次效果
-            if (isFull && !wasFull) {
-                val pick = STEW_EFFECTS[player.random.nextInt(STEW_EFFECTS.size)]
-                player.addStatusEffect(
-                    StatusEffectInstance(pick, STEW_DURATION, 0, true, false, true)
-                )
-            }
-
-            ctx.state.cooldowns[FULL_FLAG] = if (isFull) 1L else 0L
+            val (effect, duration) = STEW_EFFECTS[player.random.nextInt(STEW_EFFECTS.size)]
+            // 显示方式与原版炖菜略有出入: 不显示粒子 (保留图标) —— 避免与"回满"瞬间的视觉叠加
+            player.addStatusEffect(StatusEffectInstance(effect, duration, 0, true, false, true))
         }
     }
 

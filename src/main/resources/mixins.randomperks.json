@@ -19,7 +19,8 @@
     "ElytraBondDeathMixin",
     "PlayerInventoryEquipMixin",
     "NightVisionControllerMixin",
-    "XrayDropSuppressMixin"
+    "XrayDropSuppressMixin",
+    "HungerRefillMixin"
   ],
   "client": [
     "EntityGlowMixin",

@@ -55,6 +55,11 @@ object PerkWorldEventService {
         dispatch(player) { ctx, perk -> perk.onEquipmentChange(ctx) }
     }
 
+    /** 饱食度刚回满 (由 HungerRefillMixin 注入原版 HungerManager.update 调用) */
+    fun dispatchHungerRefilled(player: ServerPlayerEntity) {
+        dispatch(player) { ctx, perk -> perk.onHungerRefilled(ctx) }
+    }
+
     private inline fun dispatch(
         player: ServerPlayerEntity,
         action: (PerkContext, PerkDefinition) -> Unit,
