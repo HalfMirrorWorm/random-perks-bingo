@@ -138,7 +138,7 @@
   "random-perks-bingo.perk.artisan_enchanter.desc": "Gain a random useful enchanted book.",
 
   "random-perks-bingo.perk.seeker_scout.name": "Scout",
-  "random-perks-bingo.perk.seeker_scout.desc": "Gain a spyglass (the mob or player you aim at is highlighted for 1 minute, visible to everyone), a compass and a treasure map.",
+  "random-perks-bingo.perk.seeker_scout.desc": "Gain a spyglass (the mob or player you aim at is highlighted for 1 minute, visible to your team), a compass and a treasure map.",
   "random-perks-bingo.perk.seeker_pickpocket.name": "Pickpocket",
   "random-perks-bingo.perk.seeker_pickpocket.desc": "Instantly opens a random enemy player's inventory when acquired; steal one item of your choice (single use).",
   "random-perks-bingo.perk.seeker_life_vision.name": "Life Vision",

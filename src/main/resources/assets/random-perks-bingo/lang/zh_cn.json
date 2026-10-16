@@ -138,7 +138,7 @@
   "random-perks-bingo.perk.artisan_enchanter.desc": "获得一本随机实用附魔书。",
 
   "random-perks-bingo.perk.seeker_scout.name": "侦察兵",
-  "random-perks-bingo.perk.seeker_scout.desc": "获得望远镜 (瞄准的生物或玩家会被高亮标记 1 分钟, 所有人可见)、指南针和一张藏宝图。",
+  "random-perks-bingo.perk.seeker_scout.desc": "获得望远镜 (瞄准的生物或玩家会被高亮标记 1 分钟, 队友可见)、指南针和一张藏宝图。",
   "random-perks-bingo.perk.seeker_pickpocket.name": "顺手牵羊",
   "random-perks-bingo.perk.seeker_pickpocket.desc": "获得时立即打开一名随机敌方玩家的背包, 偷走其中一格自选物品 (一次性)。",
   "random-perks-bingo.perk.seeker_life_vision.name": "生命透视",
