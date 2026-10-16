@@ -87,8 +87,8 @@ object DelverPerks {
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.HASTE)
     }
 
-    /** 紫 · 矿脉嗅觉: 挖掘矿石时有 8% 概率额外掉落一份 —— 以**掉落物**形态落在地上,
-     *  因此会参与"透视之眼"的 50% 消失惩罚、"收藏家"的复制加成等一切掉落物交互 */
+    /** 紫 · 矿脉嗅觉: 挖掘矿石时有概率额外掉落一份 (基础 8%; 每拥有一个其他深掘词条 +3%)
+     *  —— 以**掉落物**形态落在地上, 因此会参与"透视之眼"的 50% 消失惩罚等一切掉落物交互 */
     object VeinScent : PerkDefinition {
         override val id = "delver_vein_scent"
         override val rarity = PerkRarity.PURPLE
@@ -118,7 +118,10 @@ object DelverPerks {
             // 联动"透视之眼"代价: 本 tick 该玩家的挖块掉落若被抑制, 额外份一并抑制
             val suppressTick = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY]
             if (suppressTick != null && suppressTick == (ctx.player.server?.ticks ?: -1).toString()) return
-            if (ctx.player.random.nextFloat() >= 0.08f) return
+            // 流派联动: 每拥有一个其他深掘词条, 概率 +3% (触发时实时计算, 无需缓存/事件)
+            val allies = (ctx.countArchetype(PerkArchetype.DELVER) - 1).coerceAtLeast(0)
+            val chance = 0.08f + 0.03f * allies
+            if (ctx.player.random.nextFloat() >= chance) return
 
             val world = ctx.player.world as? ServerWorld ?: return
             spawnBlockDropsOnce(ctx.player, world, pos, blockState)
