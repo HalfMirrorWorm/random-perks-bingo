@@ -75,7 +75,7 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 丰收之息: 获得 32 胡萝卜 + 锄头(效率III) + 永久饱和 (减少觅食压力) */
+    /** 紫 · 丰收之息: 获得 32 胡萝卜 + 锄头(效率III) */
     object Bounty : PerkDefinition {
         override val id = "harvest_bounty"
         override val rarity = PerkRarity.PURPLE
