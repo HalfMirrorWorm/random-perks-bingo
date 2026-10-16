@@ -79,7 +79,7 @@ object ArtisanPerks {
         }
     }
 
-    /** 金 · 匠造: 手持任意时钟右键 —— 首次设置传送点, 之后传送回去 (10 分钟冷却, 限 2000 格内; 潜行右键重设) */
+    /** 金 · 匠造: 手持任意时钟右键 —— 首次设置传送点 (**设置后不可重设**), 之后右键传送回去 (10 分钟冷却, 限 2000 格内) */
     object WaypointClock : PerkDefinition {
         override val id = "artisan_waypoint_clock"
         override val rarity = PerkRarity.GOLD
