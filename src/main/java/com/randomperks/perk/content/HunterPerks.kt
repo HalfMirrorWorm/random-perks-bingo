@@ -93,12 +93,26 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.BONE)
 
-        /** 奖池: 常见基础材料 + 中档材料 (末影珍珠 / 恶魂之泪 / 幻翼膜 / 烈焰粉 / 蜘蛛网 …) */
+        /** 奖池 (物品 → 权重): 常见材料权重 3、中档材料权重 1
+         *  —— 常见 6 项×3 = 18, 中档 8 项×1 = 8 → 常见占 69%、中档占 31% */
         private val loot = listOf(
-            Items.BONE, Items.STRING, Items.LEATHER, Items.ROTTEN_FLESH, Items.FEATHER, Items.GUNPOWDER,
-            Items.SPIDER_EYE, Items.SLIME_BALL, Items.MAGMA_CREAM, Items.COBWEB,
-            Items.PHANTOM_MEMBRANE, Items.BLAZE_POWDER, Items.ENDER_PEARL, Items.GHAST_TEAR,
+            Items.BONE to 3, Items.STRING to 3, Items.LEATHER to 3,
+            Items.ROTTEN_FLESH to 3, Items.FEATHER to 3, Items.GUNPOWDER to 3,
+            Items.SPIDER_EYE to 1, Items.SLIME_BALL to 1, Items.MAGMA_CREAM to 1, Items.COBWEB to 1,
+            Items.PHANTOM_MEMBRANE to 1, Items.BLAZE_POWDER to 1, Items.ENDER_PEARL to 1, Items.GHAST_TEAR to 1,
         )
+
+        private val lootTotalWeight = loot.sumOf { it.second }
+
+        /** 按权重随机抽一件 */
+        private fun rollLoot(random: net.minecraft.util.math.random.Random): net.minecraft.item.Item {
+            var roll = random.nextInt(lootTotalWeight)
+            for ((item, weight) in loot) {
+                if (roll < weight) return item
+                roll -= weight
+            }
+            error("loot pool weights exhausted")
+        }
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             // "怪物"必须用 Monster 接口判定: HostileEntity 只是个抽象类, 史莱姆 / 岩浆怪 / 恶魂 /
@@ -106,7 +120,7 @@ object HunterPerks {
             if (victim !is Monster) return
             if (ctx.player.random.nextFloat() >= 0.30f) return
             val world = ctx.player.world as? ServerWorld ?: return
-            victim.dropStack(world, ItemStack(loot[ctx.player.random.nextInt(loot.size)]))
+            victim.dropStack(world, ItemStack(rollLoot(ctx.player.random)))
         }
     }
 
