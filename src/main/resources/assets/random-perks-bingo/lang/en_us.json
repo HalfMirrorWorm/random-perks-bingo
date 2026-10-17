@@ -84,7 +84,7 @@
   "random-perks-bingo.perk.delver_vein_scent.name": "Vein Scent",
   "random-perks-bingo.perk.delver_vein_scent.desc": "Mining ores has a chance to drop an extra copy (base 8%, +3% for each other Delver perk).",
   "random-perks-bingo.perk.delver_xray_vision.name": "X-Ray Vision",
-  "random-perks-bingo.perk.delver_xray_vision.desc": "Ores within 10 blocks glow through walls; cost: 30% of items you mine with a pickaxe vanish.",
+  "random-perks-bingo.perk.delver_xray_vision.desc": "Ores within 10 blocks glow through walls; cost: 35% of items you mine with a pickaxe vanish.",
   "random-perks-bingo.perk.delver_lucky_digger.name": "Lucky Digger",
   "random-perks-bingo.perk.delver_lucky_digger.desc": "Mining with a pickaxe drops a random item with a chance based on the block's required pickaxe tier (wood 0.1% / stone 0.5% / iron 1% / diamond+ 10%); the prize pool is every Minecraft item, spawn eggs included (only command-only blocks and data-less template items are excluded).",
   "random-perks-bingo.perk.delver_collector.name": "Collector",

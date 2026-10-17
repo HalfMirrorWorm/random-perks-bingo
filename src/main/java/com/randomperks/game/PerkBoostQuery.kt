@@ -60,7 +60,7 @@ object PerkBoostQuery {
         player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)?.removeModifier(WIND_STRIDE_MOD)
     }
 
-    // ---- "透视之眼"的代价: 30% 不掉落 (由 XrayDropSuppressMixin 在 Block.dropStacks 拦截) ----
+    // ---- "透视之眼"的代价: 35% 不掉落 (由 XrayDropSuppressMixin 在 Block.dropStacks 拦截) ----
 
     private const val XRAY_PERK = "delver_xray_vision"
 
@@ -72,7 +72,7 @@ object PerkBoostQuery {
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk(XRAY_PERK)) return false
         if (!tool.isIn(ItemTags.PICKAXES)) return false
-        if (player.random.nextFloat() >= 0.3f) return false
+        if (player.random.nextFloat() >= 0.35f) return false
         // 抑制生效: 留下本 tick 的标记 —— "矿脉嗅觉"等额外掉落会据此一并抑制, 保证
         // 额外份同样被 X-Ray 惩罚 (不生成式下唯一能让联动成立的方式)
         state.memory[XRAY_SUPPRESS_TICK_KEY] = (player.server?.ticks ?: 0).toString()
