@@ -46,13 +46,14 @@ object PerkAbilityService {
         player.velocity = Vec3d(velocity.x, impulse.toDouble(), velocity.z)
         player.velocityModified = true
 
-        // 反馈 (参考社区通行做法: 升空音效 + 跳跃位置喷一小团云):
-        // 音效 = 烟花升空的"咻"; 粒子 = 脚下 cloud burst (服务端生成 → 附近玩家都能看到)
+        // 反馈 = 脚下"炸开一小股气流"的观感:
+        // 音效 = 风弹爆发 (1.21 的 entity.wind_charge.wind_burst), 比烟花音更轻更贴"空中助推";
+        // 粒子 = 脚下 cloud burst (服务端生成 → 附近玩家都能看到)
         player.playSoundToPlayer(
-            SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH,
+            SoundEvents.ENTITY_WIND_CHARGE_WIND_BURST.value(),
             SoundCategory.PLAYERS,
-            0.6f,
-            1.2f,
+            0.7f,
+            1.3f,
         )
         (player.world as? ServerWorld)?.spawnParticles(
             ParticleTypes.CLOUD,
