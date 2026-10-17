@@ -7,6 +7,7 @@ import com.randomperks.game.PerkSession
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.state.PerkStateManager
+import net.minecraft.component.DataComponentTypes
 import java.util.UUID
 import com.randomperks.mixin.MobLootInvoker
 import com.randomperks.perk.PerkArchetype
@@ -582,6 +583,9 @@ object HunterPerks {
             PerkEffects.enchant(ctx.player, axe, Enchantments.SHARPNESS, SHARPNESS_LEVEL)
             // 只有 1 点耐久: 攻击一次由原版耐久结算自动损坏
             axe.damage = axe.maxDamage - 1
+            // ★ 工作惩罚直接拉满: 铁砧成本一上来就 ≥ 40 级 → 永久"过于昂贵", 修不了也合不了。
+            //   这是原版组件, 不显示在 tooltip 上, 也不需要额外 mixin。
+            axe.set(DataComponentTypes.REPAIR_COST, 40)
             PerkEffects.giveStack(ctx.player, axe)
         }
     }
