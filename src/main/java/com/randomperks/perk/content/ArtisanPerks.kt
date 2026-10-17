@@ -104,13 +104,16 @@ object ArtisanPerks {
         }
     }
 
-    /** 金 · 匠造: 手持任意时钟右键 —— 首次设置传送点 (**设置后不可重设**), 之后右键传送回去 (10 分钟冷却, 限 2000 格内) */
+    /** 金 · 匠造: 手持时钟右键 —— 首次设置传送点 (**设置后不可重设**), 之后右键传送回去 (10 分钟冷却, 不限距离) */
     object WaypointClock : PerkDefinition {
         override val id = "artisan_waypoint_clock"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.CLOCK)
-        // 不赠送时钟 (自备时钟作为媒介); 右键逻辑由 WaypointService (UseItemCallback) 处理
+
+        /** 赠送一个时钟作为媒介 (右键逻辑由 WaypointService / UseItemCallback 处理) */
+        override fun onAcquire(ctx: PerkContext) =
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.CLOCK))
     }
 
     /** 紫 · 匠造: 方块与实体交互距离 +4 格

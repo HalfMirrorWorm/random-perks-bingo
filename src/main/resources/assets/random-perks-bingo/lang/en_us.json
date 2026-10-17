@@ -164,7 +164,7 @@
   "random-perks-bingo.perk.hunter_call_lightning.name": "Call Lightning",
   "random-perks-bingo.perk.hunter_call_lightning.desc": "Summon a lightning strike at your position; redirected to a nearby lightning rod if present.",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
-  "random-perks-bingo.perk.artisan_waypoint_clock.desc": "While holding a clock, right-click to set a waypoint, right-click again to teleport back (10 min cooldown, within 2000 blocks).",
+  "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click while holding it to set a waypoint, right-click again to teleport back (10 min cooldown, no distance limit).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
   "random-perks-bingo.perk.mythic_creative_flash.desc": "Instantly gain 1 second of creative mode! Globally unique — only one player can own it.",
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",
