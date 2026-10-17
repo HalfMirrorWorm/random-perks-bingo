@@ -148,10 +148,10 @@ object HunterPerks {
             if (ctx.player.random.nextFloat() >= CHANCE) return
 
             val world = ctx.player.world as? ServerWorld ?: return
-            val prize = prizeFor(victim)
-            if (prize != null) {
+            val prizes = prizesFor(victim)
+            if (prizes.isNotEmpty()) {
                 // 有专属条目: 直接以掉落物形态落在怪物死亡位置
-                victim.dropStack(world, prize)
+                prizes.forEach { victim.dropStack(world, it) }
             } else {
                 // 未收录的怪物 (蠹虫/末影龙/凋灵/模组怪等): 回退成"让它自己的战利品表再滚一次",
                 // 掉出来的东西天生与这只怪对应
@@ -161,30 +161,63 @@ object HunterPerks {
             ctx.player.sendMessage(net.minecraft.text.Text.translatable("random-perks-bingo.message.loot_bag"), false)
         }
 
-        /** 每种怪物对应的"专属战利品" —— 保证掉出来的永远是这只怪身上会有的东西 */
-        private fun prizeFor(victim: LivingEntity): ItemStack? = when (victim.type) {
-            EntityType.ZOMBIE, EntityType.HUSK, EntityType.DROWNED, EntityType.ZOMBIE_VILLAGER ->
-                ItemStack(Items.IRON_INGOT, 2)
-            EntityType.SKELETON, EntityType.STRAY, EntityType.BOGGED ->
-                ItemStack(Items.BONE, 8)
-            EntityType.CREEPER -> ItemStack(Items.GUNPOWDER, 8)
-            EntityType.SPIDER, EntityType.CAVE_SPIDER -> ItemStack(Items.STRING, 8)
-            EntityType.ENDERMAN -> ItemStack(Items.ENDER_PEARL, 4)
-            EntityType.BLAZE -> ItemStack(Items.BLAZE_ROD, 4)
-            EntityType.GHAST -> ItemStack(Items.GHAST_TEAR, 2)
-            EntityType.WITHER_SKELETON -> ItemStack(Items.WITHER_SKELETON_SKULL)
-            EntityType.ZOMBIFIED_PIGLIN, EntityType.PIGLIN -> ItemStack(Items.GOLD_INGOT, 4)
-            EntityType.MAGMA_CUBE -> ItemStack(Items.MAGMA_CREAM, 4)
-            EntityType.SLIME -> ItemStack(Items.SLIME_BALL, 8)
-            EntityType.PHANTOM -> ItemStack(Items.PHANTOM_MEMBRANE, 4)
-            EntityType.GUARDIAN, EntityType.ELDER_GUARDIAN -> ItemStack(Items.PRISMARINE_CRYSTALS, 4)
-            EntityType.SHULKER -> ItemStack(Items.SHULKER_SHELL, 2)
-            EntityType.WITCH -> ItemStack(Items.GLOWSTONE_DUST, 8)
-            EntityType.PILLAGER -> ItemStack(Items.ARROW, 16)
-            EntityType.VINDICATOR -> ItemStack(Items.EMERALD, 2)
-            EntityType.EVOKER -> ItemStack(Items.EMERALD, 4)
-            EntityType.RAVAGER -> ItemStack(Items.SADDLE)
-            else -> null
+        /**
+         * 每种怪物的"灵魂战利品" —— 全部取自它自己的原版掉落表, 但**加量**,
+         * 并把原本的稀有掉落 (头颅 / 唱片 / 蛙明灯 / 湿海绵 / 不死图腾 / 不祥之瓶) 转成稳定奖励,
+         * 让 8% 的触发真正有实感。
+         *
+         * 依据: 1.21.7 的 `data/minecraft/loot_table/entities/` 下各实体的战利品表。
+         */
+        private fun prizesFor(victim: LivingEntity): List<ItemStack> = when (victim.type) {
+            EntityType.ZOMBIE, EntityType.HUSK, EntityType.ZOMBIE_VILLAGER -> listOf(
+                ItemStack(Items.IRON_INGOT, 3), ItemStack(Items.ROTTEN_FLESH, 16),
+            )
+            EntityType.DROWNED -> listOf(
+                ItemStack(Items.COPPER_INGOT, 4), ItemStack(Items.ROTTEN_FLESH, 16),
+            )
+            EntityType.SKELETON, EntityType.STRAY, EntityType.BOGGED -> listOf(
+                ItemStack(Items.BONE, 8), ItemStack(Items.ARROW, 16),
+            )
+            EntityType.CREEPER -> listOf(
+                ItemStack(Items.GUNPOWDER, 8), ItemStack(Items.MUSIC_DISC_CAT),
+            )
+            EntityType.SPIDER, EntityType.CAVE_SPIDER -> listOf(
+                ItemStack(Items.STRING, 8), ItemStack(Items.SPIDER_EYE, 2),
+            )
+            EntityType.ENDERMAN -> listOf(ItemStack(Items.ENDER_PEARL, 4))
+            EntityType.BLAZE -> listOf(ItemStack(Items.BLAZE_ROD, 4))
+            EntityType.GHAST -> listOf(
+                ItemStack(Items.GHAST_TEAR, 2), ItemStack(Items.GUNPOWDER, 8),
+            )
+            EntityType.WITHER_SKELETON -> listOf(
+                ItemStack(Items.WITHER_SKELETON_SKULL), ItemStack(Items.COAL, 8),
+            )
+            EntityType.ZOMBIFIED_PIGLIN -> listOf(
+                ItemStack(Items.GOLD_INGOT, 4), ItemStack(Items.GOLD_NUGGET, 16),
+            )
+            EntityType.PIGLIN -> listOf(ItemStack(Items.GOLD_INGOT, 4))
+            EntityType.MAGMA_CUBE -> listOf(
+                ItemStack(Items.MAGMA_CREAM, 4), ItemStack(Items.OCHRE_FROGLIGHT),
+            )
+            EntityType.SLIME -> listOf(ItemStack(Items.SLIME_BALL, 8))
+            EntityType.PHANTOM -> listOf(ItemStack(Items.PHANTOM_MEMBRANE, 4))
+            EntityType.GUARDIAN -> listOf(
+                ItemStack(Items.PRISMARINE_CRYSTALS, 4), ItemStack(Items.COD, 4),
+            )
+            EntityType.ELDER_GUARDIAN -> listOf(
+                ItemStack(Items.WET_SPONGE), ItemStack(Items.PRISMARINE_CRYSTALS, 4),
+            )
+            EntityType.SHULKER -> listOf(ItemStack(Items.SHULKER_SHELL, 2))
+            EntityType.WITCH -> listOf(
+                ItemStack(Items.GLOWSTONE_DUST, 8), ItemStack(Items.REDSTONE, 8),
+            )
+            EntityType.PILLAGER -> listOf(ItemStack(Items.OMINOUS_BOTTLE, 2))
+            EntityType.VINDICATOR -> listOf(ItemStack(Items.EMERALD, 4))
+            EntityType.EVOKER -> listOf(
+                ItemStack(Items.TOTEM_OF_UNDYING), ItemStack(Items.EMERALD, 4),
+            )
+            EntityType.RAVAGER -> listOf(ItemStack(Items.SADDLE))
+            else -> emptyList()
         }
     }
 
