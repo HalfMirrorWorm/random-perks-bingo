@@ -222,10 +222,10 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: 未穿护甲时攻击力 +30% (高风险高收益; 鞘翅不算护甲) */
+    /** 蓝 · 猎杀: 未穿护甲时攻击力 +40% (高风险高收益; 鞘翅不算护甲) */
     object BareRage : PerkDefinition {
         override val id = "hunter_bare_rage"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.DIAMOND_SWORD)
 
@@ -242,7 +242,7 @@ object HunterPerks {
             if (PerkEffects.hasNoArmor(ctx.player)) {
                 PerkEffects.setAttribute(
                     ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE,
-                    0.30, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE,
+                    0.40, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE,
                 )
             } else {
                 PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)

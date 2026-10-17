@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **61** 条词条：蓝 27 / 紫 26 / 金 7 / 神话 1。
+共 **61** 条词条：蓝 28 / 紫 25 / 金 7 / 神话 1。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -66,8 +66,8 @@
 | `hunter_vampire` | 战地急救 | Field Medic | 蓝 |
 | `hunter_call_lightning` | 引雷术 | Call Lightning | 蓝 |
 | `hunter_roly_poly` | 不倒翁 | Roly-Poly | 蓝 |
+| `hunter_bare_rage` | 玻璃小炮 | Glass Cannon | 蓝 |
 | `hunter_scavenger` | 剥皮专家 | Scavenger | 紫 |
-| `hunter_bare_rage` | 玻璃小炮 | Glass Cannon | 紫 |
 | `hunter_marked_prey` | 猎杀印记 | Hunter's Mark | 紫 |
 | `hunter_greedy_hands` | 贪婪之手 | Greedy Hands | 紫 |
 | `hunter_predator` | 我饥饿 | Me Hungry | 紫 |
