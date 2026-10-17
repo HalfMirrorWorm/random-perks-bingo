@@ -12,7 +12,6 @@ import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.util.Identifier
@@ -58,18 +57,25 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.FALL_DAMAGE_MULTIPLIER, MOD_FALL)
     }
 
-    /** 蓝 · 弹簧腿: 跳跃提升 I */
+    /** 蓝 · 弹簧腿: 跳跃高度提升到约 2 格 (原版默认约 1.25 格) */
     object Jump : PerkDefinition {
         override val id = "swift_jump"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.RABBIT_FOOT)
 
+        private val MOD_JUMP = Identifier.of("random-perks-bingo", "swift_jump")
+
+        /** 原版跳跃初速度 0.42 → 约 1.25 格; 跳跃高度 ∝ 初速度², 故 0.42 + 0.13 = 0.55 → 约 2.1 格 */
+        private const val JUMP_BONUS = 0.13
+
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
-        private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, StatusEffects.JUMP_BOOST, 0)
+        private fun apply(ctx: PerkContext) =
+            PerkEffects.setAttribute(ctx.player, EntityAttributes.JUMP_STRENGTH, MOD_JUMP, JUMP_BONUS)
 
-        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.JUMP_BOOST)
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.JUMP_STRENGTH, MOD_JUMP)
     }
 
     /** 紫 · 风之步伐: 疾跑时移动速度额外 +20% —— 与原版疾跑加成同机制 (属性修饰符),
