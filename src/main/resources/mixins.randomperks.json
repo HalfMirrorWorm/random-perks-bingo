@@ -25,7 +25,8 @@
   ],
   "client": [
     "EntityGlowMixin",
-    "WindStrideClientMixin"
+    "WindStrideClientMixin",
+    "DoubleJumpGlideMixin"
   ],
   "injectors": {
     "defaultRequire": 1
