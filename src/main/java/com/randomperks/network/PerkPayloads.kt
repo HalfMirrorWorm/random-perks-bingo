@@ -5,6 +5,7 @@ import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
+import java.util.UUID
 /** 一个词条卡片的数据 (服务端 → 客户端 展示用; 同时用于"三选一候选"与"已获得列表") */
 data class PerkOptionData(
     val id: String,
@@ -220,6 +221,46 @@ class StealPickC2S(val index: Int) : CustomPayload {
         val CODEC: PacketCodec<RegistryByteBuf, StealPickC2S> = PacketCodec.of(
             { value, buf -> buf.writeVarInt(value.index) },
             { buf -> StealPickC2S(buf.readVarInt()) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** 可偷取目标的标识 (uuid 供服务端校验, name 供界面显示) */
+data class StealTargetEntry(val uuid: UUID, val name: String)
+
+/** S2C: 下发"顺手牵羊"的候选目标列表 —— 客户端据此打开玩家选择器 */
+class StealTargetsS2C(val targets: List<StealTargetEntry>) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<StealTargetsS2C>(Identifier.of("random-perks-bingo", "steal_targets"))
+        val CODEC: PacketCodec<RegistryByteBuf, StealTargetsS2C> = PacketCodec.of(
+            { value, buf ->
+                buf.writeVarInt(value.targets.size)
+                for (t in value.targets) {
+                    buf.writeUuid(t.uuid)
+                    buf.writeString(t.name)
+                }
+            },
+            { buf ->
+                val size = buf.readVarInt()
+                val list = ArrayList<StealTargetEntry>(size)
+                repeat(size) { list.add(StealTargetEntry(buf.readUuid(), buf.readString())) }
+                StealTargetsS2C(list)
+            },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** C2S: 客户端在玩家选择器中选中了某个目标 */
+class StealTargetPickC2S(val uuid: UUID) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<StealTargetPickC2S>(Identifier.of("random-perks-bingo", "steal_target_pick"))
+        val CODEC: PacketCodec<RegistryByteBuf, StealTargetPickC2S> = PacketCodec.of(
+            { value, buf -> buf.writeUuid(value.uuid) },
+            { buf -> StealTargetPickC2S(buf.readUuid()) },
         )
     }
 

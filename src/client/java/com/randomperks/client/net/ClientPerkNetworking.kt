@@ -5,6 +5,7 @@ import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
 import com.randomperks.client.screen.StealScreen
+import com.randomperks.client.screen.StealTargetScreen
 import com.randomperks.network.GlowMarkS2C
 import com.randomperks.network.PerkAbilitySyncS2C
 import com.randomperks.network.PerkCatalogRequestC2S
@@ -18,12 +19,14 @@ import com.randomperks.network.PerkPickC2S
 import com.randomperks.network.PerkRequestC2S
 import com.randomperks.network.StealOpenS2C
 import com.randomperks.network.StealPickC2S
-import com.randomperks.network.StealRequestC2S
+import com.randomperks.network.StealTargetPickC2S
+import com.randomperks.network.StealTargetsS2C
 import com.randomperks.network.WaterBucketTotemS2C
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.text.Text
+import java.util.UUID
 
 /**
  * 客户端网络处理与状态。
@@ -82,6 +85,12 @@ object ClientPerkNetworking {
             }
         }
 
+        ClientPlayNetworking.registerGlobalReceiver(StealTargetsS2C.ID) { payload, context ->
+            context.client().execute {
+                context.client().setScreen(StealTargetScreen(payload.targets))
+            }
+        }
+
         ClientPlayNetworking.registerGlobalReceiver(StealOpenS2C.ID) { payload, context ->
             context.client().execute {
                 context.client().setScreen(StealScreen(payload.targetName, payload.items))
@@ -119,6 +128,12 @@ object ClientPerkNetworking {
     fun requestCatalog() {
         if (!ClientPlayNetworking.canSend(PerkCatalogRequestC2S.ID)) return
         ClientPlayNetworking.send(PerkCatalogRequestC2S())
+    }
+
+    /** 在目标选择器里选中一名玩家 */
+    fun pickStealTarget(uuid: UUID) {
+        if (!ClientPlayNetworking.canSend(StealTargetPickC2S.ID)) return
+        ClientPlayNetworking.send(StealTargetPickC2S(uuid))
     }
 
     /** 选择偷取第 index 格的物品 */
