@@ -122,7 +122,7 @@ object SwiftPerks {
         override fun onRespawn(ctx: PerkContext) = PerkAbilityService.clearDoubleJumpUsed(ctx.player)
     }
 
-    /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度减半。
+    /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度降低 30%。
      *  绑定 = 绑定诅咒 (界面层锁死, 拿不下来);
      *  死亡不掉落 = 死亡时暂存、重生原样归还 (ElytraBondService + ElytraBondDeathMixin);
      *  词条移除时直接收回鞘翅 (不归还)。 */
@@ -154,11 +154,11 @@ object SwiftPerks {
          *  注: 鞘翅"飞坏"(同一件耐久耗尽) 不触发补装 —— 玩家需自行用幻翼膜修复) */
         override fun onEquipmentChange(ctx: PerkContext) = enforceChest(ctx)
 
-        /** 移动速度减半 (总速度 x0.5) */
+        /** 移动速度降低 30% (总速度 x0.7) */
         private fun applySpeed(ctx: PerkContext) {
             PerkEffects.setAttribute(
                 ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
-                -0.5, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+                -0.3, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
             )
         }
 
