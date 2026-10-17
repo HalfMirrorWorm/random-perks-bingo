@@ -286,7 +286,7 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 蓝 · 秘藏: 立即触发一次原版流浪商人刷新事件; 生物群系不允许时提示, 换群系后自动重试 */
+    /** 蓝 · 秘藏: 获得时立即触发一次流浪商人刷新 —— **不受生物群系限制**, 保证刷出 */
     object WanderingTrader : PerkDefinition {
         override val id = "seeker_wandering_trader"
         override val rarity = PerkRarity.BLUE
@@ -294,62 +294,60 @@ object SeekerPerks {
         override fun icon() = ItemStack(Items.EMERALD)
 
         private const val SPAWNED_KEY = "trader_spawned"
-        private const val BIOME_KEY = "trader_last_biome"
-        private const val CHECK_KEY = "trader_next_check"
-
-        /** 换群系检测间隔: 15 秒 (仅在尚未刷出时) */
-        private const val CHECK_INTERVAL_TICKS = 15 * 20L
 
         override fun onAcquire(ctx: PerkContext) = attempt(ctx)
 
-        /**
-         * 仅在尚未刷出时: 每 15 秒检查一次玩家所在生物群系是否已变化, 变了就重试一次
-         * (直到刷出为止)。原版没有"生物群系变化"事件, 用低频检查替代。
-         */
-        override fun onTick(ctx: PerkContext) {
-            if (ctx.state.memory[SPAWNED_KEY] == "1") return
-
-            val player = ctx.player
-            val now = player.server?.ticks?.toLong() ?: return
-            if (now < (ctx.state.cooldowns[CHECK_KEY] ?: 0L)) return
-            ctx.state.cooldowns[CHECK_KEY] = now + CHECK_INTERVAL_TICKS
-
-            val world = player.world as? ServerWorld ?: return
-            val biome = biomeId(world, player.blockPos) ?: return
-            if (biome == ctx.state.memory[BIOME_KEY]) return
-
-            attempt(ctx)
-        }
-
-        /** 一次刷新尝试: 生物群系受限 → 提示并等待换群系; 成功 → 记录并停止 */
+        /** 一次刷新尝试: 先走原版刷新事件; 拿不到落脚点(如下界)再手动生成兜底 */
         private fun attempt(ctx: PerkContext) {
             if (ctx.state.memory[SPAWNED_KEY] == "1") return
 
             val player = ctx.player
             val world = player.world as? ServerWorld ?: return
-            val pos = player.blockPos
 
-            ctx.state.memory[BIOME_KEY] = biomeId(world, pos) ?: ""
-
-            if (isBiomeBlocked(world, pos)) {
+            if (spawnVanillaTrader(world) || spawnTraderNear(world, player.blockPos)) {
+                ctx.state.memory[SPAWNED_KEY] = "1"
+            } else {
                 player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.trader_biome_blocked"),
+                    Text.translatable("random-perks-bingo.message.trader_failed"),
                     false,
                 )
-                return
-            }
-            if (spawnVanillaTrader(world)) {
-                ctx.state.memory[SPAWNED_KEY] = "1"
             }
         }
 
-        /** 生物群系 id (用于变化检测; 取不到时返回 null) */
-        private fun biomeId(world: ServerWorld, pos: BlockPos): String? =
-            world.getBiome(pos).key.map { it.value.toString() }.orElse(null)
+        /** 兜底: 在玩家附近找一块能站的地方, 手动生成商人 + 2 只羊驼 (下界等找不到落脚点的场合) */
+        private fun spawnTraderNear(world: ServerWorld, center: BlockPos): Boolean {
+            var spawnPos: BlockPos? = null
+            for (i in 0 until 12) {
+                val candidate = center.add(world.random.nextInt(33) - 16, 0, world.random.nextInt(33) - 16)
+                val top = world.getTopPosition(net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, candidate)
+                if (world.getBlockState(top).isAir && world.getBlockState(top.down()).isSolidBlock(world, top.down())) {
+                    spawnPos = top
+                    break
+                }
+            }
+            val pos = spawnPos ?: return false
 
-        /** 玩家所在生物群系是否在原版"禁止流浪商人刷新"标签中 */
-        private fun isBiomeBlocked(world: ServerWorld, pos: BlockPos): Boolean =
-            world.getBiome(pos).isIn(BiomeTags.WITHOUT_WANDERING_TRADER_SPAWNS)
+            val trader = net.minecraft.entity.EntityType.WANDERING_TRADER
+                .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return false
+            trader.refreshPositionAndAngles(
+                pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
+                world.random.nextFloat() * 360f, 0f,
+            )
+            trader.setDespawnDelay(48000)
+            world.spawnEntity(trader)
+
+            repeat(2) { index ->
+                val llama = net.minecraft.entity.EntityType.TRADER_LLAMA
+                    .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return@repeat
+                llama.refreshPositionAndAngles(
+                    pos.x + 0.5 + if (index == 0) -1.2 else 1.2, pos.y.toDouble(), pos.z + 0.5,
+                    world.random.nextFloat() * 360f, 0f,
+                )
+                llama.setDespawnDelay(47999)
+                world.spawnEntity(llama)
+            }
+            return true
+        }
 
         /**
          * 执行**原版流浪商人刷新事件** (WanderingTraderManager.trySpawn):
