@@ -95,9 +95,9 @@
 | `swift_feather_fall` | 柔软鞋底 | Soft Soles | 蓝 |
 | `swift_tailwind` | 顺风而行 | Tailwind | 紫 |
 | `swift_wind_stride` | 风之步伐 | Wind Stride | 紫 |
+| `swift_life_bucket` | 落地，水 | MLG Water | 紫 |
 | `swift_double_jump` | 二段跳 | Double Jump | 金 |
 | `swift_elytra_bond` | 风之翼 | Wings of the Wind | 金 |
-| `swift_life_bucket` | 落地，水 | MLG Water | 金 |
 
 ## 神话 MYTHIC（全局唯一）
 
