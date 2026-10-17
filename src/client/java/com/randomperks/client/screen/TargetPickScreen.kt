@@ -1,17 +1,23 @@
 package com.randomperks.client.screen
 
-import com.randomperks.client.net.ClientPerkNetworking
-import com.randomperks.network.StealTargetEntry
+import com.randomperks.network.PlayerTargetEntry
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
+import java.util.UUID
 
 /**
- * "顺手牵羊"的**目标选择器**: 列出全部可选玩家, 点一名打开他的背包。
+ * 通用的**玩家目标选择器**: 列出一批玩家, 点一名就回调 onPick。
+ *
+ * 目前用于「顺手牵羊」(选偷谁) 与「引雷术」(选劈谁)。全程无需按键 ——
+ * 由服务端在获得词条时主动下发候选列表并弹出。
  */
-class StealTargetScreen(
-    private val targets: List<StealTargetEntry>,
-) : Screen(Text.translatable("random-perks-bingo.screen.steal_target")) {
+class TargetPickScreen(
+    titleKey: String,
+    private val hintKey: String,
+    private val targets: List<PlayerTargetEntry>,
+    private val onPick: (UUID) -> Unit,
+) : Screen(Text.translatable(titleKey)) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -41,7 +47,7 @@ class StealTargetScreen(
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, listTop - 30, ScreenStyle.TEXT_NAME)
         context.drawCenteredTextWithShadow(
             textRenderer,
-            Text.translatable("random-perks-bingo.steal_target.hint"),
+            Text.translatable(hintKey),
             width / 2, listTop - 17, ScreenStyle.TEXT_DIM,
         )
 
@@ -71,7 +77,7 @@ class StealTargetScreen(
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         if (button == 0 && hovered >= 0) {
-            ClientPerkNetworking.pickStealTarget(targets[hovered].uuid)
+            onPick(targets[hovered].uuid)
             close()
             return true
         }

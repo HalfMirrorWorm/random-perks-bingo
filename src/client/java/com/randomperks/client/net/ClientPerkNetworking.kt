@@ -5,7 +5,7 @@ import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
 import com.randomperks.client.screen.StealScreen
-import com.randomperks.client.screen.StealTargetScreen
+import com.randomperks.client.screen.TargetPickScreen
 import com.randomperks.game.ClientPerkFlags
 import com.randomperks.network.GlowMarkS2C
 import com.randomperks.network.PerkAbilitySyncS2C
@@ -18,6 +18,8 @@ import com.randomperks.network.PerkOfferS2C
 import com.randomperks.network.PerkOptionData
 import com.randomperks.network.PerkPickC2S
 import com.randomperks.network.PerkRequestC2S
+import com.randomperks.network.LightningTargetPickC2S
+import com.randomperks.network.LightningTargetsS2C
 import com.randomperks.network.StealOpenS2C
 import com.randomperks.network.StealPickC2S
 import com.randomperks.network.StealTargetPickC2S
@@ -90,7 +92,25 @@ object ClientPerkNetworking {
 
         ClientPlayNetworking.registerGlobalReceiver(StealTargetsS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().setScreen(StealTargetScreen(payload.targets))
+                context.client().setScreen(
+                    TargetPickScreen(
+                        "random-perks-bingo.screen.steal_target",
+                        "random-perks-bingo.steal_target.hint",
+                        payload.targets,
+                    ) { uuid -> pickStealTarget(uuid) },
+                )
+            }
+        }
+
+        ClientPlayNetworking.registerGlobalReceiver(LightningTargetsS2C.ID) { payload, context ->
+            context.client().execute {
+                context.client().setScreen(
+                    TargetPickScreen(
+                        "random-perks-bingo.screen.lightning_target",
+                        "random-perks-bingo.lightning_target.hint",
+                        payload.targets,
+                    ) { uuid -> pickLightningTarget(uuid) },
+                )
             }
         }
 
@@ -137,6 +157,12 @@ object ClientPerkNetworking {
     fun pickStealTarget(uuid: UUID) {
         if (!ClientPlayNetworking.canSend(StealTargetPickC2S.ID)) return
         ClientPlayNetworking.send(StealTargetPickC2S(uuid))
+    }
+
+    /** 引雷术: 选中要劈的玩家 */
+    fun pickLightningTarget(uuid: UUID) {
+        if (!ClientPlayNetworking.canSend(LightningTargetPickC2S.ID)) return
+        ClientPlayNetworking.send(LightningTargetPickC2S(uuid))
     }
 
     /** 选择偷取第 index 格的物品 */

@@ -3,7 +3,7 @@ package com.randomperks.game
 import com.randomperks.RandomPerksMod
 import com.randomperks.effect.PerkEffects
 import com.randomperks.network.PerkNetworking
-import com.randomperks.network.StealTargetEntry
+import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkContext
 import com.randomperks.state.PerkStateManager
 import com.randomperks.state.PlayerPerkState
@@ -47,7 +47,7 @@ object StealService {
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.hasPerk(PERK_ID)) return
 
-        val targets = candidates(player).map { StealTargetEntry(it.uuid, it.name.string) }
+        val targets = candidates(player).map { PlayerTargetEntry(it.uuid, it.name.string) }
         if (targets.isEmpty()) {
             player.sendMessage(Text.translatable("random-perks-bingo.message.steal_no_target"), true)
             return

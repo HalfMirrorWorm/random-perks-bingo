@@ -3,6 +3,11 @@ package com.randomperks.perk.content
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.PerkBoostQuery
+import com.randomperks.game.PerkSession
+import com.randomperks.network.PerkNetworking
+import com.randomperks.network.PlayerTargetEntry
+import com.randomperks.state.PerkStateManager
+import java.util.UUID
 import com.randomperks.mixin.MobLootInvoker
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -415,7 +420,8 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 猎杀: 随机选一名敌方玩家, 在他的位置召唤一次闪电; 16 格内若有引雷针, 闪电会被引导过去 */
+    /** 蓝 · 猎杀: 获得时弹出玩家选择器, 选中一名敌方玩家后**在他的位置**召唤一次闪电;
+     *  16 格内若有引雷针, 闪电会被引导过去 */
     object CallLightning : PerkDefinition {
         override val id = "hunter_call_lightning"
         override val rarity = PerkRarity.BLUE
@@ -424,8 +430,42 @@ object HunterPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            // 落点: 随机一名敌方在线玩家 (跨维度劈雷双方都看不到, 所以只在本维度找; 本维度没敌人就不劈)
-            val target = pickEnemy(player) ?: return
+            val candidates = candidates(player)
+            if (candidates.isEmpty()) {
+                player.sendMessage(Text.translatable("random-perks-bingo.message.lightning_no_target"), true)
+                return
+            }
+            PerkNetworking.sendLightningTargets(
+                player,
+                candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
+            )
+        }
+
+        /** 客户端在选择器里选中了一名玩家 → 在他的位置劈雷 */
+        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+            if (!PerkSession.isEnabled()) return
+
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (!state.hasPerk(id)) return
+
+            // 校验: 必须是当下的合法候选 —— 否则客户端伪造 uuid 就能劈任意人 (含队友)
+            val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            strike(target)
+        }
+
+        /** 候选: 同维度的其他队伍在线玩家 (跨维度劈雷双方都看不到, 所以只在本维度找) */
+        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> {
+            val server = player.server ?: return emptyList()
+            val myTeam = player.scoreboardTeam?.name
+            return server.playerManager.playerList.filter { other ->
+                other.uuid != player.uuid &&
+                    other.world === player.world &&
+                    (myTeam == null || other.scoreboardTeam?.name != myTeam)
+            }
+        }
+
+        /** 在目标位置劈一次闪电 (16 格内的引雷针会把闪电引过去) */
+        private fun strike(target: ServerPlayerEntity) {
             val world = target.world as? ServerWorld ?: return
 
             val rod = findNearbyLightningRod(world, target.blockPos, 16)
@@ -438,19 +478,6 @@ object HunterPerks {
                 lightning.refreshPositionAfterTeleport(target.x, target.y, target.z)
             }
             world.spawnEntity(lightning)
-        }
-
-        /** 随机挑一名敌方在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌), 仅限同维度 */
-        private fun pickEnemy(player: ServerPlayerEntity): ServerPlayerEntity? {
-            val server = player.server ?: return null
-            val myTeam = player.scoreboardTeam?.name
-            return server.playerManager.playerList
-                .filter { other ->
-                    other.uuid != player.uuid &&
-                        other.world === player.world &&
-                        (myTeam == null || other.scoreboardTeam?.name != myTeam)
-                }
-                .randomOrNull()
         }
 
         /** 在半径内寻找最近的引雷针 (找不到返回 null) */

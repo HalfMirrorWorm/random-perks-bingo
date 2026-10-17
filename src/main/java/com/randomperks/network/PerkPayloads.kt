@@ -227,27 +227,32 @@ class StealPickC2S(val index: Int) : CustomPayload {
     override fun getId() = ID
 }
 
-/** 可偷取目标的标识 (uuid 供服务端校验, name 供界面显示) */
-data class StealTargetEntry(val uuid: UUID, val name: String)
+/** 可选中的玩家目标 (uuid 供服务端校验, name 供界面显示) —— 顺手牵羊、引雷术等共用 */
+data class PlayerTargetEntry(val uuid: UUID, val name: String)
+
+/** 目标列表的公共编解码 (所有"选一名玩家"类词条共用同一套格式) */
+private fun writeTargets(buf: RegistryByteBuf, targets: List<PlayerTargetEntry>) {
+    buf.writeVarInt(targets.size)
+    for (t in targets) {
+        buf.writeUuid(t.uuid)
+        buf.writeString(t.name)
+    }
+}
+
+private fun readTargets(buf: RegistryByteBuf): List<PlayerTargetEntry> {
+    val size = buf.readVarInt()
+    val list = ArrayList<PlayerTargetEntry>(size)
+    repeat(size) { list.add(PlayerTargetEntry(buf.readUuid(), buf.readString())) }
+    return list
+}
 
 /** S2C: 下发"顺手牵羊"的候选目标列表 —— 客户端据此打开玩家选择器 */
-class StealTargetsS2C(val targets: List<StealTargetEntry>) : CustomPayload {
+class StealTargetsS2C(val targets: List<PlayerTargetEntry>) : CustomPayload {
     companion object {
         val ID = CustomPayload.Id<StealTargetsS2C>(Identifier.of("random-perks-bingo", "steal_targets"))
         val CODEC: PacketCodec<RegistryByteBuf, StealTargetsS2C> = PacketCodec.of(
-            { value, buf ->
-                buf.writeVarInt(value.targets.size)
-                for (t in value.targets) {
-                    buf.writeUuid(t.uuid)
-                    buf.writeString(t.name)
-                }
-            },
-            { buf ->
-                val size = buf.readVarInt()
-                val list = ArrayList<StealTargetEntry>(size)
-                repeat(size) { list.add(StealTargetEntry(buf.readUuid(), buf.readString())) }
-                StealTargetsS2C(list)
-            },
+            { value, buf -> writeTargets(buf, value.targets) },
+            { buf -> StealTargetsS2C(readTargets(buf)) },
         )
     }
 
@@ -261,6 +266,32 @@ class StealTargetPickC2S(val uuid: UUID) : CustomPayload {
         val CODEC: PacketCodec<RegistryByteBuf, StealTargetPickC2S> = PacketCodec.of(
             { value, buf -> buf.writeUuid(value.uuid) },
             { buf -> StealTargetPickC2S(buf.readUuid()) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** S2C: 下发"引雷术"的候选目标列表 —— 客户端据此打开玩家选择器 */
+class LightningTargetsS2C(val targets: List<PlayerTargetEntry>) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<LightningTargetsS2C>(Identifier.of("random-perks-bingo", "lightning_targets"))
+        val CODEC: PacketCodec<RegistryByteBuf, LightningTargetsS2C> = PacketCodec.of(
+            { value, buf -> writeTargets(buf, value.targets) },
+            { buf -> LightningTargetsS2C(readTargets(buf)) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** C2S: 客户端在引雷术的目标选择器中选中了某个玩家 */
+class LightningTargetPickC2S(val uuid: UUID) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<LightningTargetPickC2S>(Identifier.of("random-perks-bingo", "lightning_target_pick"))
+        val CODEC: PacketCodec<RegistryByteBuf, LightningTargetPickC2S> = PacketCodec.of(
+            { value, buf -> buf.writeUuid(value.uuid) },
+            { buf -> LightningTargetPickC2S(buf.readUuid()) },
         )
     }
 

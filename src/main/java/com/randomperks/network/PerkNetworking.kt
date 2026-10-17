@@ -4,6 +4,7 @@ import com.randomperks.RandomPerksMod
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkOfferService
 import com.randomperks.game.StealService
+import com.randomperks.perk.content.HunterPerks
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.item.ItemStack
@@ -30,9 +31,11 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(DoubleJumpC2S.ID, DoubleJumpC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(StealOpenS2C.ID, StealOpenS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(StealTargetsS2C.ID, StealTargetsS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(LightningTargetsS2C.ID, LightningTargetsS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(StealRequestC2S.ID, StealRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealPickC2S.ID, StealPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealTargetPickC2S.ID, StealTargetPickC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(LightningTargetPickC2S.ID, LightningTargetPickC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -92,6 +95,14 @@ object PerkNetworking {
                 StealService.handleTargetPick(player, uuid)
             }
         }
+
+        ServerPlayNetworking.registerGlobalReceiver(LightningTargetPickC2S.ID) { payload, context ->
+            val player = context.player()
+            val uuid = payload.uuid
+            context.server().execute {
+                HunterPerks.CallLightning.handleTargetPick(player, uuid)
+            }
+        }
     }
 
     /** 通知玩家当前待选机会数 (客户端未安装本 mod 时静默跳过) */
@@ -137,10 +148,17 @@ object PerkNetworking {
     }
 
     /** 下发"顺手牵羊"的候选目标列表 (客户端据此打开玩家选择器) */
-    fun sendStealTargets(player: ServerPlayerEntity, targets: List<StealTargetEntry>) {
+    fun sendStealTargets(player: ServerPlayerEntity, targets: List<PlayerTargetEntry>) {
         if (!ServerPlayNetworking.canSend(player, StealTargetsS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, StealTargetsS2C(targets)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send steal targets: {}", it.toString()) }
+    }
+
+    /** 下发"引雷术"的候选目标列表 (客户端据此打开玩家选择器) */
+    fun sendLightningTargets(player: ServerPlayerEntity, targets: List<PlayerTargetEntry>) {
+        if (!ServerPlayNetworking.canSend(player, LightningTargetsS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, LightningTargetsS2C(targets)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send lightning targets: {}", it.toString()) }
     }
 
     /** 让客户端把指定实体显示为发光标记 (仅发给同队玩家) */
