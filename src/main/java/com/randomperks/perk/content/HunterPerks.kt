@@ -414,7 +414,7 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 猎杀: 在你所在位置召唤一次闪电; 16 格内若有引雷针, 闪电会被引导过去 */
+    /** 蓝 · 猎杀: 随机选一名敌方玩家, 在他的位置召唤一次闪电; 16 格内若有引雷针, 闪电会被引导过去 */
     object CallLightning : PerkDefinition {
         override val id = "hunter_call_lightning"
         override val rarity = PerkRarity.BLUE
@@ -423,18 +423,33 @@ object HunterPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            // 落点: 随机一名敌方在线玩家 (跨维度劈雷双方都看不到, 所以只在本维度找; 本维度没敌人就不劈)
+            val target = pickEnemy(player) ?: return
+            val world = target.world as? ServerWorld ?: return
 
-            val rod = findNearbyLightningRod(world, player.blockPos, 16)
+            val rod = findNearbyLightningRod(world, target.blockPos, 16)
             val lightning = net.minecraft.entity.EntityType.LIGHTNING_BOLT
                 .create(world, net.minecraft.entity.SpawnReason.TRIGGERED) ?: return
 
             if (rod != null) {
                 lightning.refreshPositionAfterTeleport(rod.x + 0.5, rod.y.toDouble(), rod.z + 0.5)
             } else {
-                lightning.refreshPositionAfterTeleport(player.x, player.y, player.z)
+                lightning.refreshPositionAfterTeleport(target.x, target.y, target.z)
             }
             world.spawnEntity(lightning)
+        }
+
+        /** 随机挑一名敌方在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌), 仅限同维度 */
+        private fun pickEnemy(player: ServerPlayerEntity): ServerPlayerEntity? {
+            val server = player.server ?: return null
+            val myTeam = player.scoreboardTeam?.name
+            return server.playerManager.playerList
+                .filter { other ->
+                    other.uuid != player.uuid &&
+                        other.world === player.world &&
+                        (myTeam == null || other.scoreboardTeam?.name != myTeam)
+                }
+                .randomOrNull()
         }
 
         /** 在半径内寻找最近的引雷针 (找不到返回 null) */
