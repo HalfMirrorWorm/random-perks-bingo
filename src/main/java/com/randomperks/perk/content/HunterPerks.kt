@@ -253,7 +253,8 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
     }
 
-    /** 紫 · 猎杀: 始终标记**距离最近**的敌方玩家 (每秒跟随切换) —— 持续显示其方位/坐标/距离并高亮轮廓; 朝目标移动时移速 +50% */
+    /** 紫 · 猎杀: 始终标记**距离最近**的敌方玩家 (每秒跟随切换) —— 持续显示其方位/坐标/距离并高亮轮廓;
+     *  **目标 512 格以内**时移速 +50% */
     object MarkedPrey : PerkDefinition {
         override val id = "hunter_marked_prey"
         override val rarity = PerkRarity.PURPLE
@@ -262,7 +263,9 @@ object HunterPerks {
 
         private val MOD_SPEED = Identifier.of("random-perks-bingo", "marked_prey_speed")
         private const val TARGET_KEY = "marked_prey_target"
-        private const val LAST_DIST_KEY = "marked_prey_last_dist"
+
+        /** 在目标这个距离内就常驻 +50% 移速 */
+        private const val SPEED_RADIUS = 512
 
         override fun onAcquire(ctx: PerkContext) = markTarget(ctx)
 
@@ -279,21 +282,15 @@ object HunterPerks {
                 // 场上没有敌人 (全部离线, 或只剩自己): 清掉加速与标记, 有人上线后会自动重新锁定
                 PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
                 ctx.state.memory.remove(TARGET_KEY)
-                ctx.state.memory.remove(LAST_DIST_KEY)
                 return
             }
 
-            val targetId = target.uuid.toString()
-            if (ctx.state.memory[TARGET_KEY] != targetId) {
-                // 目标发生切换: 重置距离基准 —— 否则会拿"到新目标的距离"与"到旧目标的距离"相比, 误判成正在接近
-                ctx.state.memory[TARGET_KEY] = targetId
-                ctx.state.memory.remove(LAST_DIST_KEY)
-            }
+            // 记下当前目标 id (仅供调试/其他词条参考; 加速只看距离, 不再需要距离基准)
+            ctx.state.memory[TARGET_KEY] = target.uuid.toString()
 
             // 跨维度: 两个世界的坐标硬算出来的距离/方位没有意义 → 只提示目标在哪个维度, 不给加速
             if (target.world !== player.world) {
                 PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
-                ctx.state.memory.remove(LAST_DIST_KEY)
                 player.sendMessage(
                     Text.translatable(
                         "random-perks-bingo.message.prey_tracker_dimension",
@@ -308,12 +305,10 @@ object HunterPerks {
             // 轮廓高亮: 仅同队可见 (每秒刷新, 5 秒过期)
             GlowMarkService.markFor(GlowMarkService.teamViewers(player), target, 5_000L)
 
-            // 距离变化 → 接近中则 +50% 移速
+            // **在目标 512 格以内就常驻 +50% 移速**
+            // (旧逻辑是"这一秒比上一秒更近才加速", 走动/绕圈时会反复开关, 手感很差)
             val dist = player.pos.distanceTo(target.pos).toInt()
-            val previous = ctx.state.memory[LAST_DIST_KEY]?.toIntOrNull()
-            ctx.state.memory[LAST_DIST_KEY] = dist.toString()
-
-            if (previous != null && dist < previous) {
+            if (dist <= SPEED_RADIUS) {
                 PerkEffects.setAttribute(
                     player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
                     0.5, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
@@ -357,7 +352,6 @@ object HunterPerks {
         private fun markTarget(ctx: PerkContext) {
             val target = nearestEnemy(ctx.player) ?: return
             ctx.state.memory[TARGET_KEY] = target.uuid.toString()
-            ctx.state.memory.remove(LAST_DIST_KEY)
         }
 
         /** 方位提示 (N/S/E/W 组合; MC 中 +Z 为南, +X 为东) */
@@ -388,7 +382,6 @@ object HunterPerks {
         override fun onRemove(ctx: PerkContext) {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
             ctx.state.memory.remove(TARGET_KEY)
-            ctx.state.memory.remove(LAST_DIST_KEY)
         }
     }
 

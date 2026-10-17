@@ -124,7 +124,7 @@
   "random-perks-bingo.perk.hunter_soul_harvest.name": "Soul Harvest",
   "random-perks-bingo.perk.hunter_soul_harvest.desc": "8% chance for an extra drop matching the slain mob (e.g. zombies drop iron, ghasts drop ghast tears).",
   "random-perks-bingo.perk.hunter_marked_prey.name": "Hunter's Mark",
-  "random-perks-bingo.perk.hunter_marked_prey.desc": "The nearest enemy is always marked: their direction, coordinates and distance are shown and their outline glows; +50% speed while moving toward them.",
+  "random-perks-bingo.perk.hunter_marked_prey.desc": "The nearest enemy is always marked: their direction, coordinates and distance are shown and their outline glows; +50% speed while within 512 blocks of them.",
   "random-perks-bingo.perk.hunter_greedy_hands.name": "Greedy Hands",
   "random-perks-bingo.perk.hunter_greedy_hands.desc": "50% chance of an extra loot drop on kill; but you take double damage from mobs.",
   "random-perks-bingo.perk.hunter_predator.name": "Me Hungry",
