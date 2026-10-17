@@ -133,4 +133,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"大胃袋" */
     fun hasBigStomach(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_big_stomach") == true
+
+    // ---- "老玩家": 剑的攻击冷却始终蓄满 (由 OldSchoolCombatMixin 在 getAttackCooldownProgress 拦截) ----
+
+    /** 玩家是否持有"老玩家" */
+    fun hasOldSchoolCombat(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_veteran") == true
 }

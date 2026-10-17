@@ -23,7 +23,8 @@
     "HungerRefillMixin",
     "MobLootInvoker",
     "NyaAxeMixin",
-    "BigStomachMixin"
+    "BigStomachMixin",
+    "OldSchoolCombatMixin"
   ],
   "client": [
     "EntityGlowMixin",

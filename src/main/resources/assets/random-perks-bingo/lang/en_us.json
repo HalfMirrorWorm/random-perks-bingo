@@ -172,6 +172,8 @@
   "random-perks-bingo.perk.hunter_call_lightning.desc": "Summon a lightning strike at a random enemy player's position; redirected to a nearby lightning rod if present.",
   "random-perks-bingo.perk.hunter_nya_axe.name": "Nya Axe",
   "random-perks-bingo.perk.hunter_nya_axe.desc": "Gain a one-shot axe: your next hit on any living entity (players included) is instantly lethal — single use.",
+  "random-perks-bingo.perk.hunter_veteran.name": "Veteran",
+  "random-perks-bingo.perk.hunter_veteran.desc": "While holding a sword, your attack cooldown is always full — click as fast as you like for full damage (the pre-1.9 combat feel).",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click while holding it to set a waypoint, right-click again to teleport back (10 min cooldown, no distance limit).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",

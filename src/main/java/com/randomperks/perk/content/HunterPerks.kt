@@ -495,6 +495,15 @@ object HunterPerks {
         }
     }
 
+    /** 紫 · 猎杀: **老玩家** —— 手持剑时攻击冷却始终视为已蓄满, 连点即满伤害 (1.9 战斗更新前的手感) */
+    object Veteran : PerkDefinition {
+        override val id = "hunter_veteran"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.IRON_SWORD)
+        // 效果由 OldSchoolCombatMixin 在 PlayerEntity.getAttackCooldownProgress 实现
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -509,5 +518,6 @@ object HunterPerks {
         PerkRegistry.register(Fireball)
         PerkRegistry.register(CallLightning)
         PerkRegistry.register(NyaAxe)
+        PerkRegistry.register(Veteran)
     }
 }
