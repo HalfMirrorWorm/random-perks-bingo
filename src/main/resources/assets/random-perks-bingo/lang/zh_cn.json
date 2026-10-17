@@ -174,6 +174,8 @@
   "random-perks-bingo.perk.hunter_nya_axe.desc": "获得一把秒人斧: 手持它命中任意生物 (含玩家) 时一击必杀, 但只能用 1 次。",
   "random-perks-bingo.perk.hunter_veteran.name": "老玩家",
   "random-perks-bingo.perk.hunter_veteran.desc": "手持剑时攻击冷却始终视为已蓄满 —— 连点即可打出满伤害 (1.9 战斗更新前的手感)。",
+  "random-perks-bingo.perk.hunter_roly_poly.name": "不倒翁",
+  "random-perks-bingo.perk.hunter_roly_poly.desc": "受到的击退效果降低 50%。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键首次设置传送点, 之后右键传送回去 (10 分钟冷却, 不限距离)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",

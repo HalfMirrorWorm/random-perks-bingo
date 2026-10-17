@@ -504,6 +504,29 @@ object HunterPerks {
         // 效果由 OldSchoolCombatMixin 在 PlayerEntity.getAttackCooldownProgress 实现
     }
 
+    /** 蓝 · 猎杀: **不倒翁** —— 受到的击退效果降低 50% */
+    object RolyPoly : PerkDefinition {
+        override val id = "hunter_roly_poly"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.IRON_BLOCK)
+
+        private val MOD_KNOCKBACK = Identifier.of("random-perks-bingo", "roly_poly_knockback")
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        /** 原版击退抗性属性 (0 ~ 1), +0.5 即击退距离减半 */
+        private fun apply(ctx: PerkContext) =
+            PerkEffects.setAttribute(
+                ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK,
+                0.5, EntityAttributeModifier.Operation.ADD_VALUE,
+            )
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -519,5 +542,6 @@ object HunterPerks {
         PerkRegistry.register(CallLightning)
         PerkRegistry.register(NyaAxe)
         PerkRegistry.register(Veteran)
+        PerkRegistry.register(RolyPoly)
     }
 }
