@@ -254,7 +254,7 @@ object HunterPerks {
     }
 
     /** 紫 · 猎杀: 始终标记**距离最近**的敌方玩家 (每秒跟随切换) —— 持续显示其方位/坐标/距离并高亮轮廓;
-     *  **目标 512 格以内**时移速 +50% */
+     *  **目标 256 格以内**时移速 +50% */
     object MarkedPrey : PerkDefinition {
         override val id = "hunter_marked_prey"
         override val rarity = PerkRarity.PURPLE
@@ -265,7 +265,7 @@ object HunterPerks {
         private const val TARGET_KEY = "marked_prey_target"
 
         /** 在目标这个距离内就常驻 +50% 移速 */
-        private const val SPEED_RADIUS = 512
+        private const val SPEED_RADIUS = 256
 
         override fun onAcquire(ctx: PerkContext) = markTarget(ctx)
 
@@ -305,7 +305,7 @@ object HunterPerks {
             // 轮廓高亮: 仅同队可见 (每秒刷新, 5 秒过期)
             GlowMarkService.markFor(GlowMarkService.teamViewers(player), target, 5_000L)
 
-            // **在目标 512 格以内就常驻 +50% 移速**
+            // **在目标 256 格以内就常驻 +50% 移速**
             // (旧逻辑是"这一秒比上一秒更近才加速", 走动/绕圈时会反复开关, 手感很差)
             val dist = player.pos.distanceTo(target.pos).toInt()
             if (dist <= SPEED_RADIUS) {
