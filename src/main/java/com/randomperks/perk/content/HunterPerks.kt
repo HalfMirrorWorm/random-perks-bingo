@@ -24,7 +24,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.world.GameRules
 import net.minecraft.world.World
-import java.util.UUID
 
 /**
  * 猎杀 HUNTER —— 战斗 / 怪物掉落。
@@ -186,7 +185,7 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
     }
 
-    /** 紫 · 猎杀: 标记**距离最近**的敌方玩家 —— 持续显示其方位/坐标/距离并高亮轮廓; 朝目标移动时移速 +50% */
+    /** 紫 · 猎杀: 始终标记**距离最近**的敌方玩家 (每秒跟随切换) —— 持续显示其方位/坐标/距离并高亮轮廓; 朝目标移动时移速 +50% */
     object MarkedPrey : PerkDefinition {
         override val id = "hunter_marked_prey"
         override val rarity = PerkRarity.PURPLE
@@ -205,17 +204,22 @@ object HunterPerks {
 
         private fun refresh(ctx: PerkContext) {
             val player = ctx.player
-            val targetId = ctx.state.memory[TARGET_KEY]?.let { runCatching { UUID.fromString(it) }.getOrNull() }
-            val target = targetId?.let { player.server?.playerManager?.getPlayer(it) }
 
+            // **始终跟随当前最近的敌人**: 每秒重新评估一次, 最近的人换了就立刻切换目标
+            val target = nearestEnemy(player)
             if (target == null) {
-                // 目标离线/不在场 (或从未标记成功): 清加速后**无论有没有旧目标都重试标记** ——
-                // 否则"获得词条时敌人不在线"会让 TARGET_KEY 永远是 null, 后续每秒都直接 return, 词条永久失效
+                // 场上没有敌人 (全部离线, 或只剩自己): 清掉加速与标记, 有人上线后会自动重新锁定
                 PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
                 ctx.state.memory.remove(TARGET_KEY)
                 ctx.state.memory.remove(LAST_DIST_KEY)
-                markTarget(ctx)
                 return
+            }
+
+            val targetId = target.uuid.toString()
+            if (ctx.state.memory[TARGET_KEY] != targetId) {
+                // 目标发生切换: 重置距离基准 —— 否则会拿"到新目标的距离"与"到旧目标的距离"相比, 误判成正在接近
+                ctx.state.memory[TARGET_KEY] = targetId
+                ctx.state.memory.remove(LAST_DIST_KEY)
             }
 
             // 跨维度: 两个世界的坐标硬算出来的距离/方位没有意义 → 只提示目标在哪个维度, 不给加速
@@ -264,22 +268,24 @@ object HunterPerks {
             )
         }
 
-        /** 标记**距离最近**的一名其他队伍在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌)。
+        /** 当前**距离最近**的敌方在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌)。
          *  距离只在同维度内可比 (跨维度坐标无意义) → 同维度有敌人时取其中最近的;
          *  同维度一个敌人都没有时, 才退化为其他维度中的一名。 */
-        private fun markTarget(ctx: PerkContext) {
-            val player = ctx.player
-            val server = player.server ?: return
+        private fun nearestEnemy(player: ServerPlayerEntity): ServerPlayerEntity? {
+            val server = player.server ?: return null
             val myTeam = player.scoreboardTeam?.name
             val enemies = server.playerManager.playerList.filter { other ->
                 other.uuid != player.uuid && (myTeam == null || other.scoreboardTeam?.name != myTeam)
             }
-            if (enemies.isEmpty()) return
-
-            val target = enemies.filter { it.world === player.world }
+            if (enemies.isEmpty()) return null
+            return enemies.filter { it.world === player.world }
                 .minByOrNull { it.pos.squaredDistanceTo(player.pos) }
                 ?: enemies.first()
+        }
 
+        /** 获得词条时立即锁定当前最近的敌人 (之后由 refresh 每秒跟随切换) */
+        private fun markTarget(ctx: PerkContext) {
+            val target = nearestEnemy(ctx.player) ?: return
             ctx.state.memory[TARGET_KEY] = target.uuid.toString()
             ctx.state.memory.remove(LAST_DIST_KEY)
         }

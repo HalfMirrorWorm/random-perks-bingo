@@ -118,7 +118,7 @@
   "random-perks-bingo.perk.hunter_soul_harvest.name": "灵魂收割",
   "random-perks-bingo.perk.hunter_soul_harvest.desc": "击杀怪物 8% 概率掉落战利品袋 (随机强力物品)。",
   "random-perks-bingo.perk.hunter_marked_prey.name": "猎杀印记",
-  "random-perks-bingo.perk.hunter_marked_prey.desc": "标记距离最近的敌方玩家: 持续显示其方位、坐标与距离并高亮轮廓; 朝他移动时移速 +50%。",
+  "random-perks-bingo.perk.hunter_marked_prey.desc": "始终标记距离最近的敌方玩家: 持续显示其方位、坐标与距离并高亮轮廓; 朝他移动时移速 +50%。",
   "random-perks-bingo.perk.hunter_greedy_hands.name": "贪婪之手",
   "random-perks-bingo.perk.hunter_greedy_hands.desc": "击杀生物时 50% 概率额外掉落一份战利品; 但你受到其他生物 2 倍伤害。",
   "random-perks-bingo.perk.hunter_predator.name": "我饥饿",
