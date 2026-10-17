@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **56** 条词条：蓝 25 / 紫 23 / 金 7 / 神话 1。
+共 **57** 条词条：蓝 26 / 紫 23 / 金 7 / 神话 1。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -23,6 +23,7 @@
 | `artisan_enchanter` | 附魔学徒 | Apprentice Enchanter | 蓝 |
 | `artisan_supply` | 战地补给 | Field Supply | 蓝 |
 | `artisan_toolkit` | 工具保养 | Toolkit | 蓝 |
+| `artisan_fire_temper` | 火炼 | Smelting | 蓝 |
 | `artisan_long_arms` | 手长 | Long Arms | 紫 |
 | `artisan_waypoint_clock` | 传送时钟 | Waypoint Clock | 金 |
 

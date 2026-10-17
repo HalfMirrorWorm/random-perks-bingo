@@ -141,6 +141,20 @@ object ArtisanPerks {
         }
     }
 
+    /** 蓝 · 匠造: 获得高炉、烟熏炉与营火各一个 */
+    object FireTemper : PerkDefinition {
+        override val id = "artisan_fire_temper"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.BLAST_FURNACE)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.BLAST_FURNACE))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.SMOKER))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.CAMPFIRE))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -148,5 +162,6 @@ object ArtisanPerks {
         PerkRegistry.register(Enchanter)
         PerkRegistry.register(WaypointClock)
         PerkRegistry.register(LongArms)
+        PerkRegistry.register(FireTemper)
     }
 }

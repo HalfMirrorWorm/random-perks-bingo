@@ -136,6 +136,8 @@
   "random-perks-bingo.perk.artisan_toolkit.desc": "Gain an Efficiency II iron pickaxe (only 24 durability left).",
   "random-perks-bingo.perk.artisan_builder.name": "Builder",
   "random-perks-bingo.perk.artisan_builder.desc": "Gain a crafting table, 16 logs, cobblestone and torches.",
+  "random-perks-bingo.perk.artisan_fire_temper.name": "Smelting",
+  "random-perks-bingo.perk.artisan_fire_temper.desc": "Gain a blast furnace, a smoker and a campfire.",
   "random-perks-bingo.perk.artisan_enchanter.name": "Apprentice Enchanter",
   "random-perks-bingo.perk.artisan_enchanter.desc": "Gain a random useful enchanted book, then another every 5 minutes.",
 
