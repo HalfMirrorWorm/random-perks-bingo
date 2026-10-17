@@ -186,7 +186,7 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
     }
 
-    /** 紫 · 猎杀: 随机标记一名敌方玩家 —— 持续显示其方位/坐标/距离并高亮轮廓; 朝目标移动时移速 +50% */
+    /** 紫 · 猎杀: 标记**距离最近**的敌方玩家 —— 持续显示其方位/坐标/距离并高亮轮廓; 朝目标移动时移速 +50% */
     object MarkedPrey : PerkDefinition {
         override val id = "hunter_marked_prey"
         override val rarity = PerkRarity.PURPLE
@@ -264,15 +264,22 @@ object HunterPerks {
             )
         }
 
-        /** 随机标记一名其他队伍的在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌) */
+        /** 标记**距离最近**的一名其他队伍在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌)。
+         *  距离只在同维度内可比 (跨维度坐标无意义) → 同维度有敌人时取其中最近的;
+         *  同维度一个敌人都没有时, 才退化为其他维度中的一名。 */
         private fun markTarget(ctx: PerkContext) {
             val player = ctx.player
             val server = player.server ?: return
             val myTeam = player.scoreboardTeam?.name
-            val candidates = server.playerManager.playerList.filter { other ->
+            val enemies = server.playerManager.playerList.filter { other ->
                 other.uuid != player.uuid && (myTeam == null || other.scoreboardTeam?.name != myTeam)
             }
-            val target = candidates.randomOrNull() ?: return
+            if (enemies.isEmpty()) return
+
+            val target = enemies.filter { it.world === player.world }
+                .minByOrNull { it.pos.squaredDistanceTo(player.pos) }
+                ?: enemies.first()
+
             ctx.state.memory[TARGET_KEY] = target.uuid.toString()
             ctx.state.memory.remove(LAST_DIST_KEY)
         }
