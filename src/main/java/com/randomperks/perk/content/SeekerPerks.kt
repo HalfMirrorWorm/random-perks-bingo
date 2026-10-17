@@ -113,10 +113,10 @@ object SeekerPerks {
         }
     }
 
-    /** 紫 · 补给线: 立即获得一份随机补给, 之后每 2 分钟再获得一份 */
+    /** 蓝 · 补给线: 立即获得一份随机补给, 之后每 2 分钟再获得一份 */
     object SupplyLine : PerkDefinition {
         override val id = "seeker_supply_line"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.ENDER_CHEST)
 
