@@ -6,6 +6,7 @@ import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
 import com.randomperks.client.screen.StealScreen
 import com.randomperks.client.screen.StealTargetScreen
+import com.randomperks.game.ClientPerkFlags
 import com.randomperks.network.GlowMarkS2C
 import com.randomperks.network.PerkAbilitySyncS2C
 import com.randomperks.network.PerkCatalogRequestC2S
@@ -82,6 +83,8 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(PerkAbilitySyncS2C.ID) { payload, context ->
             context.client().execute {
                 ownedPerkIds = payload.perkIds.toSet()
+                // 同步给 main 源集的镜像 —— mixin 那边引用不到 client 源集的类
+                ClientPerkFlags.ownedPerkIds = ownedPerkIds
             }
         }
 

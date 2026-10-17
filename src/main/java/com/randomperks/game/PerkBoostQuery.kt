@@ -127,4 +127,10 @@ object PerkBoostQuery {
         attacker.sendMessage(Text.translatable("random-perks-bingo.message.nya_axe_used"), true)
         return LETHAL_DAMAGE
     }
+
+    // ---- "大胃袋": 满饱食度也能吃 (由 BigStomachMixin 在 ConsumableComponent.canConsume 拦截) ----
+
+    /** 玩家是否持有"大胃袋" */
+    fun hasBigStomach(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("harvest_big_stomach") == true
 }

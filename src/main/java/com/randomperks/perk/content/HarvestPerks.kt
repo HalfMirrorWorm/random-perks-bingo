@@ -208,6 +208,15 @@ object HarvestPerks {
         private const val HORSE_SPEED = 0.3375
     }
 
+    /** 紫 · 丰饶: **大胃袋** —— 饥饿值与饱和度都满了也能继续吃 (解除原版"吃饱了就不能吃"的限制) */
+    object BigStomach : PerkDefinition {
+        override val id = "harvest_big_stomach"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.CAKE)
+        // 效果由 BigStomachMixin 在 ConsumableComponent.canConsume 实现
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -219,5 +228,6 @@ object HarvestPerks {
         PerkRegistry.register(Rancher)
         PerkRegistry.register(CatAura)
         PerkRegistry.register(SummonHorse)
+        PerkRegistry.register(BigStomach)
     }
 }

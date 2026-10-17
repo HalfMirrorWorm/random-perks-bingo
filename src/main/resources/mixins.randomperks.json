@@ -22,7 +22,8 @@
     "XrayDropSuppressMixin",
     "HungerRefillMixin",
     "MobLootInvoker",
-    "NyaAxeMixin"
+    "NyaAxeMixin",
+    "BigStomachMixin"
   ],
   "client": [
     "EntityGlowMixin",

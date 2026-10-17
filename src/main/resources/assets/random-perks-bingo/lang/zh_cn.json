@@ -162,6 +162,8 @@
   "random-perks-bingo.perk.artisan_long_arms.desc": "方块与实体的交互距离 +4 格。",
   "random-perks-bingo.perk.harvest_summon_horse.name": "马来",
   "random-perks-bingo.perk.harvest_summon_horse.desc": "立即在脚下召唤一匹属于你的马 (自带鞍; 50 血, 跳跃力与速度均为顶级)。",
+  "random-perks-bingo.perk.harvest_big_stomach.name": "大胃袋",
+  "random-perks-bingo.perk.harvest_big_stomach.desc": "饥饿值与饱和度都满了也能继续吃东西。",
   "random-perks-bingo.perk.seeker_wandering_trader.name": "流浪拴绳",
   "random-perks-bingo.perk.seeker_wandering_trader.desc": "立即触发一次原版的流浪商人刷新事件 (与自然刷新完全一致); 生物群系不允许时会提示, 换群系后自动重试。",
   "random-perks-bingo.perk.seeker_village_compass.name": "回村的诱惑",

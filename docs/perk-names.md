@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **58** 条词条：蓝 26 / 紫 24 / 金 7 / 神话 1。
+共 **59** 条词条：蓝 26 / 紫 25 / 金 7 / 神话 1。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -54,6 +54,7 @@
 | `harvest_summon_horse` | 马来 | Horse, Come | 蓝 |
 | `harvest_timber` | 樵夫之手 | Timber! | 蓝 |
 | `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 紫 |
+| `harvest_big_stomach` | 大胃袋 | Bottomless Stomach | 紫 |
 | `harvest_bounty` | 丰收之息 | Bounty | 紫 |
 
 ## 猎杀 HUNTER
