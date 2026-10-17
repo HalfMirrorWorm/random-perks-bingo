@@ -135,7 +135,7 @@
   "random-perks-bingo.perk.artisan_builder.name": "建筑师",
   "random-perks-bingo.perk.artisan_builder.desc": "获得工作台、箱子、圆石和火把。",
   "random-perks-bingo.perk.artisan_enchanter.name": "附魔学徒",
-  "random-perks-bingo.perk.artisan_enchanter.desc": "获得一本随机实用附魔书。",
+  "random-perks-bingo.perk.artisan_enchanter.desc": "立即获得一本随机实用附魔书, 之后每 5 分钟再获得一本。",
 
   "random-perks-bingo.perk.seeker_scout.name": "侦察兵",
   "random-perks-bingo.perk.seeker_scout.desc": "获得望远镜 (瞄准的生物或玩家会被高亮标记 1 分钟, 队友可见)、指南针和一张藏宝图。",

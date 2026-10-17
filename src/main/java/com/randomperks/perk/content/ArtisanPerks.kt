@@ -67,13 +67,32 @@ object ArtisanPerks {
     }
 
     /** 蓝 · 附魔学徒: 获得一本随机实用附魔书 */
+    /** 蓝 · 附魔学徒: 立即获得一本随机实用附魔书, 之后每 5 分钟再获得一本 */
     object Enchanter : PerkDefinition {
         override val id = "artisan_enchanter"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.ENCHANTED_BOOK)
 
+        private const val COOLDOWN_TICKS = 5 * 60 * 20
+
         override fun onAcquire(ctx: PerkContext) {
+            grant(ctx)
+            ctx.state.cooldowns[id] = (now(ctx) + COOLDOWN_TICKS)
+        }
+
+        override fun onTick(ctx: PerkContext) {
+            val current = now(ctx)
+            val next = ctx.state.cooldowns[id] ?: 0L
+            if (current < next) return
+            ctx.state.cooldowns[id] = current + COOLDOWN_TICKS
+            grant(ctx)
+        }
+
+        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+
+        /** 随机发一本实用附魔书 (效率 III / 耐久 III / 时运 II / 保护 III) */
+        private fun grant(ctx: PerkContext) {
             val book = ItemStack(Items.ENCHANTED_BOOK)
             when (ctx.player.random.nextInt(4)) {
                 0 -> PerkEffects.enchant(ctx.player, book, Enchantments.EFFICIENCY, 3)
