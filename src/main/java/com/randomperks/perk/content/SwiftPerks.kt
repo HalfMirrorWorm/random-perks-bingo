@@ -206,6 +206,23 @@ object SwiftPerks {
         // 效果由 FallBucketMixin 实现 (仅摔落伤害)
     }
 
+    /** 紫 · 疾风: 获得一把**激流 III** 的三叉戟 —— 在水中或雨中按住右键即可朝准星方向高速冲出
+     *  (原版机制: 激流只在水中/雨中可用, 陆地或晴天只能当普通三叉戟近战) */
+    object GuraShark : PerkDefinition {
+        override val id = "swift_gura_shark"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.TRIDENT)
+
+        private const val RIPTIDE_LEVEL = 3
+
+        override fun onAcquire(ctx: PerkContext) {
+            val trident = ItemStack(Items.TRIDENT)
+            PerkEffects.enchant(ctx.player, trident, Enchantments.RIPTIDE, RIPTIDE_LEVEL)
+            PerkEffects.giveStack(ctx.player, trident)
+        }
+    }
+
     fun registerAll() {
         com.randomperks.perk.PerkRegistry.register(Speed)
         com.randomperks.perk.PerkRegistry.register(FeatherFall)
@@ -215,5 +232,6 @@ object SwiftPerks {
         com.randomperks.perk.PerkRegistry.register(DoubleJump)
         com.randomperks.perk.PerkRegistry.register(ElytraBond)
         com.randomperks.perk.PerkRegistry.register(LifeBucket)
+        com.randomperks.perk.PerkRegistry.register(GuraShark)
     }
 }
