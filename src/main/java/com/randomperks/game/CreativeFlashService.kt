@@ -9,11 +9,11 @@ import net.minecraft.world.GameMode
 import java.util.UUID
 
 /**
- * "神话·创造闪光"的服务端逻辑: 给玩家 1 秒创造模式, 然后恢复原游戏模式。
+ * "神话·创造闪光"的服务端逻辑: 给玩家 1.5 秒创造模式, 然后恢复原游戏模式。
  */
 object CreativeFlashService {
 
-    private const val FLASH_TICKS = 20L
+    private const val FLASH_TICKS = 30L
 
     private data class Flash(
         val originalMode: GameMode,
@@ -36,7 +36,7 @@ object CreativeFlashService {
             }
         }
 
-        // ★ 离线兜底: 闪光期间退出/被踢时**立刻**恢复原模式 —— 否则那 1 秒内断线会以创造模式存盘
+        // ★ 离线兜底: 闪光期间退出/被踢时**立刻**恢复原模式 —— 否则那 1.5 秒内断线会以创造模式存盘
         // (游戏模式是玩家存档的一部分), 下次上线仍是创造, 等于白送作弊权限。
         // Fabric 的 LEAVE 注入在 PlayerManager.remove 的 HEAD, 玩家对象此时完全有效,
         // 且早于 savePlayerData, 所以恢复结果会被正确写回存档。
@@ -53,7 +53,7 @@ object CreativeFlashService {
         player.sendAbilitiesUpdate()
     }
 
-    /** 给玩家 1 秒创造模式 (神话词条效果) */
+    /** 给玩家 1.5 秒创造模式 (神话词条效果) */
     fun flash(player: ServerPlayerEntity) {
         val server = player.server ?: return
         val original = player.interactionManager.gameMode
@@ -67,6 +67,6 @@ object CreativeFlashService {
             Text.translatable("random-perks-bingo.message.creative_flash"),
             true,
         )
-        RandomPerksMod.logger.info("[RandomPerks] creative flash for {} (1s)", player.name.string)
+        RandomPerksMod.logger.info("[RandomPerks] creative flash for {} (1.5s)", player.name.string)
     }
 }

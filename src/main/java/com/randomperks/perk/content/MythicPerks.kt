@@ -14,7 +14,7 @@ import net.minecraft.item.Items
  */
 object MythicPerks {
 
-    /** 神话 · 匠造 · 全局唯一: 获得 1 秒创造模式 */
+    /** 神话 · 匠造 · 全局唯一: 获得 1.5 秒创造模式 */
     object CreativeFlash : PerkDefinition {
         override val id = "mythic_creative_flash"
         override val rarity = PerkRarity.MYTHIC
