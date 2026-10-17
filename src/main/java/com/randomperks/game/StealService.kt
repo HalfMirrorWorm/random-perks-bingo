@@ -31,12 +31,14 @@ object StealService {
             ?.let { runCatching { UUID.fromString(it) }.getOrNull() }
             ?.let { player.server?.playerManager?.getPlayer(it) }
 
-    /** 候选目标: 其他队伍的在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌) */
+    /** 候选目标: 其他队伍的在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌); 排除旁观者 */
     private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> {
         val server = player.server ?: return emptyList()
         val myTeam = player.scoreboardTeam?.name
         return server.playerManager.playerList.filter { other ->
-            other.uuid != player.uuid && (myTeam == null || other.scoreboardTeam?.name != myTeam)
+            !other.isSpectator &&
+                other.uuid != player.uuid &&
+                (myTeam == null || other.scoreboardTeam?.name != myTeam)
         }
     }
 

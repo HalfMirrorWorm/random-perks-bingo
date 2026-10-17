@@ -342,7 +342,9 @@ object HunterPerks {
             val server = player.server ?: return null
             val myTeam = player.scoreboardTeam?.name
             val enemies = server.playerManager.playerList.filter { other ->
-                other.uuid != player.uuid && (myTeam == null || other.scoreboardTeam?.name != myTeam)
+                !other.isSpectator &&
+                    other.uuid != player.uuid &&
+                    (myTeam == null || other.scoreboardTeam?.name != myTeam)
             }
             if (enemies.isEmpty()) return null
             return enemies.filter { it.world === player.world }
@@ -515,9 +517,9 @@ object HunterPerks {
         }
 
         /** 候选: **所有在线玩家** —— 不限队伍、不限维度, 也包括自己 (跨维度劈雷对目标依然有效,
-         *  只是施法者看不到, 所以不排除) */
+         *  只是施法者看不到, 所以不排除); 旁观者除外 */
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList ?: emptyList()
+            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
 
         /** 在目标位置劈一次闪电 (16 格内的引雷针会把闪电引过去) */
         private fun strike(target: ServerPlayerEntity) {
