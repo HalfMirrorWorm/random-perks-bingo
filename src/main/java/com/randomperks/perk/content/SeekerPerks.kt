@@ -186,18 +186,18 @@ object SeekerPerks {
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.LEAD)
 
-        /** 立即生效: 获得瞬间随机选一名敌方玩家并打开其背包 (无目标时提示) */
+        /** 立即生效: 获得瞬间弹出目标选择器, 选定后打开其背包 (无候选时提示) */
         override fun onAcquire(ctx: PerkContext) = StealService.handleRequest(ctx.player)
     }
 
-    /** 金 · 秘藏 · 质变: 永久透视 —— 高亮标记 64 格内的所有生物 (不含玩家) */
+    /** 金 · 秘藏 · 质变: 永久透视 —— 高亮标记 32 格内的所有生物 (不含玩家) */
     object LifeVision : PerkDefinition {
         override val id = "seeker_life_vision"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.SPIDER_EYE)
 
-        private const val RANGE = 64.0
+        private const val RANGE = 32.0
 
         /** 标记有效期: 2 秒 —— 每秒续期不会闪烁, 又不会在生物离开范围后残留太久 */
         private const val GLOW_MARK_MILLIS = 2_000L

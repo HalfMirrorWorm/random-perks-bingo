@@ -142,7 +142,7 @@
   "random-perks-bingo.perk.seeker_pickpocket.name": "顺手牵羊",
   "random-perks-bingo.perk.seeker_pickpocket.desc": "获得时立即弹出目标选择界面: 选一名敌方玩家后打开他的背包, 偷走其中一格物品 (一次性)。",
   "random-perks-bingo.perk.seeker_life_vision.name": "生命透视",
-  "random-perks-bingo.perk.seeker_life_vision.desc": "永久高亮标记 64 格内的所有生物 (不含玩家), 可穿透方块看到。",
+  "random-perks-bingo.perk.seeker_life_vision.desc": "永久高亮标记 32 格内的所有生物 (不含玩家), 可穿透方块看到。",
   "random-perks-bingo.perk.seeker_ender_cache.name": "末影仓库",
   "random-perks-bingo.perk.seeker_ender_cache.desc": "立即获得一个末影箱, 之后每 8 分钟再获得一个。",
   "random-perks-bingo.perk.seeker_alchemist.name": "药剂师",

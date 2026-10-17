@@ -142,7 +142,7 @@
   "random-perks-bingo.perk.seeker_pickpocket.name": "Pickpocket",
   "random-perks-bingo.perk.seeker_pickpocket.desc": "When acquired, a target picker opens; choose an enemy player, then steal one item from their inventory (single use).",
   "random-perks-bingo.perk.seeker_life_vision.name": "Life Vision",
-  "random-perks-bingo.perk.seeker_life_vision.desc": "All mobs within 64 blocks are permanently outlined through walls (players excluded).",
+  "random-perks-bingo.perk.seeker_life_vision.desc": "All mobs within 32 blocks are permanently outlined through walls (players excluded).",
   "random-perks-bingo.perk.seeker_ender_cache.name": "Ender Cache",
   "random-perks-bingo.perk.seeker_ender_cache.desc": "Gain an ender chest now, then one every 8 minutes.",
   "random-perks-bingo.perk.seeker_alchemist.name": "Alchemist",
