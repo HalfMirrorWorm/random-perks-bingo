@@ -19,7 +19,7 @@ import net.minecraft.registry.Registries
  */
 object HarvestPerks {
 
-    /** 蓝 · 园艺家: 获得 16 面包 + 16 小麦种子 */
+    /** 蓝 · 园艺家: 获得 16 面包 + 16 小麦 */
     object Gardener : PerkDefinition {
         override val id = "harvest_gardener"
         override val rarity = PerkRarity.BLUE
@@ -28,7 +28,7 @@ object HarvestPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.BREAD, 16))
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.WHEAT_SEEDS, 16))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.WHEAT, 16))
         }
     }
 
