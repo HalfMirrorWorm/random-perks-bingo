@@ -23,6 +23,9 @@ class PlayerPerkState(val uuid: UUID) {
     /** 已获得的词条 (本局内不可重复) */
     val ownedPerks: MutableList<PerkDefinition> = mutableListOf()
 
+    /** 本局已"用掉"的一次性词条 id (如顺手牵羊偷完之后) —— 抽卡时同样排除, 避免同一局里反复获得 */
+    val consumedPerks: MutableSet<String> = mutableSetOf()
+
     /** 主动技能/触发效果的冷却到期时间 (游戏 tick 时间) */
     val cooldowns: MutableMap<String, Long> = mutableMapOf()
 
@@ -48,6 +51,7 @@ class PlayerPerkState(val uuid: UUID) {
     fun reset() {
         pendingOffers.clear()
         ownedPerks.clear()
+        consumedPerks.clear()
         cooldowns.clear()
         memory.clear()
         savedChestItem = null

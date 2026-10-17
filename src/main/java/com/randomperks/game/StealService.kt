@@ -103,8 +103,9 @@ object StealService {
         // 转移物品 (PerkEffects.giveStack 内部用 offerOrDrop: 偷窃者的背包放不下会掉在脚下, 不会蒸发)
         PerkEffects.giveStack(player, taken)
 
-        // 一次性: 消耗词条
+        // 一次性: 消耗词条, 并记入"本局已用掉" —— 否则抽卡池会把它放回去, 同一局能反复偷
         state.ownedPerks.remove(perk)
+        state.consumedPerks.add(PERK_ID)
         state.memory.remove(TARGET_KEY)
         runCatching { perk.onRemove(PerkContext(player, state)) }
         PerkGrantService.notifyPerkListChanged(player)
