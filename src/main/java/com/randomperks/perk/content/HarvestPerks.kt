@@ -46,7 +46,7 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 牧羊人: 获得剪刀 + 16 羊毛 */
+    /** 蓝 · 牧羊人: 获得剪刀 + 32 羊毛 */
     object Herder : PerkDefinition {
         override val id = "harvest_herder"
         override val rarity = PerkRarity.BLUE
@@ -55,7 +55,7 @@ object HarvestPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.SHEARS))
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.WHITE_WOOL, 16))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.WHITE_WOOL, 32))
         }
     }
 
