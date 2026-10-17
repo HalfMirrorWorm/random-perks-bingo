@@ -15,6 +15,7 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import net.minecraft.enchantment.Enchantments
+import net.minecraft.entity.EntityType
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
@@ -132,31 +133,58 @@ object HunterPerks {
         }
     }
 
-    /** 金 · 灵魂收割: 击杀 8% 概率掉落"战利品袋" —— 随机强力物品 */
+    /** 金 · 灵魂收割: 击杀 8% 概率额外掉落**与该怪物对应**的战利品 (僵尸只掉僵尸会有的东西) */
     object SoulHarvest : PerkDefinition {
         override val id = "hunter_soul_harvest"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.NETHER_STAR)
 
+        private const val CHANCE = 0.08f
+
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             // 同"剥皮专家": 用 Monster 接口判定 (HostileEntity 会漏掉史莱姆/恶魂/幻翼/末影龙等)
             if (victim !is Monster) return
-            if (ctx.player.random.nextFloat() >= 0.08f) return
+            if (ctx.player.random.nextFloat() >= CHANCE) return
 
-            val roll = ctx.player.random.nextInt(4)
-            val prize = when (roll) {
-                0 -> ItemStack(Items.GOLDEN_APPLE)
-                1 -> ItemStack(Items.DIAMOND, 3)
-                2 -> ItemStack(Items.ENDER_PEARL, 4)
-                else -> ItemStack(Items.ENCHANTED_BOOK).also {
-                    PerkEffects.enchant(ctx.player, it, Enchantments.SHARPNESS, 3)
-                }
-            }
             val world = ctx.player.world as? ServerWorld ?: return
-            // "战利品袋"以真实掉落物形态落在怪物死亡位置 (与"剥皮专家"同口径)
-            victim.dropStack(world, prize)
+            val prize = prizeFor(victim)
+            if (prize != null) {
+                // 有专属条目: 直接以掉落物形态落在怪物死亡位置
+                victim.dropStack(world, prize)
+            } else {
+                // 未收录的怪物 (蠹虫/末影龙/凋灵/模组怪等): 回退成"让它自己的战利品表再滚一次",
+                // 掉出来的东西天生与这只怪对应
+                val source = victim.recentDamageSource ?: return
+                (victim as? MobLootInvoker)?.invokeDropLoot(world, source, true)
+            }
             ctx.player.sendMessage(net.minecraft.text.Text.translatable("random-perks-bingo.message.loot_bag"), false)
+        }
+
+        /** 每种怪物对应的"专属战利品" —— 保证掉出来的永远是这只怪身上会有的东西 */
+        private fun prizeFor(victim: LivingEntity): ItemStack? = when (victim.type) {
+            EntityType.ZOMBIE, EntityType.HUSK, EntityType.DROWNED, EntityType.ZOMBIE_VILLAGER ->
+                ItemStack(Items.IRON_INGOT, 2)
+            EntityType.SKELETON, EntityType.STRAY, EntityType.BOGGED ->
+                ItemStack(Items.BONE, 8)
+            EntityType.CREEPER -> ItemStack(Items.GUNPOWDER, 8)
+            EntityType.SPIDER, EntityType.CAVE_SPIDER -> ItemStack(Items.STRING, 8)
+            EntityType.ENDERMAN -> ItemStack(Items.ENDER_PEARL, 4)
+            EntityType.BLAZE -> ItemStack(Items.BLAZE_ROD, 4)
+            EntityType.GHAST -> ItemStack(Items.GHAST_TEAR, 2)
+            EntityType.WITHER_SKELETON -> ItemStack(Items.WITHER_SKELETON_SKULL)
+            EntityType.ZOMBIFIED_PIGLIN, EntityType.PIGLIN -> ItemStack(Items.GOLD_INGOT, 4)
+            EntityType.MAGMA_CUBE -> ItemStack(Items.MAGMA_CREAM, 4)
+            EntityType.SLIME -> ItemStack(Items.SLIME_BALL, 8)
+            EntityType.PHANTOM -> ItemStack(Items.PHANTOM_MEMBRANE, 4)
+            EntityType.GUARDIAN, EntityType.ELDER_GUARDIAN -> ItemStack(Items.PRISMARINE_CRYSTALS, 4)
+            EntityType.SHULKER -> ItemStack(Items.SHULKER_SHELL, 2)
+            EntityType.WITCH -> ItemStack(Items.GLOWSTONE_DUST, 8)
+            EntityType.PILLAGER -> ItemStack(Items.ARROW, 16)
+            EntityType.VINDICATOR -> ItemStack(Items.EMERALD, 2)
+            EntityType.EVOKER -> ItemStack(Items.EMERALD, 4)
+            EntityType.RAVAGER -> ItemStack(Items.SADDLE)
+            else -> null
         }
     }
 
