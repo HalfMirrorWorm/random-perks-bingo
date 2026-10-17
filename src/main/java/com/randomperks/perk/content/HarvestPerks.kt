@@ -188,8 +188,24 @@ object HarvestPerks {
                 net.minecraft.entity.SpawnReason.MOB_SUMMONED,
                 null,
             )
+            // ★ 属性覆盖: initialize 随机出的值一律换成固定档 —— 血量 50 (超出原版 15~30),
+            // 跳跃力与移动速度都取原版上限 (0.4~1.0 / 0.1125~0.3375), 即"属性全满的马"。
+            // 必须放在 initialize **之后** (initialize 会重写这些属性); 血量还要同步补满 ——
+            // 只提高属性上限不会回血, 否则马身上仍是随机出的初始血量。
+            horse.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.MAX_HEALTH)
+                ?.baseValue = HORSE_HEALTH
+            horse.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.JUMP_STRENGTH)
+                ?.baseValue = HORSE_JUMP
+            horse.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.MOVEMENT_SPEED)
+                ?.baseValue = HORSE_SPEED
+            horse.health = HORSE_HEALTH.toFloat()
             world.spawnEntity(horse)
         }
+
+        /** 召唤马的固定属性: 血量 50 (超原版上限 30), 跳跃力/速度取原版上限 */
+        private const val HORSE_HEALTH = 50.0
+        private const val HORSE_JUMP = 1.0
+        private const val HORSE_SPEED = 0.3375
     }
 
     fun registerAll() {
