@@ -86,7 +86,7 @@
   "random-perks-bingo.perk.delver_xray_vision.name": "X-Ray Vision",
   "random-perks-bingo.perk.delver_xray_vision.desc": "Ores within 10 blocks glow through walls; cost: 35% of items you mine with a pickaxe vanish.",
   "random-perks-bingo.perk.delver_lucky_digger.name": "Lucky Digger",
-  "random-perks-bingo.perk.delver_lucky_digger.desc": "Mining with a pickaxe drops a random item with a chance based on the block's required pickaxe tier (wood 0.1% / stone 0.5% / iron 1% / diamond+ 10%); the prize pool is every Minecraft item, spawn eggs included (only command-only blocks and data-less template items are excluded).",
+  "random-perks-bingo.perk.delver_lucky_digger.desc": "Pickaxe mining can drop a random item, chance scaling with the block's required tier (wood 0.1% / stone 0.5% / iron 1% / diamond+ 10%).",
   "random-perks-bingo.perk.delver_collector.name": "Collector",
   "random-perks-bingo.perk.delver_collector.desc": "40% chance of an extra drop when mining ores or stone; but mining speed is halved (attack speed unaffected).",
   "random-perks-bingo.perk.delver_iron_skin.name": "Emperor's New Clothes",

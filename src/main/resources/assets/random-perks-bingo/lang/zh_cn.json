@@ -86,7 +86,7 @@
   "random-perks-bingo.perk.delver_xray_vision.name": "透视之眼",
   "random-perks-bingo.perk.delver_xray_vision.desc": "10 格内的矿石会发光显示 (可穿透方块); 代价: 用镐子挖到的物品有 35% 概率消失。",
   "random-perks-bingo.perk.delver_lucky_digger.name": "幸运矿工",
-  "random-perks-bingo.perk.delver_lucky_digger.desc": "用镐子挖方块时, 按方块的需求镐子等级概率掉落随机物品 (木 0.1% / 石 0.5% / 铁 1% / 钻石及以上 10%); 奖品来自整个 Minecraft 物品库 (含刷怪蛋), 只排除纯指令方块与需要数据组件的模板物品。",
+  "random-perks-bingo.perk.delver_lucky_digger.desc": "用镐子挖方块时, 按方块的需求镐等级概率掉落一件随机物品 (木 0.1% / 石 0.5% / 铁 1% / 钻石及以上 10%)。",
   "random-perks-bingo.perk.delver_collector.name": "收藏家",
   "random-perks-bingo.perk.delver_collector.desc": "挖掘矿石或石头时 40% 概率额外掉落一份; 但挖掘速度降低 50% (不影响攻速)。",
   "random-perks-bingo.perk.delver_iron_skin.name": "皇帝新衣",
