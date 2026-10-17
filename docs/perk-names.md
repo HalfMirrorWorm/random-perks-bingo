@@ -52,7 +52,7 @@
 | `harvest_rancher` | 牧场主 | Rancher | 蓝 |
 | `harvest_cat_aura` | 哈基米 | Hakimi | 蓝 |
 | `harvest_summon_horse` | 马来 | Horse, Come | 蓝 |
-| `harvest_timber` | 樵夫之手 | Timber! | 紫 |
+| `harvest_timber` | 樵夫之手 | Timber! | 蓝 |
 | `harvest_bounty` | 丰收之息 | Bounty | 紫 |
 
 ## 猎杀 HUNTER

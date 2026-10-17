@@ -59,10 +59,10 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 樵夫之手: 破坏原木时 50% 概率额外掉落一个原木 (掉落在原方块位置, 不进背包) */
+    /** 蓝 · 樵夫之手: 破坏原木时 50% 概率额外掉落一个原木 (掉落在原方块位置, 不进背包) */
     object Timber : PerkDefinition {
         override val id = "harvest_timber"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.OAK_LOG)
 
