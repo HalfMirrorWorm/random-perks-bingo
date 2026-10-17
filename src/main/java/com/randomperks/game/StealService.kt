@@ -118,13 +118,14 @@ object StealService {
             Text.translatable("random-perks-bingo.message.steal_success", takenName, targetName),
             false,
         )
-        target.sendMessage(
-            Text.translatable("random-perks-bingo.message.steal_victim", takenName),
-            false,
-        )
+        // 受害者提示: 聊天栏 + actionbar 各发一次 —— 聊天栏很容易被其他消息刷掉/滚出屏幕,
+        // actionbar 就在准星下方, 不会错过
+        val victimMessage = Text.translatable("random-perks-bingo.message.steal_victim", takenName)
+        target.sendMessage(victimMessage, false)
+        target.sendMessage(victimMessage, true)
 
         RandomPerksMod.logger.info(
-            "[RandomPerks] {} stole {} from {}",
+            "[RandomPerks] {} stole {} from {} (victim notified)",
             player.name.string, takenName.string, targetName.string,
         )
     }
