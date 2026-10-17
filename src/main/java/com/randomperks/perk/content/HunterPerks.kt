@@ -420,7 +420,7 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 猎杀: 获得时弹出玩家选择器, 选中一名敌方玩家后**在他的位置**召唤一次闪电;
+    /** 蓝 · 猎杀: 获得时弹出玩家选择器, 选中**任意一名玩家**后在他的位置召唤一次闪电;
      *  16 格内若有引雷针, 闪电会被引导过去 */
     object CallLightning : PerkDefinition {
         override val id = "hunter_call_lightning"
@@ -453,16 +453,10 @@ object HunterPerks {
             strike(target)
         }
 
-        /** 候选: 同维度的其他队伍在线玩家 (跨维度劈雷双方都看不到, 所以只在本维度找) */
-        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> {
-            val server = player.server ?: return emptyList()
-            val myTeam = player.scoreboardTeam?.name
-            return server.playerManager.playerList.filter { other ->
-                other.uuid != player.uuid &&
-                    other.world === player.world &&
-                    (myTeam == null || other.scoreboardTeam?.name != myTeam)
-            }
-        }
+        /** 候选: **所有在线玩家** —— 不限队伍、不限维度, 也包括自己 (跨维度劈雷对目标依然有效,
+         *  只是施法者看不到, 所以不排除) */
+        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
+            player.server?.playerManager?.playerList ?: emptyList()
 
         /** 在目标位置劈一次闪电 (16 格内的引雷针会把闪电引过去) */
         private fun strike(target: ServerPlayerEntity) {

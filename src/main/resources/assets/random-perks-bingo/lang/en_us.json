@@ -172,7 +172,7 @@
   "random-perks-bingo.perk.seeker_village_compass.name": "Homecoming",
   "random-perks-bingo.perk.seeker_village_compass.desc": "Gain a lodestone compass pointing to the nearest village.",
   "random-perks-bingo.perk.hunter_call_lightning.name": "Call Lightning",
-  "random-perks-bingo.perk.hunter_call_lightning.desc": "When acquired, a target picker opens; choose an enemy player and summon a lightning strike on them; redirected to a nearby lightning rod if present.",
+  "random-perks-bingo.perk.hunter_call_lightning.desc": "When acquired, a target picker opens; choose any player and summon a lightning strike on them; redirected to a nearby lightning rod if present.",
   "random-perks-bingo.perk.hunter_nya_axe.name": "Nya Axe",
   "random-perks-bingo.perk.hunter_nya_axe.desc": "Gain a one-shot axe: your next hit on any living entity (players included) is instantly lethal — single use.",
   "random-perks-bingo.perk.hunter_veteran.name": "Veteran",
