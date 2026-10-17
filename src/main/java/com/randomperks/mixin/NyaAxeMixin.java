@@ -21,6 +21,6 @@ public class NyaAxeMixin {
     @ModifyVariable(method = "damage", at = @At("HEAD"), argsOnly = true)
     private float randomperks$lethalStrike(float amount, ServerWorld world, DamageSource source) {
         if (!(source.getAttacker() instanceof ServerPlayerEntity player)) return amount;
-        return PerkBoostQuery.INSTANCE.applyNyaAxe(player, amount);
+        return PerkBoostQuery.INSTANCE.applyNyaAxe(player, (LivingEntity) (Object) this, amount);
     }
 }

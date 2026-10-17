@@ -3,6 +3,7 @@ package com.randomperks.game
 import com.randomperks.state.PerkStateManager
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.NbtComponent
+import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.player.PlayerEntity
@@ -108,22 +109,24 @@ object PerkBoostQuery {
             ?.getBoolean(NYA_AXE_TAG)
             ?.orElse(false) == true
 
+    /** 与原版"秒人斧"一致: 只对生命值低于这个值的生物生效 (铁傀儡 100 / 凋灵 300 / 监守者 500 都秒不掉) */
+    private const val LETHAL_HEALTH_LIMIT = 60.0f
+
     /**
-     * 攻击者手持"秒人斧"时, 把这一击的伤害抬到必杀值, 并**消耗掉斧头** (只能用 1 次)。
+     * 攻击者手持"秒人斧"时, 把这一击的伤害抬到必杀值。
      * 不满足条件时原样返回 amount。
      *
-     * 注: 消耗发生在这里 (damage 的 HEAD), 所以万一这一刀被目标的无敌帧挡下也不会退回斧头 ——
-     * 换来的是"消耗"与"伤害"同一处判定, 不会出现抬了伤害却没消耗的漏洞。
+     * 斧头只有 1 点耐久, 攻击一次后由**原版耐久结算**自动损坏 (这里不再手动移除,
+     * 这样"用来砍方块"也会正常磨损, 和社区常见的秒人斧一致)。
      */
-    fun applyNyaAxe(attacker: ServerPlayerEntity, amount: Float): Float {
+    fun applyNyaAxe(attacker: ServerPlayerEntity, victim: LivingEntity, amount: Float): Float {
         val state = PerkStateManager.get(attacker.uuid) ?: return amount
         if (!state.hasPerk(NYA_AXE_PERK)) return amount
 
         val stack = attacker.mainHandStack
         if (!isNyaAxe(stack)) return amount
+        if (victim.health >= LETHAL_HEALTH_LIMIT) return amount   // 血太厚 → 只有正常伤害
 
-        // 消耗: 斧头不可堆叠, 直接扣掉整把
-        stack.decrement(1)
         attacker.sendMessage(Text.translatable("random-perks-bingo.message.nya_axe_used"), true)
         return LETHAL_DAMAGE
     }
