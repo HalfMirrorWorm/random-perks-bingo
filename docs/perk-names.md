@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **57** 条词条：蓝 26 / 紫 23 / 金 7 / 神话 1。
+共 **58** 条词条：蓝 26 / 紫 24 / 金 7 / 神话 1。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -70,6 +70,7 @@
 | `hunter_greedy_hands` | 贪婪之手 | Greedy Hands | 紫 |
 | `hunter_predator` | 我饥饿 | Me Hungry | 紫 |
 | `hunter_fireball` | 烈焰喷射 | Ghast Fireball | 紫 |
+| `hunter_nya_axe` | 喵人斧 | Nya Axe | 紫 |
 | `hunter_soul_harvest` | 灵魂收割 | Soul Harvest | 金 |
 | `hunter_headhunter` | SMP玩家 | SMP Player | 金 |
 

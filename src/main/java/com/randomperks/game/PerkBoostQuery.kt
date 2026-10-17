@@ -1,12 +1,16 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.NbtComponent
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 /**
@@ -67,7 +71,7 @@ object PerkBoostQuery {
     /** 记录"该玩家本 tick 的挖块掉落被透视惩罚抑制"的 tick (供矿脉嗅觉等联动词条查询) */
     const val XRAY_SUPPRESS_TICK_KEY = "xray_suppress_tick"
 
-    /** 用镐破坏方块时是否应抑制本次掉落生成 (持有词条 + 手持镐 + 50%) */
+    /** 用镐破坏方块时是否应抑制本次掉落生成 (持有词条 + 手持镐 + 35%) */
     fun shouldSuppressXrayDrop(player: ServerPlayerEntity, tool: ItemStack): Boolean {
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk(XRAY_PERK)) return false
@@ -77,5 +81,50 @@ object PerkBoostQuery {
         // 额外份同样被 X-Ray 惩罚 (不生成式下唯一能让联动成立的方式)
         state.memory[XRAY_SUPPRESS_TICK_KEY] = (player.server?.ticks ?: 0).toString()
         return true
+    }
+
+    // ---- "喵人斧": 一击必杀 (由 NyaAxeMixin 在 LivingEntity.damage 拦截) ----
+
+    private const val NYA_AXE_PERK = "hunter_nya_axe"
+
+    /** 斧头上的 NBT 标记: 只有词条发放的那一把才有 (玩家用铁砧改名伪造不出来) */
+    private const val NYA_AXE_TAG = "randomperks_nya_axe"
+
+    /** 必杀伤害 —— 远高于任何原版生物的血量 (监守者也才 500) */
+    private const val LETHAL_DAMAGE = 10_000.0f
+
+    /** 给这把斧头打上"秒人斧"标记 */
+    fun markNyaAxe(stack: ItemStack) {
+        stack.set(
+            DataComponentTypes.CUSTOM_DATA,
+            NbtComponent.of(NbtCompound().apply { putBoolean(NYA_AXE_TAG, true) }),
+        )
+    }
+
+    /** 注: 1.21 的 NbtCompound.getBoolean 返回 Optional<Boolean>, 不是裸 boolean */
+    private fun isNyaAxe(stack: ItemStack): Boolean =
+        stack.get(DataComponentTypes.CUSTOM_DATA)
+            ?.copyNbt()
+            ?.getBoolean(NYA_AXE_TAG)
+            ?.orElse(false) == true
+
+    /**
+     * 攻击者手持"秒人斧"时, 把这一击的伤害抬到必杀值, 并**消耗掉斧头** (只能用 1 次)。
+     * 不满足条件时原样返回 amount。
+     *
+     * 注: 消耗发生在这里 (damage 的 HEAD), 所以万一这一刀被目标的无敌帧挡下也不会退回斧头 ——
+     * 换来的是"消耗"与"伤害"同一处判定, 不会出现抬了伤害却没消耗的漏洞。
+     */
+    fun applyNyaAxe(attacker: ServerPlayerEntity, amount: Float): Float {
+        val state = PerkStateManager.get(attacker.uuid) ?: return amount
+        if (!state.hasPerk(NYA_AXE_PERK)) return amount
+
+        val stack = attacker.mainHandStack
+        if (!isNyaAxe(stack)) return amount
+
+        // 消耗: 斧头不可堆叠, 直接扣掉整把
+        stack.decrement(1)
+        attacker.sendMessage(Text.translatable("random-perks-bingo.message.nya_axe_used"), true)
+        return LETHAL_DAMAGE
     }
 }

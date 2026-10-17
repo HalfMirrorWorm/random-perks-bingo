@@ -21,7 +21,8 @@
     "NightVisionControllerMixin",
     "XrayDropSuppressMixin",
     "HungerRefillMixin",
-    "MobLootInvoker"
+    "MobLootInvoker",
+    "NyaAxeMixin"
   ],
   "client": [
     "EntityGlowMixin",

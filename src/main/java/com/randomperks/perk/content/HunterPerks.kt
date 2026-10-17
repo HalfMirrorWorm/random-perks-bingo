@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
+import com.randomperks.game.PerkBoostQuery
 import com.randomperks.mixin.MobLootInvoker
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -478,6 +479,22 @@ object HunterPerks {
         }
     }
 
+    /** 紫 · 猎杀: 获得一把**秒人斧** —— 手持它命中任意生物 (含玩家) 时一击必杀, 但只能用 1 次
+     *  (砍中后斧头即消失; 判定与消耗由 NyaAxeMixin → PerkBoostQuery.applyNyaAxe 完成) */
+    object NyaAxe : PerkDefinition {
+        override val id = "hunter_nya_axe"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.NETHERITE_AXE)
+
+        override fun onAcquire(ctx: PerkContext) {
+            val axe = ItemStack(Items.NETHERITE_AXE)
+            // ★ 打上 NBT 标记: 只有词条发的这一把能秒杀 (玩家自己合成、或用铁砧改名的斧头都不算)
+            PerkBoostQuery.markNyaAxe(axe)
+            PerkEffects.giveStack(ctx.player, axe)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -491,5 +508,6 @@ object HunterPerks {
         PerkRegistry.register(Headhunter)
         PerkRegistry.register(Fireball)
         PerkRegistry.register(CallLightning)
+        PerkRegistry.register(NyaAxe)
     }
 }
