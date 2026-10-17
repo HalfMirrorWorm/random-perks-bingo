@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * "透视之眼"的代价: 用镐挖方块时, 50% 概率**不生成**该方块的掉落物。
+ * "透视之眼"的代价: 用镐挖方块时, 30% 概率**不生成**该方块的掉落物。
  *
  * 注入原版掉落生成的唯一入口 Block.dropStacks (玩家破坏路径会传入破坏者与工具),
  * 判定命中时直接取消 —— 从源头掐掉, 而不是事后扫描删除 (不会误伤附近的其他物品,

@@ -30,7 +30,7 @@ import java.util.OptionalDouble
 object XrayRenderer {
 
     private const val PERK_ID = "delver_xray_vision"
-    private const val RADIUS = 20
+    private const val RADIUS = 10
     private const val RESCAN_INTERVAL_TICKS = 20
 
     /** 矿石种类判定 (原版标签优先; modded 矿石按方块 id 兜底) */

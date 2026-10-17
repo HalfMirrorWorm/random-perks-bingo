@@ -88,7 +88,7 @@ object DelverPerks {
     }
 
     /** 紫 · 矿脉嗅觉: 挖掘矿石时有概率额外掉落一份 (基础 8%; 每拥有一个其他深掘词条 +3%)
-     *  —— 以**掉落物**形态落在地上, 因此会参与"透视之眼"的 50% 消失惩罚等一切掉落物交互 */
+     *  —— 以**掉落物**形态落在地上, 因此会参与"透视之眼"的 30% 消失惩罚等一切掉落物交互 */
     object VeinScent : PerkDefinition {
         override val id = "delver_vein_scent"
         override val rarity = PerkRarity.PURPLE
@@ -140,7 +140,7 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
     }
 
-    /** 紫 · 深掘: 20 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 50% 概率消失
+    /** 紫 · 深掘: 10 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 30% 概率消失
      *  (由 XrayDropSuppressMixin 在掉落生成处直接抑制 —— 不生成, 而非事后删除) */
     object XrayVision : PerkDefinition {
         override val id = "delver_xray_vision"
