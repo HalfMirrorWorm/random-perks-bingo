@@ -51,7 +51,7 @@ object ArtisanPerks {
         private const val REMAINING_DURABILITY = 24
     }
 
-    /** 蓝 · 建筑师: 工作台 + 箱子 + 建材 + 火把 */
+    /** 蓝 · 建筑师: 工作台 + 16 原木 + 建材 + 火把 */
     object Builder : PerkDefinition {
         override val id = "artisan_builder"
         override val rarity = PerkRarity.BLUE
@@ -60,7 +60,7 @@ object ArtisanPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.CRAFTING_TABLE))
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.CHEST))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.OAK_LOG, 16))
             PerkEffects.giveStack(ctx.player, ItemStack(Items.COBBLESTONE, 32))
             PerkEffects.giveStack(ctx.player, ItemStack(Items.TORCH, 16))
         }
