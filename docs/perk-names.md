@@ -48,11 +48,11 @@
 | `harvest_lumberjack` | 伐木工 | Lumberjack | 蓝 |
 | `harvest_herder` | 牧羊人 | Herder | 蓝 |
 | `harvest_bountiful_meal` | 丰盛大餐 | Bountiful Meal | 蓝 |
-| `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 蓝 |
 | `harvest_rancher` | 牧场主 | Rancher | 蓝 |
 | `harvest_cat_aura` | 哈基米 | Hakimi | 蓝 |
 | `harvest_summon_horse` | 马来 | Horse, Come | 蓝 |
 | `harvest_timber` | 樵夫之手 | Timber! | 蓝 |
+| `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 紫 |
 | `harvest_bounty` | 丰收之息 | Bounty | 紫 |
 
 ## 猎杀 HUNTER

@@ -105,7 +105,7 @@
   "random-perks-bingo.perk.harvest_bountiful_meal.name": "丰盛大餐",
   "random-perks-bingo.perk.harvest_bountiful_meal.desc": "每当饱食度回满时, 随机获得一种谜之炖菜的正面效果。",
   "random-perks-bingo.perk.harvest_gourmet.name": "小鸟胃",
-  "random-perks-bingo.perk.harvest_gourmet.desc": "食用任意食物时, 恢复的饥饿值与饱和度至少提升 50% (饥饿值向上取整)。",
+  "random-perks-bingo.perk.harvest_gourmet.desc": "食用任意食物时, 恢复的饥饿值与饱和度提升 100% (饥饿值向上取整)。",
 
   "random-perks-bingo.perk.hunter_strength.name": "猎人直觉",
   "random-perks-bingo.perk.hunter_strength.desc": "攻击力 +25%。",

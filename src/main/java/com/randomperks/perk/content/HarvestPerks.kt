@@ -119,10 +119,10 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: 食用任意食物时, 恢复的饥饿值与饱和度至少提升 50% (饥饿值向上取整, 效果由 ConsumableBoostMixin 实现) */
+    /** 紫 · 丰饶: 食用任意食物时, 恢复的饥饿值与饱和度提升 100% (饥饿值向上取整, 效果由 ConsumableBoostMixin 实现) */
     object Gourmet : PerkDefinition {
         override val id = "harvest_gourmet"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.GOLDEN_CARROT)
     }

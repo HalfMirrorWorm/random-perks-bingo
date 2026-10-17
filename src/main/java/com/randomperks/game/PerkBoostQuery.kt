@@ -18,7 +18,7 @@ object PerkBoostQuery {
     fun hasFragileToMobs(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_greedy_hands") == true
 
-    /** 玩家是否持有"小鸟胃" (进食恢复 ≥50%) */
+    /** 玩家是否持有"小鸟胃" (进食恢复翻倍) */
     fun hasEatBoost(player: PlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_gourmet") == true
 
