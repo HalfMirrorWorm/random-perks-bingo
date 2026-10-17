@@ -563,23 +563,25 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: 获得一把**秒人斧** —— 命中**生命值低于 60**的生物 (含玩家) 时一击必杀;
-     *  斧头只有 1 点耐久, 砍一次就坏。形态对齐社区常见的"空岛战争秒人斧" (Funprops Killaxe)。
-     *  判定由 NyaAxeMixin → PerkBoostQuery.applyNyaAxe 完成 */
+    /** 紫 · 猎杀: 获得一把**秒人斧** —— **金斧 + 锋利 1145 + 1 点耐久**。
+     *
+     *  与社区（EaseCation 服务器 / Funprops Killaxe）同款思路: 不靠自定义秒杀逻辑,
+     *  而是把锋利堆到荒谬的等级 —— 1145 级的单次附魔伤害 ≈ 1 + 0.5 × 1144 ≈ 573,
+     *  配上金斧基础伤害足以一击带走几乎任何生物 (含玩家); 代价是攻击一次斧头就坏。 */
     object NyaAxe : PerkDefinition {
         override val id = "hunter_nya_axe"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HUNTER
-        override fun icon() = ItemStack(Items.DIAMOND_AXE)
+        override fun icon() = ItemStack(Items.GOLDEN_AXE)
+
+        /** 锋利等级 (EaseCation 的经典数值) */
+        private const val SHARPNESS_LEVEL = 1145
 
         override fun onAcquire(ctx: PerkContext) {
-            val axe = ItemStack(Items.DIAMOND_AXE)
-            // 自带附魔光效 (没有实际强度, 只是让它在背包/手里一眼可辨)
-            PerkEffects.enchant(ctx.player, axe, Enchantments.EFFICIENCY, 1)
+            val axe = ItemStack(Items.GOLDEN_AXE)
+            PerkEffects.enchant(ctx.player, axe, Enchantments.SHARPNESS, SHARPNESS_LEVEL)
             // 只有 1 点耐久: 攻击一次由原版耐久结算自动损坏
             axe.damage = axe.maxDamage - 1
-            // ★ 打上 NBT 标记: 只有词条发的这一把能秒杀 (玩家自己合成、或用铁砧改名的斧头都不算)
-            PerkBoostQuery.markNyaAxe(axe)
             PerkEffects.giveStack(ctx.player, axe)
         }
     }

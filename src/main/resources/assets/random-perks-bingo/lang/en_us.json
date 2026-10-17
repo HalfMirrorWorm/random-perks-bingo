@@ -174,7 +174,7 @@
   "random-perks-bingo.perk.hunter_call_lightning.name": "Call Lightning",
   "random-perks-bingo.perk.hunter_call_lightning.desc": "When acquired, a target picker opens; choose any player and summon a lightning strike on them; redirected to a nearby lightning rod if present.",
   "random-perks-bingo.perk.hunter_nya_axe.name": "Nya Axe",
-  "random-perks-bingo.perk.hunter_nya_axe.desc": "Gain a Killaxe: any hit on a living entity below 60 HP (players included) is instantly lethal; it has only 1 durability and breaks after one hit.",
+  "random-perks-bingo.perk.hunter_nya_axe.desc": "Gain a Killaxe: a golden axe with Sharpness 1145 and 1 durability — one swing kills almost anything (players included), then the axe breaks.",
   "random-perks-bingo.perk.hunter_veteran.name": "Veteran",
   "random-perks-bingo.perk.hunter_veteran.desc": "While holding a sword, your attack cooldown is always full — click as fast as you like for full damage (the pre-1.9 combat feel).",
   "random-perks-bingo.perk.hunter_roly_poly.name": "Roly-Poly",

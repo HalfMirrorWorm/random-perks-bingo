@@ -1,17 +1,12 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.NbtComponent
-import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 /**
@@ -84,52 +79,8 @@ object PerkBoostQuery {
         return true
     }
 
-    // ---- "喵人斧": 一击必杀 (由 NyaAxeMixin 在 LivingEntity.damage 拦截) ----
-
-    private const val NYA_AXE_PERK = "hunter_nya_axe"
-
-    /** 斧头上的 NBT 标记: 只有词条发放的那一把才有 (玩家用铁砧改名伪造不出来) */
-    private const val NYA_AXE_TAG = "randomperks_nya_axe"
-
-    /** 必杀伤害 —— 远高于任何原版生物的血量 (监守者也才 500) */
-    private const val LETHAL_DAMAGE = 10_000.0f
-
-    /** 给这把斧头打上"秒人斧"标记 */
-    fun markNyaAxe(stack: ItemStack) {
-        stack.set(
-            DataComponentTypes.CUSTOM_DATA,
-            NbtComponent.of(NbtCompound().apply { putBoolean(NYA_AXE_TAG, true) }),
-        )
-    }
-
-    /** 注: 1.21 的 NbtCompound.getBoolean 返回 Optional<Boolean>, 不是裸 boolean */
-    private fun isNyaAxe(stack: ItemStack): Boolean =
-        stack.get(DataComponentTypes.CUSTOM_DATA)
-            ?.copyNbt()
-            ?.getBoolean(NYA_AXE_TAG)
-            ?.orElse(false) == true
-
-    /** 与原版"秒人斧"一致: 只对生命值低于这个值的生物生效 (铁傀儡 100 / 凋灵 300 / 监守者 500 都秒不掉) */
-    private const val LETHAL_HEALTH_LIMIT = 60.0f
-
-    /**
-     * 攻击者手持"秒人斧"时, 把这一击的伤害抬到必杀值。
-     * 不满足条件时原样返回 amount。
-     *
-     * 斧头只有 1 点耐久, 攻击一次后由**原版耐久结算**自动损坏 (这里不再手动移除,
-     * 这样"用来砍方块"也会正常磨损, 和社区常见的秒人斧一致)。
-     */
-    fun applyNyaAxe(attacker: ServerPlayerEntity, victim: LivingEntity, amount: Float): Float {
-        val state = PerkStateManager.get(attacker.uuid) ?: return amount
-        if (!state.hasPerk(NYA_AXE_PERK)) return amount
-
-        val stack = attacker.mainHandStack
-        if (!isNyaAxe(stack)) return amount
-        if (victim.health >= LETHAL_HEALTH_LIMIT) return amount   // 血太厚 → 只有正常伤害
-
-        attacker.sendMessage(Text.translatable("random-perks-bingo.message.nya_axe_used"), true)
-        return LETHAL_DAMAGE
-    }
+    // "喵人斧"不走自定义秒杀逻辑 —— 它是一把**金斧 + 锋利 1145 + 1 点耐久**,
+    // 靠荒谬的附魔等级本身打出致命伤害 (见 HunterPerks.NyaAxe)。
 
     // ---- "大胃袋": 满饱食度也能吃 (由 BigStomachMixin 在 ConsumableComponent.canConsume 拦截) ----
 

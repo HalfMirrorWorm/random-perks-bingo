@@ -22,7 +22,6 @@
     "XrayDropSuppressMixin",
     "HungerRefillMixin",
     "MobLootInvoker",
-    "NyaAxeMixin",
     "BigStomachMixin",
     "OldSchoolCombatMixin"
   ],
