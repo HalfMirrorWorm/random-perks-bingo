@@ -24,7 +24,6 @@ object PerkRollService {
         extraExcluded: Set<String> = emptySet(),
     ): List<PerkDefinition> {
         val excluded = state.ownedPerks.mapTo(mutableSetOf()) { it.id }
-        excluded.addAll(state.consumedPerks)   // 本局已用掉的一次性词条也不再出现
         excluded.addAll(extraExcluded)
         state.pendingOffers.forEach { excluded.addAll(it) }
         return rollOptionsExcluding(excluded, count, random)

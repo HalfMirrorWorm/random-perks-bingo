@@ -4,7 +4,6 @@ import com.randomperks.RandomPerksMod
 import com.randomperks.effect.PerkEffects
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
-import com.randomperks.perk.PerkContext
 import com.randomperks.state.PerkStateManager
 import com.randomperks.state.PlayerPerkState
 import net.minecraft.server.network.ServerPlayerEntity
@@ -21,6 +20,9 @@ object StealService {
 
     const val PERK_ID = "seeker_pickpocket"
     const val TARGET_KEY = "pickpocket_target"
+
+    /** 一次性: 偷过之后记为已用。**词条本身留在玩家身上** (局内不移除词条), 所以不会重复抽到 */
+    private const val USED_KEY = "pickpocket_used"
 
     /** 玩家背包格数 (快捷栏 9 + 主背包 27) */
     private const val SLOT_COUNT = 36
@@ -48,6 +50,7 @@ object StealService {
 
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.hasPerk(PERK_ID)) return
+        if (state.memory[USED_KEY] == "1") return   // 已经偷过: 不再弹选择器
 
         val targets = candidates(player).map { PlayerTargetEntry(it.uuid, it.name.string) }
         if (targets.isEmpty()) {
@@ -82,7 +85,8 @@ object StealService {
         if (index !in 0 until SLOT_COUNT) return
 
         val state = PerkStateManager.get(player.uuid) ?: return
-        val perk = state.ownedPerks.find { it.id == PERK_ID } ?: return
+        if (!state.hasPerk(PERK_ID)) return
+        if (state.memory[USED_KEY] == "1") return   // 已经偷过
 
         val target = resolveTarget(player, state)
         if (target == null) {
@@ -103,11 +107,10 @@ object StealService {
         // 转移物品 (PerkEffects.giveStack 内部用 offerOrDrop: 偷窃者的背包放不下会掉在脚下, 不会蒸发)
         PerkEffects.giveStack(player, taken)
 
-        // 一次性: 消耗词条, 并记入"本局已用掉" —— 否则抽卡池会把它放回去, 同一局能反复偷
-        state.ownedPerks.remove(perk)
-        state.consumedPerks.add(PERK_ID)
+        // 一次性: 记为已用。**不移除词条** —— 词条继续留在列表里, 抽卡时天然处于排除集,
+        // 所以同一局不会再次获得 (也就不需要"局内移出词条"这件事)
+        state.memory[USED_KEY] = "1"
         state.memory.remove(TARGET_KEY)
-        runCatching { perk.onRemove(PerkContext(player, state)) }
         PerkGrantService.notifyPerkListChanged(player)
         PerkGrantService.syncAbilities(player)
 

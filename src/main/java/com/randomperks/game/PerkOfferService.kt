@@ -118,7 +118,6 @@ object PerkOfferService {
 
         val excluded = mutableSetOf<String>()
         state.ownedPerks.forEach { excluded.add(it.id) }
-        excluded.addAll(state.consumedPerks)
         offer.forEachIndexed { i, id -> if (i != index) excluded.add(id) }
         excluded.addAll(PerkStateManager.globallyOwnedMythicIds())
 
