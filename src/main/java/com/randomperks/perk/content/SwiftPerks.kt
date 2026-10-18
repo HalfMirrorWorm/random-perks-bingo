@@ -8,6 +8,8 @@ import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.FireworksComponent
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributeModifier
@@ -143,6 +145,10 @@ object SwiftPerks {
         override fun onAcquire(ctx: PerkContext) {
             applySpeed(ctx)
             enforceChest(ctx)
+            // 附赠 3 个烟花火箭 (飞行时长 2) —— 没有 FIREWORKS 组件的裸火箭是废品, 飞不了
+            val rocket = ItemStack(Items.FIREWORK_ROCKET, 3)
+            rocket.set(DataComponentTypes.FIREWORKS, FireworksComponent(2, emptyList()))
+            PerkEffects.giveStack(ctx.player, rocket)
         }
 
         override fun onRespawn(ctx: PerkContext) {
