@@ -140,11 +140,11 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
     }
 
-    /** 紫 · 深掘: 10 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 35% 概率消失
+    /** 金 · 深掘: 10 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 35% 概率消失
      *  (由 XrayDropSuppressMixin 在掉落生成处直接抑制 —— 不生成, 而非事后删除) */
     object XrayVision : PerkDefinition {
         override val id = "delver_xray_vision"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.ENDER_EYE)
         // 透视渲染在客户端 (XrayRenderer); 掉落抑制在 XrayDropSuppressMixin

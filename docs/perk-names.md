@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **61** 条词条：蓝 28 / 紫 25 / 金 7 / 神话 1。
+共 **61** 条词条：蓝 28 / 紫 24 / 金 8 / 神话 1。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -37,9 +37,9 @@
 | `delver_iron_skin` | 皇帝新衣 | Emperor's New Clothes | 蓝 |
 | `delver_haste` | 深层专注 | Deep Focus | 紫 |
 | `delver_vein_scent` | 矿脉嗅觉 | Vein Scent | 紫 |
-| `delver_xray_vision` | 透视之眼 | X-Ray Vision | 紫 |
 | `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 紫 |
 | `delver_collector` | 收藏家 | Collector | 紫 |
+| `delver_xray_vision` | 透视之眼 | X-Ray Vision | 金 |
 
 ## 丰饶 HARVEST
 
