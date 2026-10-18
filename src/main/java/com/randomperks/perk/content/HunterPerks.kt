@@ -503,8 +503,9 @@ object HunterPerks {
                 player.sendMessage(Text.translatable("random-perks-bingo.message.lightning_no_target"), true)
                 return
             }
-            PerkNetworking.sendLightningTargets(
+            PerkNetworking.sendActionTargets(
                 player,
+                "lightning",
                 candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
             )
         }
@@ -642,6 +643,83 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK)
     }
 
+    /** 紫 · 猎杀: **核电轻而易举** —— 获得时弹出玩家选择器, 选中一名玩家后在他 4 格内生成一只
+     *  **高亮显示的闪电苦力怕** (charged creeper) */
+    object Nuclear : PerkDefinition {
+        override val id = "hunter_easy_nuke"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.CREEPER_HEAD)
+
+        private const val SPAWN_RADIUS = 4
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val candidates = candidates(player)
+            if (candidates.isEmpty()) {
+                player.sendMessage(Text.translatable("random-perks-bingo.message.nuke_no_target"), true)
+                return
+            }
+            PerkNetworking.sendActionTargets(
+                player,
+                "nuke",
+                candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
+            )
+        }
+
+        /** 客户端在选择器里选中了一名玩家 → 在他附近生成闪电苦力怕 */
+        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+            if (!PerkSession.isEnabled()) return
+
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (!state.hasPerk(id)) return
+
+            // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
+            val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            spawnChargedCreeper(target)
+            player.sendMessage(
+                Text.translatable("random-perks-bingo.message.nuke_spawned", target.name),
+                false,
+            )
+        }
+
+        /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
+        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
+            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+
+        /** 在目标 4 格内找一块能站的地方, 生成一只**发光**的闪电苦力怕 */
+        private fun spawnChargedCreeper(target: ServerPlayerEntity) {
+            val world = target.world as? ServerWorld ?: return
+            val random = world.random
+
+            var spawnPos: net.minecraft.util.math.BlockPos? = null
+            for (i in 0 until 16) {
+                val dx = random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS
+                val dz = random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS
+                val candidate = target.blockPos.add(dx, 0, dz)
+                val top = world.getTopPosition(
+                    net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, candidate,
+                )
+                if (world.getBlockState(top).isAir && world.getBlockState(top.down()).isSolidBlock(world, top.down())) {
+                    spawnPos = top
+                    break
+                }
+            }
+            val pos = spawnPos ?: target.blockPos
+
+            val creeper = net.minecraft.entity.EntityType.CREEPER
+                .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return
+            creeper.refreshPositionAndAngles(
+                pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
+                random.nextFloat() * 360f, 0f,
+            )
+            // 闪电苦力怕 (爆炸强度翻倍) —— 直接写 TrackedData, 不用闪电实体 (避免额外伤害/点燃)
+            creeper.dataTracker.set(com.randomperks.mixin.CreeperChargedAccessor.getChargedTracker(), true)
+            creeper.isGlowing = true     // 高亮: 隔着墙也能看到它
+            world.spawnEntity(creeper)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -658,5 +736,6 @@ object HunterPerks {
         PerkRegistry.register(NyaAxe)
         PerkRegistry.register(Veteran)
         PerkRegistry.register(RolyPoly)
+        PerkRegistry.register(Nuclear)
     }
 }

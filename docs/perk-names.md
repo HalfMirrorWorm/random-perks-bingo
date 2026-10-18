@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **64** 条词条：蓝 29 / 紫 25 / 金 8 / 神话 2。
+共 **65** 条词条：蓝 29 / 紫 26 / 金 8 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -68,6 +68,7 @@
 | `hunter_call_lightning` | 引雷术 | Call Lightning | 蓝 |
 | `hunter_roly_poly` | 不倒翁 | Roly-Poly | 蓝 |
 | `hunter_bare_rage` | 玻璃小炮 | Glass Cannon | 蓝 |
+| `hunter_easy_nuke` | 核电轻而易举 | Easy Nuke | 紫 |
 | `hunter_scavenger` | 剥皮专家 | Scavenger | 紫 |
 | `hunter_marked_prey` | 猎杀印记 | Hunter's Mark | 紫 |
 | `hunter_greedy_hands` | 贪婪之手 | Greedy Hands | 紫 |

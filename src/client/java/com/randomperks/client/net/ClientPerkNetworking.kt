@@ -18,8 +18,8 @@ import com.randomperks.network.PerkOfferS2C
 import com.randomperks.network.PerkOptionData
 import com.randomperks.network.PerkPickC2S
 import com.randomperks.network.PerkRequestC2S
-import com.randomperks.network.LightningTargetPickC2S
-import com.randomperks.network.LightningTargetsS2C
+import com.randomperks.network.ActionTargetPickC2S
+import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.StealOpenS2C
 import com.randomperks.network.StealPickC2S
 import com.randomperks.network.StealTargetPickC2S
@@ -102,14 +102,16 @@ object ClientPerkNetworking {
             }
         }
 
-        ClientPlayNetworking.registerGlobalReceiver(LightningTargetsS2C.ID) { payload, context ->
+        ClientPlayNetworking.registerGlobalReceiver(ActionTargetsS2C.ID) { payload, context ->
             context.client().execute {
+                val (titleKey, hintKey) = when (payload.purpose) {
+                    "nuke" -> "random-perks-bingo.screen.nuke_target" to "random-perks-bingo.nuke_target.hint"
+                    else -> "random-perks-bingo.screen.lightning_target" to "random-perks-bingo.lightning_target.hint"
+                }
                 context.client().setScreen(
-                    TargetPickScreen(
-                        "random-perks-bingo.screen.lightning_target",
-                        "random-perks-bingo.lightning_target.hint",
-                        payload.targets,
-                    ) { uuid -> pickLightningTarget(uuid) },
+                    TargetPickScreen(titleKey, hintKey, payload.targets) { uuid ->
+                        pickActionTarget(payload.purpose, uuid)
+                    },
                 )
             }
         }
@@ -159,10 +161,10 @@ object ClientPerkNetworking {
         ClientPlayNetworking.send(StealTargetPickC2S(uuid))
     }
 
-    /** 引雷术: 选中要劈的玩家 */
-    fun pickLightningTarget(uuid: UUID) {
-        if (!ClientPlayNetworking.canSend(LightningTargetPickC2S.ID)) return
-        ClientPlayNetworking.send(LightningTargetPickC2S(uuid))
+    /** "选一名玩家后立即生效"类词条: 上报选中的玩家 (purpose 区分是哪个词条) */
+    fun pickActionTarget(purpose: String, uuid: UUID) {
+        if (!ClientPlayNetworking.canSend(ActionTargetPickC2S.ID)) return
+        ClientPlayNetworking.send(ActionTargetPickC2S(purpose, uuid))
     }
 
     /** 选择偷取第 index 格的物品 */

@@ -31,11 +31,11 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(DoubleJumpC2S.ID, DoubleJumpC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(StealOpenS2C.ID, StealOpenS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(StealTargetsS2C.ID, StealTargetsS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(LightningTargetsS2C.ID, LightningTargetsS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(ActionTargetsS2C.ID, ActionTargetsS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(StealRequestC2S.ID, StealRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealPickC2S.ID, StealPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealTargetPickC2S.ID, StealTargetPickC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(LightningTargetPickC2S.ID, LightningTargetPickC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -96,11 +96,15 @@ object PerkNetworking {
             }
         }
 
-        ServerPlayNetworking.registerGlobalReceiver(LightningTargetPickC2S.ID) { payload, context ->
+        ServerPlayNetworking.registerGlobalReceiver(ActionTargetPickC2S.ID) { payload, context ->
             val player = context.player()
+            val purpose = payload.purpose
             val uuid = payload.uuid
             context.server().execute {
-                HunterPerks.CallLightning.handleTargetPick(player, uuid)
+                when (purpose) {
+                    "lightning" -> HunterPerks.CallLightning.handleTargetPick(player, uuid)
+                    "nuke" -> HunterPerks.Nuclear.handleTargetPick(player, uuid)
+                }
             }
         }
     }
@@ -154,11 +158,11 @@ object PerkNetworking {
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send steal targets: {}", it.toString()) }
     }
 
-    /** 下发"引雷术"的候选目标列表 (客户端据此打开玩家选择器) */
-    fun sendLightningTargets(player: ServerPlayerEntity, targets: List<PlayerTargetEntry>) {
-        if (!ServerPlayNetworking.canSend(player, LightningTargetsS2C.ID)) return
-        runCatching { ServerPlayNetworking.send(player, LightningTargetsS2C(targets)) }
-            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send lightning targets: {}", it.toString()) }
+    /** 下发"选一名玩家后立即生效"类词条的候选列表 (purpose 区分词条: lightning / nuke) */
+    fun sendActionTargets(player: ServerPlayerEntity, purpose: String, targets: List<PlayerTargetEntry>) {
+        if (!ServerPlayNetworking.canSend(player, ActionTargetsS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, ActionTargetsS2C(purpose, targets)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send action targets: {}", it.toString()) }
     }
 
     /** 让客户端把指定实体显示为发光标记 (仅发给同队玩家) */

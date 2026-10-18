@@ -272,26 +272,41 @@ class StealTargetPickC2S(val uuid: UUID) : CustomPayload {
     override fun getId() = ID
 }
 
-/** S2C: 下发"引雷术"的候选目标列表 —— 客户端据此打开玩家选择器 */
-class LightningTargetsS2C(val targets: List<PlayerTargetEntry>) : CustomPayload {
+/** S2C: 下发"选一名玩家后立即生效"类词条的候选列表 (purpose 区分是哪个词条) */
+class ActionTargetsS2C(
+    val purpose: String,
+    val targets: List<PlayerTargetEntry>,
+) : CustomPayload {
     companion object {
-        val ID = CustomPayload.Id<LightningTargetsS2C>(Identifier.of("random-perks-bingo", "lightning_targets"))
-        val CODEC: PacketCodec<RegistryByteBuf, LightningTargetsS2C> = PacketCodec.of(
-            { value, buf -> writeTargets(buf, value.targets) },
-            { buf -> LightningTargetsS2C(readTargets(buf)) },
+        val ID = CustomPayload.Id<ActionTargetsS2C>(Identifier.of("random-perks-bingo", "action_targets"))
+        val CODEC: PacketCodec<RegistryByteBuf, ActionTargetsS2C> = PacketCodec.of(
+            { value, buf ->
+                buf.writeString(value.purpose)
+                writeTargets(buf, value.targets)
+            },
+            { buf ->
+                val purpose = buf.readString()
+                ActionTargetsS2C(purpose, readTargets(buf))
+            },
         )
     }
 
     override fun getId() = ID
 }
 
-/** C2S: 客户端在引雷术的目标选择器中选中了某个玩家 */
-class LightningTargetPickC2S(val uuid: UUID) : CustomPayload {
+/** C2S: 客户端在目标选择器里选中了某个玩家 (带回 purpose 供服务端分派) */
+class ActionTargetPickC2S(
+    val purpose: String,
+    val uuid: UUID,
+) : CustomPayload {
     companion object {
-        val ID = CustomPayload.Id<LightningTargetPickC2S>(Identifier.of("random-perks-bingo", "lightning_target_pick"))
-        val CODEC: PacketCodec<RegistryByteBuf, LightningTargetPickC2S> = PacketCodec.of(
-            { value, buf -> buf.writeUuid(value.uuid) },
-            { buf -> LightningTargetPickC2S(buf.readUuid()) },
+        val ID = CustomPayload.Id<ActionTargetPickC2S>(Identifier.of("random-perks-bingo", "action_target_pick"))
+        val CODEC: PacketCodec<RegistryByteBuf, ActionTargetPickC2S> = PacketCodec.of(
+            { value, buf ->
+                buf.writeString(value.purpose)
+                buf.writeUuid(value.uuid)
+            },
+            { buf -> ActionTargetPickC2S(buf.readString(), buf.readUuid()) },
         )
     }
 
