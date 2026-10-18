@@ -291,6 +291,15 @@ object HarvestPerks {
         }
     }
 
+    /** 金 · 丰饶: **宝可梦** —— 你扔出的鸡蛋砸中非 Boss 生物时, 把它变成对应的刷怪蛋
+     *  (生物消失), 并返还 2 个鸡蛋。实现见 PokemonEggMixin。 */
+    object Pokemon : PerkDefinition {
+        override val id = "harvest_pokemon"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.EGG)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -305,5 +314,6 @@ object HarvestPerks {
         PerkRegistry.register(BigStomach)
         PerkRegistry.register(Yowl)
         PerkRegistry.register(BigDog)
+        PerkRegistry.register(Pokemon)
     }
 }

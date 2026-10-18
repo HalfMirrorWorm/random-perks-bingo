@@ -231,6 +231,8 @@
   "random-perks-bingo.perk.swift_escape_plan.desc": "受到生物伤害后, 自动获得速度 II 与抗性提升 I, 持续 10 秒。",
   "random-perks-bingo.perk.hunter_satiation_strike.name": "良子冲击",
   "random-perks-bingo.perk.hunter_satiation_strike.desc": "饱食度满 (饥饿值满) 时, 你造成的伤害增加 50%。",
+  "random-perks-bingo.perk.harvest_pokemon.name": "宝可梦",
+  "random-perks-bingo.perk.harvest_pokemon.desc": "你扔出的鸡蛋砸中非 Boss 生物时, 它会变成对应的刷怪蛋 (生物消失), 并返还 2 个鸡蛋。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",

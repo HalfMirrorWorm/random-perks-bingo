@@ -153,4 +153,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"良子冲击" */
     fun hasSatiationStrike(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_satiation_strike") == true
+
+    // ---- "宝可梦" (金): 鸡蛋砸中非 Boss 生物 → 变成刷怪蛋 (由 PokemonEggMixin 实现) ----
+
+    /** 玩家是否持有"宝可梦" */
+    fun hasPokemon(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("harvest_pokemon") == true
 }

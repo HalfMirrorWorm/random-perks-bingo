@@ -30,7 +30,8 @@
     "CreeperChargedAccessor",
     "HomingArrowMixin",
     "BigSnowballMixin",
-    "PearlGauntletMixin"
+    "PearlGauntletMixin",
+    "PokemonEggMixin"
   ],
   "client": [
     "EntityGlowMixin",
