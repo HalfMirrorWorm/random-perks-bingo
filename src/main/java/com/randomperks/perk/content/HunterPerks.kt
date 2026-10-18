@@ -741,18 +741,26 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: **这不是挂?** —— 获得一把弓 + 16 支随机药水箭 (当作"箭袋")。
+    /** 紫 · 猎杀: **这不是挂?** —— 获得一把弓, 箭袋**每 2 分钟**补一次:
+     *  随机一种药水 × 4 支 (同一批同一种)。
      *
      *  持词条期间射出的**箭**会自动追踪 16 格内最近的敌对目标
-     *  (自己、队友、自己驯服的生物除外; 由 HomingArrowMixin 每 tick 转向)。 */
+     *  (自己、队友、自己驯服的生物除外; 由 HomingArrowMixin 每 tick 转向);
+     *  其中**玩家**目标会被满转向锁定, 并在贴近时直接判定命中。 */
     object HomingBow : PerkDefinition {
         override val id = "hunter_homing_bow"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.BOW)
 
-        /** "箭袋"容量: 发多少支药水箭 */
-        private const val QUIVER_SIZE = 16
+        /** 每次补充的支数 */
+        private const val ARROWS_PER_GRANT = 4
+
+        /** 补充间隔: 2 分钟 (onTick 每 20 tick 驱动一次) */
+        private const val INTERVAL_TICKS = 2 * 60 * 20
+
+        /** 上次补箭的 tick 记在 state.memory 里, 不额外维护全局表 */
+        private const val TICK_KEY = "homing_quiver_tick"
 
         /** 随机药水池 —— 箭是射向敌人的, 所以以负面为主 */
         private val TIPPED_POTIONS = listOf(
@@ -771,12 +779,29 @@ object HunterPerks {
         )
 
         override fun onAcquire(ctx: PerkContext) {
-            val player = ctx.player
-            PerkEffects.giveStack(player, ItemStack(Items.BOW))
-            // 每支独立随机 —— 原版没有"箭袋"物品, 这里直接按袋发箭
-            repeat(QUIVER_SIZE) {
-                val potion = TIPPED_POTIONS[player.random.nextInt(TIPPED_POTIONS.size)]
-                PerkEffects.giveStack(player, PotionContentsComponent.createStack(Items.TIPPED_ARROW, potion))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.BOW))
+            // 先给一组, 之后每 2 分钟由 onTick 续
+            ctx.player.server?.let { ctx.state.memory[TICK_KEY] = it.ticks.toString() }
+            giveArrows(ctx)
+        }
+
+        override fun onTick(ctx: PerkContext) {
+            val now = ctx.player.server?.ticks ?: return
+            val last = ctx.state.memory[TICK_KEY]?.toLongOrNull()
+            if (last == null) {
+                ctx.state.memory[TICK_KEY] = now.toString()
+                return
+            }
+            if (now - last < INTERVAL_TICKS) return
+            ctx.state.memory[TICK_KEY] = now.toString()
+            giveArrows(ctx)
+        }
+
+        /** 发一组: **同一种**随机药水 × 4 支 */
+        private fun giveArrows(ctx: PerkContext) {
+            val potion = TIPPED_POTIONS[ctx.player.random.nextInt(TIPPED_POTIONS.size)]
+            repeat(ARROWS_PER_GRANT) {
+                PerkEffects.giveStack(ctx.player, PotionContentsComponent.createStack(Items.TIPPED_ARROW, potion))
             }
         }
     }

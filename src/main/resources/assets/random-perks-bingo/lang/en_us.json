@@ -213,7 +213,7 @@
   "random-perks-bingo.perk.hunter_easy_nuke.name": "Easy Nuke",
   "random-perks-bingo.perk.hunter_easy_nuke.desc": "When acquired, a target picker opens; choose a player and a glowing charged creeper spawns at their feet and hunts them down.",
   "random-perks-bingo.perk.hunter_homing_bow.name": "Is This a Hack?",
-  "random-perks-bingo.perk.hunter_homing_bow.desc": "Gain a bow and a quiver of 16 tipped arrows with random potions; your arrows home in on the nearest enemy within 16 blocks (teammates and your own tamed mobs excluded).",
+  "random-perks-bingo.perk.hunter_homing_bow.desc": "Gain a bow. Every 2 minutes your quiver is restocked with 4 tipped arrows of one random potion. Your arrows home in on the nearest enemy within 16 blocks (teammates and your own tamed mobs excluded), and always hit when aimed at a player.",
   "random-perks-bingo.perk.hunter_jockey.name": "Jockey",
   "random-perks-bingo.perk.hunter_jockey.desc": "Right-click any player to climb onto them and take over their movement and view (press Shift to get off); while riding, damage from them is reduced by 75%.",
   "random-perks-bingo.perk.hunter_pig_morph.name": "Groupmate",
