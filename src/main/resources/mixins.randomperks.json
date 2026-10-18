@@ -28,6 +28,7 @@
     "MobTargetSelectorAccessor",
     "CatFleeMixin",
     "DoomsdayMixin",
+    "PlayerEntityInvoker",
     "CreeperChargedAccessor",
     "HomingArrowMixin",
     "BigSnowballMixin",
