@@ -29,7 +29,8 @@
     "DoomsdayMixin",
     "CreeperChargedAccessor",
     "HomingArrowMixin",
-    "BigSnowballMixin"
+    "BigSnowballMixin",
+    "PearlGauntletMixin"
   ],
   "client": [
     "EntityGlowMixin",

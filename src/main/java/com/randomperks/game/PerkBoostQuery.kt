@@ -135,4 +135,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"恶魔契约" */
     fun hasDemonPact(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_demon_pact") == true
+
+    // ---- "珠光护手" (紫): 每次攻击都暴击 (由 PearlGauntletMixin 在 PlayerEntity.attack 里实现) ----
+
+    /** 玩家是否持有"珠光护手" */
+    fun hasPearlGauntlet(player: PlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_pearl_gauntlet") == true
 }

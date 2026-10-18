@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **75** 条词条：蓝 32 / 紫 29 / 金 11 / 神话 3。
+共 **76** 条词条：蓝 32 / 紫 30 / 金 11 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -77,6 +77,7 @@
 | `hunter_pig_morph` | 变群友 | Groupmate | 金 |
 | `hunter_big_snowball` | 打雪仗 | Snowball Fight | 蓝 |
 | `hunter_demon_pact` | 恶魔契约 | Demon Pact | 金 |
+| `hunter_pearl_gauntlet` | 珠光护手 | Pearl Gauntlet | 紫 |
 | `hunter_scavenger` | 剥皮专家 | Scavenger | 紫 |
 | `hunter_marked_prey` | 猎杀印记 | Hunter's Mark | 紫 |
 | `hunter_greedy_hands` | 贪婪之手 | Greedy Hands | 紫 |

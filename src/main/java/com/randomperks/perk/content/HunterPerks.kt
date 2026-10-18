@@ -822,6 +822,36 @@ object HunterPerks {
         override fun icon() = ItemStack(Items.WITHER_SKELETON_SKULL)
     }
 
+    /** 紫 · 猎杀: **珠光护手** —— 你的每次攻击都会暴击 (伤害 ×1.5 + 暴击粒子);
+     *  代价是剑不再能横扫, 并且永久带着**挖掘疲劳 I**。
+     *  (暴击由 PearlGauntletMixin 把原版判定条件逐项 redirect 成恒真) */
+    object PearlGauntlet : PerkDefinition {
+        override val id = "hunter_pearl_gauntlet"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.DIAMOND_SWORD)
+
+        private val MOD_SWEEP = Identifier.of("random-perks-bingo", "pearl_gauntlet_no_sweep")
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        private fun apply(ctx: PerkContext) {
+            // 剑不再横扫 (与"老玩家"同一机制: 把横扫伤害比例压到 0)
+            PerkEffects.setAttribute(
+                ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP,
+                -1.0, EntityAttributeModifier.Operation.ADD_VALUE,
+            )
+            // 挖掘疲劳 I (永久)
+            PerkEffects.permanentEffect(ctx.player, StatusEffects.MINING_FATIGUE, 0)
+        }
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
+            PerkEffects.removeEffect(ctx.player, StatusEffects.MINING_FATIGUE)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -844,5 +874,6 @@ object HunterPerks {
         PerkRegistry.register(PigMorph)
         PerkRegistry.register(BigSnowball)
         PerkRegistry.register(DemonPact)
+        PerkRegistry.register(PearlGauntlet)
     }
 }

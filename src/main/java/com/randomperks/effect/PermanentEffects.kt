@@ -30,6 +30,7 @@ object PermanentEffects {
         Entry(StatusEffects.RESISTANCE, "delver_toughness", 0),
         Entry(StatusEffects.HASTE, "delver_haste", 1),
         Entry(StatusEffects.JUMP_BOOST, "swift_jump", 0),
+        Entry(StatusEffects.MINING_FATIGUE, "hunter_pearl_gauntlet", 0),
     )
 
     /** 效果被移除 (由 EffectPersistMixin 在所有移除路径的汇聚点调用) */

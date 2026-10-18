@@ -223,6 +223,8 @@
   "random-perks-bingo.perk.mythic_hodgepodge.desc": "When acquired, a target picker opens: choose a player and every item in their inventory is randomly replaced with a different item (counts preserved). Globally unique.",
   "random-perks-bingo.perk.hunter_demon_pact.name": "Demon Pact",
   "random-perks-bingo.perk.hunter_demon_pact.desc": "You deal double damage, but you also take double damage from everything.",
+  "random-perks-bingo.perk.hunter_pearl_gauntlet.name": "Pearl Gauntlet",
+  "random-perks-bingo.perk.hunter_pearl_gauntlet.desc": "Every attack you make is a critical hit; but swords no longer sweep, and you permanently have Mining Fatigue I.",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click while holding it to teleport back to your last death location (5 min cooldown, cross-dimension allowed).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
