@@ -219,6 +219,8 @@
   "random-perks-bingo.perk.hunter_big_snowball.desc": "获得 32 个雪球; 你扔出的雪球会变大, 命中造成 3 点伤害并击飞目标。",
   "random-perks-bingo.perk.mythic_hodgepodge.name": "游戏BUG",
   "random-perks-bingo.perk.mythic_hodgepodge.desc": "获得时弹出目标选择器: 选一名玩家, 把他背包里的每一种物品各自随机变成另一种物品 (数量不变)。全局唯一。",
+  "random-perks-bingo.perk.hunter_demon_pact.name": "恶魔契约",
+  "random-perks-bingo.perk.hunter_demon_pact.desc": "你造成的伤害翻倍, 但你受到的任何伤害也翻倍。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",

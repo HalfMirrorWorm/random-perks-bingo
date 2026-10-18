@@ -813,6 +813,15 @@ object HunterPerks {
         }
     }
 
+    /** 金 · 猎杀: **恶魔契约** —— 你造成的伤害翻倍, 但你受到的**任何**伤害也翻倍。
+     *  (两侧都由 LivingEntityDamageMixin 在 damage 的 amount 参数上结算) */
+    object DemonPact : PerkDefinition {
+        override val id = "hunter_demon_pact"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.WITHER_SKELETON_SKULL)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -834,5 +843,6 @@ object HunterPerks {
         PerkRegistry.register(Jockey)
         PerkRegistry.register(PigMorph)
         PerkRegistry.register(BigSnowball)
+        PerkRegistry.register(DemonPact)
     }
 }

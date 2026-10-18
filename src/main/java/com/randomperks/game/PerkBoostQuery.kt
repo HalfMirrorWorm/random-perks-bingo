@@ -129,4 +129,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"雪球大作战" */
     fun hasBigSnowball(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_big_snowball") == true
+
+    // ---- "恶魔契约" (金): 造成伤害翻倍, 受到伤害也翻倍 (由 LivingEntityDamageMixin 调用) ----
+
+    /** 玩家是否持有"恶魔契约" */
+    fun hasDemonPact(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_demon_pact") == true
 }
