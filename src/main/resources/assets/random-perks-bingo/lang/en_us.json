@@ -105,7 +105,7 @@
   "random-perks-bingo.perk.harvest_herder.name": "Herder",
   "random-perks-bingo.perk.harvest_herder.desc": "Gain shears and 32 wool.",
   "random-perks-bingo.perk.harvest_timber.name": "Timber!",
-  "random-perks-bingo.perk.harvest_timber.desc": "50% chance of an extra log when chopping.",
+  "random-perks-bingo.perk.harvest_timber.desc": "20% chance to drop an extra log of a different wood type when chopping.",
   "random-perks-bingo.perk.harvest_bounty.name": "Bounty",
   "random-perks-bingo.perk.harvest_bounty.desc": "Gain 32 carrots and a Fortune III hoe.",
   "random-perks-bingo.perk.harvest_bountiful_meal.name": "Bountiful Meal",

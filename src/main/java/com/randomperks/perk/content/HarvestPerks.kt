@@ -59,19 +59,32 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 樵夫之手: 破坏原木时 50% 概率额外掉落一个原木 (掉落在原方块位置, 不进背包) */
+    /** 蓝 · 樵夫之手: 破坏原木时 20% 概率额外掉落**另一种**随机原木 (掉落在原方块位置, 不进背包) */
     object Timber : PerkDefinition {
         override val id = "harvest_timber"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.OAK_LOG)
 
+        private const val CHANCE = 0.20f
+
+        /** 可掉落的原木种类 (含下界菌柄) */
+        private val LOG_TYPES = listOf(
+            Items.OAK_LOG, Items.SPRUCE_LOG, Items.BIRCH_LOG, Items.JUNGLE_LOG,
+            Items.ACACIA_LOG, Items.DARK_OAK_LOG, Items.MANGROVE_LOG, Items.CHERRY_LOG,
+            Items.PALE_OAK_LOG, Items.CRIMSON_STEM, Items.WARPED_STEM,
+        )
+
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: net.minecraft.block.BlockState) {
             if (!blockState.isIn(net.minecraft.registry.tag.BlockTags.LOGS)) return
-            if (ctx.player.random.nextFloat() >= 0.50f) return
+            if (ctx.player.random.nextFloat() >= CHANCE) return
+
             val world = ctx.player.world as? ServerWorld ?: return
-            // 标准掉落物实体 (含默认拾取延迟), 与矿脉嗅觉/收藏家同范式
-            PerkEffects.spawnBlockDrops(ctx.player, world, pos, blockState)
+            // 排除被砍的那种原木, 从剩下的里随机挑一种 (标准掉落物实体)
+            val current = blockState.block.asItem()
+            val candidates = LOG_TYPES.filter { it != current }
+            val drop = candidates[ctx.player.random.nextInt(candidates.size)]
+            net.minecraft.block.Block.dropStack(world, pos, ItemStack(drop))
         }
     }
 
