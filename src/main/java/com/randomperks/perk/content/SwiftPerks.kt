@@ -229,28 +229,29 @@ object SwiftPerks {
         }
     }
 
-    /** 紫 · 疾风: **全向移动** —— 任意方向移动都能达到疾跑速度。
-     *  MC 里 W/A/S/D 本来同速, 差别只在"疾跑只能向前"; 这里常驻 +30% 基础速度
-     *  (与原版疾跑同款加成), 于是后退/侧移/斜向也等于一直在疾跑。 */
+    /** 紫 · 疾风: **全向移动** —— 八个方向都能疾跑, 而不是单纯加移速。
+     *
+     *  原版疾跑判定只认"前进": ClientPlayerEntity 的 canStartSprinting / shouldStopSprinting /
+     *  shouldStopSwimSprinting 里用的都是 input.hasForwardMovement(), 所以侧移和后退永远跑不起来。
+     *  OmnimovementMixin 在客户端把这一条换成"任意方向有输入", 于是 W/A/S/D 与四个斜向
+     *  都能进入并保持疾跑 (疾跑本身的 +30% 仍由原版 LivingEntity.setSprinting 挂)。 */
     object Omnimovement : PerkDefinition {
         override val id = "swift_omnimovement"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.FEATHER)
 
-        private val MOD_SPEED = Identifier.of("random-perks-bingo", "omnimovement_speed")
+        /** 旧实现是常驻 +30% 移速修饰符, 而且是 addPersistentModifier (会写进玩家 NBT)。
+         *  改成疾跑判定放行后不再需要它 —— 获得/重生/失去时都主动清一遍, 老存档里的残留
+         *  也能顺带抹掉。 */
+        private val LEGACY_SPEED = Identifier.of("random-perks-bingo", "omnimovement_speed")
 
-        override fun onAcquire(ctx: PerkContext) = apply(ctx)
-        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+        override fun onAcquire(ctx: PerkContext) = clearLegacy(ctx)
+        override fun onRespawn(ctx: PerkContext) = clearLegacy(ctx)
+        override fun onRemove(ctx: PerkContext) = clearLegacy(ctx)
 
-        private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(
-                ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
-                0.3, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE,
-            )
-
-        override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+        private fun clearLegacy(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, LEGACY_SPEED)
     }
 
     /** 蓝 · 迅捷: **逃跑计划** —— 受到生物伤害后, 自动获得速度 II 与抗性提升 I, 持续 10 秒。

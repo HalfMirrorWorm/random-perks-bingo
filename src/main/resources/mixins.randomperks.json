@@ -48,7 +48,8 @@
     "RenderDispatcherAccessor",
     "RendererContextMixin",
     "BigSnowballRendererMixin",
-    "BigSnowballRenderStateMixin"
+    "BigSnowballRenderStateMixin",
+    "OmnimovementMixin"
   ],
   "injectors": {
     "defaultRequire": 1
