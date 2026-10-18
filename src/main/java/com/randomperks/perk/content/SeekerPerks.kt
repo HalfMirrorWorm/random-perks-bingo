@@ -546,6 +546,9 @@ object SeekerPerks {
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.RECOVERY_COMPASS)
 
+        /** 两个罗盘 mod 缺一不可 —— 没装就不进词条池 */
+        override fun isAvailable(): Boolean = LayFlatService.hasCompassMods()
+
         override fun onAcquire(ctx: PerkContext) = LayFlatService.start(ctx.player)
     }
 

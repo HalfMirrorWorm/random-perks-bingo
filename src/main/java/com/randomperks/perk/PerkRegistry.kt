@@ -12,9 +12,10 @@ object PerkRegistry {
 
     fun byId(id: String): PerkDefinition? = perks[id]
 
-    val all: Collection<PerkDefinition> get() = perks.values
+    /** 当前真正可用的词条 (依赖缺失的会被 [PerkDefinition.isAvailable] 过滤掉) */
+    val all: Collection<PerkDefinition> get() = perks.values.filter { it.isAvailable() }
 
-    fun size(): Int = perks.size
+    fun size(): Int = all.size
 
     /** 仅供单元测试使用 */
     internal fun clear() {

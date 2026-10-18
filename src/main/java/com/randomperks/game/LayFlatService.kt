@@ -9,6 +9,7 @@ import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.network.ServerPlayerEntity
@@ -70,6 +71,18 @@ object LayFlatService {
             if (!failed.remove(newPlayer.uuid)) return@register
             PerkEffects.giveStack(newPlayer, ItemStack(Items.STONE_AXE))
         }
+    }
+
+    /**
+     * 两个罗盘 mod 是否都已加载 —— 决定「开摆」是否进入词条池。
+     *
+     * 必须查全局物品注册表而不是在 mod 初始化时判断: Fabric 的 mod 加载顺序不保证,
+     * 我们的 onInitialize 可能先于 Nature's Compass 执行。
+     */
+    fun hasCompassMods(): Boolean {
+        val registry = Registries.ITEM
+        return registry.getEntry(NATURES_COMPASS).isPresent &&
+            registry.getEntry(EXPLORERS_COMPASS).isPresent
     }
 
     /** 获得词条时调用: 上 debuff 并开始计时 */

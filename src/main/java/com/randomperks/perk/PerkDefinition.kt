@@ -36,6 +36,14 @@ interface PerkDefinition {
     /** 界面图标 */
     fun icon(): ItemStack
 
+    /**
+     * 该词条当前是否可用。
+     *
+     * 依赖外部 mod 的词条 (例如「开摆」需要 Nature's Compass / Explorer's Compass)
+     * 在依赖缺失时返回 false —— 它会被排除在抽取池与百科之外, 不会出现在任何候选里。
+     */
+    fun isAvailable(): Boolean = true
+
     /** 玩家获得该词条时 (立即生效的效果在这里应用) */
     fun onAcquire(ctx: PerkContext) {}
 
