@@ -33,7 +33,7 @@ public class CatTargetMixin {
             // 只有**未驯服**的猫才会袭击持词条的玩家 —— 家养的猫不会被词条策反
             (entity, world) -> !self.isTamed()
                 && entity instanceof ServerPlayerEntity player
-                && PerkBoostQuery.INSTANCE.hasOldWu(player)
+                && PerkBoostQuery.INSTANCE.hasMeow(player)
         ));
     }
 }

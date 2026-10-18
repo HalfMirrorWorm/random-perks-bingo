@@ -230,9 +230,9 @@ object HarvestPerks {
         // 效果由 BigStomachMixin 在 ConsumableComponent.canConsume 实现
     }
 
-    /** 蓝 · 丰饶: **老吴!?** —— 猫不再害怕你, 反而会主动攻击你; 但你杀死猫必掉 3 根线 */
-    object OldWu : PerkDefinition {
-        override val id = "harvest_old_wu"
+    /** 蓝 · 丰饶: **老吴!?** (猫叫的拟声) —— 猫不再害怕你, 反而会主动攻击你; 但你杀死猫必掉 3 根线 */
+    object Meow : PerkDefinition {
+        override val id = "harvest_meow"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.STRING)
@@ -256,6 +256,6 @@ object HarvestPerks {
         PerkRegistry.register(CatAura)
         PerkRegistry.register(SummonHorse)
         PerkRegistry.register(BigStomach)
-        PerkRegistry.register(OldWu)
+        PerkRegistry.register(Meow)
     }
 }

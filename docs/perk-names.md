@@ -53,7 +53,7 @@
 | `harvest_cat_aura` | 哈基米 | Hakimi | 蓝 |
 | `harvest_summon_horse` | 马来 | Horse, Come | 蓝 |
 | `harvest_timber` | 樵夫之手 | Timber! | 蓝 |
-| `harvest_old_wu` | 老吴!? | Old Wu!? | 蓝 |
+| `harvest_meow` | 老吴!? | Meow!? | 蓝 |
 | `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 紫 |
 | `harvest_big_stomach` | 大胃袋 | Bottomless Stomach | 紫 |
 | `harvest_bounty` | 丰收之息 | Bounty | 紫 |
@@ -125,3 +125,4 @@ id 是机制名，中文名是风味名，排查问题时留意对应关系：
 | `hunter_headhunter` | SMP玩家 |
 | `seeker_village_compass` | 回村的诱惑 |
 | `swift_life_bucket` | 落地，水 |
+| `harvest_meow` | 老吴!?（猫叫拟声） |
