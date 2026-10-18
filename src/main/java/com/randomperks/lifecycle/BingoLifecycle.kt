@@ -4,6 +4,7 @@ import com.randomperks.RandomPerksMod
 import com.randomperks.config.PerkConfig
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkSession
+import com.randomperks.game.VerminSwarmService
 import com.randomperks.perk.PerkContext
 import com.randomperks.server.ServerHolder
 import com.randomperks.state.PerkStateManager
@@ -23,12 +24,18 @@ object BingoLifecycle {
             clearAllPerkState()
             PerkSession.reset()
         }
-        BingoEvents.GAME_RESET.register { PerkStateManager.resetAll() }
-        BingoEvents.CLOSE.register { PerkStateManager.resetAll() }
+        BingoEvents.GAME_RESET.register { resetAll() }
+        BingoEvents.CLOSE.register { resetAll() }
+    }
+
+    /** 清空词条状态 + 一切与对局绑定的持续效果 */
+    private fun resetAll() {
+        PerkStateManager.resetAll()
+        VerminSwarmService.clear()
     }
 
     private fun onGameStarted() {
-        PerkStateManager.resetAll()
+        resetAll()
 
         // 开关每局生效: 开局时从配置快照, 局中修改不影响本局
         PerkSession.beginRound()
@@ -82,7 +89,7 @@ object BingoLifecycle {
                 }
             }
         }
-        PerkStateManager.resetAll()
+        resetAll()
         RandomPerksMod.logger.info("[RandomPerks] perk state cleared")
 
         // 清空后同步能力状态 (客户端关闭矿透等)

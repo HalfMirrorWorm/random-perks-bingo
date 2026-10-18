@@ -5,6 +5,7 @@ import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkOfferService
 import com.randomperks.game.StealService
 import com.randomperks.perk.content.HunterPerks
+import com.randomperks.perk.content.SeekerPerks
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.item.ItemStack
@@ -104,6 +105,7 @@ object PerkNetworking {
                 when (purpose) {
                     "lightning" -> HunterPerks.CallLightning.handleTargetPick(player, uuid)
                     "nuke" -> HunterPerks.Nuclear.handleTargetPick(player, uuid)
+                    "puny" -> SeekerPerks.Puny.handleTargetPick(player, uuid)
                 }
             }
         }

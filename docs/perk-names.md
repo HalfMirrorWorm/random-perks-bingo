@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **65** 条词条：蓝 29 / 紫 26 / 金 8 / 神话 2。
+共 **66** 条词条：蓝 30 / 紫 26 / 金 8 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -85,6 +85,7 @@
 |---|---|---|---|
 | `seeker_wandering_trader` | 流浪拴绳 | Wandering Leash | 蓝 |
 | `seeker_supply_line` | 补给线 | Supply Line | 蓝 |
+| `seeker_puny` | !?区区!? | Puny!? | 蓝 |
 | `seeker_scout` | 观鸟 | Birdwatcher | 紫 |
 | `seeker_ender_supply` | 末影补给 | Ender Supply | 紫 |
 | `seeker_ender_cache` | 末影仓库 | Ender Cache | 紫 |

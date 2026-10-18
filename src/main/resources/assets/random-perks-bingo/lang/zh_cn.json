@@ -11,7 +11,9 @@
   "random-perks-bingo.screen.steal_target": "选择偷取目标",
   "random-perks-bingo.screen.lightning_target": "选择引雷目标",
   "random-perks-bingo.screen.nuke_target": "选择投放目标",
+  "random-perks-bingo.screen.puny_target": "选择「区区」目标",
   "random-perks-bingo.nuke_target.hint": "点击一名玩家, 在他附近生成闪电苦力怕",
+  "random-perks-bingo.puny_target.hint": "点击一名玩家, 送他矿物并让蠹虫缠上他",
   "random-perks-bingo.lightning_target.hint": "点击一名玩家, 在他的位置召唤闪电",
   "random-perks-bingo.steal_target.hint": "点击一名玩家, 打开他的背包",
   "random-perks-bingo.screen.steal": "偷取 %s 的物品",
@@ -47,6 +49,9 @@
   "random-perks-bingo.message.lightning_no_target": "附近没有可引雷的敌方玩家。",
   "random-perks-bingo.message.nuke_no_target": "没有可投放的目标。",
   "random-perks-bingo.message.nuke_spawned": "已在 %s 附近生成闪电苦力怕!",
+  "random-perks-bingo.message.puny_no_target": "没有可选的目标。",
+  "random-perks-bingo.message.puny_given": "已给 %s 送去 %s ×4 —— 区区薄礼, 不成敬意。",
+  "random-perks-bingo.message.puny_received": "你收到了 %s ×4 …… 好像有什么东西跟过来了。",
   "random-perks-bingo.message.nya_axe_used": "⚡ 秒人斧: 一击必杀!",
   "random-perks-bingo.message.creative_flash": "⭐ 创造闪光! 获得 1.5 秒创造模式!",
   "random-perks-bingo.message.mythic_taken": "该神话词条已被其他玩家选走, 你的选项已刷新。",
@@ -196,5 +201,7 @@
   "random-perks-bingo.perk.seeker_supply_line.name": "补给线",
   "random-perks-bingo.perk.seeker_supply_line.desc": "立即获得一份随机补给, 之后每 2 分钟再获得一份。",
   "random-perks-bingo.perk.seeker_ender_supply.name": "末影补给",
-  "random-perks-bingo.perk.seeker_ender_supply.desc": "立即获得一枚末影珍珠, 之后每 5 分钟再获得一枚。"
+  "random-perks-bingo.perk.seeker_ender_supply.desc": "立即获得一枚末影珍珠, 之后每 5 分钟再获得一枚。",
+  "random-perks-bingo.perk.seeker_puny.name": "!?区区!?",
+  "random-perks-bingo.perk.seeker_puny.desc": "获得时弹出目标选择器: 选一名玩家, 送他随机一种矿物 4 个, 并在 2 分钟内每 6 秒在他 5 格内生成一只蠹虫。"
 }

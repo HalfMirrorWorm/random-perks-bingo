@@ -11,7 +11,9 @@
   "random-perks-bingo.screen.steal_target": "Choose a Target",
   "random-perks-bingo.screen.lightning_target": "Choose a Lightning Target",
   "random-perks-bingo.screen.nuke_target": "Choose a Drop Target",
+  "random-perks-bingo.screen.puny_target": "Choose a \"Puny\" Target",
   "random-perks-bingo.nuke_target.hint": "Click a player to spawn a charged creeper near them",
+  "random-perks-bingo.puny_target.hint": "Click a player: gift them minerals and sic silverfish on them",
   "random-perks-bingo.lightning_target.hint": "Click a player to strike them with lightning",
   "random-perks-bingo.steal_target.hint": "Click a player to open their inventory",
   "random-perks-bingo.screen.steal": "Steal from %s",
@@ -47,6 +49,9 @@
   "random-perks-bingo.message.lightning_no_target": "No valid enemy nearby to strike.",
   "random-perks-bingo.message.nuke_no_target": "No valid target available.",
   "random-perks-bingo.message.nuke_spawned": "Spawned a charged creeper near %s!",
+  "random-perks-bingo.message.puny_no_target": "No valid target available.",
+  "random-perks-bingo.message.puny_given": "Sent %s a humble gift of %s x4 — and some company.",
+  "random-perks-bingo.message.puny_received": "You received %s x4 ... something followed it.",
   "random-perks-bingo.message.nya_axe_used": "⚡ Nya Axe: lethal strike!",
   "random-perks-bingo.message.creative_flash": "⭐ Creative Flash! 1.5 seconds of creative mode!",
   "random-perks-bingo.message.mythic_taken": "That mythic perk was taken by another player — your choice was rerolled.",
@@ -196,5 +201,7 @@
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",
   "random-perks-bingo.perk.seeker_supply_line.desc": "Gain a random supply now, then every 2 minutes.",
   "random-perks-bingo.perk.seeker_ender_supply.name": "Ender Supply",
-  "random-perks-bingo.perk.seeker_ender_supply.desc": "Gain an ender pearl now, then one every 5 minutes."
+  "random-perks-bingo.perk.seeker_ender_supply.desc": "Gain an ender pearl now, then one every 5 minutes.",
+  "random-perks-bingo.perk.seeker_puny.name": "Puny!?",
+  "random-perks-bingo.perk.seeker_puny.desc": "When acquired, a target picker opens: choose a player, give them 4 of a random mineral, and spawn a silverfish within 5 blocks of them every 6 seconds for 2 minutes."
 }

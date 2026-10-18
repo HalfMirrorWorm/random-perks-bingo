@@ -2,15 +2,19 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
+import com.randomperks.game.PerkSession
 import com.randomperks.game.StealService
+import com.randomperks.game.VerminSwarmService
 import com.randomperks.mixin.ServerWorldAccessor
 import com.randomperks.mixin.WanderingTraderManagerInvoker
 import com.randomperks.network.PerkNetworking
+import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
+import com.randomperks.state.PerkStateManager
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.PotionContentsComponent
 import net.minecraft.entity.LivingEntity
@@ -36,6 +40,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.WanderingTraderManager
 import net.minecraft.world.poi.PointOfInterestTypes
 import net.minecraft.world.gen.structure.StructureKeys
+import java.util.UUID
 
 /**
  * 秘藏 SEEKER —— 补给 / 信息 / 找物 (HUD 信息类效果将在后续里程碑加入)。
@@ -423,6 +428,75 @@ object SeekerPerks {
         }
     }
 
+    /** 蓝 · 秘藏: **!?区区!?** —— 获得时弹出玩家选择器, 选中一名玩家后:
+     *  1) 送他**随机一种矿物 4 个** (区区薄礼)
+     *  2) **2 分钟内每 6 秒**在他 5 格内刷一只蠹虫 (由 [VerminSwarmService] 独立推进) */
+    object Puny : PerkDefinition {
+        override val id = "seeker_puny"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.SILVERFISH_SPAWN_EGG)
+
+        /** 每份"区区"矿物给 4 个 */
+        private const val GIFT_COUNT = 4
+
+        /** 随机矿物池 (锭/宝石形态, 拿到就能用) */
+        private val MINERALS = listOf(
+            Items.COAL,
+            Items.IRON_INGOT,
+            Items.COPPER_INGOT,
+            Items.GOLD_INGOT,
+            Items.REDSTONE,
+            Items.LAPIS_LAZULI,
+            Items.DIAMOND,
+            Items.EMERALD,
+            Items.QUARTZ,
+            Items.AMETHYST_SHARD,
+        )
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val candidates = candidates(player)
+            if (candidates.isEmpty()) {
+                player.sendMessage(Text.translatable("random-perks-bingo.message.puny_no_target"), true)
+                return
+            }
+            PerkNetworking.sendActionTargets(
+                player,
+                "puny",
+                candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
+            )
+        }
+
+        /** 客户端在选择器里选中了一名玩家 → 送矿物 + 召来蠹虫 */
+        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+            if (!PerkSession.isEnabled()) return
+
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (!state.hasPerk(id)) return
+
+            // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
+            val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+
+            val mineral = MINERALS[target.random.nextInt(MINERALS.size)]
+            PerkEffects.giveStack(target, ItemStack(mineral, GIFT_COUNT))
+            VerminSwarmService.start(target)
+
+            player.sendMessage(
+                Text.translatable("random-perks-bingo.message.puny_given", target.name, mineral.name),
+                false,
+            )
+            target.sendMessage(
+                Text.translatable("random-perks-bingo.message.puny_received", mineral.name),
+                true,
+            )
+        }
+
+        /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
+        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
+            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+    }
+
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
@@ -433,5 +507,6 @@ object SeekerPerks {
         PerkRegistry.register(Alchemist)
         PerkRegistry.register(WanderingTrader)
         PerkRegistry.register(VillageCompass)
+        PerkRegistry.register(Puny)
     }
 }

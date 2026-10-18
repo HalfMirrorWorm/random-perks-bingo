@@ -8,6 +8,7 @@ import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
+import com.randomperks.game.VerminSwarmService
 import com.randomperks.lifecycle.BingoLifecycle
 import com.randomperks.network.PerkNetworking
 import com.randomperks.perk.PerkRegistry
@@ -56,6 +57,9 @@ object RandomPerksMod : ModInitializer {
 
         // 烈焰喷射的右键逻辑
         FireballService.register()
+
+        // "!?区区!?" 的蠹虫骚扰调度
+        VerminSwarmService.register()
 
         // 世界事件 (击杀 / 破坏方块) → 词条
         PerkWorldEventService.register()

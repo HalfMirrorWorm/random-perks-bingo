@@ -106,6 +106,7 @@ object ClientPerkNetworking {
             context.client().execute {
                 val (titleKey, hintKey) = when (payload.purpose) {
                     "nuke" -> "random-perks-bingo.screen.nuke_target" to "random-perks-bingo.nuke_target.hint"
+                    "puny" -> "random-perks-bingo.screen.puny_target" to "random-perks-bingo.puny_target.hint"
                     else -> "random-perks-bingo.screen.lightning_target" to "random-perks-bingo.lightning_target.hint"
                 }
                 context.client().setScreen(
