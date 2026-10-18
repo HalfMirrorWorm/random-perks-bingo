@@ -45,7 +45,7 @@ object MythicPerks {
         override fun icon() = ItemStack(Items.WITHER_ROSE)
     }
 
-    /** 神话 · 匠造 · 全局唯一: **大杂烩** —— 获得时弹出玩家选择器, 选中一名玩家后,
+    /** 神话 · 匠造 · 全局唯一: **游戏BUG** —— 获得时弹出玩家选择器, 选中一名玩家后,
      *  他背包里的**每一种物品各自随机变成另一种物品** (数量不变) */
     object Hodgepodge : PerkDefinition {
         override val id = "mythic_hodgepodge"

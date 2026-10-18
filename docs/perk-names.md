@@ -121,7 +121,7 @@
 |---|---|---|---|
 | `mythic_creative_flash` | 创造闪光 | Creative Flash | 神话 |
 | `mythic_doomsday` | 天启日 | Doomsday | 神话 |
-| `mythic_hodgepodge` | 大杂烩 | Hodgepodge | 神话 |
+| `mythic_hodgepodge` | 游戏BUG | Glitch | 神话 |
 
 ## 注意：id 与中文名不直译的词条
 
