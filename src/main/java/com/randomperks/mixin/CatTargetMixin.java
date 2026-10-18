@@ -25,11 +25,14 @@ public class CatTargetMixin {
 
     @Inject(method = "initGoals", at = @At("TAIL"))
     private void randomperks$huntOldWu(CallbackInfo ci) {
+        CatEntity self = (CatEntity) (Object) this;
         this.targetSelector.add(1, new ActiveTargetGoal<>(
-            (CatEntity) (Object) this,
+            self,
             PlayerEntity.class,
             true,
-            (entity, world) -> entity instanceof ServerPlayerEntity player
+            // 只有**未驯服**的猫才会袭击持词条的玩家 —— 家养的猫不会被词条策反
+            (entity, world) -> !self.isTamed()
+                && entity instanceof ServerPlayerEntity player
                 && PerkBoostQuery.INSTANCE.hasOldWu(player)
         ));
     }
