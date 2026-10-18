@@ -232,7 +232,7 @@
   "random-perks-bingo.perk.hunter_satiation_strike.name": "Satiation Strike",
   "random-perks-bingo.perk.hunter_satiation_strike.desc": "While your hunger bar is full, you deal 50% more damage.",
   "random-perks-bingo.perk.harvest_pokemon.name": "Pokemon",
-  "random-perks-bingo.perk.harvest_pokemon.desc": "When your thrown egg hits a non-boss mob, it turns into its spawn egg (the mob vanishes), and you get 2 eggs back.",
+  "random-perks-bingo.perk.harvest_pokemon.desc": "When your thrown egg hits a non-boss mob, it turns into its spawn egg and vanishes.",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click while holding it to teleport back to your last death location (5 min cooldown, cross-dimension allowed).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",

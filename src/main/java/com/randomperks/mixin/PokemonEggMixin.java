@@ -9,7 +9,6 @@ import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.EggEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -21,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * "宝可梦" (金 · 丰饶) —— 持词条者扔出的鸡蛋砸中非 Boss 生物时, 把这只生物"收服":
- * 生物消失, 原地掉落它对应的刷怪蛋, 并返还 2 个鸡蛋。
+ * 生物消失, 原地掉落它对应的刷怪蛋。
  *
  * <p>几个边界:
  * <ul>
@@ -33,9 +32,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(EggEntity.class)
 public class PokemonEggMixin {
-
-    /** 成功收服后返还的鸡蛋数 */
-    private static final int EGG_REFUND = 2;
 
     @Inject(method = "onEntityHit", at = @At("TAIL"))
     private void randomperks$capture(EntityHitResult result, CallbackInfo ci) {
@@ -58,8 +54,6 @@ public class PokemonEggMixin {
         // 先掉蛋再移除 (dropStack 需要实体还活着才能拿到位置)
         living.dropStack(world, new ItemStack(egg));
         living.discard();
-
-        player.getInventory().offerOrDrop(new ItemStack(Items.EGG, EGG_REFUND));
     }
 
     /** 原版没有 BOSSES 标签, 手动列三大 Boss */
