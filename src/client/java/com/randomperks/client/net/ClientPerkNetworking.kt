@@ -27,7 +27,6 @@ import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.BigSnowballS2C
 import com.randomperks.network.JockeyControlC2S
 import com.randomperks.network.JockeyControlS2C
-import com.randomperks.network.ModVersionC2S
 import com.randomperks.network.MorphS2C
 import com.randomperks.network.StealOpenS2C
 import com.randomperks.network.StealPickC2S
@@ -38,10 +37,12 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.text.Text
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
 
 /**
  * 客户端网络处理与状态。
@@ -150,10 +151,11 @@ object ClientPerkNetworking {
             }
         }
 
-        // 加入服务器时上报 mod 版本 (服务端据此校验两端一致性)
-        ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
-            if (!ClientPlayNetworking.canSend(ModVersionC2S.ID)) return@register
-            ClientPlayNetworking.send(ModVersionC2S(ModVersionService.currentVersion()))
+        // 登录阶段: 响应服务端的版本查询 (走 LOGIN 阶段而不是 PLAY, 见 ModVersionService)
+        ClientLoginNetworking.registerGlobalReceiver(ModVersionService.CHANNEL) { _, _, _, _ ->
+            val buf = PacketByteBufs.create()
+            buf.writeString(ModVersionService.currentVersion())
+            CompletableFuture.completedFuture(buf)
         }
 
         // "打雪仗": 某个投掷物是变大的雪球 (commandTag 不同步, 只能靠这个包)

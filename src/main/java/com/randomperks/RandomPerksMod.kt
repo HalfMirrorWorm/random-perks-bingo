@@ -82,8 +82,8 @@ object RandomPerksMod : ModInitializer {
             PerkGrantService.syncAbilities(handler.player)
         }
 
-        // 客户端/服务端 mod 版本一致性校验 (不一致或客户端没装则断开)
-        ModVersionService.register()
+        // 客户端/服务端 mod 版本一致性校验 (登录阶段, 不一致或客户端没装则拒绝进入)
+        ModVersionService.registerServer()
 
         // 调试命令
         RandomPerksCommands.register()

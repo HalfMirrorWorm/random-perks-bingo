@@ -365,23 +365,6 @@ class JockeyControlS2C(
     override fun getId() = ID
 }
 
-/**
- * C2S: 客户端加入时上报自己的 mod 版本。
- *
- * 服务端拿它和本地版本比对, 不一致就直接断开 —— 见 [com.randomperks.game.ModVersionService]。
- */
-class ModVersionC2S(val version: String) : CustomPayload {
-    companion object {
-        val ID = CustomPayload.Id<ModVersionC2S>(Identifier.of("random-perks-bingo", "mod_version"))
-        val CODEC: PacketCodec<RegistryByteBuf, ModVersionC2S> = PacketCodec.of(
-            { value, buf -> buf.writeString(value.version) },
-            { buf -> ModVersionC2S(buf.readString()) },
-        )
-    }
-
-    override fun getId() = ID
-}
-
 /** S2C: 通知客户端某个投掷物是"大雪球" (渲染时放大) */
 class BigSnowballS2C(val entityId: Int) : CustomPayload {
     companion object {
