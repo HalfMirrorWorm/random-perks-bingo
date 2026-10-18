@@ -230,6 +230,20 @@ object HarvestPerks {
         // 效果由 BigStomachMixin 在 ConsumableComponent.canConsume 实现
     }
 
+    /** 蓝 · 丰饶: **老吴!?** —— 猫不再害怕你, 反而会主动攻击你; 但你杀死猫必掉 3 根线 */
+    object OldWu : PerkDefinition {
+        override val id = "harvest_old_wu"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.STRING)
+
+        override fun onKill(ctx: PerkContext, victim: net.minecraft.entity.LivingEntity) {
+            if (victim !is net.minecraft.entity.passive.CatEntity) return
+            val world = ctx.player.world as? ServerWorld ?: return
+            victim.dropStack(world, ItemStack(Items.STRING, 3))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -242,5 +256,6 @@ object HarvestPerks {
         PerkRegistry.register(CatAura)
         PerkRegistry.register(SummonHorse)
         PerkRegistry.register(BigStomach)
+        PerkRegistry.register(OldWu)
     }
 }
