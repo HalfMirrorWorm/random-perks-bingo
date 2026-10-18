@@ -171,4 +171,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"拾穗" */
     fun hasGleaning(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_gleaning") == true
+
+    // ---- "TNT 投手" (紫): 手持 TNT 右键改为抛射 (由 TntThrowService 处理) ----
+
+    /** 玩家是否持有"TNT 投手" */
+    fun hasTntThrow(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_tnt_throw") == true
 }

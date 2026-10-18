@@ -861,6 +861,15 @@ object HunterPerks {
         override fun icon() = ItemStack(Items.COOKED_BEEF)
     }
 
+    /** 紫 · 猎杀: **TNT 投手** —— 手持 TNT 右键时改为抛射一枚点燃的 TNT (而非放置方块)。
+     *  实现见 TntThrowService。 */
+    object TntThrow : PerkDefinition {
+        override val id = "hunter_tnt_throw"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.TNT)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -885,5 +894,6 @@ object HunterPerks {
         PerkRegistry.register(DemonPact)
         PerkRegistry.register(PearlGauntlet)
         PerkRegistry.register(SatiationStrike)
+        PerkRegistry.register(TntThrow)
     }
 }

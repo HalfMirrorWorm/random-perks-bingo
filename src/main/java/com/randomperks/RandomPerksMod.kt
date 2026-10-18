@@ -10,6 +10,7 @@ import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
+import com.randomperks.game.TntThrowService
 import com.randomperks.game.VerminSwarmService
 import com.randomperks.lifecycle.BingoLifecycle
 import com.randomperks.network.PerkNetworking
@@ -68,6 +69,9 @@ object RandomPerksMod : ModInitializer {
 
         // "磁力升级" 的 5 格拾取扫描
         MagnetService.register()
+
+        // "TNT 投手" 的右键抛射
+        TntThrowService.register()
 
         // 世界事件 (击杀 / 破坏方块) → 词条
         PerkWorldEventService.register()
