@@ -870,6 +870,31 @@ object HunterPerks {
         override fun icon() = ItemStack(Items.TNT)
     }
 
+    /** 蓝 · 猎杀: **赏金猎人** —— 每击杀一种**此前没杀过**的敌对生物, 获得 3 个金锭 */
+    object BountyHunter : PerkDefinition {
+        override val id = "hunter_bounty_hunter"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.GOLD_INGOT)
+
+        /** 每解锁一种新生物的赏金 */
+        private const val REWARD = 3
+
+        /** 已解锁的生物类型 (逗号分隔的注册表 id) 存在 state.memory 里, 随对局自动清理 */
+        private const val MEMORY_KEY = "bounty_hunter_types"
+
+        override fun onKill(ctx: PerkContext, victim: LivingEntity) {
+            if (victim !is Monster) return
+
+            val typeId = net.minecraft.registry.Registries.ENTITY_TYPE.getId(victim.type).toString()
+            val known = ctx.state.memory[MEMORY_KEY].orEmpty()
+            if (known.split(',').contains(typeId)) return
+
+            ctx.state.memory[MEMORY_KEY] = if (known.isEmpty()) typeId else "$known,$typeId"
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.GOLD_INGOT, REWARD))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -895,5 +920,6 @@ object HunterPerks {
         PerkRegistry.register(PearlGauntlet)
         PerkRegistry.register(SatiationStrike)
         PerkRegistry.register(TntThrow)
+        PerkRegistry.register(BountyHunter)
     }
 }
