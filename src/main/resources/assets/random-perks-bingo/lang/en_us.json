@@ -128,7 +128,7 @@
   "random-perks-bingo.perk.hunter_predator.name": "Me Hungry",
   "random-perks-bingo.perk.hunter_predator.desc": "Killing any mob instantly restores 2 hunger and 2 saturation.",
   "random-perks-bingo.perk.hunter_headhunter.name": "SMP Player",
-  "random-perks-bingo.perk.hunter_headhunter.desc": "Permanently +1 max health for each enemy player you kill (stacks, kept after respawn).",
+  "random-perks-bingo.perk.hunter_headhunter.desc": "Permanently +2 max health for each enemy player you kill (caps at +20, kept after respawn).",
   "random-perks-bingo.perk.hunter_bare_rage.name": "Glass Cannon",
   "random-perks-bingo.perk.hunter_bare_rage.desc": "+40% attack damage while wearing no armor.",
 

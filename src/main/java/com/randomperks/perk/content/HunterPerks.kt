@@ -420,7 +420,8 @@ object HunterPerks {
         }
     }
 
-    /** 金 · 猎杀: 每击杀一名**敌方玩家** (非自己/非同队), 永久 +1 最大生命 (可叠加, 重生保留) */
+    /** 金 · 猎杀: 每击杀一名**敌方玩家** (非自己/非同队), 永久 +2 最大生命;
+     *  通过本词条最多累计 +20 (10 颗心), 重生保留 */
     object Headhunter : PerkDefinition {
         override val id = "hunter_headhunter"
         override val rarity = PerkRarity.GOLD
@@ -429,6 +430,12 @@ object HunterPerks {
 
         private val MOD_MAX_HEALTH = Identifier.of("random-perks-bingo", "headhunter_health")
         private const val BONUS_KEY = "headhunter_bonus"
+
+        /** 每击杀一名敌方玩家 +2 最大生命 (1 颗心) */
+        private const val BONUS_PER_KILL = 2.0
+
+        /** 通过这个词条最多累计 +20 最大生命 (10 颗心) */
+        private const val MAX_BONUS = 20.0
 
         override fun onAcquire(ctx: PerkContext) = applyBonus(ctx)
 
@@ -447,10 +454,14 @@ object HunterPerks {
             val myTeam = ctx.player.scoreboardTeam?.name
             if (myTeam != null && victim.scoreboardTeam?.name == myTeam) return
 
-            val bonus = (ctx.state.memory[BONUS_KEY]?.toDoubleOrNull() ?: 0.0) + 1.0
+            val current = ctx.state.memory[BONUS_KEY]?.toDoubleOrNull() ?: 0.0
+            if (current >= MAX_BONUS) return                      // 已到上限, 不再叠加
+
+            val bonus = minOf(MAX_BONUS, current + BONUS_PER_KILL)
             ctx.state.memory[BONUS_KEY] = bonus.toString()
             applyBonus(ctx)
-            ctx.player.heal(1f)
+            // 按**实际增加量**回血 (接近上限时可能只加 1)
+            ctx.player.heal((bonus - current).toFloat())
         }
 
         private fun applyBonus(ctx: PerkContext) {
