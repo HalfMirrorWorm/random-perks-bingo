@@ -244,6 +244,53 @@ object HarvestPerks {
         }
     }
 
+    /** 蓝 · 丰饶: **大狗嚼** —— 立即召唤 **2 只属于你的狼**:
+     *  血量 50 (原版驯服狼 20)、攻击 6 (原版驯服狼 4), 已驯服且不会自然消失。 */
+    object BigDog : PerkDefinition {
+        override val id = "harvest_big_dog"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.BONE)
+
+        /** 召唤数量 */
+        private const val DOG_COUNT = 2
+
+        /** 固定属性: 血量 50 / 攻击 6 */
+        private const val DOG_HEALTH = 50.0
+        private const val DOG_ATTACK = 6.0
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+
+            repeat(DOG_COUNT) { index ->
+                val wolf = net.minecraft.entity.passive.WolfEntity(
+                    net.minecraft.entity.EntityType.WOLF, world,
+                )
+                // 两只狗分列玩家左右, 朝向与玩家一致
+                val offset = if (index == 0) -1.0 else 1.0
+                wolf.refreshPositionAndAngles(
+                    player.x + offset, player.y, player.z,
+                    player.yaw, player.pitch,
+                )
+                wolf.setOwner(player)
+                // ★ setTamed(true, true) 的第二个参数会让它顺便把属性改写成"驯服狼"的默认值
+                //   (20 血), 所以属性覆盖必须放在它**之后** —— 否则会被这一句覆盖掉。
+                wolf.setTamed(true, true)
+                wolf.setPersistent()
+
+                wolf.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.MAX_HEALTH)
+                    ?.baseValue = DOG_HEALTH
+                wolf.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.ATTACK_DAMAGE)
+                    ?.baseValue = DOG_ATTACK
+                // 只提高上限不会回血, 要手动补满 (否则狗身上仍是驯服时的 20 血)
+                wolf.health = DOG_HEALTH.toFloat()
+
+                world.spawnEntity(wolf)
+            }
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -257,5 +304,6 @@ object HarvestPerks {
         PerkRegistry.register(SummonHorse)
         PerkRegistry.register(BigStomach)
         PerkRegistry.register(Yowl)
+        PerkRegistry.register(BigDog)
     }
 }
