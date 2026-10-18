@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **62** 条词条：蓝 29 / 紫 24 / 金 8 / 神话 1。
+共 **63** 条词条：蓝 29 / 紫 25 / 金 8 / 神话 1。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -103,6 +103,7 @@
 | `swift_wind_stride` | 风之步伐 | Wind Stride | 紫 |
 | `swift_life_bucket` | 落地，水 | MLG Water | 紫 |
 | `swift_gura_shark` | Gura鲨鱼 | Gura Shark | 紫 |
+| `swift_omnimovement` | 全向移动 | Omnimovement | 紫 |
 | `swift_double_jump` | 二段跳 | Double Jump | 金 |
 | `swift_elytra_bond` | 风之翼 | Wings of the Wind | 金 |
 

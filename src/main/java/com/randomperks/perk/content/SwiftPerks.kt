@@ -229,6 +229,30 @@ object SwiftPerks {
         }
     }
 
+    /** 紫 · 疾风: **全向移动** —— 任意方向移动都能达到疾跑速度。
+     *  MC 里 W/A/S/D 本来同速, 差别只在"疾跑只能向前"; 这里常驻 +30% 基础速度
+     *  (与原版疾跑同款加成), 于是后退/侧移/斜向也等于一直在疾跑。 */
+    object Omnimovement : PerkDefinition {
+        override val id = "swift_omnimovement"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.FEATHER)
+
+        private val MOD_SPEED = Identifier.of("random-perks-bingo", "omnimovement_speed")
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        private fun apply(ctx: PerkContext) =
+            PerkEffects.setAttribute(
+                ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
+                0.3, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE,
+            )
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+    }
+
     fun registerAll() {
         com.randomperks.perk.PerkRegistry.register(Speed)
         com.randomperks.perk.PerkRegistry.register(FeatherFall)
@@ -239,5 +263,6 @@ object SwiftPerks {
         com.randomperks.perk.PerkRegistry.register(ElytraBond)
         com.randomperks.perk.PerkRegistry.register(LifeBucket)
         com.randomperks.perk.PerkRegistry.register(GuraShark)
+        com.randomperks.perk.PerkRegistry.register(Omnimovement)
     }
 }

@@ -76,6 +76,8 @@
   "random-perks-bingo.perk.swift_life_bucket.desc": "受到致命摔落伤害时, 副手的水桶会像不死图腾一样救你一命 (只消耗水, 留下空桶)。",
   "random-perks-bingo.perk.swift_gura_shark.name": "Gura鲨鱼",
   "random-perks-bingo.perk.swift_gura_shark.desc": "获得一把激流 III 的三叉戟 (在水中或雨中右键即可高速冲出)。",
+  "random-perks-bingo.perk.swift_omnimovement.name": "全向移动",
+  "random-perks-bingo.perk.swift_omnimovement.desc": "任意方向移动都能达到疾跑速度 (后退、侧移、斜向同样生效)。",
 
   "random-perks-bingo.perk.delver_mining.name": "矿工手腕",
   "random-perks-bingo.perk.delver_mining.desc": "挖掘速度 +20%。",
