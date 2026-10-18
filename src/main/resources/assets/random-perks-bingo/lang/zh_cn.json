@@ -225,6 +225,8 @@
   "random-perks-bingo.perk.hunter_demon_pact.desc": "你造成的伤害翻倍, 但你受到的任何伤害也翻倍。",
   "random-perks-bingo.perk.hunter_pearl_gauntlet.name": "珠光护手",
   "random-perks-bingo.perk.hunter_pearl_gauntlet.desc": "你的每次攻击都会暴击; 但剑不再能横扫, 并获得挖掘疲劳 I。",
+  "random-perks-bingo.perk.seeker_random_ground.name": "随机地基",
+  "random-perks-bingo.perk.seeker_random_ground.desc": "获得时, 把你脚下 3×3 的地面各替换成一块随机方块。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",

@@ -15,6 +15,7 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import com.randomperks.state.PerkStateManager
+import net.minecraft.block.Block
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.PotionContentsComponent
 import net.minecraft.entity.LivingEntity
@@ -29,6 +30,7 @@ import net.minecraft.item.Items
 import net.minecraft.item.map.MapDecorationTypes
 import net.minecraft.item.map.MapState
 import net.minecraft.potion.Potions
+import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.entry.RegistryEntryList
 import net.minecraft.registry.tag.BiomeTags
@@ -497,6 +499,44 @@ object SeekerPerks {
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
+    /** 蓝 · 秘藏: **随机地基** —— 获得瞬间, 把脚下 3×3 的地面各替换成一块随机方块 */
+    object RandomGround : PerkDefinition {
+        override val id = "seeker_random_ground"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.GRASS_BLOCK)
+
+        /** 3×3 = 以脚下为中心, 水平各外扩 1 格 */
+        private const val RADIUS = 1
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+            val registry = world.registryManager.getOrThrow(RegistryKeys.BLOCK)
+            val center = player.blockPos.down()
+
+            for (dx in -RADIUS..RADIUS) {
+                for (dz in -RADIUS..RADIUS) {
+                    val block = randomBlock(registry, player.random) ?: continue
+                    world.setBlockState(center.add(dx, 0, dz), block.defaultState)
+                }
+            }
+        }
+
+        /** 从方块注册表里随机挑一个非空气方块 (getRandom 可能给到空气, 重试几次) */
+        private fun randomBlock(
+            registry: Registry<Block>,
+            random: net.minecraft.util.math.random.Random,
+        ): Block? {
+            repeat(16) {
+                val entry = registry.getRandom(random).orElse(null) ?: return null
+                val block = entry.value()
+                if (!block.defaultState.isAir) return block
+            }
+            return null
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
@@ -508,5 +548,6 @@ object SeekerPerks {
         PerkRegistry.register(WanderingTrader)
         PerkRegistry.register(VillageCompass)
         PerkRegistry.register(Puny)
+        PerkRegistry.register(RandomGround)
     }
 }
