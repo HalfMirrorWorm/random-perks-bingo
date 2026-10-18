@@ -144,10 +144,10 @@ object PerkNetworking {
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send offer: {}", it.toString()) }
     }
 
-    /** 下发已获得词条列表 */
-    fun sendPerkList(player: ServerPlayerEntity, pendingCount: Int, perks: List<PerkOptionData>) {
+    /** 下发所有在线玩家的词条列表 */
+    fun sendPerkList(player: ServerPlayerEntity, pendingCount: Int, players: List<PlayerPerkList>) {
         if (!ServerPlayNetworking.canSend(player, PerkListS2C.ID)) return
-        runCatching { ServerPlayNetworking.send(player, PerkListS2C(pendingCount, perks)) }
+        runCatching { ServerPlayNetworking.send(player, PerkListS2C(pendingCount, players)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send perk list: {}", it.toString()) }
     }
 

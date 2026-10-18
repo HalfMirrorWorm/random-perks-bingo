@@ -70,7 +70,18 @@ object RandomPerksClient : ClientModInitializer {
                         ) { text -> logger.info("[RandomPerks] screenshot(choice): {}", text.string) }
                     }
                     220 -> {
-                        client.setScreen(PerkListScreen(3, listPerks))
+                        client.setScreen(
+                            PerkListScreen(
+                                3,
+                                listOf(
+                                    com.randomperks.network.PlayerPerkList(
+                                        java.util.UUID.randomUUID(),
+                                        "Test Player",
+                                        listPerks,
+                                    ),
+                                ),
+                            ),
+                        )
                         logger.info("[RandomPerks] UI self-test: perk list screen opened")
                     }
                     280 -> {

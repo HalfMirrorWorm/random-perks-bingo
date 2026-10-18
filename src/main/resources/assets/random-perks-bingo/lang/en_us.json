@@ -7,6 +7,7 @@
   "random-perks-bingo.screen.choose_perk": "Choose a Perk",
   "random-perks-bingo.screen.choose_perk.hint": "Click a card to pick • Esc to save it for later",
   "random-perks-bingo.screen.my_perks": "My Perks",
+  "random-perks-bingo.screen.player_perks": "%s's Perks",
   "random-perks-bingo.screen.catalog": "Perk Catalog",
   "random-perks-bingo.screen.steal_target": "Choose a Target",
   "random-perks-bingo.screen.lightning_target": "Choose a Lightning Target",

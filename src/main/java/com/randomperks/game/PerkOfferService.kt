@@ -3,6 +3,7 @@ package com.randomperks.game
 import com.randomperks.RandomPerksMod
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PerkOptionData
+import com.randomperks.network.PlayerPerkList
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
@@ -98,14 +99,23 @@ object PerkOfferService {
         )
     }
 
-    /** 玩家请求查看已获得词条列表 */
+    /** 玩家请求查看词条列表 —— 下发**所有在线玩家**的, 客户端用 tab 页切换 */
     fun handleListRequest(player: ServerPlayerEntity) {
+        val server = player.server ?: return
         val state = PerkStateManager.getOrCreate(player.uuid)
-        PerkNetworking.sendPerkList(
-            player,
-            state.pendingChoices,
-            state.ownedPerks.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon()) },
-        )
+
+        val players = server.playerManager.playerList.map { other ->
+            val otherState = PerkStateManager.get(other.uuid)
+            PlayerPerkList(
+                other.uuid,
+                other.name.string,
+                otherState?.ownedPerks?.map {
+                    PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon())
+                } ?: emptyList(),
+            )
+        }
+
+        PerkNetworking.sendPerkList(player, state.pendingChoices, players)
     }
 
     /**

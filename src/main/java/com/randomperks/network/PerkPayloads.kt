@@ -103,21 +103,46 @@ class PerkListRequestC2S : CustomPayload {
     override fun getId() = ID
 }
 
-/** S2C: 下发玩家已获得的词条列表 (附当前待选数) */
+/** 单个玩家的词条列表 (供 V 键界面的 tab 页使用) */
+data class PlayerPerkList(
+    val uuid: UUID,
+    val name: String,
+    val perks: List<PerkOptionData>,
+)
+
+private fun writePlayerLists(buf: RegistryByteBuf, lists: List<PlayerPerkList>) {
+    buf.writeVarInt(lists.size)
+    for (list in lists) {
+        buf.writeUuid(list.uuid)
+        buf.writeString(list.name)
+        writeCards(buf, list.perks)
+    }
+}
+
+private fun readPlayerLists(buf: RegistryByteBuf): List<PlayerPerkList> {
+    val size = buf.readVarInt()
+    val result = ArrayList<PlayerPerkList>(size)
+    repeat(size) {
+        result.add(PlayerPerkList(buf.readUuid(), buf.readString(), readCards(buf)))
+    }
+    return result
+}
+
+/** S2C: 下发**所有在线玩家**的词条列表 (附请求者自己的待选数) */
 class PerkListS2C(
     val pendingCount: Int,
-    val perks: List<PerkOptionData>,
+    val players: List<PlayerPerkList>,
 ) : CustomPayload {
     companion object {
         val ID = CustomPayload.Id<PerkListS2C>(Identifier.of("random-perks-bingo", "perk_list"))
         val CODEC: PacketCodec<RegistryByteBuf, PerkListS2C> = PacketCodec.of(
             { value, buf ->
                 buf.writeVarInt(value.pendingCount)
-                writeCards(buf, value.perks)
+                writePlayerLists(buf, value.players)
             },
             { buf ->
                 val pending = buf.readVarInt()
-                PerkListS2C(pending, readCards(buf))
+                PerkListS2C(pending, readPlayerLists(buf))
             },
         )
     }

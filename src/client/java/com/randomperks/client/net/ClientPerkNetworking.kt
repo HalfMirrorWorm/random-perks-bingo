@@ -85,7 +85,7 @@ object ClientPerkNetworking {
 
         ClientPlayNetworking.registerGlobalReceiver(PerkListS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().setScreen(PerkListScreen(payload.pendingCount, payload.perks))
+                context.client().setScreen(PerkListScreen(payload.pendingCount, payload.players))
             }
         }
 

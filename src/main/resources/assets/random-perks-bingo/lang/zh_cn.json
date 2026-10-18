@@ -7,6 +7,7 @@
   "random-perks-bingo.screen.choose_perk": "选择一个词条",
   "random-perks-bingo.screen.choose_perk.hint": "点击卡牌选择 · Esc 稍后再选",
   "random-perks-bingo.screen.my_perks": "我的词条",
+  "random-perks-bingo.screen.player_perks": "%s 的词条",
   "random-perks-bingo.screen.catalog": "词条百科",
   "random-perks-bingo.screen.steal_target": "选择偷取目标",
   "random-perks-bingo.screen.lightning_target": "选择引雷目标",
