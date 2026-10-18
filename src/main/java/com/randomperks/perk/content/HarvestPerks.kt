@@ -339,6 +339,48 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.WHEAT_SEEDS)
     }
 
+    /** 紫 · 丰饶: **乐魂** —— 召唤一只**自带挽具**的快乐恶魂 (1.21.6+ 的飞行坐骑),
+     *  并获得 4 根拴绳 */
+    object HappyGhast : PerkDefinition {
+        override val id = "harvest_happy_ghast"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.WHITE_HARNESS)
+
+        /** 16 色挽具, 随机挑一个 */
+        private val HARNESSES = listOf(
+            Items.WHITE_HARNESS, Items.ORANGE_HARNESS, Items.MAGENTA_HARNESS, Items.LIGHT_BLUE_HARNESS,
+            Items.YELLOW_HARNESS, Items.LIME_HARNESS, Items.PINK_HARNESS, Items.GRAY_HARNESS,
+            Items.LIGHT_GRAY_HARNESS, Items.CYAN_HARNESS, Items.PURPLE_HARNESS, Items.BLUE_HARNESS,
+            Items.BROWN_HARNESS, Items.GREEN_HARNESS, Items.RED_HARNESS, Items.BLACK_HARNESS,
+        )
+
+        /** 赠送的拴绳数量 */
+        private const val LEAD_COUNT = 4
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+
+            val ghast = net.minecraft.entity.passive.HappyGhastEntity(
+                net.minecraft.entity.EntityType.HAPPY_GHAST, world,
+            )
+            // 恶魂体积大, 生成在头顶两格避免卡进方块
+            ghast.refreshPositionAndAngles(
+                player.x, player.y + 2.0, player.z,
+                player.yaw, player.pitch,
+            )
+            ghast.equipStack(
+                net.minecraft.entity.EquipmentSlot.BODY,
+                ItemStack(HARNESSES[player.random.nextInt(HARNESSES.size)]),
+            )
+            ghast.setPersistent()
+            world.spawnEntity(ghast)
+
+            PerkEffects.giveStack(player, ItemStack(Items.LEAD, LEAD_COUNT))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -356,5 +398,6 @@ object HarvestPerks {
         PerkRegistry.register(Pokemon)
         PerkRegistry.register(Saplings)
         PerkRegistry.register(Gleaning)
+        PerkRegistry.register(HappyGhast)
     }
 }

@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **86** 条词条：蓝 39 / 紫 32 / 金 12 / 神话 3。
+共 **87** 条词条：蓝 39 / 紫 33 / 金 12 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -61,6 +61,7 @@
 | `harvest_big_dog` | 大狗嚼 | Big Doggo | 蓝 |
 | `harvest_pokemon` | 宝可梦 | Pokemon | 金 |
 | `harvest_saplings` | 植岷 | Saplings | 蓝 |
+| `harvest_happy_ghast` | 乐魂 | Happy Ghast | 紫 |
 | `harvest_gleaning` | 拾穗 | Gleaning | 蓝 |
 | `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 紫 |
 | `harvest_big_stomach` | 大胃袋 | Bottomless Stomach | 紫 |
