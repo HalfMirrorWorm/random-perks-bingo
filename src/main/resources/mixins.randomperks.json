@@ -33,7 +33,9 @@
   "client": [
     "EntityGlowMixin",
     "WindStrideClientMixin",
-    "DoubleJumpGlideMixin"
+    "DoubleJumpGlideMixin",
+    "JockeyInputMixin",
+    "JockeyCameraMixin"
   ],
   "injectors": {
     "defaultRequire": 1

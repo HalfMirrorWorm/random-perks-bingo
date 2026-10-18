@@ -1,6 +1,7 @@
 package com.randomperks.network
 
 import com.randomperks.RandomPerksMod
+import com.randomperks.game.JockeyService
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkOfferService
 import com.randomperks.game.StealService
@@ -38,6 +39,8 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(StealPickC2S.ID, StealPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealTargetPickC2S.ID, StealTargetPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
+        PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
+        PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -111,6 +114,16 @@ object PerkNetworking {
                 }
             }
         }
+
+        ServerPlayNetworking.registerGlobalReceiver(JockeyControlC2S.ID) { payload, context ->
+            val player = context.player()
+            val input = payload.input
+            val yaw = payload.yaw
+            val pitch = payload.pitch
+            context.server().execute {
+                JockeyService.handleControl(player, input, yaw, pitch)
+            }
+        }
     }
 
     /** 通知玩家当前待选机会数 (客户端未安装本 mod 时静默跳过) */
@@ -173,6 +186,13 @@ object PerkNetworking {
     fun sendGlowMark(player: ServerPlayerEntity, entityIds: List<Int>, durationMillis: Long) {
         if (!ServerPlayNetworking.canSend(player, GlowMarkS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, GlowMarkS2C(entityIds, durationMillis)) }
+    }
+
+    /** 把骑乘者的输入下发给被骑的玩家 ("Jockey") */
+    fun sendJockeyControl(player: ServerPlayerEntity, payload: JockeyControlS2C) {
+        if (!ServerPlayNetworking.canSend(player, JockeyControlS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, payload) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send jockey control: {}", it.toString()) }
     }
 
     /** 通知客户端播放"水桶演出" ("落地，水"救命的图腾式动画) */

@@ -1,6 +1,7 @@
 package com.randomperks.client.net
 
 import com.randomperks.client.GlowMarkState
+import com.randomperks.client.JockeyClientState
 import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
@@ -20,13 +21,17 @@ import com.randomperks.network.PerkPickC2S
 import com.randomperks.network.PerkRequestC2S
 import com.randomperks.network.ActionTargetPickC2S
 import com.randomperks.network.ActionTargetsS2C
+import com.randomperks.network.JockeyControlC2S
+import com.randomperks.network.JockeyControlS2C
 import com.randomperks.network.StealOpenS2C
 import com.randomperks.network.StealPickC2S
 import com.randomperks.network.StealTargetPickC2S
 import com.randomperks.network.StealTargetsS2C
 import com.randomperks.network.WaterBucketTotemS2C
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.text.Text
 import java.util.UUID
@@ -136,6 +141,24 @@ object ClientPerkNetworking {
                 context.client().gameRenderer.showFloatingItem(ItemStack(Items.WATER_BUCKET))
             }
         }
+
+        // "Jockey": 被骑者收到骑乘者的输入, 交给 JockeyInputMixin / JockeyCameraMixin 生效
+        ClientPlayNetworking.registerGlobalReceiver(JockeyControlS2C.ID) { payload, context ->
+            context.client().execute {
+                JockeyClientState.accept(payload.input, payload.yaw, payload.pitch)
+            }
+        }
+
+        // "Jockey": 骑乘者每 tick 上报自己的输入 (只有骑在别的玩家身上时才发)
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            val player = client.player ?: return@register
+            if (player.vehicle !is PlayerEntity) return@register
+            if (!ClientPlayNetworking.canSend(JockeyControlC2S.ID)) return@register
+
+            ClientPlayNetworking.send(
+                JockeyControlC2S(player.input.playerInput, player.yaw, player.pitch),
+            )
+        }
     }
 
     /** 请求服务端生成并下发三选一 */
@@ -190,5 +213,6 @@ object ClientPerkNetworking {
     fun reset() {
         pendingChoices = 0
         currentOptions = null
+        JockeyClientState.clear()
     }
 }

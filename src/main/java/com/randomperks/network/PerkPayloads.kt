@@ -5,6 +5,7 @@ import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
+import net.minecraft.util.PlayerInput
 import java.util.UUID
 /** 一个词条卡片的数据 (服务端 → 客户端 展示用; 同时用于"三选一候选"与"已获得列表") */
 data class PerkOptionData(
@@ -307,6 +308,57 @@ class ActionTargetPickC2S(
                 buf.writeUuid(value.uuid)
             },
             { buf -> ActionTargetPickC2S(buf.readString(), buf.readUuid()) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/**
+ * C2S: "Jockey" 骑乘者每 tick 上报自己的输入。
+ *
+ * 服务端把它转给被骑的玩家 (见 [JockeyControlS2C]) —— 玩家客户端的位置是权威的,
+ * 所以"控制别人移动"只能由对方客户端来执行, 服务端转发是最短的一条链路。
+ */
+class JockeyControlC2S(
+    val input: PlayerInput,
+    val yaw: Float,
+    val pitch: Float,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<JockeyControlC2S>(Identifier.of("random-perks-bingo", "jockey_control"))
+        val CODEC: PacketCodec<RegistryByteBuf, JockeyControlC2S> = PacketCodec.of(
+            { value, buf ->
+                PlayerInput.PACKET_CODEC.encode(buf, value.input)
+                buf.writeFloat(value.yaw)
+                buf.writeFloat(value.pitch)
+            },
+            { buf ->
+                JockeyControlC2S(PlayerInput.PACKET_CODEC.decode(buf), buf.readFloat(), buf.readFloat())
+            },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** S2C: 把骑乘者的输入下发给被骑的玩家 (对方客户端据此接管自己的移动与朝向) */
+class JockeyControlS2C(
+    val input: PlayerInput,
+    val yaw: Float,
+    val pitch: Float,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<JockeyControlS2C>(Identifier.of("random-perks-bingo", "jockey_control_s2c"))
+        val CODEC: PacketCodec<RegistryByteBuf, JockeyControlS2C> = PacketCodec.of(
+            { value, buf ->
+                PlayerInput.PACKET_CODEC.encode(buf, value.input)
+                buf.writeFloat(value.yaw)
+                buf.writeFloat(value.pitch)
+            },
+            { buf ->
+                JockeyControlS2C(PlayerInput.PACKET_CODEC.decode(buf), buf.readFloat(), buf.readFloat())
+            },
         )
     }
 

@@ -765,6 +765,29 @@ object HunterPerks {
         }
     }
 
+    /** 金 · 猎杀: **Jockey** —— 右键任意玩家即可骑到他身上并**接管他的移动与视角**;
+     *  骑乘期间受到来自被骑者的伤害降低 75%。按 Shift 下来。
+     *
+     *  骑乘与操控由 [com.randomperks.game.JockeyService] + 客户端 JockeyInputMixin 配合实现。 */
+    object Jockey : PerkDefinition {
+        override val id = "hunter_jockey"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.SADDLE)
+
+        override fun onAcquire(ctx: PerkContext) {
+            ctx.player.sendMessage(
+                Text.translatable("random-perks-bingo.message.jockey_hint"),
+                false,
+            )
+        }
+
+        /** 对局结束/词条被清掉时别把人留在别人身上 */
+        override fun onRemove(ctx: PerkContext) {
+            if (ctx.player.hasVehicle()) ctx.player.stopRiding()
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -783,5 +806,6 @@ object HunterPerks {
         PerkRegistry.register(RolyPoly)
         PerkRegistry.register(Nuclear)
         PerkRegistry.register(HomingBow)
+        PerkRegistry.register(Jockey)
     }
 }

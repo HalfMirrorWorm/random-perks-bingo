@@ -38,6 +38,12 @@ object PerkWorldEventService {
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
             if (player !is ServerPlayerEntity) return@register ActionResult.PASS
+
+            // "Jockey": 右键玩家 → 骑到他身上 (失败则交还原版处理)
+            if (entity is ServerPlayerEntity && PerkBoostQuery.hasJockey(player)) {
+                if (JockeyService.mount(player, entity)) return@register ActionResult.SUCCESS
+            }
+
             if (entity !is AbstractHorseEntity) return@register ActionResult.PASS
             val owner = entity.ownerReference ?: return@register ActionResult.PASS
             if (owner.uuid != player.uuid) return@register ActionResult.PASS
