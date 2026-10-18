@@ -29,6 +29,7 @@
     "CatFleeMixin",
     "DoomsdayMixin",
     "PlayerEntityInvoker",
+    "JockeyRideMixin",
     "CreeperChargedAccessor",
     "HomingArrowMixin",
     "BigSnowballMixin",

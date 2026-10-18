@@ -9,8 +9,11 @@ import net.minecraft.util.PlayerInput
 /**
  * "Jockey" (金 · 猎杀) 的服务端逻辑。
  *
- * 原版玩家不能当载具 (没有交互入口), 但 [net.minecraft.entity.Entity.startRiding] 本身是允许的 ——
- * 1.20.2 加入的 `/ride` 命令走的就是这条路。这里用 force = true 直接骑上去。
+ * 原版**不允许**把玩家当载具: `RideCommand` 见到玩家载具直接拒绝, 而
+ * [net.minecraft.entity.Entity.startRiding] 里还有一道 `entity.type.isSaveable()` 检查
+ * (`EntityType.PLAYER` 是 disableSaving 注册的, saveable = false) —— 且这道检查排在 force
+ * 判定之前, 传 force = true 也绕不过去。放行由 {@link com.randomperks.mixin.JockeyRideMixin}
+ * 负责, 这里只管调用。
  *
  * 之后骑乘者每 tick 上报自己的输入, 服务端原样转给被骑者。
  * 真正执行移动的是**被骑者的客户端**: 玩家位置由客户端权威计算, 服务端硬推位置会被
