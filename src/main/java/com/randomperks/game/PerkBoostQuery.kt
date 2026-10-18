@@ -97,6 +97,6 @@ object PerkBoostQuery {
     // ---- "老吴!?" (拟声: 猫叫): 猫主动攻击持词条的玩家 (由 CatTargetMixin / CatFleeMixin 调用) ----
 
     /** 玩家是否持有"老吴!?" */
-    fun hasMeow(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("harvest_meow") == true
+    fun hasYowl(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("harvest_yowl") == true
 }

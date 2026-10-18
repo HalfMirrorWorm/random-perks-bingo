@@ -22,7 +22,7 @@ public class CatFleeMixin {
     @ModifyVariable(method = "<init>", at = @At("HEAD"), argsOnly = true)
     private Predicate<LivingEntity> randomperks$ignoreOldWu(Predicate<LivingEntity> original) {
         return original.and(entity ->
-            !(entity instanceof ServerPlayerEntity player && PerkBoostQuery.INSTANCE.hasMeow(player))
+            !(entity instanceof ServerPlayerEntity player && PerkBoostQuery.INSTANCE.hasYowl(player))
         );
     }
 }
