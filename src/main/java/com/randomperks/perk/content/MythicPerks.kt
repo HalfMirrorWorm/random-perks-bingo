@@ -26,7 +26,17 @@ object MythicPerks {
         }
     }
 
+    /** 神话 · 猎杀 · 全局唯一: **天启日** —— 被你击杀的玩家, 这次死亡**强制掉落全部物品**
+     *  (无视 keepInventory 规则; 由 DoomsdayMixin 在 PlayerEntity.dropInventory 实现) */
+    object Doomsday : PerkDefinition {
+        override val id = "mythic_doomsday"
+        override val rarity = PerkRarity.MYTHIC
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.WITHER_ROSE)
+    }
+
     fun registerAll() {
         PerkRegistry.register(CreativeFlash)
+        PerkRegistry.register(Doomsday)
     }
 }

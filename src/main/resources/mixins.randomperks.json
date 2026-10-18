@@ -25,7 +25,8 @@
     "BigStomachMixin",
     "OldSchoolCombatMixin",
     "CatTargetMixin",
-    "CatFleeMixin"
+    "CatFleeMixin",
+    "DoomsdayMixin"
   ],
   "client": [
     "EntityGlowMixin",

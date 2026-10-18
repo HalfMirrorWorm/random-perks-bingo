@@ -185,6 +185,8 @@
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",
   "random-perks-bingo.perk.mythic_creative_flash.desc": "立即获得 1.5 秒创造模式! 全局唯一 —— 同时只能有一名玩家拥有。",
+  "random-perks-bingo.perk.mythic_doomsday.name": "天启日",
+  "random-perks-bingo.perk.mythic_doomsday.desc": "被你击杀的玩家会受到死亡掉落的惩罚 —— 背包物品全部掉落 (无视 keepInventory 规则)。全局唯一。",
   "random-perks-bingo.perk.seeker_supply_line.name": "补给线",
   "random-perks-bingo.perk.seeker_supply_line.desc": "立即获得一份随机补给, 之后每 2 分钟再获得一份。",
   "random-perks-bingo.perk.seeker_ender_supply.name": "末影补给",

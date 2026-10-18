@@ -99,4 +99,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"老吴!?" */
     fun hasYowl(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_yowl") == true
+
+    // ---- "天启日" (神话): 被他击杀的玩家强制死亡掉落 (由 DoomsdayMixin 调用) ----
+
+    /** 玩家是否持有"天启日" */
+    fun hasDoomsday(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("mythic_doomsday") == true
 }
