@@ -645,8 +645,8 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK)
     }
 
-    /** 紫 · 猎杀: **核电轻而易举** —— 获得时弹出玩家选择器, 选中一名玩家后在他 4 格内生成一只
-     *  **高亮显示的闪电苦力怕** (charged creeper) */
+    /** 紫 · 猎杀: **核电轻而易举** —— 获得时弹出玩家选择器, 选中一名玩家后**在他脚下**生成一只
+     *  **高亮显示的闪电苦力怕** (charged creeper), 并直接让它仇恨该玩家 */
     object Nuclear : PerkDefinition {
         override val id = "hunter_easy_nuke"
         override val rarity = PerkRarity.PURPLE
@@ -669,7 +669,7 @@ object HunterPerks {
             )
         }
 
-        /** 客户端在选择器里选中了一名玩家 → 在他附近生成闪电苦力怕 */
+        /** 客户端在选择器里选中了一名玩家 → 在他脚下生成闪电苦力怕 */
         fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
@@ -689,25 +689,16 @@ object HunterPerks {
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
 
-        /** 在目标 4 格内找一块能站的地方, 生成一只**发光**的闪电苦力怕 */
+        /** 在目标**脚下**生成一只**发光**的闪电苦力怕, 并直接让它仇恨目标。
+         *
+         *  仇恨是必须的: 苦力怕靠 CreeperIgniteGoal 点火, 而那个 goal 只在
+         *  {@code getTarget() != null} 且距离够近时才会启动 —— 不设目标它就只会站桩。 */
         private fun spawnChargedCreeper(target: ServerPlayerEntity) {
             val world = target.world as? ServerWorld ?: return
             val random = world.random
 
-            var spawnPos: net.minecraft.util.math.BlockPos? = null
-            for (i in 0 until 16) {
-                val dx = random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS
-                val dz = random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS
-                val candidate = target.blockPos.add(dx, 0, dz)
-                val top = world.getTopPosition(
-                    net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, candidate,
-                )
-                if (world.getBlockState(top).isAir && world.getBlockState(top.down()).isSolidBlock(world, top.down())) {
-                    spawnPos = top
-                    break
-                }
-            }
-            val pos = spawnPos ?: target.blockPos
+            // 优先落在目标脚下; 那里站不住时 (水里/墙里/半砖) 再在附近找一块能站的
+            val pos = findSpawnPos(target, world) ?: target.blockPos
 
             val creeper = net.minecraft.entity.EntityType.CREEPER
                 .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return
@@ -721,7 +712,32 @@ object HunterPerks {
             // 注: accessor 方法运行期才注入到 CreeperEntity, 编译期需要强转
             (creeper as com.randomperks.mixin.CreeperChargedAccessor).setFuseTime(50)
             creeper.isGlowing = true     // 高亮: 隔着墙也能看到它
+            // 仇恨: 没有目标时 CreeperIgniteGoal 不会启动, 苦力怕就只会站着不动
+            creeper.setTarget(target)
             world.spawnEntity(creeper)
+        }
+
+        /** 目标脚下优先, 站不住时才在 SPAWN_RADIUS 内找 */
+        private fun findSpawnPos(
+            target: ServerPlayerEntity,
+            world: ServerWorld,
+        ): net.minecraft.util.math.BlockPos? {
+            fun standable(pos: net.minecraft.util.math.BlockPos): Boolean =
+                world.getBlockState(pos).isAir && world.getBlockState(pos.down()).isSolidBlock(world, pos.down())
+
+            val base = target.blockPos
+            if (standable(base)) return base
+
+            val random = world.random
+            for (i in 0 until 16) {
+                val dx = random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS
+                val dz = random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS
+                val top = world.getTopPosition(
+                    net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, base.add(dx, 0, dz),
+                )
+                if (standable(top)) return top
+            }
+            return null
         }
     }
 
