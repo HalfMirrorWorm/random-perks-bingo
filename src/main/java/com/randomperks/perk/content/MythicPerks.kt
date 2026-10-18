@@ -1,13 +1,23 @@
 package com.randomperks.perk.content
 
 import com.randomperks.game.CreativeFlashService
+import com.randomperks.game.PerkSession
+import com.randomperks.network.PerkNetworking
+import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
+import com.randomperks.state.PerkStateManager
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.registry.Registry
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import java.util.UUID
 
 /**
  * 神话品质词条 (全局唯一: 同时只能被一名玩家拥有)。
@@ -35,8 +45,80 @@ object MythicPerks {
         override fun icon() = ItemStack(Items.WITHER_ROSE)
     }
 
+    /** 神话 · 匠造 · 全局唯一: **大杂烩** —— 获得时弹出玩家选择器, 选中一名玩家后,
+     *  他背包里的**每一种物品各自随机变成另一种物品** (数量不变) */
+    object Hodgepodge : PerkDefinition {
+        override val id = "mythic_hodgepodge"
+        override val rarity = PerkRarity.MYTHIC
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.BUNDLE)
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val candidates = candidates(player)
+            if (candidates.isEmpty()) {
+                player.sendMessage(Text.translatable("random-perks-bingo.message.hodgepodge_no_target"), true)
+                return
+            }
+            PerkNetworking.sendActionTargets(
+                player,
+                "hodgepodge",
+                candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
+            )
+        }
+
+        /** 客户端在选择器里选中了一名玩家 → 把他背包里的每种物品各自换掉 */
+        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+            if (!PerkSession.isEnabled()) return
+
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (!state.hasPerk(id)) return
+
+            // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
+            val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            val registry = target.server?.registryManager?.getOrThrow(RegistryKeys.ITEM) ?: return
+
+            var changed = 0
+            val main = target.inventory.mainStacks
+            for (index in 0 until main.size) {
+                val stack = main.get(index)
+                if (stack.isEmpty) continue
+                val replacement = randomItem(registry, target.random) ?: continue
+                main.set(index, ItemStack(replacement, stack.count))
+                changed++
+            }
+
+            player.sendMessage(
+                Text.translatable("random-perks-bingo.message.hodgepodge_applied", target.name, changed),
+                false,
+            )
+            target.sendMessage(
+                Text.translatable("random-perks-bingo.message.hodgepodge_received"),
+                false,
+            )
+        }
+
+        /** 从物品注册表里随机挑一个非空气物品 (getRandom 有小概率给到 AIR, 重试几次) */
+        private fun randomItem(
+            registry: Registry<Item>,
+            random: net.minecraft.util.math.random.Random,
+        ): Item? {
+            repeat(16) {
+                val entry = registry.getRandom(random).orElse(null) ?: return null
+                val item = entry.value()
+                if (item != Items.AIR) return item
+            }
+            return null
+        }
+
+        /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
+        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
+            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+    }
+
     fun registerAll() {
         PerkRegistry.register(CreativeFlash)
         PerkRegistry.register(Doomsday)
+        PerkRegistry.register(Hodgepodge)
     }
 }
