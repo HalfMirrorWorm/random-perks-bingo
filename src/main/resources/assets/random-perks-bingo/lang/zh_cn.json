@@ -252,6 +252,8 @@
   "random-perks-bingo.perk.hunter_tnt_throw.desc": "手持 TNT 右键时改为抛射一枚点燃的 TNT, 而不是放置方块。",
   "random-perks-bingo.perk.hunter_bounty_hunter.name": "赏金猎人",
   "random-perks-bingo.perk.hunter_bounty_hunter.desc": "每击杀一种此前没杀过的敌对生物, 获得 3 个金锭。",
+  "random-perks-bingo.message.version_mismatch": "随机词条模组版本不一致!\n服务端: %s\n客户端: %s",
+  "random-perks-bingo.message.version_missing": "未检测到随机词条模组 —— 请安装与服务端相同版本的模组后再连接。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",

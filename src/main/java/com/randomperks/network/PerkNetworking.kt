@@ -2,6 +2,7 @@ package com.randomperks.network
 
 import com.randomperks.RandomPerksMod
 import com.randomperks.game.JockeyService
+import com.randomperks.game.ModVersionService
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkOfferService
 import com.randomperks.game.StealService
@@ -42,6 +43,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(ModVersionC2S.ID, ModVersionC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
 
@@ -116,6 +118,14 @@ object PerkNetworking {
                     "poisoner" -> ArtisanPerks.Poisoner.handleTargetPick(player, uuid)
                     "hodgepodge" -> MythicPerks.Hodgepodge.handleTargetPick(player, uuid)
                 }
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(ModVersionC2S.ID) { payload, context ->
+            val player = context.player()
+            val clientVersion = payload.version
+            context.server().execute {
+                ModVersionService.checkClientVersion(player, clientVersion)
             }
         }
 

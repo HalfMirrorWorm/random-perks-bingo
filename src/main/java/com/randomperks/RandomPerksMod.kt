@@ -6,6 +6,7 @@ import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.FireballService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.MagnetService
+import com.randomperks.game.ModVersionService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.WaypointService
@@ -80,6 +81,9 @@ object RandomPerksMod : ModInitializer {
         net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             PerkGrantService.syncAbilities(handler.player)
         }
+
+        // 客户端/服务端 mod 版本一致性校验 (不一致或客户端没装则断开)
+        ModVersionService.register()
 
         // 调试命令
         RandomPerksCommands.register()

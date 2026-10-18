@@ -4,6 +4,7 @@ import com.randomperks.client.BigSnowballState
 import com.randomperks.client.GlowMarkState
 import com.randomperks.client.JockeyClientState
 import com.randomperks.client.MorphClientState
+import com.randomperks.game.ModVersionService
 import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
@@ -26,6 +27,7 @@ import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.BigSnowballS2C
 import com.randomperks.network.JockeyControlC2S
 import com.randomperks.network.JockeyControlS2C
+import com.randomperks.network.ModVersionC2S
 import com.randomperks.network.MorphS2C
 import com.randomperks.network.StealOpenS2C
 import com.randomperks.network.StealPickC2S
@@ -36,6 +38,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.text.Text
 import java.util.UUID
@@ -145,6 +148,12 @@ object ClientPerkNetworking {
                 // "落地，水"救命的演出: 与图腾一致的上浮旋转动画, 物品换成水桶
                 context.client().gameRenderer.showFloatingItem(ItemStack(Items.WATER_BUCKET))
             }
+        }
+
+        // 加入服务器时上报 mod 版本 (服务端据此校验两端一致性)
+        ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
+            if (!ClientPlayNetworking.canSend(ModVersionC2S.ID)) return@register
+            ClientPlayNetworking.send(ModVersionC2S(ModVersionService.currentVersion()))
         }
 
         // "打雪仗": 某个投掷物是变大的雪球 (commandTag 不同步, 只能靠这个包)

@@ -252,6 +252,8 @@
   "random-perks-bingo.perk.hunter_tnt_throw.desc": "Right-clicking with TNT throws a lit TNT instead of placing a block.",
   "random-perks-bingo.perk.hunter_bounty_hunter.name": "Bounty Hunter",
   "random-perks-bingo.perk.hunter_bounty_hunter.desc": "Killing a hostile mob type for the first time grants 3 gold ingots.",
+  "random-perks-bingo.message.version_mismatch": "Random Perks mod version mismatch!\nServer: %s\nClient: %s",
+  "random-perks-bingo.message.version_missing": "Random Perks mod not detected — please install the same version as the server and reconnect.",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click while holding it to teleport back to your last death location (5 min cooldown, cross-dimension allowed).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
