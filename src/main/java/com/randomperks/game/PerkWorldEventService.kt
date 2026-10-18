@@ -9,10 +9,17 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
+import net.minecraft.block.Block
+import net.minecraft.block.BlockState
+import net.minecraft.block.CropBlock
+import net.minecraft.block.NetherWartBlock
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.passive.AbstractHorseEntity
+import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
@@ -24,6 +31,30 @@ object PerkWorldEventService {
 
     /** "逃跑计划"的状态效果持续时间: 10 秒 */
     private const val ESCAPE_PLAN_TICKS = 10 * 20
+
+    /** "拾穗"的额外掉落概率 */
+    private const val SEED_BONUS_CHANCE = 0.5f
+
+    /** "拾穗"可开出的种子池 */
+    private val SEED_POOL: List<Item> = listOf(
+        Items.WHEAT_SEEDS,
+        Items.BEETROOT_SEEDS,
+        Items.PUMPKIN_SEEDS,
+        Items.MELON_SEEDS,
+        Items.TORCHFLOWER_SEEDS,
+        Items.PITCHER_POD,
+        Items.NETHER_WART,
+        Items.CARROT,
+        Items.POTATO,
+    )
+
+    /** 是否是成熟作物 (小麦/胡萝卜/马铃薯/甜菜 + 下界疣) */
+    private fun isMatureCrop(state: BlockState): Boolean {
+        val block = state.block
+        if (block is CropBlock) return block.isMature(state)
+        if (block is NetherWartBlock) return state.get(NetherWartBlock.AGE) >= 3
+        return false
+    }
 
     fun register() {
         // 击杀生物
@@ -67,7 +98,17 @@ object PerkWorldEventService {
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
             if (player !is ServerPlayerEntity) return@register ActionResult.PASS
 
-            // "Jockey": 右键玩家 → 骑到他身上 (失败则交还原版处理)
+            // 收获成熟作物 → "拾穗": 50% 概率额外掉一个随机种子
+        PlayerBlockBreakEvents.AFTER.register { world, player, pos, state, _ ->
+            if (player !is ServerPlayerEntity) return@register
+            if (!PerkBoostQuery.hasGleaning(player)) return@register
+            if (!isMatureCrop(state)) return@register
+            if (player.random.nextFloat() >= SEED_BONUS_CHANCE) return@register
+
+            Block.dropStack(world, pos, ItemStack(SEED_POOL[player.random.nextInt(SEED_POOL.size)]))
+        }
+
+        // "Jockey": 右键玩家 → 骑到他身上 (失败则交还原版处理)
             if (entity is ServerPlayerEntity && PerkBoostQuery.hasJockey(player)) {
                 if (JockeyService.mount(player, entity)) return@register ActionResult.SUCCESS
             }

@@ -331,6 +331,14 @@ object HarvestPerks {
         }
     }
 
+    /** 蓝 · 丰饶: **拾穗** —— 收获成熟作物时, 50% 概率额外获得一个随机种子 */
+    object Gleaning : PerkDefinition {
+        override val id = "harvest_gleaning"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.WHEAT_SEEDS)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -347,5 +355,6 @@ object HarvestPerks {
         PerkRegistry.register(BigDog)
         PerkRegistry.register(Pokemon)
         PerkRegistry.register(Saplings)
+        PerkRegistry.register(Gleaning)
     }
 }

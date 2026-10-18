@@ -165,4 +165,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"磁力升级" */
     fun hasMagnetUpgrade(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("seeker_magnet_upgrade") == true
+
+    // ---- "拾穗" (蓝): 收获成熟作物时 50% 额外掉一个随机种子 (由 PerkWorldEventService 处理) ----
+
+    /** 玩家是否持有"拾穗" */
+    fun hasGleaning(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("harvest_gleaning") == true
 }
