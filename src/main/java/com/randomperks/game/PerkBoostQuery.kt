@@ -159,4 +159,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"宝可梦" */
     fun hasPokemon(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_pokemon") == true
+
+    // ---- "磁力升级" (蓝): 拾取范围 5 格 (由 MagnetService 定期扫描) ----
+
+    /** 玩家是否持有"磁力升级" */
+    fun hasMagnetUpgrade(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("seeker_magnet_upgrade") == true
 }

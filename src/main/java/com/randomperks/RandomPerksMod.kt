@@ -5,6 +5,7 @@ import com.randomperks.config.PerkConfig
 import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.FireballService
 import com.randomperks.game.LayFlatService
+import com.randomperks.game.MagnetService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.WaypointService
@@ -64,6 +65,9 @@ object RandomPerksMod : ModInitializer {
 
         // "开摆" 的五分钟诅咒与结算
         LayFlatService.register()
+
+        // "磁力升级" 的 5 格拾取扫描
+        MagnetService.register()
 
         // 世界事件 (击杀 / 破坏方块) → 词条
         PerkWorldEventService.register()

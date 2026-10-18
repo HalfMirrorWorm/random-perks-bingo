@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **81** 条词条：蓝 34 / 紫 32 / 金 12 / 神话 3。
+共 **82** 条词条：蓝 35 / 紫 32 / 金 12 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -99,6 +99,7 @@
 | `seeker_puny` | !?区区!? | Puny!? | 蓝 |
 | `seeker_random_ground` | 随机地基 | Random Ground | 蓝 |
 | `seeker_lay_flat` | 开摆 | Lay Flat | 紫 |
+| `seeker_magnet_upgrade` | 磁力升级 | Magnet Upgrade | 蓝 |
 | `seeker_scout` | 观鸟 | Birdwatcher | 紫 |
 | `seeker_ender_supply` | 末影补给 | Ender Supply | 紫 |
 | `seeker_ender_cache` | 末影仓库 | Ender Cache | 紫 |
