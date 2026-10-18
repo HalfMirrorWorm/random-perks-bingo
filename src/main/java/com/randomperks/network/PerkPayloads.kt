@@ -365,6 +365,19 @@ class JockeyControlS2C(
     override fun getId() = ID
 }
 
+/** S2C: 通知客户端某个投掷物是"大雪球" (渲染时放大) */
+class BigSnowballS2C(val entityId: Int) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<BigSnowballS2C>(Identifier.of("random-perks-bingo", "big_snowball"))
+        val CODEC: PacketCodec<RegistryByteBuf, BigSnowballS2C> = PacketCodec.of(
+            { value, buf -> buf.writeVarInt(value.entityId) },
+            { buf -> BigSnowballS2C(buf.readVarInt()) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** S2C: 通知客户端某个实体进入"变猪"状态 (外观与尺寸伪装全部由客户端完成) */
 class MorphS2C(
     val entityId: Int,

@@ -798,6 +798,21 @@ object HunterPerks {
         override fun icon() = ItemStack(Items.PIG_SPAWN_EGG)
     }
 
+    /** 蓝 · 猎杀: **打雪仗** —— 获得 32 个雪球; 你扔出的雪球会变大, 命中造成 3 点伤害并击飞目标 */
+    object BigSnowball : PerkDefinition {
+        override val id = "hunter_big_snowball"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.SNOWBALL)
+
+        /** 发放的雪球数量 */
+        private const val COUNT = 32
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.SNOWBALL, COUNT))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -818,5 +833,6 @@ object HunterPerks {
         PerkRegistry.register(HomingBow)
         PerkRegistry.register(Jockey)
         PerkRegistry.register(PigMorph)
+        PerkRegistry.register(BigSnowball)
     }
 }

@@ -210,6 +210,8 @@
   "random-perks-bingo.perk.hunter_jockey.desc": "Right-click any player to climb onto them and take over their movement and view (press Shift to get off); while riding, damage from them is reduced by 75%.",
   "random-perks-bingo.perk.hunter_pig_morph.name": "Groupmate",
   "random-perks-bingo.perk.hunter_pig_morph.desc": "Your attacks turn the target into a pig for 2 seconds (8 second cooldown); a morphed player's pig head shows their own skin, and their view height drops to a pig's.",
+  "random-perks-bingo.perk.hunter_big_snowball.name": "Snowball Fight",
+  "random-perks-bingo.perk.hunter_big_snowball.desc": "Gain 32 snowballs; the ones you throw are bigger, deal 3 damage on hit, and knock the target flying.",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click while holding it to teleport back to your last death location (5 min cooldown, cross-dimension allowed).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",

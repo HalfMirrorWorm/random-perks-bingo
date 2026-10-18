@@ -1,5 +1,6 @@
 package com.randomperks.client.net
 
+import com.randomperks.client.BigSnowballState
 import com.randomperks.client.GlowMarkState
 import com.randomperks.client.JockeyClientState
 import com.randomperks.client.MorphClientState
@@ -22,6 +23,7 @@ import com.randomperks.network.PerkPickC2S
 import com.randomperks.network.PerkRequestC2S
 import com.randomperks.network.ActionTargetPickC2S
 import com.randomperks.network.ActionTargetsS2C
+import com.randomperks.network.BigSnowballS2C
 import com.randomperks.network.JockeyControlC2S
 import com.randomperks.network.JockeyControlS2C
 import com.randomperks.network.MorphS2C
@@ -144,6 +146,13 @@ object ClientPerkNetworking {
             }
         }
 
+        // "打雪仗": 某个投掷物是变大的雪球 (commandTag 不同步, 只能靠这个包)
+        ClientPlayNetworking.registerGlobalReceiver(BigSnowballS2C.ID) { payload, context ->
+            context.client().execute {
+                BigSnowballState.accept(payload.entityId)
+            }
+        }
+
         // "变群友": 某个实体进入变猪状态 (渲染与尺寸伪装全在客户端)
         ClientPlayNetworking.registerGlobalReceiver(MorphS2C.ID) { payload, context ->
             context.client().execute {
@@ -224,5 +233,6 @@ object ClientPerkNetworking {
         currentOptions = null
         JockeyClientState.clear()
         MorphClientState.clear()
+        BigSnowballState.clear()
     }
 }

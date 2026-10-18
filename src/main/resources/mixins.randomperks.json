@@ -28,7 +28,8 @@
     "CatFleeMixin",
     "DoomsdayMixin",
     "CreeperChargedAccessor",
-    "HomingArrowMixin"
+    "HomingArrowMixin",
+    "BigSnowballMixin"
   ],
   "client": [
     "EntityGlowMixin",
@@ -40,7 +41,9 @@
     "MorphEyeHeightMixin",
     "MorphRenderStateMixin",
     "RenderDispatcherAccessor",
-    "RendererContextMixin"
+    "RendererContextMixin",
+    "BigSnowballRendererMixin",
+    "BigSnowballRenderStateMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -210,6 +210,8 @@
   "random-perks-bingo.perk.hunter_jockey.desc": "右键任意玩家即可骑到他身上, 接管他的移动与视角 (按 Shift 下来); 骑乘期间受到来自他的伤害降低 75%。",
   "random-perks-bingo.perk.hunter_pig_morph.name": "变群友",
   "random-perks-bingo.perk.hunter_pig_morph.desc": "你的攻击会把目标变成猪 2 秒 (冷却 8 秒); 被变成猪的玩家, 猪头会换成他自己的皮肤, 视角高度也会变成猪的高度。",
+  "random-perks-bingo.perk.hunter_big_snowball.name": "打雪仗",
+  "random-perks-bingo.perk.hunter_big_snowball.desc": "获得 32 个雪球; 你扔出的雪球会变大, 命中造成 3 点伤害并击飞目标。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",

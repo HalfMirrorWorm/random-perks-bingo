@@ -42,6 +42,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -187,6 +188,12 @@ object PerkNetworking {
     fun sendGlowMark(player: ServerPlayerEntity, entityIds: List<Int>, durationMillis: Long) {
         if (!ServerPlayNetworking.canSend(player, GlowMarkS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, GlowMarkS2C(entityIds, durationMillis)) }
+    }
+
+    /** 通知客户端某个投掷物是"大雪球" (commandTag 不同步给客户端, 所以只能单独发) */
+    fun sendBigSnowball(player: ServerPlayerEntity, payload: BigSnowballS2C) {
+        if (!ServerPlayNetworking.canSend(player, BigSnowballS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, payload) }
     }
 
     /** 通知客户端某个实体进入"变猪"状态 ("变群友") */
