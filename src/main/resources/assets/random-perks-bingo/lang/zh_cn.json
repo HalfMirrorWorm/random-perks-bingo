@@ -229,6 +229,8 @@
   "random-perks-bingo.perk.seeker_random_ground.desc": "获得时, 把你脚下 3×3 的地面各替换成一块随机方块。",
   "random-perks-bingo.perk.swift_escape_plan.name": "逃跑计划",
   "random-perks-bingo.perk.swift_escape_plan.desc": "受到生物伤害后, 自动获得速度 II 与抗性提升 I, 持续 10 秒。",
+  "random-perks-bingo.perk.hunter_satiation_strike.name": "良子冲击",
+  "random-perks-bingo.perk.hunter_satiation_strike.desc": "饱食度满 (饥饿值满) 时, 你造成的伤害增加 50%。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",

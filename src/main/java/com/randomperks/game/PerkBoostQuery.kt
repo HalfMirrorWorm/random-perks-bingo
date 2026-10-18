@@ -147,4 +147,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"逃跑计划" */
     fun hasEscapePlan(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("swift_escape_plan") == true
+
+    // ---- "良子冲击" (紫): 饱食度满时造成伤害 +50% (由 LivingEntityDamageMixin 调用) ----
+
+    /** 玩家是否持有"良子冲击" */
+    fun hasSatiationStrike(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_satiation_strike") == true
 }

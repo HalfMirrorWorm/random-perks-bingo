@@ -37,6 +37,13 @@ public class LivingEntityDamageMixin {
             amount *= 2.0f;
         }
 
+        // "良子冲击": 饱食度满 (饥饿值 20) 时造成伤害 +50%
+        if (attacker instanceof ServerPlayerEntity attackerPlayer
+                && PerkBoostQuery.INSTANCE.hasSatiationStrike(attackerPlayer)
+                && attackerPlayer.getHungerManager().getFoodLevel() >= 20) {
+            amount *= 1.5f;
+        }
+
         if (!((Object) this instanceof ServerPlayerEntity player)) return amount;
 
         // "贪婪之手": 受到其他生物 (非玩家) 的 2 倍伤害

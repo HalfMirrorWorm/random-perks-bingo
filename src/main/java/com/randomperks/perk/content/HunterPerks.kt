@@ -852,6 +852,15 @@ object HunterPerks {
         }
     }
 
+    /** 紫 · 猎杀: **良子冲击** —— 饱食度满 (饥饿值 20) 时, 你造成的伤害 +50%。
+     *  (结算在 LivingEntityDamageMixin, 与"恶魔契约"等按乘法叠加) */
+    object SatiationStrike : PerkDefinition {
+        override val id = "hunter_satiation_strike"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.COOKED_BEEF)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -875,5 +884,6 @@ object HunterPerks {
         PerkRegistry.register(BigSnowball)
         PerkRegistry.register(DemonPact)
         PerkRegistry.register(PearlGauntlet)
+        PerkRegistry.register(SatiationStrike)
     }
 }
