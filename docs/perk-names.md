@@ -83,7 +83,7 @@
 |---|---|---|---|
 | `seeker_wandering_trader` | 流浪拴绳 | Wandering Leash | 蓝 |
 | `seeker_supply_line` | 补给线 | Supply Line | 蓝 |
-| `seeker_scout` | 侦察兵 | Scout | 紫 |
+| `seeker_scout` | 观鸟 | Birdwatcher | 紫 |
 | `seeker_ender_supply` | 末影补给 | Ender Supply | 紫 |
 | `seeker_ender_cache` | 末影仓库 | Ender Cache | 紫 |
 | `seeker_alchemist` | 药剂师 | Alchemist | 紫 |
