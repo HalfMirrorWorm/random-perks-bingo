@@ -902,13 +902,20 @@ object HunterPerks {
         override fun icon() = ItemStack(Items.COOKED_BEEF)
     }
 
-    /** 紫 · 猎杀: **TNT 投手** —— 手持 TNT 右键时改为抛射一枚点燃的 TNT (而非放置方块)。
-     *  实现见 TntThrowService。 */
+    /** 紫 · 猎杀: **TNT 投手** —— 获得 4 个 TNT; 手持 TNT 右键时改为抛射一枚点燃的 TNT
+     *  (而非放置方块)。实现见 TntThrowService。 */
     object TntThrow : PerkDefinition {
         override val id = "hunter_tnt_throw"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.TNT)
+
+        /** 获得时附赠的 TNT 数量 */
+        private const val STARTING_TNT = 4
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.TNT, STARTING_TNT))
+        }
     }
 
     /** 蓝 · 猎杀: **赏金猎人** —— 每击杀一种**此前没杀过**的敌对生物, 获得 3 个金锭 */
