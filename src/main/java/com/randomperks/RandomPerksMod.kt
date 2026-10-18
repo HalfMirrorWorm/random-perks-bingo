@@ -4,6 +4,7 @@ import com.randomperks.command.RandomPerksCommands
 import com.randomperks.config.PerkConfig
 import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.FireballService
+import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.WaypointService
@@ -60,6 +61,9 @@ object RandomPerksMod : ModInitializer {
 
         // "!?区区!?" 的蠹虫骚扰调度
         VerminSwarmService.register()
+
+        // "开摆" 的五分钟诅咒与结算
+        LayFlatService.register()
 
         // 世界事件 (击杀 / 破坏方块) → 词条
         PerkWorldEventService.register()

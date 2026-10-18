@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
+import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.StealService
 import com.randomperks.game.VerminSwarmService
@@ -537,6 +538,17 @@ object SeekerPerks {
         }
     }
 
+    /** 紫 · 秘藏: **开摆** —— 获得时被失明 + 缓慢 IV 折磨 5 分钟;
+     *  熬过去拿到自然罗盘 + 结构罗盘, 中途死掉则只拿到 1 把石斧 (LayFlatService 实现) */
+    object LayFlat : PerkDefinition {
+        override val id = "seeker_lay_flat"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.RECOVERY_COMPASS)
+
+        override fun onAcquire(ctx: PerkContext) = LayFlatService.start(ctx.player)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
@@ -549,5 +561,6 @@ object SeekerPerks {
         PerkRegistry.register(VillageCompass)
         PerkRegistry.register(Puny)
         PerkRegistry.register(RandomGround)
+        PerkRegistry.register(LayFlat)
     }
 }
