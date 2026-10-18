@@ -25,6 +25,7 @@
     "BigStomachMixin",
     "OldSchoolCombatMixin",
     "CatTargetMixin",
+    "MobTargetSelectorAccessor",
     "CatFleeMixin",
     "DoomsdayMixin",
     "CreeperChargedAccessor",

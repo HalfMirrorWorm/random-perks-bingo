@@ -69,6 +69,12 @@ dependencies {
 loom {
     splitEnvironmentSourceSets()
 
+    // 必须显式指定: 否则 mixin 注解处理器不生成 refmap, 运行期 @Shadow/@Inject 里的
+    // yarn 名 (如 targetSelector / field_6185) 无法映射到 intermediary, 直接崩在 APPLY 阶段
+    mixin {
+        defaultRefmapName = "random-perks-bingo-refmap.json"
+    }
+
     mods {
         "random-perks-bingo" {
             sourceSet sourceSets.main
