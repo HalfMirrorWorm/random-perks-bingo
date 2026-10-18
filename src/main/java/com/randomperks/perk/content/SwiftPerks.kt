@@ -253,7 +253,17 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
     }
 
+    /** 蓝 · 迅捷: **逃跑计划** —— 受到生物伤害后, 自动获得速度 II 与抗性提升 I, 持续 10 秒。
+     *  (触发逻辑在 PerkWorldEventService 的 ServerLivingEntityEvents.AFTER_DAMAGE) */
+    object EscapePlan : PerkDefinition {
+        override val id = "swift_escape_plan"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.RABBIT_FOOT)
+    }
+
     fun registerAll() {
+        com.randomperks.perk.PerkRegistry.register(EscapePlan)
         com.randomperks.perk.PerkRegistry.register(Speed)
         com.randomperks.perk.PerkRegistry.register(FeatherFall)
         com.randomperks.perk.PerkRegistry.register(Jump)

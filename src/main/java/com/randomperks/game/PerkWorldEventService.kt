@@ -10,6 +10,8 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.passive.AbstractHorseEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.ActionResult
@@ -19,6 +21,9 @@ import net.minecraft.util.Hand
  * 把世界事件 (击杀 / 破坏方块 / 装备变化 / 实体交互) 分发给玩家已获得的词条。
  */
 object PerkWorldEventService {
+
+    /** "逃跑计划"的状态效果持续时间: 10 秒 */
+    private const val ESCAPE_PLAN_TICKS = 10 * 20
 
     fun register() {
         // 击杀生物
@@ -31,6 +36,19 @@ object PerkWorldEventService {
         PlayerBlockBreakEvents.AFTER.register { _, player, pos, state, _ ->
             if (player !is ServerPlayerEntity) return@register
             dispatch(player) { ctx, perk -> perk.onBlockBreak(ctx, pos, state) }
+        }
+
+        // 受伤后 → "逃跑计划": 挨了生物一下就给速度 II + 抗性 I
+        ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
+            if (damageTaken <= 0.0f) return@register
+            // 注意: Kotlin 的 `!is` 不能像 `is` 那样在条件里声明新变量, 所以用 as?
+            val player = entity as? ServerPlayerEntity ?: return@register
+            // "生物伤害" = 有生物作为攻击者 (含玩家); 摔落/岩浆这类没有攻击者的不触发
+            if (source.getAttacker() !is LivingEntity) return@register
+            if (!PerkBoostQuery.hasEscapePlan(player)) return@register
+
+            player.addStatusEffect(StatusEffectInstance(StatusEffects.SPEED, ESCAPE_PLAN_TICKS, 1))
+            player.addStatusEffect(StatusEffectInstance(StatusEffects.RESISTANCE, ESCAPE_PLAN_TICKS, 0))
         }
 
         // 攻击命中 → "变群友": 把目标变成猪 (内部自带词条校验与冷却)

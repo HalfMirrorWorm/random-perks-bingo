@@ -141,4 +141,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"珠光护手" */
     fun hasPearlGauntlet(player: PlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_pearl_gauntlet") == true
+
+    // ---- "逃跑计划" (蓝): 受到生物伤害后获得速度 II + 抗性 I (由 PerkWorldEventService 处理) ----
+
+    /** 玩家是否持有"逃跑计划" */
+    fun hasEscapePlan(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("swift_escape_plan") == true
 }

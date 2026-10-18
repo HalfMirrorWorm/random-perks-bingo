@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **77** 条词条：蓝 33 / 紫 30 / 金 11 / 神话 3。
+共 **78** 条词条：蓝 34 / 紫 30 / 金 11 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -109,6 +109,7 @@
 | id | 中文名 | 英文名 | 稀有度 |
 |---|---|---|---|
 | `swift_speed` | 轻装疾行 | Light Feet | 蓝 |
+| `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_jump` | 弹簧腿 | Spring Legs | 蓝 |
 | `swift_feather_fall` | 柔软鞋底 | Soft Soles | 蓝 |
 | `swift_tailwind` | 顺风而行 | Tailwind | 紫 |
