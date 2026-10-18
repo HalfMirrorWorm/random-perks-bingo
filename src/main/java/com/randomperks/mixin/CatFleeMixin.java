@@ -19,8 +19,11 @@ import java.util.function.Predicate;
 @Mixin(targets = "net.minecraft.entity.passive.CatEntity$CatFleeGoal")
 public class CatFleeMixin {
 
+    // 必须 static: @At("HEAD") 在构造器的 super() 之前, 此时 this 还没初始化,
+    // Mixin 不允许非静态 handler 在这个位置访问实例 (会报
+    // "handler before super() invocation must be static")
     @ModifyVariable(method = "<init>", at = @At("HEAD"), argsOnly = true)
-    private Predicate<LivingEntity> randomperks$ignoreOldWu(Predicate<LivingEntity> original) {
+    private static Predicate<LivingEntity> randomperks$ignoreOldWu(Predicate<LivingEntity> original) {
         return original.and(entity ->
             !(entity instanceof ServerPlayerEntity player && PerkBoostQuery.INSTANCE.hasYowl(player))
         );
