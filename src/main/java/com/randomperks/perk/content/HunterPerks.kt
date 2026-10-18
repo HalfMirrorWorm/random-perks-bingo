@@ -715,6 +715,9 @@ object HunterPerks {
             )
             // 闪电苦力怕 (爆炸强度翻倍) —— 直接写 TrackedData, 不用闪电实体 (避免额外伤害/点燃)
             creeper.dataTracker.set(com.randomperks.mixin.CreeperChargedAccessor.getChargedTracker(), true)
+            // 引信 2.5 秒 (原版默认 30 tick = 1.5 秒), 给目标留出反应时间
+            // 注: accessor 方法运行期才注入到 CreeperEntity, 编译期需要强转
+            (creeper as com.randomperks.mixin.CreeperChargedAccessor).setFuseTime(50)
             creeper.isGlowing = true     // 高亮: 隔着墙也能看到它
             world.spawnEntity(creeper)
         }
