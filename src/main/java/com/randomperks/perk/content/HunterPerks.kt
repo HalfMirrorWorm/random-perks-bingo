@@ -592,7 +592,7 @@ object HunterPerks {
         // 效果由 OldSchoolCombatMixin 在 PlayerEntity.getAttackCooldownProgress 实现
     }
 
-    /** 蓝 · 猎杀: **不倒翁** —— 受到的击退效果降低 50% */
+    /** 蓝 · 猎杀: **不倒翁** —— 受到的击退效果降低 80% */
     object RolyPoly : PerkDefinition {
         override val id = "hunter_roly_poly"
         override val rarity = PerkRarity.BLUE
@@ -604,11 +604,11 @@ object HunterPerks {
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
 
-        /** 原版击退抗性属性 (0 ~ 1), +0.5 即击退距离减半 */
+        /** 原版击退抗性属性 (0 ~ 1), +0.8 即击退距离只剩 20% */
         private fun apply(ctx: PerkContext) =
             PerkEffects.setAttribute(
                 ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK,
-                0.5, EntityAttributeModifier.Operation.ADD_VALUE,
+                0.8, EntityAttributeModifier.Operation.ADD_VALUE,
             )
 
         override fun onRemove(ctx: PerkContext) =
