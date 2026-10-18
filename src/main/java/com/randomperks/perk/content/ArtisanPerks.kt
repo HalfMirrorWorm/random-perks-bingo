@@ -282,6 +282,21 @@ object ArtisanPerks {
         }
     }
 
+    /** 蓝 · 匠造: **千锤百炼** —— 获得一个损坏的铁砧 (放置后还能用 1 次)、熔炉、切石机 */
+    object Tempering : PerkDefinition {
+        override val id = "artisan_tempering"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.DAMAGED_ANVIL)
+
+        override fun onAcquire(ctx: PerkContext) {
+            // DAMAGED_ANVIL 是铁砧的第三阶段: 放置后再用一次就会碎裂
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.DAMAGED_ANVIL))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.FURNACE))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.STONECUTTER))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -293,5 +308,6 @@ object ArtisanPerks {
         PerkRegistry.register(Poisoner)
         PerkRegistry.register(TreasureChest)
         PerkRegistry.register(ShulkerBox)
+        PerkRegistry.register(Tempering)
     }
 }

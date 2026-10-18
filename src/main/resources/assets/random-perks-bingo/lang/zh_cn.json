@@ -242,6 +242,8 @@
   "random-perks-bingo.perk.harvest_saplings.desc": "获得 5 个随机树苗。",
   "random-perks-bingo.perk.artisan_shulker_box.name": "随身仓库",
   "random-perks-bingo.perk.artisan_shulker_box.desc": "获得一个潜影盒 (27 格随身存储)。",
+  "random-perks-bingo.perk.artisan_tempering.name": "千锤百炼",
+  "random-perks-bingo.perk.artisan_tempering.desc": "获得一个损坏的铁砧 (还能用 1 次)、一个熔炉和一台切石机。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",
