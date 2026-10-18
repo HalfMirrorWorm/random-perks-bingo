@@ -126,16 +126,32 @@ public class PigMorphRenderer extends EntityRenderer<Entity, PigEntityRenderStat
         this.model.render(matrices, pigBuffer, light, OverlayTexture.DEFAULT_UV);
         this.pigHead.visible = true;
 
-        // 玩家头 (跟猪头同一个位置, 朝向跟随身体)
+        // 玩家头: 必须套用**猪头**的轴心与朝向。
+        // 直接在当前矩阵下 render 的话, 玩家的 head 部件会停在玩家模型的头部高度
+        // (局部 y ∈ [-8, 0] → 脚上方 1.0~1.5 格), 也就是"头悬在猪身上面"。
         if (skin != null) {
             ModelPart head = this.headModel.head;
-            head.pitch = state.pitch * 0.017453292f;
-            head.yaw = state.relativeHeadYaw * 0.017453292f;
+            // 朝向由 pigHead.applyTransform 提供, 这里清零, 否则会旋转两次
+            head.pitch = 0.0f;
+            head.yaw = 0.0f;
+            head.roll = 0.0f;
+
+            matrices.push();
+            // 移到猪头轴心 + 套用猪头旋转 (ModelPart.render 内部自己也会做, 但这里是显式对齐)
+            this.pigHead.applyTransform(matrices);
+            // 猪头立方体相对轴心是 y ∈ [-4, 4] (中心 0); 玩家头立方体是 y ∈ [-8, 0] (中心 -4)。
+            // 下移 4 模型单位 = 0.25 格, 两者的中心就重合了。
+            matrices.translate(0.0f, 0.25f, 0.0f);
+
             VertexConsumer headBuffer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(skin.texture()));
             head.render(matrices, headBuffer, light, OverlayTexture.DEFAULT_UV);
+            matrices.pop();
         }
 
         matrices.pop();
+
+        // 基类 render 只负责拴绳, 保留原版行为
+        super.render(state, matrices, vertexConsumers, light);
     }
 
     /** 猪的纹理 —— 直接问原版猪渲染器要 (它按 state.variant 取, 省得自己拼路径) */
