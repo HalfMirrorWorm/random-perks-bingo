@@ -174,7 +174,7 @@
   "random-perks-bingo.perk.hunter_nya_axe.name": "喵人斧",
   "random-perks-bingo.perk.hunter_nya_axe.desc": "获得一把秒人斧: 金斧 + 锋利 1145 + 耐久 1 —— 这一击足以带走几乎任何生物 (含玩家), 但砍一次斧头就坏, 且无法用铁砧修复。",
   "random-perks-bingo.perk.hunter_veteran.name": "老玩家",
-  "random-perks-bingo.perk.hunter_veteran.desc": "手持剑时攻击冷却始终视为已蓄满 —— 连点即可打出满伤害 (1.9 战斗更新前的手感)。",
+  "random-perks-bingo.perk.hunter_veteran.desc": "手持剑时攻击冷却始终视为已蓄满, 且没有横扫攻击 —— 完全 1.9 战斗更新前的手感。",
   "random-perks-bingo.perk.hunter_roly_poly.name": "不倒翁",
   "random-perks-bingo.perk.hunter_roly_poly.desc": "受到的击退效果降低 80%。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",

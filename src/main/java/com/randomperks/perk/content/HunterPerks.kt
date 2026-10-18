@@ -594,13 +594,29 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: **老玩家** —— 手持剑时攻击冷却始终视为已蓄满, 连点即满伤害 (1.9 战斗更新前的手感) */
+    /** 紫 · 猎杀: **老玩家** —— 完全 1.9 战斗更新前的手感:
+     *  1) 手持剑时攻击冷却始终视为已蓄满 (由 OldSchoolCombatMixin 实现)
+     *  2) **没有横扫攻击** (1.9 新增的机制; 把 SWEEPING_DAMAGE_RATIO 压到 0) */
     object Veteran : PerkDefinition {
         override val id = "hunter_veteran"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.IRON_SWORD)
-        // 效果由 OldSchoolCombatMixin 在 PlayerEntity.getAttackCooldownProgress 实现
+
+        private val MOD_SWEEP = Identifier.of("random-perks-bingo", "veteran_no_sweep")
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        /** 横扫伤害比例默认 1.0, -1.0 后为 0 (只影响剑的横扫, 对单体攻击无影响) */
+        private fun apply(ctx: PerkContext) =
+            PerkEffects.setAttribute(
+                ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP,
+                -1.0, EntityAttributeModifier.Operation.ADD_VALUE,
+            )
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
     }
 
     /** 蓝 · 猎杀: **不倒翁** —— 受到的击退效果降低 80% */
