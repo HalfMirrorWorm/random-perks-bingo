@@ -1,6 +1,7 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
@@ -9,18 +10,28 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 
 /**
- * "传送时钟"词条的右键逻辑:
- * - 首次右键: 设置传送点 (记录维度与坐标)
- * - 之后右键: 传送回传送点 (10 分钟冷却)
+ * "传送时钟"词条的右键逻辑: 传送到**上次死亡地点** (5 分钟冷却)。
+ *
+ * 死亡地点在 ServerLivingEntityEvents.AFTER_DEATH 里自动记录 —— 只记录持有词条的玩家;
+ * 之后再死一次会覆盖旧记录。跨维度也可以传送 (否则死在下界/末地就废了)。
  */
 object WaypointService {
 
     private const val PERK_ID = "artisan_waypoint_clock"
-    private const val POINT_KEY = "waypoint_clock_point"
+    private const val DEATH_POINT_KEY = "waypoint_death_point"
     private const val COOLDOWN_KEY = "waypoint_clock_cooldown"
-    private const val COOLDOWN_TICKS = 10 * 60 * 20L
+    private const val COOLDOWN_TICKS = 5 * 60 * 20L
 
     fun register() {
+        // 记录"上次死亡地点" (只记录持有词条的玩家)
+        ServerLivingEntityEvents.AFTER_DEATH.register { entity, _ ->
+            if (entity !is ServerPlayerEntity) return@register
+            val state = PerkStateManager.get(entity.uuid) ?: return@register
+            if (!state.hasPerk(PERK_ID)) return@register
+            val worldId = entity.world.registryKey.value.toString()
+            state.memory[DEATH_POINT_KEY] = "$worldId|${entity.x}|${entity.y}|${entity.z}"
+        }
+
         UseItemCallback.EVENT.register { player, _, hand ->
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
             if (player !is ServerPlayerEntity) return@register ActionResult.PASS
@@ -36,13 +47,10 @@ object WaypointService {
 
         val server = player.server ?: return false
         val now = server.ticks.toLong()
-        val point = state.memory[POINT_KEY]
 
-        // 尚未设置 → 设置传送点 (设置后不可重设)
+        val point = state.memory[DEATH_POINT_KEY]
         if (point == null) {
-            val worldId = player.world.registryKey.value.toString()
-            state.memory[POINT_KEY] = "$worldId|${player.x}|${player.y}|${player.z}"
-            player.sendMessage(Text.translatable("random-perks-bingo.message.waypoint_set"), true)
+            player.sendMessage(Text.translatable("random-perks-bingo.message.waypoint_no_death"), true)
             return true
         }
 
@@ -57,10 +65,10 @@ object WaypointService {
             return true
         }
 
-        // 解析传送点
+        // 解析死亡点
         val parts = point.split("|")
         if (parts.size != 4) {
-            state.memory.remove(POINT_KEY)
+            state.memory.remove(DEATH_POINT_KEY)
             return true
         }
         val worldId = parts[0]
@@ -74,13 +82,7 @@ object WaypointService {
             return true
         }
 
-        // 仅限同维度传送 (跨维度坐标无意义); 距离**不设上限**
-        if (targetWorld !== player.world) {
-            player.sendMessage(Text.translatable("random-perks-bingo.message.waypoint_cross_world"), true)
-            return true
-        }
-
-        // 传送 (保留视角)
+        // 传送 (保留视角; 跨维度同样允许)
         player.teleport(targetWorld, x, y, z, emptySet(), player.yaw, player.pitch, false)
         state.cooldowns[COOLDOWN_KEY] = now + COOLDOWN_TICKS
         player.sendMessage(Text.translatable("random-perks-bingo.message.waypoint_teleport"), true)
