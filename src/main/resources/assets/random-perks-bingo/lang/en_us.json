@@ -168,6 +168,8 @@
   "random-perks-bingo.perk.artisan_enchanter.desc": "Gain a random useful enchanted book, then another every 5 minutes.",
   "random-perks-bingo.perk.artisan_poisoner.name": "Breaking Bad",
   "random-perks-bingo.perk.artisan_poisoner.desc": "When acquired, a target picker opens: choose a player and inflict a random debuff for 30 seconds (Slowness / Mining Fatigue / Nausea / Blindness / Hunger / Weakness / Poison / Wither / Levitation / Darkness / Bad Luck).",
+  "random-perks-bingo.perk.artisan_treasure_chest.name": "Treasure Chest",
+  "random-perks-bingo.perk.artisan_treasure_chest.desc": "Open 1~5 random pieces of armor or tools (up to diamond tier, unenchanted).",
 
   "random-perks-bingo.perk.seeker_scout.name": "Birdwatcher",
   "random-perks-bingo.perk.seeker_scout.desc": "Gain a spyglass (the mob or player you aim at is highlighted for 1 minute, visible to your team), a compass and a treasure map.",

@@ -15,6 +15,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
@@ -233,6 +234,42 @@ object ArtisanPerks {
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
+    /** 紫 · 匠造: **百宝箱** —— 随机开出 **1~5 件**盔甲或工具 (材质上限钻石, 白板不附魔) */
+    object TreasureChest : PerkDefinition {
+        override val id = "artisan_treasure_chest"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.CHEST)
+
+        /** 最少 / 最多开出的件数 */
+        private const val MIN_COUNT = 1
+        private const val MAX_COUNT = 5
+
+        /** 可开出的装备池: 盔甲 (皮革→钻石) + 工具 (木→钻石) */
+        private val POOL: List<Item> = listOf(
+            // 盔甲
+            Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS,
+            Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS,
+            Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS,
+            Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS,
+            Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS,
+            // 工具
+            Items.WOODEN_SWORD, Items.WOODEN_PICKAXE, Items.WOODEN_AXE, Items.WOODEN_SHOVEL, Items.WOODEN_HOE,
+            Items.STONE_SWORD, Items.STONE_PICKAXE, Items.STONE_AXE, Items.STONE_SHOVEL, Items.STONE_HOE,
+            Items.IRON_SWORD, Items.IRON_PICKAXE, Items.IRON_AXE, Items.IRON_SHOVEL, Items.IRON_HOE,
+            Items.GOLDEN_SWORD, Items.GOLDEN_PICKAXE, Items.GOLDEN_AXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_HOE,
+            Items.DIAMOND_SWORD, Items.DIAMOND_PICKAXE, Items.DIAMOND_AXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_HOE,
+        )
+
+        override fun onAcquire(ctx: PerkContext) {
+            val random = ctx.player.random
+            val count = MIN_COUNT + random.nextInt(MAX_COUNT - MIN_COUNT + 1)
+            repeat(count) {
+                PerkEffects.giveStack(ctx.player, ItemStack(POOL[random.nextInt(POOL.size)]))
+            }
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -242,5 +279,6 @@ object ArtisanPerks {
         PerkRegistry.register(LongArms)
         PerkRegistry.register(FireTemper)
         PerkRegistry.register(Poisoner)
+        PerkRegistry.register(TreasureChest)
     }
 }

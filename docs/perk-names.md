@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **74** 条词条：蓝 32 / 紫 28 / 金 11 / 神话 3。
+共 **75** 条词条：蓝 32 / 紫 29 / 金 11 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -26,6 +26,7 @@
 | `artisan_fire_temper` | 火炼 | Smelting | 蓝 |
 | `artisan_long_arms` | 手长 | Long Arms | 紫 |
 | `artisan_poisoner` | 绝命毒师 | Breaking Bad | 紫 |
+| `artisan_treasure_chest` | 百宝箱 | Treasure Chest | 紫 |
 | `artisan_waypoint_clock` | 传送时钟 | Waypoint Clock | 金 |
 
 ## 深掘 DELVER

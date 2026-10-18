@@ -168,6 +168,8 @@
   "random-perks-bingo.perk.artisan_enchanter.desc": "立即获得一本随机实用附魔书, 之后每 5 分钟再获得一本。",
   "random-perks-bingo.perk.artisan_poisoner.name": "绝命毒师",
   "random-perks-bingo.perk.artisan_poisoner.desc": "获得时弹出目标选择器: 选一名玩家, 给他施加 30 秒随机负面效果 (缓慢 / 挖掘疲劳 / 反胃 / 失明 / 饥饿 / 虚弱 / 中毒 / 凋零 / 飘浮 / 黑暗 / 霉运)。",
+  "random-perks-bingo.perk.artisan_treasure_chest.name": "百宝箱",
+  "random-perks-bingo.perk.artisan_treasure_chest.desc": "随机开出 1~5 件盔甲或工具 (材质上限钻石, 不附魔)。",
 
   "random-perks-bingo.perk.seeker_scout.name": "观鸟",
   "random-perks-bingo.perk.seeker_scout.desc": "获得望远镜 (瞄准的生物或玩家会被高亮标记 1 分钟, 队友可见)、指南针和一张藏宝图。",
