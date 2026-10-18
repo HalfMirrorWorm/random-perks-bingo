@@ -4,6 +4,7 @@ import com.randomperks.RandomPerksMod
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkOfferService
 import com.randomperks.game.StealService
+import com.randomperks.perk.content.ArtisanPerks
 import com.randomperks.perk.content.HunterPerks
 import com.randomperks.perk.content.SeekerPerks
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
@@ -106,6 +107,7 @@ object PerkNetworking {
                     "lightning" -> HunterPerks.CallLightning.handleTargetPick(player, uuid)
                     "nuke" -> HunterPerks.Nuclear.handleTargetPick(player, uuid)
                     "puny" -> SeekerPerks.Puny.handleTargetPick(player, uuid)
+                    "poisoner" -> ArtisanPerks.Poisoner.handleTargetPick(player, uuid)
                 }
             }
         }

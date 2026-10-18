@@ -1,17 +1,26 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.PerkSession
+import com.randomperks.network.PerkNetworking
+import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
+import com.randomperks.state.PerkStateManager
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import java.util.UUID
 
 /**
  * 匠造 ARTISAN —— 工具 / 建造 / 功能性物品。
@@ -155,6 +164,75 @@ object ArtisanPerks {
         }
     }
 
+    /** 紫 · 匠造: **绝命毒师** —— 获得时弹出玩家选择器, 选中一名玩家后给他施加
+     *  **随机一种负面效果** (等级 I, 持续 30 秒) */
+    object Poisoner : PerkDefinition {
+        override val id = "artisan_poisoner"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.FERMENTED_SPIDER_EYE)
+
+        /** 负面效果持续 30 秒 */
+        private const val DURATION_TICKS = 30 * 20
+
+        /** 随机负面效果池 (等级 I) */
+        private val DEBUFFS = listOf(
+            StatusEffects.SLOWNESS,
+            StatusEffects.MINING_FATIGUE,
+            StatusEffects.NAUSEA,
+            StatusEffects.BLINDNESS,
+            StatusEffects.HUNGER,
+            StatusEffects.WEAKNESS,
+            StatusEffects.POISON,
+            StatusEffects.WITHER,
+            StatusEffects.LEVITATION,
+            StatusEffects.DARKNESS,
+            StatusEffects.UNLUCK,
+        )
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val candidates = candidates(player)
+            if (candidates.isEmpty()) {
+                player.sendMessage(Text.translatable("random-perks-bingo.message.poisoner_no_target"), true)
+                return
+            }
+            PerkNetworking.sendActionTargets(
+                player,
+                "poisoner",
+                candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
+            )
+        }
+
+        /** 客户端在选择器里选中了一名玩家 → 给他灌一瓶随机毒药 */
+        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+            if (!PerkSession.isEnabled()) return
+
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (!state.hasPerk(id)) return
+
+            // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
+            val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+
+            val effect = DEBUFFS[target.random.nextInt(DEBUFFS.size)]
+            target.addStatusEffect(StatusEffectInstance(effect, DURATION_TICKS, 0))
+
+            val effectName = Text.translatable(effect.value().translationKey)
+            player.sendMessage(
+                Text.translatable("random-perks-bingo.message.poisoner_applied", target.name, effectName),
+                false,
+            )
+            target.sendMessage(
+                Text.translatable("random-perks-bingo.message.poisoner_received", effectName),
+                true,
+            )
+        }
+
+        /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
+        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
+            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -163,5 +241,6 @@ object ArtisanPerks {
         PerkRegistry.register(WaypointClock)
         PerkRegistry.register(LongArms)
         PerkRegistry.register(FireTemper)
+        PerkRegistry.register(Poisoner)
     }
 }
