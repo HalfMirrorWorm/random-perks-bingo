@@ -238,6 +238,8 @@
   "random-perks-bingo.message.lay_flat_missing_mod": "未安装自然罗盘/结构罗盘模组, 本次奖励已跳过。",
   "random-perks-bingo.perk.seeker_magnet_upgrade.name": "磁力升级",
   "random-perks-bingo.perk.seeker_magnet_upgrade.desc": "你的拾取范围扩大到 5 格。",
+  "random-perks-bingo.perk.harvest_saplings.name": "植岷",
+  "random-perks-bingo.perk.harvest_saplings.desc": "获得 5 个随机树苗。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",

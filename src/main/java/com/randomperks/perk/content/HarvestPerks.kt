@@ -300,6 +300,37 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.EGG)
     }
 
+    /** 蓝 · 丰饶: **植岷** —— 获得 5 个随机树苗 */
+    object Saplings : PerkDefinition {
+        override val id = "harvest_saplings"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.OAK_SAPLING)
+
+        /** 发放数量 */
+        private const val COUNT = 5
+
+        /** 可开出的树苗 (含红树胎生苗与 1.21.4 的苍白橡木) */
+        private val POOL = listOf(
+            Items.OAK_SAPLING,
+            Items.SPRUCE_SAPLING,
+            Items.BIRCH_SAPLING,
+            Items.JUNGLE_SAPLING,
+            Items.ACACIA_SAPLING,
+            Items.DARK_OAK_SAPLING,
+            Items.MANGROVE_PROPAGULE,
+            Items.CHERRY_SAPLING,
+            Items.PALE_OAK_SAPLING,
+        )
+
+        override fun onAcquire(ctx: PerkContext) {
+            val random = ctx.player.random
+            repeat(COUNT) {
+                PerkEffects.giveStack(ctx.player, ItemStack(POOL[random.nextInt(POOL.size)]))
+            }
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -315,5 +346,6 @@ object HarvestPerks {
         PerkRegistry.register(Yowl)
         PerkRegistry.register(BigDog)
         PerkRegistry.register(Pokemon)
+        PerkRegistry.register(Saplings)
     }
 }
