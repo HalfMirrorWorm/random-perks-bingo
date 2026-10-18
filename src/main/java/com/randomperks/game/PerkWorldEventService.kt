@@ -69,6 +69,18 @@ object PerkWorldEventService {
             dispatch(player) { ctx, perk -> perk.onBlockBreak(ctx, pos, state) }
         }
 
+        // 收获成熟作物 → "拾穗": 50% 概率额外掉一个随机种子
+        // (注意: 这一块原先被误嵌在下面的 UseEntityCallback lambda 里, 结果是每右键一次实体
+        //  就多注册一个监听器 —— 拾穗的额外掉落会随右键次数翻倍, 监听器也永远不释放。)
+        PlayerBlockBreakEvents.AFTER.register { world, player, pos, state, _ ->
+            if (player !is ServerPlayerEntity) return@register
+            if (!PerkBoostQuery.hasGleaning(player)) return@register
+            if (!isMatureCrop(state)) return@register
+            if (player.random.nextFloat() >= SEED_BONUS_CHANCE) return@register
+
+            Block.dropStack(world, pos, ItemStack(SEED_POOL[player.random.nextInt(SEED_POOL.size)]))
+        }
+
         // 受伤后 → "逃跑计划": 挨了生物一下就给速度 II + 抗性 I
         ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
             if (damageTaken <= 0.0f) return@register
@@ -98,17 +110,7 @@ object PerkWorldEventService {
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
             if (player !is ServerPlayerEntity) return@register ActionResult.PASS
 
-            // 收获成熟作物 → "拾穗": 50% 概率额外掉一个随机种子
-        PlayerBlockBreakEvents.AFTER.register { world, player, pos, state, _ ->
-            if (player !is ServerPlayerEntity) return@register
-            if (!PerkBoostQuery.hasGleaning(player)) return@register
-            if (!isMatureCrop(state)) return@register
-            if (player.random.nextFloat() >= SEED_BONUS_CHANCE) return@register
-
-            Block.dropStack(world, pos, ItemStack(SEED_POOL[player.random.nextInt(SEED_POOL.size)]))
-        }
-
-        // "Jockey": 右键玩家 → 骑到他身上 (失败则交还原版处理)
+            // "Jockey": 右键玩家 → 骑到他身上 (失败则交还原版处理)
             if (entity is ServerPlayerEntity && PerkBoostQuery.hasJockey(player)) {
                 if (JockeyService.mount(player, entity)) return@register ActionResult.SUCCESS
             }
