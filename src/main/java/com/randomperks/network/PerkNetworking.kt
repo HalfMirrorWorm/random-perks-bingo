@@ -41,6 +41,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
+        PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -186,6 +187,13 @@ object PerkNetworking {
     fun sendGlowMark(player: ServerPlayerEntity, entityIds: List<Int>, durationMillis: Long) {
         if (!ServerPlayNetworking.canSend(player, GlowMarkS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, GlowMarkS2C(entityIds, durationMillis)) }
+    }
+
+    /** 通知客户端某个实体进入"变猪"状态 ("变群友") */
+    fun sendMorph(player: ServerPlayerEntity, payload: MorphS2C) {
+        if (!ServerPlayNetworking.canSend(player, MorphS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, payload) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send morph: {}", it.toString()) }
     }
 
     /** 把骑乘者的输入下发给被骑的玩家 ("Jockey") */

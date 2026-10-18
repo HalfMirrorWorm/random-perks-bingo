@@ -788,6 +788,16 @@ object HunterPerks {
         }
     }
 
+    /** 金 · 猎杀: **变群友** —— 你的攻击会把目标变成猪 **2 秒** (冷却 8 秒)。
+     *  被变成猪的玩家, 猪头会换成他自己的皮肤, 视角高度也会变成猪的高度。
+     *  (渲染与尺寸伪装由客户端 PigMorphRenderer / MorphSizeMixin 完成, 实体本身不变) */
+    object PigMorph : PerkDefinition {
+        override val id = "hunter_pig_morph"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.PIG_SPAWN_EGG)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -807,5 +817,6 @@ object HunterPerks {
         PerkRegistry.register(Nuclear)
         PerkRegistry.register(HomingBow)
         PerkRegistry.register(Jockey)
+        PerkRegistry.register(PigMorph)
     }
 }

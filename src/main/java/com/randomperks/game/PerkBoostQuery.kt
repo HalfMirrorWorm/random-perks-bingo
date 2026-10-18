@@ -117,4 +117,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"Jockey" */
     fun hasJockey(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_jockey") == true
+
+    // ---- "变群友" (金): 攻击命中把目标变成猪 (由 MorphService 调用) ----
+
+    /** 玩家是否持有"变群友" */
+    fun hasPigMorph(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_pig_morph") == true
 }

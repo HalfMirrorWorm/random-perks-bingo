@@ -6,8 +6,10 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.content.HarvestPerks
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
+import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.passive.AbstractHorseEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.ActionResult
@@ -29,6 +31,14 @@ object PerkWorldEventService {
         PlayerBlockBreakEvents.AFTER.register { _, player, pos, state, _ ->
             if (player !is ServerPlayerEntity) return@register
             dispatch(player) { ctx, perk -> perk.onBlockBreak(ctx, pos, state) }
+        }
+
+        // 攻击命中 → "变群友": 把目标变成猪 (内部自带词条校验与冷却)
+        AttackEntityCallback.EVENT.register { player, _, hand, entity, _ ->
+            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
+            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
+            if (entity is LivingEntity) MorphService.tryApply(player, entity)
+            ActionResult.PASS
         }
 
         // "属于你的马"交互时的兼容修复 (含旧版本召唤的马):

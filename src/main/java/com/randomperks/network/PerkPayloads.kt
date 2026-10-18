@@ -365,6 +365,25 @@ class JockeyControlS2C(
     override fun getId() = ID
 }
 
+/** S2C: 通知客户端某个实体进入"变猪"状态 (外观与尺寸伪装全部由客户端完成) */
+class MorphS2C(
+    val entityId: Int,
+    val durationMillis: Long,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<MorphS2C>(Identifier.of("random-perks-bingo", "morph"))
+        val CODEC: PacketCodec<RegistryByteBuf, MorphS2C> = PacketCodec.of(
+            { value, buf ->
+                buf.writeVarInt(value.entityId)
+                buf.writeVarLong(value.durationMillis)
+            },
+            { buf -> MorphS2C(buf.readVarInt(), buf.readVarLong()) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** C2S: 客户端请求二段跳 (服务端验证词条与状态) */
 class DoubleJumpC2S : CustomPayload {
     companion object {

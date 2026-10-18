@@ -208,6 +208,8 @@
   "random-perks-bingo.perk.hunter_homing_bow.desc": "Gain a bow and a quiver of 16 tipped arrows with random potions; your arrows home in on the nearest enemy within 16 blocks (teammates and your own tamed mobs excluded).",
   "random-perks-bingo.perk.hunter_jockey.name": "Jockey",
   "random-perks-bingo.perk.hunter_jockey.desc": "Right-click any player to climb onto them and take over their movement and view (press Shift to get off); while riding, damage from them is reduced by 75%.",
+  "random-perks-bingo.perk.hunter_pig_morph.name": "Groupmate",
+  "random-perks-bingo.perk.hunter_pig_morph.desc": "Your attacks turn the target into a pig for 2 seconds (8 second cooldown); a morphed player's pig head shows their own skin, and their view height drops to a pig's.",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click while holding it to teleport back to your last death location (5 min cooldown, cross-dimension allowed).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
