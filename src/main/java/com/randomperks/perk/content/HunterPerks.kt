@@ -8,6 +8,7 @@ import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.state.PerkStateManager
 import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.PotionContentsComponent
 import java.util.UUID
 import com.randomperks.mixin.MobLootInvoker
 import com.randomperks.perk.PerkArchetype
@@ -26,6 +27,7 @@ import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.mob.Monster
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.potion.Potions
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
@@ -723,6 +725,46 @@ object HunterPerks {
         }
     }
 
+    /** 紫 · 猎杀: **这不是挂?** —— 获得一把弓 + 16 支随机药水箭 (当作"箭袋")。
+     *
+     *  持词条期间射出的**箭**会自动追踪 16 格内最近的敌对目标
+     *  (自己、队友、自己驯服的生物除外; 由 HomingArrowMixin 每 tick 转向)。 */
+    object HomingBow : PerkDefinition {
+        override val id = "hunter_homing_bow"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.BOW)
+
+        /** "箭袋"容量: 发多少支药水箭 */
+        private const val QUIVER_SIZE = 16
+
+        /** 随机药水池 —— 箭是射向敌人的, 所以以负面为主 */
+        private val TIPPED_POTIONS = listOf(
+            Potions.POISON,
+            Potions.STRONG_POISON,
+            Potions.LONG_POISON,
+            Potions.SLOWNESS,
+            Potions.STRONG_SLOWNESS,
+            Potions.LONG_SLOWNESS,
+            Potions.WEAKNESS,
+            Potions.LONG_WEAKNESS,
+            Potions.HARMING,
+            Potions.STRONG_HARMING,
+            Potions.TURTLE_MASTER,
+            Potions.STRONG_TURTLE_MASTER,
+        )
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            PerkEffects.giveStack(player, ItemStack(Items.BOW))
+            // 每支独立随机 —— 原版没有"箭袋"物品, 这里直接按袋发箭
+            repeat(QUIVER_SIZE) {
+                val potion = TIPPED_POTIONS[player.random.nextInt(TIPPED_POTIONS.size)]
+                PerkEffects.giveStack(player, PotionContentsComponent.createStack(Items.TIPPED_ARROW, potion))
+            }
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -740,5 +782,6 @@ object HunterPerks {
         PerkRegistry.register(Veteran)
         PerkRegistry.register(RolyPoly)
         PerkRegistry.register(Nuclear)
+        PerkRegistry.register(HomingBow)
     }
 }

@@ -105,4 +105,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"天启日" */
     fun hasDoomsday(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("mythic_doomsday") == true
+
+    // ---- "这不是挂?" (紫): 射出的箭自动追踪 (由 HomingArrowMixin 在 PersistentProjectileEntity.tick 中转向) ----
+
+    /** 玩家是否持有"这不是挂?" */
+    fun hasHomingBow(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_homing_bow") == true
 }

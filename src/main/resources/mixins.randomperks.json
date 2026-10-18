@@ -27,7 +27,8 @@
     "CatTargetMixin",
     "CatFleeMixin",
     "DoomsdayMixin",
-    "CreeperChargedAccessor"
+    "CreeperChargedAccessor",
+    "HomingArrowMixin"
   ],
   "client": [
     "EntityGlowMixin",
