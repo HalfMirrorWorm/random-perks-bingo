@@ -240,6 +240,8 @@
   "random-perks-bingo.perk.seeker_magnet_upgrade.desc": "你的拾取范围扩大到 5 格。",
   "random-perks-bingo.perk.harvest_saplings.name": "植岷",
   "random-perks-bingo.perk.harvest_saplings.desc": "获得 5 个随机树苗。",
+  "random-perks-bingo.perk.artisan_shulker_box.name": "随身仓库",
+  "random-perks-bingo.perk.artisan_shulker_box.desc": "获得一个潜影盒 (27 格随身存储)。",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "传送时钟",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "获得一个时钟: 手持右键传送回上次死亡地点 (5 分钟冷却, 跨维度也可)。",
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",

@@ -270,6 +270,18 @@ object ArtisanPerks {
         }
     }
 
+    /** 蓝 · 匠造: **随身仓库** —— 获得一个潜影盒 (27 格随身存储) */
+    object ShulkerBox : PerkDefinition {
+        override val id = "artisan_shulker_box"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.SHULKER_BOX)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.SHULKER_BOX))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -280,5 +292,6 @@ object ArtisanPerks {
         PerkRegistry.register(FireTemper)
         PerkRegistry.register(Poisoner)
         PerkRegistry.register(TreasureChest)
+        PerkRegistry.register(ShulkerBox)
     }
 }

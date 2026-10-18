@@ -240,6 +240,8 @@
   "random-perks-bingo.perk.seeker_magnet_upgrade.desc": "Your item pickup range is increased to 5 blocks.",
   "random-perks-bingo.perk.harvest_saplings.name": "Saplings",
   "random-perks-bingo.perk.harvest_saplings.desc": "Gain 5 random saplings.",
+  "random-perks-bingo.perk.artisan_shulker_box.name": "Portable Storage",
+  "random-perks-bingo.perk.artisan_shulker_box.desc": "Gain a shulker box (27 slots of portable storage).",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",
   "random-perks-bingo.perk.artisan_waypoint_clock.desc": "Gain a clock: right-click while holding it to teleport back to your last death location (5 min cooldown, cross-dimension allowed).",
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
