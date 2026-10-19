@@ -35,6 +35,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.RotationAxis;
 
 import java.util.Map;
 
@@ -183,6 +184,9 @@ public class PigMorphRenderer extends EntityRenderer<Entity, PigEntityRenderStat
         SkinTextures skin = ((MorphSkinHolder) (Object) state).randomperks$getSkin();
 
         matrices.push();
+        // 和 LivingEntityRenderer 完全一致的三步: 先按身体朝向旋转, 再翻转 Y/Z, 最后下移。
+        // 漏掉第一句的话猪永远朝向固定方向, 不跟着生物转 (这就是"朝向不一致"的原因)。
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0f - state.bodyYaw));
         matrices.scale(-1.0f, -1.0f, 1.0f);
         matrices.translate(0.0, -1.501, 0.0);
 
