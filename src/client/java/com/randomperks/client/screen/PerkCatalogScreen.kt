@@ -7,7 +7,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 
 /**
- * 词条百科 (按键 B 打开)。
+ * 词条百科 (按键 K 打开)。
  *
  * 展示全部词条 (含未获得), 支持按流派筛选; 未获得的词条显示为暗色。
  */
@@ -39,6 +39,9 @@ class PerkCatalogScreen(
     /** null = 全部 */
     private var selectedArchetype: PerkArchetype? = null
 
+    private var sortMode = PerkSortMode.DEFAULT
+    private var sortBoxes: List<Pair<PerkSortMode, IntArray>> = emptyList()
+
     private var scrollOffset = 0
     private var maxScroll = 0
     private var hovered = -1
@@ -57,9 +60,14 @@ class PerkCatalogScreen(
         scrollOffset = 0
     }
 
-    private fun filtered(): List<PerkOptionData> =
-        if (selectedArchetype == null) allPerks
-        else allPerks.filter { ScreenStyle.archetype(it.archetypeOrdinal) == selectedArchetype }
+    private fun filtered(): List<PerkOptionData> {
+        val list = if (selectedArchetype == null) {
+            allPerks
+        } else {
+            allPerks.filter { ScreenStyle.archetype(it.archetypeOrdinal) == selectedArchetype }
+        }
+        return sortMode.sort(list)
+    }
 
     private fun tabWidth() = listWidth / tabs.size
 
@@ -68,6 +76,9 @@ class PerkCatalogScreen(
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         // 不调 renderBackground, 避免 1.21.6+ 的二次 blur 崩溃
         context.fill(0, 0, width, height, DIM_BACKGROUND)
+
+        // 右上角的排序切换 (默认 / 名称 / 稀有度)
+        sortBoxes = drawPerkSortButtons(context, textRenderer, width - 8, 6, sortMode, mouseX, mouseY)
 
         // 标题 + 收集进度
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 14, ScreenStyle.TEXT_NAME)
@@ -197,6 +208,17 @@ class PerkCatalogScreen(
         (color and 0xFF000000.toInt()) or ((color and 0x00FEFEFE.toInt()) shr 1)
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        // 排序切换
+        for ((mode, box) in sortBoxes) {
+            if (mouseX in box[0].toDouble()..(box[0] + box[2]).toDouble() &&
+                mouseY in box[1].toDouble()..(box[1] + box[3]).toDouble()
+            ) {
+                sortMode = mode
+                scrollOffset = 0
+                return true
+            }
+        }
+
         if (button == 0 && hoveredTab in tabs.indices) {
             selectedArchetype = tabs[hoveredTab]
             scrollOffset = 0

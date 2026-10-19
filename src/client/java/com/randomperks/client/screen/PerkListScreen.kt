@@ -41,6 +41,9 @@ class PerkListScreen(
     private var maxScroll = 0
     private var hovered = -1
 
+    private var sortMode = PerkSortMode.DEFAULT
+    private var sortBoxes: List<Pair<PerkSortMode, IntArray>> = emptyList()
+
     private var listLeft = 0
     private var listWidth = 0
     private var cardWidth = 0
@@ -96,6 +99,9 @@ class PerkListScreen(
         val current = players.getOrNull(selected)
         val self = selfUuid()
 
+        // 右上角的排序切换 (默认 / 名称 / 稀有度)
+        sortBoxes = drawPerkSortButtons(context, textRenderer, width - 8, 6, sortMode, mouseX, mouseY)
+
         // 标题: 看自己 → "我的词条"; 看别人 → "XXX 的词条"
         val title = if (current != null && current.uuid != self) {
             Text.translatable("random-perks-bingo.screen.player_perks", current.name)
@@ -140,7 +146,7 @@ class PerkListScreen(
             )
         }
 
-        val perks = current?.perks.orEmpty()
+        val perks = sortMode.sort(current?.perks.orEmpty())
         if (perks.isEmpty()) {
             context.drawCenteredTextWithShadow(
                 textRenderer,
@@ -233,6 +239,17 @@ class PerkListScreen(
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        // 排序切换
+        for ((mode, box) in sortBoxes) {
+            if (mouseX in box[0].toDouble()..(box[0] + box[2]).toDouble() &&
+                mouseY in box[1].toDouble()..(box[1] + box[3]).toDouble()
+            ) {
+                sortMode = mode
+                scrollOffset = 0
+                return true
+            }
+        }
+
         // 点 tab 切换玩家
         for (tab in tabs) {
             if (mouseX in tab.x.toDouble()..(tab.x + tab.width).toDouble() &&
