@@ -645,7 +645,7 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK)
     }
 
-    /** 蓝 · 猎杀: **核电轻而易举** —— 获得时弹出玩家选择器, 选中一名玩家后**在他脚下**生成一只
+    /** 蓝 · 猎杀: **核电轻而易举** —— 获得时弹出玩家选择器, 选中一名玩家后**在他附近**生成一只
      *  **高亮显示的闪电苦力怕** (charged creeper), 并直接让它仇恨该玩家 */
     object Nuclear : PerkDefinition {
         override val id = "hunter_easy_nuke"
@@ -653,7 +653,9 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.CREEPER_HEAD)
 
-        private const val SPAWN_RADIUS = 4
+        /** 生成点与目标的距离范围 (格)。贴在脚下会当场点火, 玩家连跑的机会都没有 */
+        private const val MIN_SPAWN_DISTANCE = 4
+        private const val MAX_SPAWN_DISTANCE = 7
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
@@ -669,7 +671,7 @@ object HunterPerks {
             )
         }
 
-        /** 客户端在选择器里选中了一名玩家 → 在他脚下生成闪电苦力怕 */
+        /** 客户端在选择器里选中了一名玩家 → 在他附近生成闪电苦力怕 */
         fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
@@ -689,15 +691,18 @@ object HunterPerks {
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
 
-        /** 在目标**脚下**生成一只**发光**的闪电苦力怕, 并直接让它仇恨目标。
+        /** 在目标**附近**生成一只**发光**的闪电苦力怕, 并直接让它仇恨目标。
          *
          *  仇恨是必须的: 苦力怕靠 CreeperIgniteGoal 点火, 而那个 goal 只在
-         *  {@code getTarget() != null} 且距离够近时才会启动 —— 不设目标它就只会站桩。 */
+         *  {@code getTarget() != null} 且距离 < 3 格时才会启动 —— 不设目标它就只会站桩。
+         *
+         *  生成点刻意留出 [MIN_SPAWN_DISTANCE]~[MAX_SPAWN_DISTANCE] 格: 之前贴在脚下时,
+         *  目标距离为 0, 苦力怕落地即点火, 玩家完全没有反应时间。留出距离后它会先走过来,
+         *  走到 3 格内才开始引信 (引信 2.5 秒)。 */
         private fun spawnChargedCreeper(target: ServerPlayerEntity) {
             val world = target.world as? ServerWorld ?: return
             val random = world.random
 
-            // 优先落在目标脚下; 那里站不住时 (水里/墙里/半砖) 再在附近找一块能站的
             val pos = findSpawnPos(target, world) ?: target.blockPos
 
             val creeper = net.minecraft.entity.EntityType.CREEPER
@@ -717,7 +722,7 @@ object HunterPerks {
             world.spawnEntity(creeper)
         }
 
-        /** 目标脚下优先, 站不住时才在 SPAWN_RADIUS 内找 */
+        /** 在 [MIN_SPAWN_DISTANCE]~[MAX_SPAWN_DISTANCE] 格内找一块能站的地方; 找不到返回 null */
         private fun findSpawnPos(
             target: ServerPlayerEntity,
             world: ServerWorld,
@@ -726,12 +731,13 @@ object HunterPerks {
                 world.getBlockState(pos).isAir && world.getBlockState(pos.down()).isSolidBlock(world, pos.down())
 
             val base = target.blockPos
-            if (standable(base)) return base
-
             val random = world.random
-            for (i in 0 until 16) {
-                val dx = random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS
-                val dz = random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS
+            repeat(24) {
+                val dx = random.nextInt(MAX_SPAWN_DISTANCE * 2 + 1) - MAX_SPAWN_DISTANCE
+                val dz = random.nextInt(MAX_SPAWN_DISTANCE * 2 + 1) - MAX_SPAWN_DISTANCE
+                // 太近的环内点直接跳过 —— 贴脸生成会当场点火
+                if (dx * dx + dz * dz < MIN_SPAWN_DISTANCE * MIN_SPAWN_DISTANCE) return@repeat
+
                 val top = world.getTopPosition(
                     net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, base.add(dx, 0, dz),
                 )
