@@ -645,7 +645,7 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK)
     }
 
-    /** 蓝 · 猎杀: **核电轻而易举** —— 获得时弹出玩家选择器, 选中一名玩家后**在他脚下**生成一只
+    /** 蓝 · 猎杀: **核电轻而易举** —— 获得时弹出玩家选择器, 选中一名玩家后**在他头顶**生成一只
      *  **高亮显示的闪电苦力怕** (charged creeper), 并直接让它仇恨该玩家 */
     object Nuclear : PerkDefinition {
         override val id = "hunter_easy_nuke"
@@ -667,7 +667,7 @@ object HunterPerks {
             )
         }
 
-        /** 客户端在选择器里选中了一名玩家 → 在他脚下生成闪电苦力怕 */
+        /** 客户端在选择器里选中了一名玩家 → 在他头顶生成闪电苦力怕 */
         fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
@@ -687,17 +687,20 @@ object HunterPerks {
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
 
-        /** 在目标**脚下**生成一只**发光**的闪电苦力怕, 并直接让它仇恨目标。
+        /** 在目标**头顶**生成一只**发光**的闪电苦力怕, 并直接让它仇恨目标。
          *
          *  仇恨是必须的: 苦力怕靠 CreeperIgniteGoal 点火, 而那个 goal 只在
          *  {@code getTarget() != null} 且距离 < 3 格时才会启动 —— 不设目标它就只会站桩。
          *
-         *  引信不做任何调整, 就是原版苦力怕的 30 tick (1.5 秒)。 */
+         *  引信不做任何调整, 就是原版苦力怕的 30 tick (1.5 秒)。
+         *
+         *  头顶位置 (脚下往上 2 格) 被挡住时退回脚下生成, 免得苦力怕卡在方块里憋死。 */
         private fun spawnChargedCreeper(target: ServerPlayerEntity) {
             val world = target.world as? ServerWorld ?: return
             val random = world.random
 
-            val pos = target.blockPos
+            val headPos = target.blockPos.up(2)
+            val pos = if (world.getBlockState(headPos).isAir) headPos else target.blockPos
 
             val creeper = net.minecraft.entity.EntityType.CREEPER
                 .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return
