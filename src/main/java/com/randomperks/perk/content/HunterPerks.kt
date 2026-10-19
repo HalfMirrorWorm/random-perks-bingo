@@ -136,14 +136,14 @@ object HunterPerks {
         }
     }
 
-    /** 金 · 灵魂收割: 击杀 8% 概率额外掉落**与该怪物对应**的战利品 (僵尸只掉僵尸会有的东西) */
+    /** 紫 · 灵魂收割: 击杀 10% 概率额外掉落**与该怪物对应**的战利品 (僵尸只掉僵尸会有的东西) */
     object SoulHarvest : PerkDefinition {
         override val id = "hunter_soul_harvest"
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.NETHER_STAR)
 
-        private const val CHANCE = 0.08f
+        private const val CHANCE = 0.10f
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             // 同"剥皮专家": 用 Monster 接口判定 (HostileEntity 会漏掉史莱姆/恶魂/幻翼/末影龙等)
@@ -167,7 +167,7 @@ object HunterPerks {
         /**
          * 每种怪物的"灵魂战利品" —— 全部取自它自己的原版掉落表, 但**加量**,
          * 并把原本的稀有掉落 (头颅 / 唱片 / 蛙明灯 / 湿海绵 / 不死图腾 / 不祥之瓶) 转成稳定奖励,
-         * 让 8% 的触发真正有实感。
+         * 让 10% 的触发真正有实感。
          *
          * 依据: 1.21.7 的 `data/minecraft/loot_table/entities/` 下各实体的战利品表。
          */
