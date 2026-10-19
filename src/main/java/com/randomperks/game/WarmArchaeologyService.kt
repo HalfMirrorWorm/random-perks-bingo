@@ -1,5 +1,6 @@
 package com.randomperks.game
 
+import com.randomperks.RandomPerksMod
 import com.randomperks.state.PerkStateManager
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
@@ -94,14 +95,27 @@ object WarmArchaeologyService {
 
     /** 从暖水考古战利品表抽一次, 掉在方块所在位置 */
     private fun dropArchaeologyLoot(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos) {
-        val table = player.server?.reloadableRegistries?.getLootTable(LOOT_TABLE) ?: return
+        val lookup = player.server?.reloadableRegistries
+        if (lookup == null) {
+            RandomPerksMod.logger.warn("[RandomPerks] coral loot: reloadableRegistries unavailable")
+            return
+        }
+
+        val table = lookup.getLootTable(LOOT_TABLE)
+        if (table === LootTable.EMPTY) {
+            RandomPerksMod.logger.warn("[RandomPerks] coral loot: table {} not found (EMPTY)", LOOT_TABLE)
+            return
+        }
 
         val params = LootWorldContext.Builder(world)
             .add(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos))
             .build(LootContextTypes.ARCHAEOLOGY)
 
+        var dropped = 0
         table.generateLoot(params, player.random.nextLong()) { loot ->
+            dropped++
             Block.dropStack(world, pos, loot)
         }
+        RandomPerksMod.logger.info("[RandomPerks] coral loot: generated {} stack(s)", dropped)
     }
 }
