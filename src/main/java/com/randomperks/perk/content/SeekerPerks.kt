@@ -363,10 +363,10 @@ object SeekerPerks {
         }
     }
 
-    /** 紫 · 秘藏: 获得一个指向最近村庄**钟**的磁石指针 (找不到钟则指向村庄结构起点) */
+    /** 蓝 · 秘藏: 获得一个指向最近村庄**钟**的磁石指针 (找不到钟则指向村庄结构起点) */
     object VillageCompass : PerkDefinition {
         override val id = "seeker_village_compass"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.COMPASS)
 
