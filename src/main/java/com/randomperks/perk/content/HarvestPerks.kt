@@ -327,13 +327,20 @@ object HarvestPerks {
         }
     }
 
-    /** 金 · 丰饶: **宝可梦** —— 你扔出的鸡蛋砸中非 Boss 生物时, 把它变成对应的刷怪蛋
-     *  (生物消失)。实现见 PokemonEggMixin。 */
+    /** 金 · 丰饶: **宝可梦** —— 获得 4 个鸡蛋; 你扔出的鸡蛋砸中非 Boss 生物时,
+     *  把它变成对应的刷怪蛋 (生物消失)。实现见 PokemonEggMixin。 */
     object Pokemon : PerkDefinition {
         override val id = "harvest_pokemon"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.EGG)
+
+        /** 获得时附赠的鸡蛋数量 */
+        private const val STARTING_EGGS = 4
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.EGG, STARTING_EGGS))
+        }
     }
 
     /** 蓝 · 丰饶: **植岷** —— 获得 5 个随机树苗 */
