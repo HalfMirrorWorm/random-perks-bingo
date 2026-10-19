@@ -385,30 +385,6 @@ class DualTargetPickC2S(
 }
 
 /**
- * S2C: 某只鸡被染成了某个颜色 ("叮咚鸡")。
- *
- * 颜色本身是纯客户端表现, 服务端只需要在染色时把 (实体 id, ARGB) 广播一次 ——
- * 客户端存起来, 渲染时给鸡的模型加 tint。
- */
-class ChickenDyeS2C(
-    val entityId: Int,
-    val color: Int,
-) : CustomPayload {
-    companion object {
-        val ID = CustomPayload.Id<ChickenDyeS2C>(Identifier.of("random-perks-bingo", "chicken_dye"))
-        val CODEC: PacketCodec<RegistryByteBuf, ChickenDyeS2C> = PacketCodec.of(
-            { value, buf ->
-                buf.writeVarInt(value.entityId)
-                buf.writeInt(value.color)
-            },
-            { buf -> ChickenDyeS2C(buf.readVarInt(), buf.readInt()) },
-        )
-    }
-
-    override fun getId() = ID
-}
-
-/**
  * S2C: 打开**装备选择器** (候选固定为 4 个护甲槽 + 副手)。
  *
  * 不下发候选列表 —— 这 5 个槽位是固定的, 客户端自己读自己的装备来显示就够了。

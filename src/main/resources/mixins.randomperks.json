@@ -55,10 +55,7 @@
     "BigSnowballRenderStateMixin",
     "OmnimovementMixin",
     "HandledScreenAccessor",
-    "TrashSlotMixin",
-    "ChickenDyeRenderStateMixin",
-    "ChickenDyeRendererMixin",
-    "ModelTintMixin"
+    "TrashSlotMixin"
   ],
   "injectors": {
     "defaultRequire": 1
