@@ -367,6 +367,24 @@ class JockeyControlC2S(
     override fun getId() = ID
 }
 
+/**
+ * C2S: "Jockey" **被骑者**连按 Shift 达到次数, 请求脱离骑乘。
+ *
+ * 被骑者的键盘输入在客户端就被骑乘者的输入覆盖掉了, 所以服务端看不到他按 Shift ——
+ * 只能在客户端侧数按键次数, 到这里才上报。
+ */
+class JockeyBreakFreeC2S : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<JockeyBreakFreeC2S>(Identifier.of("random-perks-bingo", "jockey_break_free"))
+        val CODEC: PacketCodec<RegistryByteBuf, JockeyBreakFreeC2S> = PacketCodec.of(
+            { _, _ -> },
+            { JockeyBreakFreeC2S() },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** S2C: 把骑乘者的输入下发给被骑的玩家 (对方客户端据此接管自己的移动与朝向) */
 class JockeyControlS2C(
     val input: PlayerInput,

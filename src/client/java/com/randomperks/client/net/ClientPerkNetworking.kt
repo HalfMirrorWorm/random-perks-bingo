@@ -25,6 +25,7 @@ import com.randomperks.network.PerkRequestC2S
 import com.randomperks.network.ActionTargetPickC2S
 import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.BigSnowballS2C
+import com.randomperks.network.JockeyBreakFreeC2S
 import com.randomperks.network.JockeyControlC2S
 import com.randomperks.network.JockeyControlS2C
 import com.randomperks.network.MorphS2C
@@ -188,6 +189,16 @@ object ClientPerkNetworking {
             ClientPlayNetworking.send(
                 JockeyControlC2S(player.input.playerInput, player.yaw, player.pitch),
             )
+        }
+
+        // "Jockey": 被骑者连按 Shift 10 次 → 请求挣脱。
+        // 读的是**原始按键** (options.sneakKey): 被骑者的 playerInput 已经被 JockeyInputMixin
+        // 覆盖成骑乘者的了, 从 input 里读不到他自己的 Shift。
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            val pressed = client.options.sneakKey.isPressed
+            if (!JockeyClientState.noteSneak(pressed)) return@register
+            if (!ClientPlayNetworking.canSend(JockeyBreakFreeC2S.ID)) return@register
+            ClientPlayNetworking.send(JockeyBreakFreeC2S())
         }
     }
 

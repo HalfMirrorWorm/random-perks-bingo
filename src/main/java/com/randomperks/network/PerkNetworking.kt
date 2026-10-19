@@ -42,6 +42,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(JockeyBreakFreeC2S.ID, JockeyBreakFreeC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
 
@@ -126,6 +127,13 @@ object PerkNetworking {
             val pitch = payload.pitch
             context.server().execute {
                 JockeyService.handleControl(player, input, yaw, pitch)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(JockeyBreakFreeC2S.ID) { _, context ->
+            val player = context.player()
+            context.server().execute {
+                JockeyService.handleBreakFree(player)
             }
         }
     }

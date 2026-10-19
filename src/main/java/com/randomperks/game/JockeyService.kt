@@ -5,6 +5,7 @@ import com.randomperks.network.PerkNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.PlayerInput
+import java.util.UUID
 
 /**
  * "Jockey" (金 · 猎杀) 的服务端逻辑。
@@ -21,11 +22,29 @@ import net.minecraft.util.PlayerInput
  */
 object JockeyService {
 
+    /** 被骑者挣脱后, 骑乘者的冷却: 3 分钟 */
+    private const val BREAK_FREE_COOLDOWN_TICKS = 3 * 60 * 20
+
+    /** 骑乘者 uuid → 冷却结束 tick */
+    private val cooldowns = mutableMapOf<UUID, Long>()
+
     /** 右键玩家 → 骑上去 (失败返回 false, 交还原版交互) */
     fun mount(rider: ServerPlayerEntity, target: ServerPlayerEntity): Boolean {
         if (rider.uuid == target.uuid) return false
         if (rider.hasVehicle()) return false
         if (target.isSpectator || !target.isAlive) return false
+
+        // 被骑者挣脱后 3 分钟内不能再骑任何人
+        val now = rider.server?.ticks?.toLong() ?: return false
+        val until = cooldowns[rider.uuid] ?: 0L
+        if (now < until) {
+            rider.sendMessage(
+                Text.translatable("random-perks-bingo.message.jockey_cooldown", (until - now + 19) / 20),
+                true,
+            )
+            return false
+        }
+
         // force = true: 玩家默认不作为载具, 常规检查会拒绝
         if (!rider.startRiding(target, true)) return false
 
@@ -58,4 +77,28 @@ object JockeyService {
         )
         PerkNetworking.sendJockeyControl(carrier, JockeyControlS2C(forwarded, yaw, pitch))
     }
+
+    /** 被骑者连按 Shift 达到次数 → 挣脱, 骑乘者进入 3 分钟冷却 */
+    fun handleBreakFree(carrier: ServerPlayerEntity) {
+        val rider = carrier.passengerList
+            .filterIsInstance<ServerPlayerEntity>()
+            .firstOrNull { PerkBoostQuery.hasJockey(it) } ?: return
+
+        rider.stopRiding()
+
+        val now = carrier.server?.ticks?.toLong() ?: return
+        cooldowns[rider.uuid] = now + BREAK_FREE_COOLDOWN_TICKS
+
+        carrier.sendMessage(
+            Text.translatable("random-perks-bingo.message.jockey_broke_free", rider.name),
+            true,
+        )
+        rider.sendMessage(
+            Text.translatable("random-perks-bingo.message.jockey_thrown_off", carrier.name),
+            false,
+        )
+    }
+
+    /** 对局重置时清掉冷却 */
+    fun clear() = cooldowns.clear()
 }

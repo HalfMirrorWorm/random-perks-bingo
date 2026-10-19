@@ -51,7 +51,42 @@ object JockeyClientState {
     @JvmStatic
     fun isControlled(): Boolean = forcedInput() != null
 
+    /** 被骑者连按 Shift 多少次可以挣脱 */
+    private const val BREAK_FREE_PRESSES = 10
+
+    private var lastSneakPressed = false
+    private var sneakPresses = 0
+
+    /**
+     * 记录一次"被骑者按 Shift"的边缘 —— 只在被操控期间计数。
+     *
+     * 被骑者的键盘输入在客户端就被 [com.randomperks.mixin.JockeyInputMixin] 覆盖成了骑乘者的,
+     * 所以服务端根本看不到他的 Shift, 只能在这里自己数。
+     *
+     * @return true 表示凑满 [BREAK_FREE_PRESSES] 次, 可以请求脱离 (计数随即清零)
+     */
+    @JvmStatic
+    fun noteSneak(pressed: Boolean): Boolean {
+        if (forcedInput() == null) {
+            lastSneakPressed = false
+            sneakPresses = 0
+            return false
+        }
+        if (!pressed) {
+            lastSneakPressed = false
+            return false
+        }
+        if (lastSneakPressed) return false
+        lastSneakPressed = true
+        sneakPresses++
+        if (sneakPresses < BREAK_FREE_PRESSES) return false
+        sneakPresses = 0
+        return true
+    }
+
     fun clear() {
         input = null
+        lastSneakPressed = false
+        sneakPresses = 0
     }
 }
