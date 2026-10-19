@@ -101,7 +101,7 @@ object WarmArchaeologyService {
         if (player.random.nextFloat() < MINERAL_CHANCE) {
             Block.dropStack(world, pos, ItemStack(coral.mineral))
         } else {
-            dropArchaeologyLoot(player, world, pos)
+            dropArchaeologyLoot(player, world, pos, stack)
         }
 
         // 和原版刷子一样消耗 1 点耐久 (归零时自动损坏)
@@ -111,35 +111,50 @@ object WarmArchaeologyService {
     }
 
     /** 从暖水考古战利品表抽一次, 掉在方块所在位置 */
-    private fun dropArchaeologyLoot(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos) {
+    private fun dropArchaeologyLoot(
+        player: ServerPlayerEntity,
+        world: ServerWorld,
+        pos: BlockPos,
+        tool: ItemStack,
+    ) {
         val lookup = player.server?.reloadableRegistries
         if (lookup == null) {
             RandomPerksMod.logger.warn("[RandomPerks] coral loot: reloadableRegistries unavailable")
-            return
+            return dropFallback(player, world, pos)
         }
 
         val table = lookup.getLootTable(LOOT_TABLE)
         if (table === LootTable.EMPTY) {
             RandomPerksMod.logger.warn("[RandomPerks] coral loot: table {} not found (EMPTY)", LOOT_TABLE)
-            return
+            return dropFallback(player, world, pos)
         }
 
+        // 原版 ARCHAEOLOGY 上下文要求 origin / this_entity / tool 三个参数**缺一不可**,
+        // 少传任何一个 Builder.build() 都会抛 IllegalArgumentException。
         val params = LootWorldContext.Builder(world)
             .add(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos))
+            .add(LootContextParameters.THIS_ENTITY, player)
+            .add(LootContextParameters.TOOL, tool)
             .build(LootContextTypes.ARCHAEOLOGY)
 
         var dropped = 0
-        table.generateLoot(params, player.random.nextLong()) { loot ->
-            dropped++
-            Block.dropStack(world, pos, loot)
+        try {
+            table.generateLoot(params, player.random.nextLong()) { loot ->
+                dropped++
+                Block.dropStack(world, pos, loot)
+            }
+        } catch (e: Exception) {
+            RandomPerksMod.logger.warn("[RandomPerks] coral loot: generation failed", e)
         }
 
-        // 兜底: 表没取到 / 生成为空时, 自己按同一张表的权重抽一件, 至少不会白刷
+        // 兜底: 表没取到 / 生成失败 / 生成为空时, 自己按同一张表的权重抽一件, 至少不会白刷
         if (dropped == 0) {
-            RandomPerksMod.logger.warn("[RandomPerks] coral loot: table produced nothing, using fallback pool")
-            Block.dropStack(world, pos, ItemStack(FALLBACK_LOOT[player.random.nextInt(FALLBACK_LOOT.size)]))
-        } else {
-            RandomPerksMod.logger.info("[RandomPerks] coral loot: generated {} stack(s)", dropped)
+            dropFallback(player, world, pos)
         }
+    }
+
+    private fun dropFallback(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos) {
+        RandomPerksMod.logger.warn("[RandomPerks] coral loot: using fallback pool")
+        Block.dropStack(world, pos, ItemStack(FALLBACK_LOOT[player.random.nextInt(FALLBACK_LOOT.size)]))
     }
 }

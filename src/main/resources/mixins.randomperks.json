@@ -58,7 +58,8 @@
     "OmnimovementMixin",
     "HandledScreenAccessor",
     "ScreenInvoker",
-    "TrashSlotMixin"
+    "TrashSlotMixin",
+    "TrashSlotClickMixin"
   ],
   "injectors": {
     "defaultRequire": 1
