@@ -48,6 +48,23 @@ object WarmArchaeologyService {
         Identifier.ofVanilla("archaeology/ocean_ruin_warm"),
     )
 
+    /**
+     * 和 {@code archaeology/ocean_ruin_warm} 内容一致的备用池 (权重用重复次数表示)。
+     * 战利品表取不到或生成 0 件时用它兜底, 免得刷珊瑚变成纯亏。
+     */
+    private val FALLBACK_LOOT: List<Item> = buildList {
+        add(Items.ANGLER_POTTERY_SHERD)
+        add(Items.SHELTER_POTTERY_SHERD)
+        add(Items.SNORT_POTTERY_SHERD)
+        add(Items.SNIFFER_EGG)
+        add(Items.IRON_AXE)
+        repeat(2) { add(Items.EMERALD) }
+        repeat(2) { add(Items.WHEAT) }
+        repeat(2) { add(Items.WOODEN_HOE) }
+        repeat(2) { add(Items.COAL) }
+        repeat(2) { add(Items.GOLD_NUGGET) }
+    }
+
     /** 珊瑚块 → (失活后的方块, 颜色对应的矿物) */
     private data class CoralInfo(val deadBlock: Block, val mineral: Item)
 
@@ -116,6 +133,13 @@ object WarmArchaeologyService {
             dropped++
             Block.dropStack(world, pos, loot)
         }
-        RandomPerksMod.logger.info("[RandomPerks] coral loot: generated {} stack(s)", dropped)
+
+        // 兜底: 表没取到 / 生成为空时, 自己按同一张表的权重抽一件, 至少不会白刷
+        if (dropped == 0) {
+            RandomPerksMod.logger.warn("[RandomPerks] coral loot: table produced nothing, using fallback pool")
+            Block.dropStack(world, pos, ItemStack(FALLBACK_LOOT[player.random.nextInt(FALLBACK_LOOT.size)]))
+        } else {
+            RandomPerksMod.logger.info("[RandomPerks] coral loot: generated {} stack(s)", dropped)
+        }
     }
 }
