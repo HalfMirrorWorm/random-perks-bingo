@@ -142,7 +142,7 @@
   "random-perks-bingo.perk.harvest_herder.name": "牧羊人",
   "random-perks-bingo.perk.harvest_herder.desc": "获得剪刀和 32 块羊毛。",
   "random-perks-bingo.perk.harvest_timber.name": "樵夫之手",
-  "random-perks-bingo.perk.harvest_timber.desc": "砍未去皮的原木时，5% 概率额外掉落一根其他种类的去皮原木。",
+  "random-perks-bingo.perk.harvest_timber.desc": "砍未去皮的原木时，10% 概率额外掉落一根其他种类的去皮原木。",
   "random-perks-bingo.perk.harvest_bounty.name": "丰收之息",
   "random-perks-bingo.perk.harvest_bounty.desc": "获得 32 根胡萝卜和一把时运 III 的锄头。",
   "random-perks-bingo.perk.harvest_bountiful_meal.name": "丰盛大餐",

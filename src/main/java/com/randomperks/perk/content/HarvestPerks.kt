@@ -71,7 +71,7 @@ object HarvestPerks {
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.OAK_LOG)
 
-        private const val CHANCE = 0.05f
+        private const val CHANCE = 0.10f
 
         /** 可掉落的去皮原木 (含下界菌柄) */
         private val STRIPPED_LOGS = listOf(
