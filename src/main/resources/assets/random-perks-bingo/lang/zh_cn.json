@@ -254,6 +254,8 @@
   "random-perks-bingo.perk.harvest_happy_ghast.desc": "召唤一只自带挽具的快乐恶魂, 并获得 4 根拴绳。",
   "random-perks-bingo.perk.hunter_tnt_throw.name": "TNT 投手",
   "random-perks-bingo.perk.hunter_tnt_throw.desc": "获得 4 个 TNT；手持 TNT 右键时改为抛射一枚点燃的 TNT, 而不是放置方块。",
+  "random-perks-bingo.perk.hunter_munitions.name": "军火补给",
+  "random-perks-bingo.perk.hunter_munitions.desc": "获得 1 个末地水晶、4 个 TNT、6 个烈焰弹和 8 个火药。",
   "random-perks-bingo.perk.hunter_bounty_hunter.name": "赏金猎人",
   "random-perks-bingo.perk.hunter_bounty_hunter.desc": "每击杀一种此前没杀过的敌对生物, 获得 3 个金锭。",
   "random-perks-bingo.message.version_mismatch": "随机词条模组版本不一致!\n服务端: %s\n客户端: %s",

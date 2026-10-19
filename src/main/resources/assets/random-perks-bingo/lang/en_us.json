@@ -254,6 +254,8 @@
   "random-perks-bingo.perk.harvest_happy_ghast.desc": "Summon a Happy Ghast wearing a harness, and gain 4 leads.",
   "random-perks-bingo.perk.hunter_tnt_throw.name": "TNT Thrower",
   "random-perks-bingo.perk.hunter_tnt_throw.desc": "Gain 4 TNT. Right-clicking with TNT throws a lit TNT instead of placing a block.",
+  "random-perks-bingo.perk.hunter_munitions.name": "Munitions Supply",
+  "random-perks-bingo.perk.hunter_munitions.desc": "Gain 1 end crystal, 4 TNT, 6 fire charges and 8 gunpowder.",
   "random-perks-bingo.perk.hunter_bounty_hunter.name": "Bounty Hunter",
   "random-perks-bingo.perk.hunter_bounty_hunter.desc": "Killing a hostile mob type for the first time grants 3 gold ingots.",
   "random-perks-bingo.message.version_mismatch": "Random Perks mod version mismatch!\nServer: %s\nClient: %s",

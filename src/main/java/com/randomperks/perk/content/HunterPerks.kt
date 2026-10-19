@@ -902,6 +902,21 @@ object HunterPerks {
         }
     }
 
+    /** 蓝 · 猎杀: **军火补给** —— 一次性获得 1 个末地水晶、4 个 TNT、6 个烈焰弹和 8 个火药 */
+    object Munitions : PerkDefinition {
+        override val id = "hunter_munitions"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.END_CRYSTAL)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.END_CRYSTAL, 1))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.TNT, 4))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.FIRE_CHARGE, 6))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.GUNPOWDER, 8))
+        }
+    }
+
     /** 蓝 · 猎杀: **赏金猎人** —— 每击杀一种**此前没杀过**的敌对生物, 获得 3 个金锭 */
     object BountyHunter : PerkDefinition {
         override val id = "hunter_bounty_hunter"
@@ -952,6 +967,7 @@ object HunterPerks {
         PerkRegistry.register(PearlGauntlet)
         PerkRegistry.register(SatiationStrike)
         PerkRegistry.register(TntThrow)
+        PerkRegistry.register(Munitions)
         PerkRegistry.register(BountyHunter)
     }
 }
