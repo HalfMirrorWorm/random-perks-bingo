@@ -6,6 +6,7 @@ import com.randomperks.state.PerkStateManager
 import net.minecraft.entity.passive.ChickenEntity
 import net.minecraft.item.DyeItem
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.ActionResult
@@ -53,6 +54,25 @@ object ChickenDyeService {
         chicken.commandTags.removeAll { it.startsWith(TAG_PREFIX) }
         chicken.addCommandTag(TAG_PREFIX + color)
         broadcast(chicken, color)
+    }
+
+    /** 补发间隔: 5 秒一次 */
+    const val RESEND_INTERVAL_TICKS = 5 * 20
+
+    /** 补发范围 (格) */
+    private const val RESEND_RANGE = 64.0
+
+    /** 把玩家附近已染色鸡的颜色补发给他 (客户端那份状态是会话级的, 区块卸载重载后会丢) */
+    fun resendNearby(world: ServerWorld, player: ServerPlayerEntity) {
+        val chickens = world.getEntitiesByClass(
+            ChickenEntity::class.java,
+            player.boundingBox.expand(RESEND_RANGE),
+        ) { colorOf(it) != null }
+
+        for (chicken in chickens) {
+            val color = colorOf(chicken) ?: continue
+            PerkNetworking.sendChickenDye(player, ChickenDyeS2C(chicken.id, color))
+        }
     }
 
     /** 从 commandTags 里读回颜色; 没染过返回 null */

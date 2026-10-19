@@ -6,6 +6,7 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.content.HarvestPerks
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
@@ -64,6 +65,17 @@ object PerkWorldEventService {
         ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource ->
             val killer = damageSource.attacker as? ServerPlayerEntity ?: return@register
             dispatch(killer) { ctx, perk -> perk.onKill(ctx, entity) }
+        }
+
+        // "叮咚鸡": 客户端的染色状态是会话级的, 区块卸载重载后就丢了 ——
+        // 定期把玩家附近已染色鸡的颜色补发一遍 (这个 Fabric API 版本没有 ENTITY_LOAD 事件)。
+        ServerTickEvents.END_SERVER_TICK.register { server ->
+            if (server.ticks % ChickenDyeService.RESEND_INTERVAL_TICKS != 0) return@register
+            for (world in server.worlds) {
+                for (player in world.players) {
+                    ChickenDyeService.resendNearby(world, player)
+                }
+            }
         }
 
         // 破坏方块
