@@ -6,6 +6,7 @@ import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.StealService
 import com.randomperks.game.VerminSwarmService
+import com.randomperks.mixin.VillagerInvoker
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
@@ -576,8 +577,15 @@ object SeekerPerks {
                 .getOrThrow(VillagerType.PLAINS)
             val profession = registryManager.getOrThrow(RegistryKeys.VILLAGER_PROFESSION)
                 .getOrThrow(VillagerProfession.CLERIC)
-            // 等级 5 = 大师级, 会一次性填满 5 个等级共 10 项交易
-            villager.setVillagerData(VillagerData(type, profession, 5))
+            // 原版只在**升级时**追加当前等级的交易 (fillRecipes 只取 map.get(level) 那一组),
+            // 所以直接设 5 级再取 offers 只会得到 5 级那 2 项。这里从 1 级开始逐级"升"上去,
+            // 每级手动补一次 fillRecipes, 最终累积成 5 个等级共 10 项。
+            villager.setVillagerData(VillagerData(type, profession, 1))
+            villager.offers
+            for (level in 2..5) {
+                villager.setVillagerData(VillagerData(type, profession, level))
+                (villager as VillagerInvoker).randomperksFillRecipes()
+            }
 
             villager.refreshPositionAndAngles(
                 pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
