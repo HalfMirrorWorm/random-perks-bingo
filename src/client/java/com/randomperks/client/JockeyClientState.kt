@@ -52,7 +52,7 @@ object JockeyClientState {
     fun isControlled(): Boolean = forcedInput() != null
 
     /** 被骑者连按 Shift 多少次可以挣脱 */
-    private const val BREAK_FREE_PRESSES = 10
+    private const val BREAK_FREE_PRESSES = 30
 
     private var lastSneakPressed = false
     private var sneakPresses = 0

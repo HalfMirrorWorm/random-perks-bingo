@@ -191,7 +191,7 @@ object ClientPerkNetworking {
             )
         }
 
-        // "Jockey": 被骑者连按 Shift 10 次 → 请求挣脱。
+        // "Jockey": 被骑者连按 Shift 30 次 → 请求挣脱。
         // 读的是**原始按键** (options.sneakKey): 被骑者的 playerInput 已经被 JockeyInputMixin
         // 覆盖成骑乘者的了, 从 input 里读不到他自己的 Shift。
         ClientTickEvents.END_CLIENT_TICK.register { client ->
