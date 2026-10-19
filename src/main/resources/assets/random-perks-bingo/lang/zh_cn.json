@@ -182,7 +182,7 @@
   "random-perks-bingo.perk.seeker_life_vision.name": "生命透视",
   "random-perks-bingo.perk.seeker_life_vision.desc": "永久高亮标记 32 格内的所有生物 (不含玩家), 可穿透方块看到。",
   "random-perks-bingo.perk.seeker_ender_cache.name": "末影仓库",
-  "random-perks-bingo.perk.seeker_ender_cache.desc": "立即获得一个末影箱, 之后每 8 分钟再获得一个。",
+  "random-perks-bingo.perk.seeker_ender_cache.desc": "立即获得一个末影箱, 之后每 10 分钟再获得一个。",
   "random-perks-bingo.perk.seeker_alchemist.name": "药剂师",
   "random-perks-bingo.perk.seeker_alchemist.desc": "立即获得 1 瓶随机药水, 之后每 2 分钟再获得 1 瓶。",
   "random-perks-bingo.perk.harvest_rancher.name": "牧场主",

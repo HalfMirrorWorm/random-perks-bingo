@@ -225,14 +225,14 @@ object SeekerPerks {
         }
     }
 
-    /** 紫 · 秘藏: 立即获得一个末影箱, 之后每 8 分钟再获得一个 */
+    /** 紫 · 秘藏: 立即获得一个末影箱, 之后每 10 分钟再获得一个 */
     object EnderCache : PerkDefinition {
         override val id = "seeker_ender_cache"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.ENDER_CHEST)
 
-        private const val COOLDOWN_TICKS = 8 * 60 * 20
+        private const val COOLDOWN_TICKS = 10 * 60 * 20
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.ENDER_CHEST))
