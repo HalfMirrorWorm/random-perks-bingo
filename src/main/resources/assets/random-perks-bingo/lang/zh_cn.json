@@ -273,6 +273,8 @@
   "random-perks-bingo.perk.seeker_old_priest.desc": "召唤一只大师级牧师村民, 但他的交易项会随机缺货 0~10 项。",
   "random-perks-bingo.perk.harvest_dingdong_chicken.name": "叮咚鸡",
   "random-perks-bingo.perk.harvest_dingdong_chicken.desc": "获得 4 个鸡刷怪蛋, 并且可以用任意染料右键任意鸡染色 —— 暖色染料染成暖水鸡, 冷色染料染成寒冷鸡, 其余染成温带鸡。",
+  "random-perks-bingo.perk.harvest_lucky_fishing.name": "渔者之幸",
+  "random-perks-bingo.perk.harvest_lucky_fishing.desc": "幸运 +8; 钓鱼时额外有 10% 概率多钓到一个鹦鹉螺壳。",
   "random-perks-bingo.message.old_priest_failed": "附近没有能站人的地方, 老牧师没能生成。",
   "random-perks-bingo.perk.hunter_tnt_throw.name": "TNT 投手",
   "random-perks-bingo.perk.hunter_tnt_throw.desc": "获得 4 个 TNT；手持 TNT 右键时改为抛射一枚点燃的 TNT, 而不是放置方块。",

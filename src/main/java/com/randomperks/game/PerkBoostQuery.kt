@@ -100,6 +100,12 @@ object PerkBoostQuery {
     fun hasOldSchoolCombat(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_veteran") == true
 
+    // ---- "渔者之幸": 幸运 +8 与钓鱼的鹦鹉螺壳加成 (由 FishingLootMixin 调用) ----
+
+    /** 玩家是否持有"渔者之幸" */
+    fun hasLuckyFishing(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("harvest_lucky_fishing") == true
+
     // ---- "老吴!?" (拟声: 猫叫): 猫主动攻击持词条的玩家 (由 CatTargetMixin / CatFleeMixin 调用) ----
 
     /** 玩家是否持有"老吴!?" */

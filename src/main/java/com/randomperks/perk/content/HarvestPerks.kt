@@ -10,11 +10,13 @@ import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.enchantment.Enchantments
+import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
+import net.minecraft.util.Identifier
 
 /**
  * 丰饶 HARVEST —— 作物 / 树木 / 动物。
@@ -455,6 +457,26 @@ object HarvestPerks {
         }
     }
 
+    /** 紫 · 丰收: **渔者之幸** —— 幸运 +8; 钓鱼时额外有 10% 概率多钓一个鹦鹉螺壳。
+     *  幸运本身就会提高宝藏类的权重 (5% → 约 21%), 鹦鹉螺壳是额外的一层。 */
+    object LuckyFishing : PerkDefinition {
+        override val id = "harvest_lucky_fishing"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.NAUTILUS_SHELL)
+
+        private val MOD_LUCK = Identifier.of("random-perks-bingo", "lucky_fishing_luck")
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        private fun apply(ctx: PerkContext) =
+            PerkEffects.setAttribute(ctx.player, EntityAttributes.LUCK, MOD_LUCK, 8.0)
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.LUCK, MOD_LUCK)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -475,5 +497,6 @@ object HarvestPerks {
         PerkRegistry.register(HappyGhast)
         PerkRegistry.register(WarmArchaeology)
         PerkRegistry.register(DingDongChicken)
+        PerkRegistry.register(LuckyFishing)
     }
 }

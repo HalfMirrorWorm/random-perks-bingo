@@ -38,7 +38,8 @@
     "PearlGauntletMixin",
     "PokemonEggMixin",
     "MorphDimensionsMixin",
-    "MorphSoundMixin"
+    "MorphSoundMixin",
+    "FishingLootMixin"
   ],
   "client": [
     "EntityGlowMixin",
