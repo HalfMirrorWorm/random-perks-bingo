@@ -263,7 +263,7 @@
   "random-perks-bingo.perk.mythic_creative_flash.name": "创造闪光",
   "random-perks-bingo.perk.mythic_creative_flash.desc": "立即获得 1.5 秒创造模式! 全局唯一 —— 同时只能有一名玩家拥有。",
   "random-perks-bingo.perk.mythic_doomsday.name": "天启日",
-  "random-perks-bingo.perk.mythic_doomsday.desc": "被你击杀的玩家会受到死亡掉落的惩罚 —— 背包物品全部掉落 (无视 keepInventory 规则)。全局唯一。",
+  "random-perks-bingo.perk.mythic_doomsday.desc": "被你击杀的前 4 名玩家会强制死亡掉落 (背包物品全部掉落, 无视 keepInventory 规则); 你自己死亡时同样会掉落。全局唯一。",
   "random-perks-bingo.perk.seeker_supply_line.name": "补给线",
   "random-perks-bingo.perk.seeker_supply_line.desc": "立即获得一份随机补给, 之后每 2 分钟再获得一份。",
   "random-perks-bingo.perk.seeker_ender_supply.name": "末影补给",

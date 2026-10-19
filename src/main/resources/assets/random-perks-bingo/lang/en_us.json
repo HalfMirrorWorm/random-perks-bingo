@@ -263,7 +263,7 @@
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
   "random-perks-bingo.perk.mythic_creative_flash.desc": "Instantly gain 1.5 seconds of creative mode! Globally unique — only one player can own it.",
   "random-perks-bingo.perk.mythic_doomsday.name": "Doomsday",
-  "random-perks-bingo.perk.mythic_doomsday.desc": "Players you kill suffer full death drops — their whole inventory is dropped even if keepInventory is on. Globally unique.",
+  "random-perks-bingo.perk.mythic_doomsday.desc": "The first 4 players you kill suffer forced death drops — their whole inventory is dropped even if keepInventory is on. Your own death also drops your inventory. Globally unique.",
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",
   "random-perks-bingo.perk.seeker_supply_line.desc": "Gain a random supply now, then every 2 minutes.",
   "random-perks-bingo.perk.seeker_ender_supply.name": "Ender Supply",

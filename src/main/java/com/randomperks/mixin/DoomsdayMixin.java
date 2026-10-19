@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * "天启日": 被持有该词条的玩家击杀时, **强制死亡掉落** —— 无视 keepInventory 游戏规则。
+ * 触发次数有上限 (前 4 次击杀); 持词条者**自己死亡**时同样会强制掉落。
  *
  * <p><b>为什么注入 onDeath 而不是 PlayerEntity.dropInventory</b>: 原版
  * {@code LivingEntity.damage()} 的执行顺序是
@@ -45,8 +46,14 @@ public class DoomsdayMixin {
         // keepInventory 关闭时原版本来就会掉落, 不必干预
         if (!self.getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY)) return;
 
-        if (!(source.getAttacker() instanceof ServerPlayerEntity killer)) return;
-        if (!PerkBoostQuery.INSTANCE.hasDoomsday(killer)) return;
+        if (PerkBoostQuery.INSTANCE.hasDoomsday(self)) {
+            // 持词条者自己死亡 → 一律强制掉落 (不分死因)
+        } else {
+            // 被持词条者击杀 → 只有前 4 次生效
+            if (!(source.getAttacker() instanceof ServerPlayerEntity killer)) return;
+            if (!PerkBoostQuery.INSTANCE.hasDoomsday(killer)) return;
+            if (!PerkBoostQuery.INSTANCE.consumeDoomsdayKill(killer)) return;
+        }
 
         ((PlayerEntityInvoker) self).randomperks$vanishCursedItems();
         self.getInventory().dropAll();

@@ -106,6 +106,25 @@ object PerkBoostQuery {
     fun hasDoomsday(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("mythic_doomsday") == true
 
+    /** "天启日"最多对几次击杀生效 */
+    private const val DOOMSDAY_KILL_LIMIT = 4
+
+    /** 已生效次数记在 state.memory 里, 随对局重置 */
+    private const val DOOMSDAY_KILL_KEY = "doomsday_kills"
+
+    /**
+     * 记一次由"天启日"触发的强制掉落。
+     *
+     * @return 是否仍在前 [DOOMSDAY_KILL_LIMIT] 次以内 (之后一直返回 false)
+     */
+    fun consumeDoomsdayKill(killer: ServerPlayerEntity): Boolean {
+        val state = PerkStateManager.get(killer.uuid) ?: return false
+        val used = state.memory[DOOMSDAY_KILL_KEY]?.toIntOrNull() ?: 0
+        if (used >= DOOMSDAY_KILL_LIMIT) return false
+        state.memory[DOOMSDAY_KILL_KEY] = (used + 1).toString()
+        return true
+    }
+
     // ---- "这不是挂?" (紫): 射出的箭自动追踪 (由 HomingArrowMixin 在 PersistentProjectileEntity.tick 中转向) ----
 
     /** 玩家是否持有"这不是挂?" */
