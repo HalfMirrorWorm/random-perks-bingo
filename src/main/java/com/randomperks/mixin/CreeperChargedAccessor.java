@@ -16,8 +16,4 @@ public interface CreeperChargedAccessor {
     static TrackedData<Boolean> getChargedTracker() {
         throw new AssertionError();
     }
-
-    /** 引信总时长 (tick); 原版默认 30 (1.5 秒) */
-    @Accessor("fuseTime")
-    void setFuseTime(int fuseTime);
 }
