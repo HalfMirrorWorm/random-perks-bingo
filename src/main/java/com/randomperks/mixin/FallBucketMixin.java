@@ -2,11 +2,11 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
 import com.randomperks.network.PerkNetworking;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * "落地，水"词条: 受到**致命**摔落伤害时, 副手的水桶代替不死图腾救命。
+ * "落地，水"词条: 受到**致命**摔落伤害时, **背包里任意位置**的水桶代替不死图腾救命。
  *
  * 挂钩原版 LivingEntity.tryUseDeathProtector —— 该方法只在"这一下会致死"时被调用
  * (且在护甲/减伤结算之后), 天然满足"仅致死触发"。
@@ -33,10 +33,13 @@ public class FallBucketMixin {
         if (!((Object) this instanceof ServerPlayerEntity player)) return;
         if (!source.isIn(DamageTypeTags.IS_FALL)) return;
         if (!PerkBoostQuery.INSTANCE.hasFallBucket(player)) return;
-        if (!player.getOffHandStack().isOf(Items.WATER_BUCKET)) return;
 
-        // 只消耗水: 水桶 → 空桶 (桶保留)
-        player.equipStack(EquipmentSlot.OFFHAND, new ItemStack(Items.BUCKET));
+        // 背包里任意位置有水桶即可 (不用非得放副手)
+        int bucketSlot = findWaterBucket(player);
+        if (bucketSlot < 0) return;
+
+        // 只消耗水: 那一格的水桶 → 空桶 (桶保留在原位)
+        player.getInventory().setStack(bucketSlot, new ItemStack(Items.BUCKET));
 
         // 与不死图腾一致的效果
         player.setHealth(1.0f);
@@ -50,5 +53,14 @@ public class FallBucketMixin {
         PerkNetworking.INSTANCE.sendWaterBucketTotem(player);
 
         cir.setReturnValue(true);  // 已救命: 不走原版图腾/死亡流程
+    }
+
+    /** 背包里第一个水桶所在的格子 (快捷栏 + 主背包 + 护甲 + 副手), 没有返回 -1 */
+    private static int findWaterBucket(ServerPlayerEntity player) {
+        PlayerInventory inventory = player.getInventory();
+        for (int i = 0; i < inventory.size(); i++) {
+            if (inventory.getStack(i).isOf(Items.WATER_BUCKET)) return i;
+        }
+        return -1;
     }
 }

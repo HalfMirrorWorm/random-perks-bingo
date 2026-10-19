@@ -202,11 +202,11 @@ object SwiftPerks {
         }
     }
 
-    /** 紫 · 疾风: 仅在受到**致命**摔落伤害时, 副手的水桶会像不死图腾一样救你一命
+    /** 蓝 · 疾风: 仅在受到**致命**摔落伤害时, 背包里的水桶会像不死图腾一样救你一命
      *  (只消耗水, 保留空桶; 带"水桶上浮旋转"的图腾式演出) */
     object LifeBucket : PerkDefinition {
         override val id = "swift_life_bucket"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.WATER_BUCKET)
         // 效果由 FallBucketMixin 实现 (仅摔落伤害)
