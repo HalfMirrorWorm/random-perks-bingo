@@ -76,6 +76,14 @@ public abstract class HomingArrowMixin {
 
         self.setVelocity(blended.multiply(speed / blendedLength));
 
+        // ★ 必须手动置 velocityDirty —— Entity.setVelocity(Vec3d) 只赋值, 不会把这个标志置位,
+        //   而服务端正是靠它决定要不要给客户端发 EntityVelocityUpdateS2CPacket
+        //   (EntityTrackerEntry: `if (entity.velocityDirty || ...) sendVelocity`)。
+        //   漏掉这一句的话: 服务端的箭在拐弯, 客户端却一直按初始速度渲染, 只能靠偶发的位置
+        //   修正往回拉 —— 看起来就是"追踪几乎不起作用"。原版所有改速度的地方
+        //   (弹反 / 爆炸 / 命中回弹) 都会手动置位。
+        self.velocityDirty = true;
+
         // 直接结算: 把箭挪到目标身体中心。本 tick 原版的碰撞检测用的是
         // getPos() → getPos() + velocity 这条射线, 起点落在目标碰撞箱里就必定判中,
         // 伤害/药水效果/丢弃箭实体全走正常的 onEntityHit 流程。
