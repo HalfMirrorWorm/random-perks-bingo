@@ -1,6 +1,5 @@
 package com.randomperks.mixin;
 
-import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.game.PerkBoostQuery;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -44,6 +43,11 @@ public class OldSchoolBlockMixin {
         if (!stack.isIn(ItemTags.SWORDS)) return;
         if (!hasVeteran(user)) return;
 
+        // ★ 必须自己调 setCurrentHand —— 原版里这一步是 ConsumableComponent.use 内部做的
+        //   (吃东西时就是它调的), 框架并不会因为返回 consume 就自动进入"使用中"。
+        //   漏掉这一句: 客户端/服务端都不会进入 using 状态, 格挡姿势、减伤、减速全都不会生效。
+        user.setCurrentHand(hand);
+
         // CONSUME = 使用成功但不挥手臂 —— 右键举剑不该有挥手动作
         cir.setReturnValue(ActionResult.CONSUME);
     }
@@ -63,11 +67,17 @@ public class OldSchoolBlockMixin {
         }
     }
 
-    /** 服务端问词条状态, 客户端问同步下来的标记 (客户端要本地预测"开始使用") */
+    /**
+     * 客户端**不做**词条判断, 一律放行。
+     *
+     * 原因: 客户端的 {@code ClientPerkFlags} 要靠 PerkAbilitySyncS2C 同步, 一旦它没跟上,
+     * 客户端 {@code ItemStack.use} 返回 PASS 就**根本不会发"使用物品"的包**, 服务端
+     * 再判断也没机会。这里让客户端总是返回 CONSUME, 由服务端做最终判断:
+     * 没有词条的玩家右键剑只会多一个无用的包, 不会有任何效果 (服务端不 setCurrentHand)。
+     */
     private static boolean hasVeteran(PlayerEntity user) {
-        if (user.getWorld().isClient()) {
-            return ClientPerkFlags.has("hunter_veteran");
-        }
+        if (user.getWorld().isClient()) return true;
+
         return user instanceof ServerPlayerEntity player
                 && PerkBoostQuery.INSTANCE.hasOldSchoolCombat(player);
     }
