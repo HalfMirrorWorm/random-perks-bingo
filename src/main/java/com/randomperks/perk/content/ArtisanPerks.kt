@@ -18,6 +18,8 @@ import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.tag.EnchantmentTags
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -76,15 +78,14 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 附魔学徒: 获得一本随机实用附魔书 */
-    /** 蓝 · 附魔学徒: 立即获得一本随机实用附魔书, 之后每 5 分钟再获得一本 */
+    /** 蓝 · 附魔学徒: 立即获得一本**满级 / 宝藏**附魔书, 之后每 6 分钟再获得一本 */
     object Enchanter : PerkDefinition {
         override val id = "artisan_enchanter"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.ENCHANTED_BOOK)
 
-        private const val COOLDOWN_TICKS = 5 * 60 * 20
+        private const val COOLDOWN_TICKS = 6 * 60 * 20
 
         override fun onAcquire(ctx: PerkContext) {
             grant(ctx)
@@ -101,15 +102,19 @@ object ArtisanPerks {
 
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
 
-        /** 随机发一本实用附魔书 (效率 III / 耐久 III / 时运 II / 保护 III) */
+        /** 随机一本**满级**附魔书: 从整个附魔注册表里抽 (宝藏附魔也在其中), 一律按该附魔的
+         *  {@code max_level} 发放。诅咒不算"满级或宝藏", 排除掉。 */
         private fun grant(ctx: PerkContext) {
+            val registry = ctx.player.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
+
+            val candidates = registry.entrySet
+                .map { registry.getEntry(it.value) }
+                .filter { !it.isIn(EnchantmentTags.CURSE) }
+            if (candidates.isEmpty()) return
+
+            val entry = candidates[ctx.player.random.nextInt(candidates.size)]
             val book = ItemStack(Items.ENCHANTED_BOOK)
-            when (ctx.player.random.nextInt(4)) {
-                0 -> PerkEffects.enchant(ctx.player, book, Enchantments.EFFICIENCY, 3)
-                1 -> PerkEffects.enchant(ctx.player, book, Enchantments.UNBREAKING, 3)
-                2 -> PerkEffects.enchant(ctx.player, book, Enchantments.FORTUNE, 2)
-                else -> PerkEffects.enchant(ctx.player, book, Enchantments.PROTECTION, 3)
-            }
+            book.addEnchantment(entry, entry.value().definition().maxLevel())
             PerkEffects.giveStack(ctx.player, book)
         }
     }
