@@ -53,17 +53,27 @@ object ModVersionService {
         // 收到客户端的响应 → 比对
         ServerLoginNetworking.registerGlobalReceiver(CHANNEL) { _, listener, understood, buf, _, _ ->
             if (!understood) {
-                // 客户端没装这个 mod (或者不认识这个 channel)
-                listener.disconnect(Text.translatable("random-perks-bingo.message.version_missing"))
+                // 客户端没装这个 mod (或者不认识这个 channel) —— 它也就**没有本 mod 的语言文件**,
+                // 所以这里必须带 fallback, 否则玩家在连接界面只会看到一串翻译键。
+                listener.disconnect(
+                    Text.translatableWithFallback(
+                        "random-perks-bingo.message.version_missing",
+                        "Random Perks mod not detected — please install the same version as the server.\n" +
+                            "未检测到随机词条模组 —— 请安装与服务端相同版本的模组后再连接。",
+                    ),
+                )
                 return@registerGlobalReceiver
             }
 
             val clientVersion = runCatching { buf.readString() }.getOrNull() ?: "unknown"
             val serverVersion = currentVersion()
             if (clientVersion != serverVersion) {
+                // 版本不一致的客户端一般装了 mod, 正常能翻译; fallback 兜底旧版本客户端
+                // (它可能还没有这个翻译键)
                 listener.disconnect(
-                    Text.translatable(
+                    Text.translatableWithFallback(
                         "random-perks-bingo.message.version_mismatch",
+                        "Random Perks version mismatch!\nServer: %s\nClient: %s",
                         serverVersion,
                         clientVersion,
                     ),
