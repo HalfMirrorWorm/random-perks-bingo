@@ -270,7 +270,7 @@
   "random-perks-bingo.perk.swift_swap.name": "易位",
   "random-perks-bingo.perk.swift_swap.desc": "获得时选择两名玩家 (可以选自己), 交换他们的位置。",
   "random-perks-bingo.perk.seeker_old_priest.name": "老牧师",
-  "random-perks-bingo.perk.seeker_old_priest.desc": "召唤一只大师级牧师村民, 但他的交易项会随机禁用 0~10 项。",
+  "random-perks-bingo.perk.seeker_old_priest.desc": "召唤一只大师级牧师村民, 但他的交易项会随机缺货 0~10 项。",
   "random-perks-bingo.message.old_priest_failed": "附近没有能站人的地方, 老牧师没能生成。",
   "random-perks-bingo.perk.hunter_tnt_throw.name": "TNT 投手",
   "random-perks-bingo.perk.hunter_tnt_throw.desc": "获得 4 个 TNT；手持 TNT 右键时改为抛射一枚点燃的 TNT, 而不是放置方块。",
