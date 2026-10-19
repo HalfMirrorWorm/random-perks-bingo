@@ -599,7 +599,9 @@ object HunterPerks {
 
     /** 金 · 猎杀: **老玩家** —— 完全 1.9 战斗更新前的手感:
      *  1) 手持剑时攻击冷却始终视为已蓄满 (由 OldSchoolCombatMixin 实现)
-     *  2) **没有横扫攻击** (1.9 新增的机制; 把 SWEEPING_DAMAGE_RATIO 压到 0) */
+     *  2) **没有横扫攻击** (1.9 新增的机制; 把 SWEEPING_DAMAGE_RATIO 压到 0)
+     *  3) **右键举剑格挡**, 受到的伤害减半 (OldSchoolBlockMixin 让剑可以被"使用",
+     *     LivingEntityDamageMixin 负责减伤) */
     object Veteran : PerkDefinition {
         override val id = "hunter_veteran"
         override val rarity = PerkRarity.GOLD

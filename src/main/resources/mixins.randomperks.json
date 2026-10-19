@@ -23,6 +23,7 @@
     "MobLootInvoker",
     "BigStomachMixin",
     "OldSchoolCombatMixin",
+    "OldSchoolBlockMixin",
     "CatTargetMixin",
     "MobTargetSelectorAccessor",
     "CatFleeMixin",

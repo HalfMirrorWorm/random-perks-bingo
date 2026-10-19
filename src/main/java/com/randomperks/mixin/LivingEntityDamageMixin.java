@@ -6,6 +6,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
  *   <li>"贪婪之手" —— 受到**其他生物 (非玩家)** 的 2 倍伤害</li>
  *   <li>"Jockey" —— 骑在别人身上时, 受到来自**被骑者**的伤害 -75%</li>
  *   <li>"恶魔契约" —— 造成的伤害翻倍, 受到的**任何**伤害也翻倍</li>
+ *   <li>"老玩家" —— 右键举剑格挡时, 受到的伤害减半</li>
  * </ul>
  */
 @Mixin(LivingEntity.class)
@@ -72,6 +74,14 @@ public class LivingEntityDamageMixin {
         // "恶魔契约": 受到任何伤害翻倍 (含摔落/岩浆等环境伤害)
         if (PerkBoostQuery.INSTANCE.hasDemonPact(player)) {
             amount *= 2.0f;
+        }
+
+        // "老玩家": 剑格挡 —— 右键举剑 (1.9 以前的手感) 时受到的伤害减半。
+        // "使用中 + 手里是剑" 只有 OldSchoolBlockMixin 放过的那条路径能达成, 所以不必再查持有状态。
+        if (PerkBoostQuery.INSTANCE.hasOldSchoolCombat(player)
+                && player.isUsingItem()
+                && player.getActiveItem().isIn(ItemTags.SWORDS)) {
+            amount *= 0.5f;
         }
 
         return amount;

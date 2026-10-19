@@ -217,7 +217,7 @@
   "random-perks-bingo.perk.hunter_nya_axe.name": "喵人斧",
   "random-perks-bingo.perk.hunter_nya_axe.desc": "获得一把昂贵的秒人斧。",
   "random-perks-bingo.perk.hunter_veteran.name": "老玩家",
-  "random-perks-bingo.perk.hunter_veteran.desc": "手持剑时攻击冷却始终视为已蓄满, 且没有横扫攻击 —— 完全 1.9 战斗更新前的手感。",
+  "random-perks-bingo.perk.hunter_veteran.desc": "手持剑时攻击冷却始终视为已蓄满, 且没有横扫攻击; 右键可以举剑格挡, 受到的伤害减半 —— 完全 1.9 战斗更新前的手感。",
   "random-perks-bingo.perk.hunter_roly_poly.name": "不倒翁",
   "random-perks-bingo.perk.hunter_roly_poly.desc": "受到的击退效果降低 80%。",
   "random-perks-bingo.perk.hunter_easy_nuke.name": "核电轻而易举",
