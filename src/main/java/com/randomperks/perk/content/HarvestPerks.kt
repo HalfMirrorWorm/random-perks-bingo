@@ -174,15 +174,15 @@ object HarvestPerks {
     }
 
     /** 蓝 · 丰饶: 苦力怕会像害怕猫一样害怕你并主动远离 (不生成猫; 效果由 CatAuraMixin 实现);
-     *  另外泡在水里时, 每 10 秒获得一条随机鱼 */
+     *  另外泡在水里时, 每 5 秒获得一条随机鱼 */
     object CatAura : PerkDefinition {
         override val id = "harvest_cat_aura"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.CAT_SPAWN_EGG)
 
-        /** 水中获得鱼的间隔: 10 秒 */
-        private const val FISH_INTERVAL_TICKS = 10 * 20
+        /** 水中获得鱼的间隔: 5 秒 */
+        private const val FISH_INTERVAL_TICKS = 5 * 20
 
         /** 随机鱼池 (原版 4 种鱼) */
         private val FISHES = listOf(
