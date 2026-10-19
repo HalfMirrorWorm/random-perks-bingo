@@ -134,7 +134,7 @@ object ArtisanPerks {
 
         private const val PURPOSE = "quick_enchant"
 
-        /** 可选中的槽位 —— 与客户端 EquipmentPickScreen 里那份保持一致 (这里还会再校验一次) */
+        /** 可选的装备槽 —— 与客户端 EquipmentPickScreen 里那份保持一致 (这里还会再校验一次) */
         private val EQUIP_SLOTS = listOf(
             EquipmentSlot.HEAD,
             EquipmentSlot.CHEST,
@@ -143,25 +143,27 @@ object ArtisanPerks {
             EquipmentSlot.OFFHAND,
         )
 
+        /** 物品栏格子的 key 前缀, 后面跟 PlayerInventory 的原始索引 (0-8 是快捷栏) */
+        private const val INV_PREFIX = "inv:"
+
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            if (EQUIP_SLOTS.none { !player.getEquippedStack(it).isEmpty }) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.quick_enchant_no_equipment"), true)
+            if (!hasAnyItem(player)) {
+                player.sendMessage(Text.translatable("random-perks-bingo.message.quick_enchant_no_item"), true)
                 return
             }
             PerkNetworking.sendEquipmentPickOpen(player, PURPOSE)
         }
 
-        /** 客户端在装备选择器里选中了某个槽位 → 给那件装备一个随机满级附魔 */
-        fun handlePick(player: ServerPlayerEntity, slotName: String) {
+        /** 客户端在物品选择器里选中了一件东西 → 给它一个随机满级附魔 */
+        fun handlePick(player: ServerPlayerEntity, key: String) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
 
-            // 校验槽位 —— 客户端可以伪造名字, 只认自己这份白名单
-            val slot = EQUIP_SLOTS.firstOrNull { it.getName() == slotName } ?: return
-            val stack = player.getEquippedStack(slot)
+            // 客户端可以伪造 key, 所以只认自己这份白名单, 并当场把物品查出来
+            val stack = stackAt(player, key) ?: return
             if (stack.isEmpty) return
 
             val registry = player.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
@@ -194,6 +196,23 @@ object ArtisanPerks {
                 ),
                 false,
             )
+        }
+
+        /** 身上有没有任何可以附魔的东西 (装备槽 + 整个物品栏) */
+        private fun hasAnyItem(player: ServerPlayerEntity): Boolean {
+            if (EQUIP_SLOTS.any { !player.getEquippedStack(it).isEmpty }) return true
+            return (0 until player.inventory.size()).any { !player.inventory.getStack(it).isEmpty }
+        }
+
+        /** 把客户端回传的 key 解析成一件真实存在的物品; 越界 / 名字不认识一律返回 null */
+        private fun stackAt(player: ServerPlayerEntity, key: String): ItemStack? {
+            if (key.startsWith(INV_PREFIX)) {
+                val index = key.removePrefix(INV_PREFIX).toIntOrNull() ?: return null
+                if (index !in 0 until player.inventory.size()) return null
+                return player.inventory.getStack(index)
+            }
+            val slot = EQUIP_SLOTS.firstOrNull { it.getName() == key } ?: return null
+            return player.getEquippedStack(slot)
         }
     }
 

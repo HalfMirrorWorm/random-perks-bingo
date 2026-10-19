@@ -143,8 +143,8 @@ object ClientPerkNetworking {
                     else -> "random-perks-bingo.screen.quick_enchant" to "random-perks-bingo.quick_enchant.hint"
                 }
                 context.client().setScreen(
-                    EquipmentPickScreen(titleKey, hintKey) { slot ->
-                        ClientPlayNetworking.send(EquipmentPickC2S(payload.purpose, slot.getName()))
+                    EquipmentPickScreen(titleKey, hintKey) { key ->
+                        ClientPlayNetworking.send(EquipmentPickC2S(payload.purpose, key))
                     },
                 )
             }
