@@ -260,7 +260,7 @@
   "random-perks-bingo.perk.harvest_happy_ghast.name": "乐魂",
   "random-perks-bingo.perk.harvest_happy_ghast.desc": "召唤一只自带挽具的快乐恶魂, 并获得 4 根拴绳。",
   "random-perks-bingo.perk.harvest_warm_archaeology.name": "暖水考古",
-  "random-perks-bingo.perk.harvest_warm_archaeology.desc": "获得一把刷子。用刷子刷珊瑚块有 10% 概率刷出对应颜色的矿物 (蓝→青金石 / 粉→钻石 / 紫→紫水晶 / 红→红石 / 黄→金粒)。",
+  "random-perks-bingo.perk.harvest_warm_archaeology.desc": "获得一把刷子。用刷子刷珊瑚块会把它变成失活珊瑚, 并从暖水考古战利品表中掉落一件物品 —— 其中 10% 是该珊瑚颜色对应的矿物 (蓝→青金石 / 粉→钻石 / 紫→紫水晶 / 红→红石 / 黄→金粒)。",
   "random-perks-bingo.perk.hunter_tnt_throw.name": "TNT 投手",
   "random-perks-bingo.perk.hunter_tnt_throw.desc": "获得 4 个 TNT；手持 TNT 右键时改为抛射一枚点燃的 TNT, 而不是放置方块。",
   "random-perks-bingo.perk.hunter_munitions.name": "军火补给",
