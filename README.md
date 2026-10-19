@@ -105,3 +105,8 @@
   `e2e-test.ps1` 通过"开局后暂时让假玩家离队"让该检查通过（须在 40 秒内完成）。
 - RCON 以控制台身份执行命令，`/randomperks pick` 这类需要玩家的命令要用
   `/execute as <player> run ...` 指定玩家。
+
+## 开源协议
+
+本项目与 [Yet Another Bingo](https://gitlab.com/horrificdev/bingo) 保持一致，使用
+[GNU Lesser General Public License v3.0](LICENSE)（`LGPL-3.0-only`）。

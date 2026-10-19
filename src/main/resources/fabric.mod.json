@@ -4,6 +4,7 @@
   "version": "$version",
   "name": "Random Perks Bingo",
   "description": "随机词条 Bingo 扩展: 完成 bingo 格子后从随机词条中三选一, 构筑本局专属流派。 / Random perk draft system for Yet Another Bingo.",
+  "license": "LGPL-3.0-only",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -34,6 +35,7 @@
     "yet-another-minecraft-bingo": ">=2.9.6 <2.10"
   },
   "contact": {
-    "homepage": "https://gitlab.com/horrificdev/bingo"
+    "homepage": "https://github.com/HalfMirrorWorm/random-perks-bingo",
+    "sources": "https://github.com/HalfMirrorWorm/random-perks-bingo"
   }
 }
