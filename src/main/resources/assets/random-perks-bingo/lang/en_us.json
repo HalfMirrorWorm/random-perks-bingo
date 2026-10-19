@@ -271,6 +271,8 @@
   "random-perks-bingo.perk.swift_swap.desc": "On pickup, choose two players (yourself included) and swap their positions.",
   "random-perks-bingo.perk.seeker_old_priest.name": "Old Priest",
   "random-perks-bingo.perk.seeker_old_priest.desc": "Summon a master cleric villager, but 0–10 of his trades are randomly out of stock.",
+  "random-perks-bingo.perk.harvest_dingdong_chicken.name": "Ding Dong Chicken",
+  "random-perks-bingo.perk.harvest_dingdong_chicken.desc": "Gain 4 chicken spawn eggs, and you can dye any chicken with any dye.",
   "random-perks-bingo.message.old_priest_failed": "No room to stand nearby, so the Old Priest could not spawn.",
   "random-perks-bingo.perk.hunter_tnt_throw.name": "TNT Thrower",
   "random-perks-bingo.perk.hunter_tnt_throw.desc": "Gain 4 TNT. Right-clicking with TNT throws a lit TNT instead of placing a block.",

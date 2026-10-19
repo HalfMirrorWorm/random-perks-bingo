@@ -18,6 +18,7 @@ import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.passive.AbstractHorseEntity
+import net.minecraft.entity.passive.ChickenEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -120,6 +121,12 @@ object PerkWorldEventService {
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
             if (player !is ServerPlayerEntity) return@register ActionResult.PASS
+
+            // "叮咚鸡": 手持染料右键鸡 → 给它染色 (原版染料对鸡没有反应)
+            if (entity is ChickenEntity) {
+                val dyed = ChickenDyeService.tryDye(player, entity, hand)
+                if (dyed != ActionResult.PASS) return@register dyed
+            }
 
             // "Jockey": 右键玩家 → 骑到他身上 (失败则交还原版处理)
             if (entity is ServerPlayerEntity && PerkBoostQuery.hasJockey(player)) {

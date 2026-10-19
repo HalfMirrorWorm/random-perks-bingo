@@ -40,6 +40,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(ActionTargetsS2C.ID, ActionTargetsS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(EquipmentPickOpenS2C.ID, EquipmentPickOpenS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(DualTargetsS2C.ID, DualTargetsS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(ChickenDyeS2C.ID, ChickenDyeS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(StealRequestC2S.ID, StealRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealPickC2S.ID, StealPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealTargetPickC2S.ID, StealTargetPickC2S.CODEC)
@@ -241,6 +242,12 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, EquipmentPickOpenS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, EquipmentPickOpenS2C(purpose)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send equipment pick open: {}", it.toString()) }
+    }
+
+    fun sendChickenDye(player: ServerPlayerEntity, payload: ChickenDyeS2C) {
+        if (!ServerPlayNetworking.canSend(player, ChickenDyeS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, payload) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send chicken dye: {}", it.toString()) }
     }
 
     fun sendDualTargets(player: ServerPlayerEntity, purpose: String, targets: List<PlayerTargetEntry>) {

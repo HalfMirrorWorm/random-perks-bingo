@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.ChickenDyeService
 import com.randomperks.game.WarmArchaeologyService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -439,6 +440,21 @@ object HarvestPerks {
         }
     }
 
+    /** 蓝 · 丰收: **叮咚鸡** —— 获得 4 个鸡刷怪蛋; 之后可以用**任意染料**右键**任意**鸡给它染色
+     *  (纯外观, 不影响掉落与行为)。染色逻辑在 [ChickenDyeService]。 */
+    object DingDongChicken : PerkDefinition {
+        override val id = ChickenDyeService.PERK_ID
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.CHICKEN_SPAWN_EGG)
+
+        private const val EGGS = 4
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.CHICKEN_SPAWN_EGG, EGGS))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -458,5 +474,6 @@ object HarvestPerks {
         PerkRegistry.register(Gleaning)
         PerkRegistry.register(HappyGhast)
         PerkRegistry.register(WarmArchaeology)
+        PerkRegistry.register(DingDongChicken)
     }
 }

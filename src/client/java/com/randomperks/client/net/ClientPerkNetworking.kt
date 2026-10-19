@@ -1,6 +1,7 @@
 package com.randomperks.client.net
 
 import com.randomperks.client.BigSnowballState
+import com.randomperks.client.ChickenDyeState
 import com.randomperks.client.GlowMarkState
 import com.randomperks.client.JockeyClientState
 import com.randomperks.game.ModVersionService
@@ -26,6 +27,7 @@ import com.randomperks.network.PerkRequestC2S
 import com.randomperks.network.ActionTargetPickC2S
 import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.BigSnowballS2C
+import com.randomperks.network.ChickenDyeS2C
 import com.randomperks.network.DualTargetPickC2S
 import com.randomperks.network.DualTargetsS2C
 import com.randomperks.network.EquipmentPickC2S
@@ -158,6 +160,13 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(DualTargetsS2C.ID) { payload, context ->
             context.client().execute {
                 openDualTargetPicker(context.client(), payload.purpose, payload.targets, null)
+            }
+        }
+
+        // "叮咚鸡": 某只鸡被染色 —— 存下来, 渲染时给它的模型加 tint
+        ClientPlayNetworking.registerGlobalReceiver(ChickenDyeS2C.ID) { payload, context ->
+            context.client().execute {
+                ChickenDyeState.accept(payload.entityId, payload.color)
             }
         }
 
@@ -320,5 +329,6 @@ object ClientPerkNetworking {
         JockeyClientState.clear()
         MorphState.clear()
         BigSnowballState.clear()
+        ChickenDyeState.clear()
     }
 }
