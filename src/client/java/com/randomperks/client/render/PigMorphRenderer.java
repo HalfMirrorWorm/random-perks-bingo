@@ -1,6 +1,8 @@
 package com.randomperks.client.render;
 
 import com.randomperks.mixin.RenderDispatcherAccessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -47,6 +49,14 @@ public class PigMorphRenderer extends EntityRenderer<Entity, PigEntityRenderStat
     private static EntityRendererFactory.Context capturedContext;
     private static PigMorphRenderer instance;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger("random-perks-bingo/client");
+
+    /** 玩家头渲染失败只记一次日志, 免得每帧刷屏 */
+    private static boolean warnedHeadFailure;
+
+    /** 猪变体注册表查询失败同样只记一次 */
+    private static boolean warnedVariantFailure;
+
     private final PigEntityModel model;
     private final PlayerEntityModel headModel;
     private final ModelPart pigHead;
@@ -86,9 +96,18 @@ public class PigMorphRenderer extends EntityRenderer<Entity, PigEntityRenderStat
         // 变体决定模型与纹理 —— 固定用默认变体
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.world != null) {
-            Registry<PigVariant> registry =
-                    client.world.getRegistryManager().getOrThrow(RegistryKeys.PIG_VARIANT);
-            state.variant = registry.getOrThrow(PigVariants.DEFAULT).value();
+            try {
+                Registry<PigVariant> registry =
+                        client.world.getRegistryManager().getOrThrow(RegistryKeys.PIG_VARIANT);
+                state.variant = registry.getOrThrow(PigVariants.DEFAULT).value();
+            } catch (Exception e) {
+                // 注册表缺失 / 异常时保留上一次的 variant (PigEntityRenderer.getTexture 对 null 有兜底),
+                // 不要因为一个外观细节把整个客户端带崩
+                if (!warnedVariantFailure) {
+                    warnedVariantFailure = true;
+                    LOGGER.error("[RandomPerks] pig morph: pig variant lookup failed", e);
+                }
+            }
         }
         state.baby = false;
 
@@ -137,15 +156,24 @@ public class PigMorphRenderer extends EntityRenderer<Entity, PigEntityRenderStat
             head.roll = 0.0f;
 
             matrices.push();
-            // 移到猪头轴心 + 套用猪头旋转 (ModelPart.render 内部自己也会做, 但这里是显式对齐)
-            this.pigHead.applyTransform(matrices);
-            // 猪头立方体相对轴心是 y ∈ [-4, 4] (中心 0); 玩家头立方体是 y ∈ [-8, 0] (中心 -4)。
-            // 下移 4 模型单位 = 0.25 格, 两者的中心就重合了。
-            matrices.translate(0.0f, 0.25f, 0.0f);
+            try {
+                // 移到猪头轴心 + 套用猪头旋转 (ModelPart.render 内部自己也会做, 但这里是显式对齐)
+                this.pigHead.applyTransform(matrices);
+                // 猪头立方体相对轴心是 y ∈ [-4, 4] (中心 0); 玩家头立方体是 y ∈ [-8, 0] (中心 -4)。
+                // 下移 4 模型单位 = 0.25 格, 两者的中心就重合了。
+                matrices.translate(0.0f, 0.25f, 0.0f);
 
-            VertexConsumer headBuffer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(skin.texture()));
-            head.render(matrices, headBuffer, light, OverlayTexture.DEFAULT_UV);
-            matrices.pop();
+                VertexConsumer headBuffer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(skin.texture()));
+                head.render(matrices, headBuffer, light, OverlayTexture.DEFAULT_UV);
+            } catch (Throwable t) {
+                // 纯外观问题不该拖垮整个客户端 —— 失败就退回猪头, 并把原因记一次日志
+                if (!warnedHeadFailure) {
+                    warnedHeadFailure = true;
+                    LOGGER.error("[RandomPerks] pig morph: player-head render failed, falling back to pig head", t);
+                }
+            } finally {
+                matrices.pop();
+            }
         }
 
         matrices.pop();
