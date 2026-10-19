@@ -1,5 +1,6 @@
 package com.randomperks.perk.content
 
+import com.randomperks.RandomPerksMod
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.LayFlatService
@@ -593,6 +594,15 @@ object SeekerPerks {
             )
             villager.setPersistent()
             world.spawnEntity(villager)
+
+            // 诊断: 把逐级累积出来的交易列表打出来, 方便核对等级顺序与内容
+            RandomPerksMod.logger.info(
+                "[RandomPerks] old priest trades: {}",
+                villager.offers.joinToString(" | ") {
+                    "${it.displayedFirstBuyItem.name.string} x${it.displayedFirstBuyItem.count}" +
+                        " -> ${it.sellItem.name.string} x${it.sellItem.count}"
+                },
+            )
 
             // 交易是懒生成的: getOffers() 会按当前等级补满 10 项, 再把其中随机的 0~10 项标成缺货。
             // TradeOffer.disable() 就是把 uses 顶到 maxUses —— 界面上显示为红色的缺货叉, 交易项本身还在。
