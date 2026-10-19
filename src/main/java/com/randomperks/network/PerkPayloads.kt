@@ -385,6 +385,25 @@ class JockeyBreakFreeC2S : CustomPayload {
     override fun getId() = ID
 }
 
+/**
+ * C2S: "磁力升级" 附带的垃圾桶 —— 玩家把**光标上**的物品丢进垃圾桶, 请求服务端销毁。
+ *
+ * 垃圾桶是**客户端绘制**的, 不是真的容器槽位: ScreenHandler 的槽位索引要求客户端/服务端
+ * 严格一一对应, 只在一端多塞一个槽位, 点击时就会索引越界被踢。现成的垃圾桶 mod 也是这套
+ * 思路 —— 画面自己画, 只把"销毁这个物品"的动作发给服务端。
+ */
+class TrashItemC2S : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<TrashItemC2S>(Identifier.of("random-perks-bingo", "trash_item"))
+        val CODEC: PacketCodec<RegistryByteBuf, TrashItemC2S> = PacketCodec.of(
+            { _, _ -> },
+            { TrashItemC2S() },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** S2C: 把骑乘者的输入下发给被骑的玩家 (对方客户端据此接管自己的移动与朝向) */
 class JockeyControlS2C(
     val input: PlayerInput,

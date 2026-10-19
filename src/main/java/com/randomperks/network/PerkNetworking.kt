@@ -3,6 +3,7 @@ package com.randomperks.network
 import com.randomperks.RandomPerksMod
 import com.randomperks.game.JockeyService
 import com.randomperks.game.PerkAbilityService
+import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkOfferService
 import com.randomperks.game.StealService
 import com.randomperks.perk.content.ArtisanPerks
@@ -43,6 +44,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyBreakFreeC2S.ID, JockeyBreakFreeC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(TrashItemC2S.ID, TrashItemC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
 
@@ -134,6 +136,18 @@ object PerkNetworking {
             val player = context.player()
             context.server().execute {
                 JockeyService.handleBreakFree(player)
+            }
+        }
+
+        // "磁力升级" 的垃圾桶: 把光标上的物品销毁
+        ServerPlayNetworking.registerGlobalReceiver(TrashItemC2S.ID) { _, context ->
+            val player = context.player()
+            context.server().execute {
+                if (!PerkBoostQuery.hasMagnetUpgrade(player)) return@execute
+                val handler = player.currentScreenHandler
+                if (handler.cursorStack.isEmpty) return@execute
+                handler.cursorStack = ItemStack.EMPTY
+                handler.syncState()   // 让客户端的光标也跟着清掉
             }
         }
     }

@@ -241,7 +241,7 @@
   "random-perks-bingo.perk.seeker_lay_flat.desc": "Blindness + Slowness IV for five minutes; survive it to get a Nature's Compass and an Explorer's Compass, or die during it and get only a stone axe.",
   "random-perks-bingo.message.lay_flat_missing_mod": "Nature's Compass / Explorer's Compass is not installed; this reward was skipped.",
   "random-perks-bingo.perk.seeker_magnet_upgrade.name": "Magnet Upgrade",
-  "random-perks-bingo.perk.seeker_magnet_upgrade.desc": "Your item pickup range is increased to 16 blocks.",
+  "random-perks-bingo.perk.seeker_magnet_upgrade.desc": "Your item pickup range is increased to 16 blocks, and a trash slot appears in your inventory (click it while holding an item on your cursor to destroy it).",
   "random-perks-bingo.perk.harvest_saplings.name": "Saplings",
   "random-perks-bingo.perk.harvest_saplings.desc": "Gain 5 random saplings.",
   "random-perks-bingo.perk.artisan_shulker_box.name": "Portable Storage",

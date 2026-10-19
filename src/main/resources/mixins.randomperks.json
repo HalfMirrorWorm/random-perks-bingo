@@ -50,7 +50,9 @@
     "RendererContextMixin",
     "BigSnowballRendererMixin",
     "BigSnowballRenderStateMixin",
-    "OmnimovementMixin"
+    "OmnimovementMixin",
+    "HandledScreenAccessor",
+    "TrashSlotMixin"
   ],
   "injectors": {
     "defaultRequire": 1
