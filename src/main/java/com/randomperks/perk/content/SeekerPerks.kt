@@ -17,7 +17,9 @@ import com.randomperks.state.PerkStateManager
 import net.minecraft.block.Block
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.PotionContentsComponent
+import net.minecraft.entity.EntityType
 import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.SpawnReason
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
@@ -38,6 +40,10 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
+import net.minecraft.village.VillagerData
+import net.minecraft.village.VillagerProfession
+import net.minecraft.village.VillagerType
+import net.minecraft.world.Heightmap
 import net.minecraft.world.WanderingTraderManager
 import net.minecraft.world.poi.PointOfInterestTypes
 import net.minecraft.world.gen.structure.StructureKeys
@@ -539,6 +545,68 @@ object SeekerPerks {
         override fun icon() = ItemStack(Items.HOPPER)
     }
 
+    /** 蓝 · 秘藏: **老牧师** —— 在脚下召唤一只**大师级牧师**村民, 但他的交易项会被随机禁用
+     *  0~10 项 (10 项全没就是一只什么也不卖的牧师)。 */
+    object OldPriest : PerkDefinition {
+        override val id = "seeker_old_priest"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.EMERALD)
+
+        /** 大师级牧师的交易项总数: 2 项 × 5 个等级 */
+        private const val MAX_DISABLED = 10
+
+        override fun onAcquire(ctx: PerkContext) {
+            val world = ctx.player.world as? ServerWorld ?: return
+            if (!spawnAt(world, ctx.player.blockPos)) {
+                ctx.player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.old_priest_failed"),
+                    false,
+                )
+            }
+        }
+
+        private fun spawnAt(world: ServerWorld, center: BlockPos): Boolean {
+            val pos = if (standable(world, center)) center else nearbyStandable(world, center) ?: center
+
+            val villager = EntityType.VILLAGER.create(world, SpawnReason.EVENT) ?: return false
+
+            val registryManager = world.registryManager
+            val type = registryManager.getOrThrow(RegistryKeys.VILLAGER_TYPE)
+                .getOrThrow(VillagerType.PLAINS)
+            val profession = registryManager.getOrThrow(RegistryKeys.VILLAGER_PROFESSION)
+                .getOrThrow(VillagerProfession.CLERIC)
+            // 等级 5 = 大师级, 会一次性填满 5 个等级共 10 项交易
+            villager.setVillagerData(VillagerData(type, profession, 5))
+
+            villager.refreshPositionAndAngles(
+                pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
+                world.random.nextFloat() * 360f, 0f,
+            )
+            villager.setPersistent()
+            world.spawnEntity(villager)
+
+            // 交易是懒生成的: getOffers() 会按当前等级补满 10 项, 再随机拿掉 0~10 项
+            val offers = villager.offers
+            repeat(minOf(world.random.nextInt(MAX_DISABLED + 1), offers.size)) {
+                offers.removeAt(world.random.nextInt(offers.size))
+            }
+            return true
+        }
+
+        private fun standable(world: ServerWorld, pos: BlockPos): Boolean =
+            world.getBlockState(pos).isAir && world.getBlockState(pos.down()).isSolidBlock(world, pos.down())
+
+        private fun nearbyStandable(world: ServerWorld, center: BlockPos): BlockPos? {
+            for (i in 0 until 12) {
+                val candidate = center.add(world.random.nextInt(33) - 16, 0, world.random.nextInt(33) - 16)
+                val top = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, candidate)
+                if (standable(world, top)) return top
+            }
+            return null
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
@@ -548,6 +616,7 @@ object SeekerPerks {
         PerkRegistry.register(EnderCache)
         PerkRegistry.register(Alchemist)
         PerkRegistry.register(WanderingTrader)
+        PerkRegistry.register(OldPriest)
         PerkRegistry.register(VillageCompass)
         PerkRegistry.register(Puny)
         PerkRegistry.register(RandomGround)
