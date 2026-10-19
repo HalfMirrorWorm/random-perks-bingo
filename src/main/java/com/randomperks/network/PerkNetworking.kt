@@ -37,10 +37,12 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(StealOpenS2C.ID, StealOpenS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(StealTargetsS2C.ID, StealTargetsS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(ActionTargetsS2C.ID, ActionTargetsS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(EquipmentPickOpenS2C.ID, EquipmentPickOpenS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(StealRequestC2S.ID, StealRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealPickC2S.ID, StealPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealTargetPickC2S.ID, StealTargetPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(EquipmentPickC2S.ID, EquipmentPickC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyBreakFreeC2S.ID, JockeyBreakFreeC2S.CODEC)
@@ -118,6 +120,17 @@ object PerkNetworking {
                     "puny" -> SeekerPerks.Puny.handleTargetPick(player, uuid)
                     "poisoner" -> ArtisanPerks.Poisoner.handleTargetPick(player, uuid)
                     "hodgepodge" -> MythicPerks.Hodgepodge.handleTargetPick(player, uuid)
+                }
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(EquipmentPickC2S.ID) { payload, context ->
+            val player = context.player()
+            val purpose = payload.purpose
+            val slot = payload.slot
+            context.server().execute {
+                when (purpose) {
+                    "quick_enchant" -> ArtisanPerks.QuickEnchant.handlePick(player, slot)
                 }
             }
         }
@@ -209,6 +222,12 @@ object PerkNetworking {
     }
 
     /** 让客户端把指定实体显示为发光标记 (仅发给同队玩家) */
+    fun sendEquipmentPickOpen(player: ServerPlayerEntity, purpose: String) {
+        if (!ServerPlayNetworking.canSend(player, EquipmentPickOpenS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, EquipmentPickOpenS2C(purpose)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send equipment pick open: {}", it.toString()) }
+    }
+
     fun sendGlowMark(player: ServerPlayerEntity, entityIds: List<Int>, durationMillis: Long) {
         if (!ServerPlayNetworking.canSend(player, GlowMarkS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, GlowMarkS2C(entityIds, durationMillis)) }

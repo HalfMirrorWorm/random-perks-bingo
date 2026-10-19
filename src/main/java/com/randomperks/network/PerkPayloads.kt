@@ -340,6 +340,43 @@ class ActionTargetPickC2S(
 }
 
 /**
+ * S2C: 打开**装备选择器** (候选固定为 4 个护甲槽 + 副手)。
+ *
+ * 不下发候选列表 —— 这 5 个槽位是固定的, 客户端自己读自己的装备来显示就够了。
+ * purpose 供服务端在回传时分派到具体词条。
+ */
+class EquipmentPickOpenS2C(val purpose: String) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<EquipmentPickOpenS2C>(Identifier.of("random-perks-bingo", "equipment_pick_open"))
+        val CODEC: PacketCodec<RegistryByteBuf, EquipmentPickOpenS2C> = PacketCodec.of(
+            { value, buf -> buf.writeString(value.purpose) },
+            { buf -> EquipmentPickOpenS2C(buf.readString()) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** C2S: 客户端在装备选择器里选中了某个槽位 (slot 用 EquipmentSlot.getName(); 服务端会校验) */
+class EquipmentPickC2S(
+    val purpose: String,
+    val slot: String,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<EquipmentPickC2S>(Identifier.of("random-perks-bingo", "equipment_pick"))
+        val CODEC: PacketCodec<RegistryByteBuf, EquipmentPickC2S> = PacketCodec.of(
+            { value, buf ->
+                buf.writeString(value.purpose)
+                buf.writeString(value.slot)
+            },
+            { buf -> EquipmentPickC2S(buf.readString(), buf.readString()) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/**
  * C2S: "Jockey" 骑乘者每 tick 上报自己的输入。
  *
  * 服务端把它转给被骑的玩家 (见 [JockeyControlS2C]) —— 玩家客户端的位置是权威的,

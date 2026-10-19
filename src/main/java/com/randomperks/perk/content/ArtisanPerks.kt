@@ -10,7 +10,10 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import com.randomperks.state.PerkStateManager
+import net.minecraft.enchantment.Enchantment
+import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.Enchantments
+import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -116,6 +119,81 @@ object ArtisanPerks {
             val book = ItemStack(Items.ENCHANTED_BOOK)
             book.addEnchantment(entry, entry.value().definition().maxLevel())
             PerkEffects.giveStack(ctx.player, book)
+        }
+    }
+
+    /** 紫 · 匠造: **快速附魔** —— 获得时弹出装备选择器 (4 个护甲槽 + 副手), 给选中的那件装备
+     *  随机附加一个**该装备吃得下的满级附魔**, 不消耗经验。
+     *
+     *  只生效一次 (获得词条那一刻), 所以"附在哪件装备上"是个一次性决策 —— 底材越好收益越大。 */
+    object QuickEnchant : PerkDefinition {
+        override val id = "artisan_quick_enchant"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.ANVIL)
+
+        private const val PURPOSE = "quick_enchant"
+
+        /** 可选中的槽位 —— 与客户端 EquipmentPickScreen 里那份保持一致 (这里还会再校验一次) */
+        private val EQUIP_SLOTS = listOf(
+            EquipmentSlot.HEAD,
+            EquipmentSlot.CHEST,
+            EquipmentSlot.LEGS,
+            EquipmentSlot.FEET,
+            EquipmentSlot.OFFHAND,
+        )
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            if (EQUIP_SLOTS.none { !player.getEquippedStack(it).isEmpty }) {
+                player.sendMessage(Text.translatable("random-perks-bingo.message.quick_enchant_no_equipment"), true)
+                return
+            }
+            PerkNetworking.sendEquipmentPickOpen(player, PURPOSE)
+        }
+
+        /** 客户端在装备选择器里选中了某个槽位 → 给那件装备一个随机满级附魔 */
+        fun handlePick(player: ServerPlayerEntity, slotName: String) {
+            if (!PerkSession.isEnabled()) return
+
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (!state.hasPerk(id)) return
+
+            // 校验槽位 —— 客户端可以伪造名字, 只认自己这份白名单
+            val slot = EQUIP_SLOTS.firstOrNull { it.getName() == slotName } ?: return
+            val stack = player.getEquippedStack(slot)
+            if (stack.isEmpty) return
+
+            val registry = player.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
+
+            // 已有附魔既不能重复给, 也不能给和它互斥的 —— 原版的互斥组只允许留一个
+            // (比如"锋利"和"亡灵杀手"), 硬塞进去会得到一个原版不可能出现的组合。
+            val existing = EnchantmentHelper.getEnchantments(stack).enchantments
+            val candidates = registry.entrySet
+                .map { registry.getEntry(it.value) }
+                .filter { it.value().isSupportedItem(stack) }
+                .filter { !existing.contains(it) }
+                .filter { candidate -> existing.all { Enchantment.canBeCombined(candidate, it) } }
+            if (candidates.isEmpty()) {
+                player.sendMessage(Text.translatable("random-perks-bingo.message.quick_enchant_none"), true)
+                return
+            }
+
+            val picked = candidates[player.random.nextInt(candidates.size)]
+            val level = picked.value().definition().maxLevel()
+            stack.addEnchantment(picked, level)
+
+            // 改的是物品栏里已有的 stack (引用没变), 不会自动触发同步 —— 手动推一次
+            player.playerScreenHandler.syncState()
+
+            player.sendMessage(
+                Text.translatable(
+                    "random-perks-bingo.message.quick_enchant_done",
+                    stack.name,
+                    Enchantment.getName(picked, level),
+                ),
+                false,
+            )
         }
     }
 
@@ -307,6 +385,7 @@ object ArtisanPerks {
         PerkRegistry.register(Toolkit)
         PerkRegistry.register(Builder)
         PerkRegistry.register(Enchanter)
+        PerkRegistry.register(QuickEnchant)
         PerkRegistry.register(WaypointClock)
         PerkRegistry.register(LongArms)
         PerkRegistry.register(FireTemper)

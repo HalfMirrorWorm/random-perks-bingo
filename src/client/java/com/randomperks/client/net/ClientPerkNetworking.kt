@@ -5,6 +5,7 @@ import com.randomperks.client.GlowMarkState
 import com.randomperks.client.JockeyClientState
 import com.randomperks.game.ModVersionService
 import com.randomperks.game.MorphState
+import com.randomperks.client.screen.EquipmentPickScreen
 import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
@@ -25,6 +26,8 @@ import com.randomperks.network.PerkRequestC2S
 import com.randomperks.network.ActionTargetPickC2S
 import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.BigSnowballS2C
+import com.randomperks.network.EquipmentPickC2S
+import com.randomperks.network.EquipmentPickOpenS2C
 import com.randomperks.network.JockeyBreakFreeC2S
 import com.randomperks.network.JockeyControlC2S
 import com.randomperks.network.JockeyControlS2C
@@ -128,6 +131,20 @@ object ClientPerkNetworking {
                 context.client().setScreen(
                     TargetPickScreen(titleKey, hintKey, payload.targets) { uuid ->
                         pickActionTarget(payload.purpose, uuid)
+                    },
+                )
+            }
+        }
+
+        // "快速附魔": 打开装备选择器 (候选固定为 4 个护甲槽 + 副手, 客户端自己读装备来显示)
+        ClientPlayNetworking.registerGlobalReceiver(EquipmentPickOpenS2C.ID) { payload, context ->
+            context.client().execute {
+                val (titleKey, hintKey) = when (payload.purpose) {
+                    else -> "random-perks-bingo.screen.quick_enchant" to "random-perks-bingo.quick_enchant.hint"
+                }
+                context.client().setScreen(
+                    EquipmentPickScreen(titleKey, hintKey) { slot ->
+                        ClientPlayNetworking.send(EquipmentPickC2S(payload.purpose, slot.getName()))
                     },
                 )
             }
