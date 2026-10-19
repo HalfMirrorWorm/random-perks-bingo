@@ -331,6 +331,9 @@ object SeekerPerks {
             )
             trader.setDespawnDelay(48000)
             world.spawnEntity(trader)
+            // 与原版一致: 给它一个漫游目标, 商人会自己在附近走动
+            trader.setWanderTarget(pos)
+            trader.setPositionTarget(pos, 16)
 
             repeat(2) { index ->
                 val llama = net.minecraft.entity.EntityType.TRADER_LLAMA
@@ -341,6 +344,8 @@ object SeekerPerks {
                 )
                 llama.setDespawnDelay(47999)
                 world.spawnEntity(llama)
+                // 与原版一致: 拴在商人身上, 羊驼会跟着他走
+                llama.attachLeash(trader, true)
             }
             return true
         }
