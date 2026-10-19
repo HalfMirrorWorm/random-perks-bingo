@@ -34,7 +34,9 @@
     "BigSnowballMixin",
     "BigSnowballHitboxMixin",
     "PearlGauntletMixin",
-    "PokemonEggMixin"
+    "PokemonEggMixin",
+    "MorphDimensionsMixin",
+    "MorphSoundMixin"
   ],
   "client": [
     "EntityGlowMixin",

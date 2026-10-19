@@ -3,8 +3,8 @@ package com.randomperks.client.net
 import com.randomperks.client.BigSnowballState
 import com.randomperks.client.GlowMarkState
 import com.randomperks.client.JockeyClientState
-import com.randomperks.client.MorphClientState
 import com.randomperks.game.ModVersionService
+import com.randomperks.game.MorphState
 import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
@@ -166,10 +166,12 @@ object ClientPerkNetworking {
             }
         }
 
-        // "变群友": 某个实体进入变猪状态 (渲染与尺寸伪装全在客户端)
+        // "变群友": 某个实体进入变猪状态
         ClientPlayNetworking.registerGlobalReceiver(MorphS2C.ID) { payload, context ->
             context.client().execute {
-                MorphClientState.accept(payload.entityId, payload.durationMillis)
+                MorphState.mark(payload.entityId, payload.durationMillis)
+                // 碰撞箱要主动重算 —— 改 getBaseDimensions 的返回值不会更新已缓存的 boundingBox
+                context.client().world?.getEntityById(payload.entityId)?.calculateDimensions()
             }
         }
 
@@ -255,7 +257,7 @@ object ClientPerkNetworking {
         pendingChoices = 0
         currentOptions = null
         JockeyClientState.clear()
-        MorphClientState.clear()
+        MorphState.clear()
         BigSnowballState.clear()
     }
 }

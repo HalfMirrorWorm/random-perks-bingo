@@ -1,7 +1,7 @@
 package com.randomperks.mixin;
 
-import com.randomperks.client.MorphClientState;
 import com.randomperks.client.render.PigMorphRenderer;
+import com.randomperks.game.MorphState;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.entity.Entity;
@@ -25,7 +25,7 @@ public class MorphRendererMixin {
             at = @At("HEAD"),
             cancellable = true)
     private void randomperks$pigRenderer(Entity entity, CallbackInfoReturnable<EntityRenderer> cir) {
-        if (!MorphClientState.isMorphed(entity.getId())) return;
+        if (!MorphState.isMorphed(entity.getId())) return;
 
         PigMorphRenderer renderer = PigMorphRenderer.get();
         if (renderer != null) {
