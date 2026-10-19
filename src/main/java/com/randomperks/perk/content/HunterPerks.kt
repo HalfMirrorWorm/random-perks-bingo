@@ -597,12 +597,12 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: **老玩家** —— 完全 1.9 战斗更新前的手感:
+    /** 金 · 猎杀: **老玩家** —— 完全 1.9 战斗更新前的手感:
      *  1) 手持剑时攻击冷却始终视为已蓄满 (由 OldSchoolCombatMixin 实现)
      *  2) **没有横扫攻击** (1.9 新增的机制; 把 SWEEPING_DAMAGE_RATIO 压到 0) */
     object Veteran : PerkDefinition {
         override val id = "hunter_veteran"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.IRON_SWORD)
 
