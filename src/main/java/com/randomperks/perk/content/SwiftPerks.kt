@@ -145,8 +145,8 @@ object SwiftPerks {
         override fun onAcquire(ctx: PerkContext) {
             applySpeed(ctx)
             enforceChest(ctx)
-            // 附赠 3 个烟花火箭 (飞行时长 2) —— 没有 FIREWORKS 组件的裸火箭是废品, 飞不了
-            val rocket = ItemStack(Items.FIREWORK_ROCKET, 3)
+            // 附赠 2 个烟花火箭 (飞行时长 2) —— 没有 FIREWORKS 组件的裸火箭是废品, 飞不了
+            val rocket = ItemStack(Items.FIREWORK_ROCKET, 2)
             rocket.set(DataComponentTypes.FIREWORKS, FireworksComponent(2, emptyList()))
             PerkEffects.giveStack(ctx.player, rocket)
         }
