@@ -150,17 +150,17 @@ public class PigMorphRenderer extends EntityRenderer<Entity, PigEntityRenderStat
         // (局部 y ∈ [-8, 0] → 脚上方 1.0~1.5 格), 也就是"头悬在猪身上面"。
         if (skin != null) {
             ModelPart head = this.headModel.head;
-            // 朝向由 pigHead.applyTransform 提供, 这里清零, 否则会旋转两次
-            head.pitch = 0.0f;
-            head.yaw = 0.0f;
-            head.roll = 0.0f;
+            // 参考 sparktraits 的 PigPlayerRenderer#copyPigHeadTransform:
+            // 先把猪头的**完整 transform** (轴心 / 缩放 / roll) 抄到玩家头上, 再只覆盖朝向。
+            // copyTransform = xScale/yScale/zScale + pitch/yaw/roll + originX/Y/Z。
+            head.copyTransform(this.pigHead);
+            head.pitch = state.pitch * 0.017453292f;
+            head.yaw = state.relativeHeadYaw * 0.017453292f;
 
             matrices.push();
             try {
-                // 移到猪头轴心 + 套用猪头旋转 (ModelPart.render 内部自己也会做, 但这里是显式对齐)
-                this.pigHead.applyTransform(matrices);
                 // 猪头立方体相对轴心是 y ∈ [-4, 4] (中心 0); 玩家头立方体是 y ∈ [-8, 0] (中心 -4)。
-                // 下移 4 模型单位 = 0.25 格, 两者的中心就重合了。
+                // 下移 4 模型单位 = 0.25 格, 两者的中心就重合了 (参考实现没做这步, 头会偏高 0.25)。
                 matrices.translate(0.0f, 0.25f, 0.0f);
 
                 VertexConsumer headBuffer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(skin.texture()));
