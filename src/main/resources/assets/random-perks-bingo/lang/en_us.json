@@ -222,7 +222,7 @@
   "random-perks-bingo.perk.hunter_pig_morph.name": "Groupmate",
   "random-perks-bingo.perk.hunter_pig_morph.desc": "Your attacks turn the target into a pig for 2 seconds (8 second cooldown); a morphed player's pig head shows their own skin, and their view height drops to a pig's.",
   "random-perks-bingo.perk.hunter_big_snowball.name": "Snowball Fight",
-  "random-perks-bingo.perk.hunter_big_snowball.desc": "Gain 32 snowballs; the ones you throw are bigger, deal 3 damage on hit, and knock the target flying.",
+  "random-perks-bingo.perk.hunter_big_snowball.desc": "Gain 32 snowballs; the ones you throw are bigger (with a matching hitbox), deal 3 damage on hit, and knock the target flying.",
   "random-perks-bingo.perk.mythic_hodgepodge.name": "Glitch",
   "random-perks-bingo.perk.mythic_hodgepodge.desc": "When acquired, a target picker opens: choose a player and every item in their inventory is randomly replaced with a different item (counts preserved). Globally unique.",
   "random-perks-bingo.perk.hunter_demon_pact.name": "Demon Pact",

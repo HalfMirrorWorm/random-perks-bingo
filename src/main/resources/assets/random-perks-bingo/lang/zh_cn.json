@@ -222,7 +222,7 @@
   "random-perks-bingo.perk.hunter_pig_morph.name": "变群友",
   "random-perks-bingo.perk.hunter_pig_morph.desc": "你的攻击会把目标变成猪 2 秒 (冷却 8 秒); 被变成猪的玩家, 猪头会换成他自己的皮肤, 视角高度也会变成猪的高度。",
   "random-perks-bingo.perk.hunter_big_snowball.name": "打雪仗",
-  "random-perks-bingo.perk.hunter_big_snowball.desc": "获得 32 个雪球; 你扔出的雪球会变大, 命中造成 3 点伤害并击飞目标。",
+  "random-perks-bingo.perk.hunter_big_snowball.desc": "获得 32 个雪球; 你扔出的雪球会变大 (判定范围同步变大), 命中造成 3 点伤害并击飞目标。",
   "random-perks-bingo.perk.mythic_hodgepodge.name": "游戏BUG",
   "random-perks-bingo.perk.mythic_hodgepodge.desc": "获得时弹出目标选择器: 选一名玩家, 把他背包里的每一种物品各自随机变成另一种物品 (数量不变)。全局唯一。",
   "random-perks-bingo.perk.hunter_demon_pact.name": "恶魔契约",

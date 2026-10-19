@@ -33,6 +33,7 @@
     "CreeperChargedAccessor",
     "HomingArrowMixin",
     "BigSnowballMixin",
+    "BigSnowballHitboxMixin",
     "PearlGauntletMixin",
     "PokemonEggMixin"
   ],

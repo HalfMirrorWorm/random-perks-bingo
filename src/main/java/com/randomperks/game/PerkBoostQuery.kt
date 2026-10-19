@@ -1,9 +1,11 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
+import net.minecraft.entity.Entity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.projectile.thrown.SnowballEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.network.ServerPlayerEntity
@@ -148,6 +150,13 @@ object PerkBoostQuery {
     /** 玩家是否持有"雪球大作战" */
     fun hasBigSnowball(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_big_snowball") == true
+
+    /** "雪球大作战" 大雪球的 commandTag (服务端标记; commandTags 不同步给客户端) */
+    const val BIG_SNOWBALL_TAG = "randomperks_big_snowball"
+
+    /** 该实体是否是"雪球大作战"的大雪球 */
+    fun isBigSnowball(entity: Entity): Boolean =
+        entity is SnowballEntity && BIG_SNOWBALL_TAG in entity.commandTags
 
     // ---- "恶魔契约" (金): 造成伤害翻倍, 受到伤害也翻倍 (由 LivingEntityDamageMixin 调用) ----
 

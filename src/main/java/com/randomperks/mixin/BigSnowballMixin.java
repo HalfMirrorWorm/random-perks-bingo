@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class BigSnowballMixin {
 
     /** 服务端标记 (客户端看不到) */
-    private static final String TAG = "randomperks_big_snowball";
+    private static final String TAG = PerkBoostQuery.BIG_SNOWBALL_TAG;
 
     /** 命中伤害 */
     private static final float DAMAGE = 3.0f;
