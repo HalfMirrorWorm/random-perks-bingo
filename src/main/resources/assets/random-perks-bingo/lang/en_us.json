@@ -202,7 +202,7 @@
   "random-perks-bingo.perk.harvest_big_dog.name": "Big Doggo",
   "random-perks-bingo.perk.harvest_big_dog.desc": "Summon 2 tamed wolves of your own (50 health, 6 attack — far stronger than ordinary wolves).",
   "random-perks-bingo.perk.seeker_wandering_trader.name": "Wandering Leash",
-  "random-perks-bingo.perk.seeker_wandering_trader.desc": "Immediately trigger a wandering trader spawn (no biome restriction — always spawns).",
+  "random-perks-bingo.perk.seeker_wandering_trader.desc": "Immediately spawns a wandering trader at your feet (with 2 trader llamas).",
   "random-perks-bingo.perk.seeker_village_compass.name": "Homecoming",
   "random-perks-bingo.perk.seeker_village_compass.desc": "Gain a lodestone compass pointing to the nearest village.",
   "random-perks-bingo.perk.hunter_call_lightning.name": "Call Lightning",

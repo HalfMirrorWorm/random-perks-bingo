@@ -6,8 +6,6 @@ import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.StealService
 import com.randomperks.game.VerminSwarmService
-import com.randomperks.mixin.ServerWorldAccessor
-import com.randomperks.mixin.WanderingTraderManagerInvoker
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
@@ -294,7 +292,11 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 蓝 · 秘藏: 获得时立即触发一次流浪商人刷新 —— **不受生物群系限制**, 保证刷出 */
+    /** 蓝 · 秘藏: 获得时**直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼。
+     *
+     *  不再走原版刷新事件 —— WanderingTraderManager.trySpawn 有生物群系 / 白天 / 概率 / 计时器
+     *  一堆限制, 经常刷不出来 ("先试原版、失败再兜底"的写法仍然会漏)。现在直接生成,
+     *  保证刷在玩家那边。 */
     object WanderingTrader : PerkDefinition {
         override val id = "seeker_wandering_trader"
         override val rarity = PerkRarity.BLUE
@@ -303,37 +305,23 @@ object SeekerPerks {
 
         private const val SPAWNED_KEY = "trader_spawned"
 
-        override fun onAcquire(ctx: PerkContext) = attempt(ctx)
-
-        /** 一次刷新尝试: 先走原版刷新事件; 拿不到落脚点(如下界)再手动生成兜底 */
-        private fun attempt(ctx: PerkContext) {
+        override fun onAcquire(ctx: PerkContext) {
             if (ctx.state.memory[SPAWNED_KEY] == "1") return
 
-            val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
-
-            if (spawnVanillaTrader(world) || spawnTraderNear(world, player.blockPos)) {
+            val world = ctx.player.world as? ServerWorld ?: return
+            if (spawnAt(world, ctx.player.blockPos)) {
                 ctx.state.memory[SPAWNED_KEY] = "1"
             } else {
-                player.sendMessage(
+                ctx.player.sendMessage(
                     Text.translatable("random-perks-bingo.message.trader_failed"),
                     false,
                 )
             }
         }
 
-        /** 兜底: 在玩家附近找一块能站的地方, 手动生成商人 + 2 只羊驼 (下界等找不到落脚点的场合) */
-        private fun spawnTraderNear(world: ServerWorld, center: BlockPos): Boolean {
-            var spawnPos: BlockPos? = null
-            for (i in 0 until 12) {
-                val candidate = center.add(world.random.nextInt(33) - 16, 0, world.random.nextInt(33) - 16)
-                val top = world.getTopPosition(net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, candidate)
-                if (world.getBlockState(top).isAir && world.getBlockState(top.down()).isSolidBlock(world, top.down())) {
-                    spawnPos = top
-                    break
-                }
-            }
-            val pos = spawnPos ?: return false
+        /** 商人 + 2 只羊驼; 玩家脚下站不住 (水里/卡墙) 时才在附近找一块 */
+        private fun spawnAt(world: ServerWorld, center: BlockPos): Boolean {
+            val pos = if (standable(world, center)) center else nearbyStandable(world, center) ?: center
 
             val trader = net.minecraft.entity.EntityType.WANDERING_TRADER
                 .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return false
@@ -357,30 +345,16 @@ object SeekerPerks {
             return true
         }
 
-        /**
-         * 执行**原版流浪商人刷新事件** (WanderingTraderManager.trySpawn):
-         * 随机选一名玩家 → 在其 48 格内寻找合法位置 → 生成商人 + 2 只商队羊驼 → 设置漫游目标,
-         * 与自然刷新完全一致 (含生物群系限制等原版判定)。
-         *
-         * 原版该逻辑自带 1/10 概率门槛; 未命中时只消耗一次随机数, 代价可忽略,
-         * 因此循环触发到命中为止 (上限 50 次, 兜底防"生物群系不允许"类死循环)。
-         */
-        private fun spawnVanillaTrader(world: ServerWorld): Boolean {
-            // 原版 trySpawn 在"世界无存活玩家"时会返回 true 却什么都不生成 —— 先挡掉, 否则会把词条
-            // 误标为已刷出 (边角情况: 玩家在死亡状态下获得词条, 且服务器上暂无其他存活玩家)
-            if (world.players.none { it.isAlive }) return false
+        private fun standable(world: ServerWorld, pos: BlockPos): Boolean =
+            world.getBlockState(pos).isAir && world.getBlockState(pos.down()).isSolidBlock(world, pos.down())
 
-            val accessor = world as ServerWorldAccessor
-            val manager = accessor.spawners
-                .filterIsInstance<WanderingTraderManager>()
-                .firstOrNull()
-                ?: WanderingTraderManager(accessor.worldProperties)
-            val invoker = manager as WanderingTraderManagerInvoker
-
-            repeat(50) {
-                if (invoker.invokeTrySpawn(world)) return true
+        private fun nearbyStandable(world: ServerWorld, center: BlockPos): BlockPos? {
+            for (i in 0 until 12) {
+                val candidate = center.add(world.random.nextInt(33) - 16, 0, world.random.nextInt(33) - 16)
+                val top = world.getTopPosition(net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, candidate)
+                if (standable(world, top)) return top
             }
-            return false
+            return null
         }
     }
 
