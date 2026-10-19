@@ -340,6 +340,51 @@ class ActionTargetPickC2S(
 }
 
 /**
+ * S2C: 下发"需要选**两名**玩家"类词条的候选列表。
+ *
+ * 客户端会连续弹两次 [com.randomperks.client.screen.TargetPickScreen] (第二次自动排除第一次选中的),
+ * 两次都选完才回一个 [DualTargetPickC2S]。
+ */
+class DualTargetsS2C(
+    val purpose: String,
+    val targets: List<PlayerTargetEntry>,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<DualTargetsS2C>(Identifier.of("random-perks-bingo", "dual_targets"))
+        val CODEC: PacketCodec<RegistryByteBuf, DualTargetsS2C> = PacketCodec.of(
+            { value, buf ->
+                buf.writeString(value.purpose)
+                writeTargets(buf, value.targets)
+            },
+            { buf -> DualTargetsS2C(buf.readString(), readTargets(buf)) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** C2S: 客户端在两次选择器里分别选中了两名玩家 (first 是先选的) */
+class DualTargetPickC2S(
+    val purpose: String,
+    val first: UUID,
+    val second: UUID,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<DualTargetPickC2S>(Identifier.of("random-perks-bingo", "dual_target_pick"))
+        val CODEC: PacketCodec<RegistryByteBuf, DualTargetPickC2S> = PacketCodec.of(
+            { value, buf ->
+                buf.writeString(value.purpose)
+                buf.writeUuid(value.first)
+                buf.writeUuid(value.second)
+            },
+            { buf -> DualTargetPickC2S(buf.readString(), buf.readUuid(), buf.readUuid()) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/**
  * S2C: 打开**装备选择器** (候选固定为 4 个护甲槽 + 副手)。
  *
  * 不下发候选列表 —— 这 5 个槽位是固定的, 客户端自己读自己的装备来显示就够了。

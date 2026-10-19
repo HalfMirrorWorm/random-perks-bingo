@@ -26,17 +26,21 @@ import com.randomperks.network.PerkRequestC2S
 import com.randomperks.network.ActionTargetPickC2S
 import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.BigSnowballS2C
+import com.randomperks.network.DualTargetPickC2S
+import com.randomperks.network.DualTargetsS2C
 import com.randomperks.network.EquipmentPickC2S
 import com.randomperks.network.EquipmentPickOpenS2C
 import com.randomperks.network.JockeyBreakFreeC2S
 import com.randomperks.network.JockeyControlC2S
 import com.randomperks.network.JockeyControlS2C
 import com.randomperks.network.MorphS2C
+import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.network.StealOpenS2C
 import com.randomperks.network.StealPickC2S
 import com.randomperks.network.StealTargetPickC2S
 import com.randomperks.network.StealTargetsS2C
 import com.randomperks.network.WaterBucketTotemS2C
+import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -147,6 +151,13 @@ object ClientPerkNetworking {
                         ClientPlayNetworking.send(EquipmentPickC2S(payload.purpose, key))
                     },
                 )
+            }
+        }
+
+        // "易位": 连弹两次玩家选择器 (第二次自动排除第一个), 两次都选完才一次性回传
+        ClientPlayNetworking.registerGlobalReceiver(DualTargetsS2C.ID) { payload, context ->
+            context.client().execute {
+                openDualTargetPicker(context.client(), payload.purpose, payload.targets, null)
             }
         }
 
@@ -268,6 +279,39 @@ object ClientPerkNetworking {
     /** 界面被关闭 (未选择) */
     fun clearOptions() {
         currentOptions = null
+    }
+
+    /**
+     * "易位" 的两次选择。
+     *
+     * 注意: TargetPickScreen 的 mouseClicked 会先调 onPick、再 close() (把当前屏幕清空)。
+     * 所以第二次弹窗必须排到下一 tick —— 直接在 onPick 里 setScreen 会被紧接着的 close() 清掉。
+     */
+    private fun openDualTargetPicker(
+        client: MinecraftClient,
+        purpose: String,
+        targets: List<PlayerTargetEntry>,
+        first: UUID?,
+    ) {
+        val remaining = if (first == null) targets else targets.filter { it.uuid != first }
+        if (remaining.isEmpty()) return
+
+        val titleKey =
+            if (first == null) "random-perks-bingo.screen.swap_first"
+            else "random-perks-bingo.screen.swap_second"
+        val hintKey =
+            if (first == null) "random-perks-bingo.swap_first.hint"
+            else "random-perks-bingo.swap_second.hint"
+
+        client.setScreen(
+            TargetPickScreen(titleKey, hintKey, remaining) { uuid ->
+                if (first == null) {
+                    client.execute { openDualTargetPicker(client, purpose, targets, uuid) }
+                } else {
+                    ClientPlayNetworking.send(DualTargetPickC2S(purpose, first, uuid))
+                }
+            },
+        )
     }
 
     fun reset() {

@@ -10,6 +10,7 @@ import com.randomperks.perk.content.ArtisanPerks
 import com.randomperks.perk.content.HunterPerks
 import com.randomperks.perk.content.MythicPerks
 import com.randomperks.perk.content.SeekerPerks
+import com.randomperks.perk.content.SwiftPerks
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.item.ItemStack
@@ -38,11 +39,13 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(StealTargetsS2C.ID, StealTargetsS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(ActionTargetsS2C.ID, ActionTargetsS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(EquipmentPickOpenS2C.ID, EquipmentPickOpenS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(DualTargetsS2C.ID, DualTargetsS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(StealRequestC2S.ID, StealRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealPickC2S.ID, StealPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealTargetPickC2S.ID, StealTargetPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(EquipmentPickC2S.ID, EquipmentPickC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(DualTargetPickC2S.ID, DualTargetPickC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyBreakFreeC2S.ID, JockeyBreakFreeC2S.CODEC)
@@ -131,6 +134,18 @@ object PerkNetworking {
             context.server().execute {
                 when (purpose) {
                     "quick_enchant" -> ArtisanPerks.QuickEnchant.handlePick(player, slot)
+                }
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(DualTargetPickC2S.ID) { payload, context ->
+            val player = context.player()
+            val purpose = payload.purpose
+            val first = payload.first
+            val second = payload.second
+            context.server().execute {
+                when (purpose) {
+                    "swap" -> SwiftPerks.Swap.handlePick(player, first, second)
                 }
             }
         }
@@ -226,6 +241,12 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, EquipmentPickOpenS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, EquipmentPickOpenS2C(purpose)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send equipment pick open: {}", it.toString()) }
+    }
+
+    fun sendDualTargets(player: ServerPlayerEntity, purpose: String, targets: List<PlayerTargetEntry>) {
+        if (!ServerPlayNetworking.canSend(player, DualTargetsS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, DualTargetsS2C(purpose, targets)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send dual targets: {}", it.toString()) }
     }
 
     fun sendGlowMark(player: ServerPlayerEntity, entityIds: List<Int>, durationMillis: Long) {
