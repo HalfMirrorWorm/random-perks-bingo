@@ -8,6 +8,7 @@ import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
@@ -21,6 +22,7 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 
@@ -100,6 +102,15 @@ object PerkWorldEventService {
             if (player !is ServerPlayerEntity) return@register ActionResult.PASS
             if (entity is LivingEntity) MorphService.tryApply(player, entity)
             ActionResult.PASS
+        }
+
+        // 右键方块 → "暖水考古": 手持刷子刷珊瑚块。
+        // 原版刷子只认可疑的沙/沙砾, 珊瑚不在其列 —— 所以这个交互必须自己接管。
+        UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
+            if (world.isClient) return@register ActionResult.PASS
+            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
+            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
+            WarmArchaeologyService.handleBrush(player, world as ServerWorld, hitResult.blockPos)
         }
 
         // "属于你的马"交互时的兼容修复 (含旧版本召唤的马):

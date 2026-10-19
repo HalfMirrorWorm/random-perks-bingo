@@ -259,6 +259,8 @@
   "random-perks-bingo.perk.harvest_gleaning.desc": "Harvesting a mature crop has a 50% chance to drop an extra random seed.",
   "random-perks-bingo.perk.harvest_happy_ghast.name": "Happy Ghast",
   "random-perks-bingo.perk.harvest_happy_ghast.desc": "Summon a Happy Ghast wearing a harness, and gain 4 leads.",
+  "random-perks-bingo.perk.harvest_warm_archaeology.name": "Warm Water Archaeology",
+  "random-perks-bingo.perk.harvest_warm_archaeology.desc": "Gain a brush. Brushing a coral block destroys it and has a 10% chance to drop the mineral matching its color (blue→lapis, pink→diamond, purple→amethyst, red→redstone, yellow→gold nugget).",
   "random-perks-bingo.perk.hunter_tnt_throw.name": "TNT Thrower",
   "random-perks-bingo.perk.hunter_tnt_throw.desc": "Gain 4 TNT. Right-clicking with TNT throws a lit TNT instead of placing a block.",
   "random-perks-bingo.perk.hunter_munitions.name": "Munitions Supply",

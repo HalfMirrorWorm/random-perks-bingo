@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.WarmArchaeologyService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -424,6 +425,20 @@ object HarvestPerks {
         }
     }
 
+    /** 蓝 · 丰收: **暖水考古** —— 获得一把刷子; 用刷子刷珊瑚块会把它刷掉, 并有 10% 概率
+     *  刷出一颗**颜色对应**的矿物 (蓝→青金石、粉→钻石、紫→紫水晶、红→红石、黄→金粒)。
+     *  交互由 [WarmArchaeologyService] 接管 (原版刷子不认可珊瑚)。 */
+    object WarmArchaeology : PerkDefinition {
+        override val id = WarmArchaeologyService.PERK_ID
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.BRUSH)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.BRUSH))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -442,5 +457,6 @@ object HarvestPerks {
         PerkRegistry.register(Saplings)
         PerkRegistry.register(Gleaning)
         PerkRegistry.register(HappyGhast)
+        PerkRegistry.register(WarmArchaeology)
     }
 }
