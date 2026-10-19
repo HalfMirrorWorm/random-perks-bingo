@@ -1,5 +1,6 @@
 package com.randomperks.mixin;
 
+import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.game.PerkBoostQuery;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -68,16 +69,16 @@ public class OldSchoolBlockMixin {
     }
 
     /**
-     * 客户端**不做**词条判断, 一律放行。
+     * 客户端也要判断词条。
      *
-     * 原因: 客户端的 {@code ClientPerkFlags} 要靠 PerkAbilitySyncS2C 同步, 一旦它没跟上,
-     * 客户端 {@code ItemStack.use} 返回 PASS 就**根本不会发"使用物品"的包**, 服务端
-     * 再判断也没机会。这里让客户端总是返回 CONSUME, 由服务端做最终判断:
-     * 没有词条的玩家右键剑只会多一个无用的包, 不会有任何效果 (服务端不 setCurrentHand)。
+     * 客户端 {@code use} 一旦返回 CONSUME 就会本地 {@code setCurrentHand}, 第三/第一人称
+     * 都会摆出格挡姿势 —— 所以没有词条的玩家必须在**客户端**就被拦下, 否则看起来"谁都能格挡"。
+     * (客户端标志由 PerkAbilitySyncS2C 同步; 服务端还会再校验一次。)
      */
     private static boolean hasVeteran(PlayerEntity user) {
-        if (user.getWorld().isClient()) return true;
-
+        if (user.getWorld().isClient()) {
+            return ClientPerkFlags.has("hunter_veteran");
+        }
         return user instanceof ServerPlayerEntity player
                 && PerkBoostQuery.INSTANCE.hasOldSchoolCombat(player);
     }
