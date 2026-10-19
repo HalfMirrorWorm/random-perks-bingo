@@ -135,7 +135,7 @@
   "random-perks-bingo.perk.harvest_bounty.name": "Bounty",
   "random-perks-bingo.perk.harvest_bounty.desc": "Gain 32 carrots and a Fortune III hoe.",
   "random-perks-bingo.perk.harvest_bountiful_meal.name": "Bountiful Meal",
-  "random-perks-bingo.perk.harvest_bountiful_meal.desc": "Whenever your hunger bar refills, gain a random positive suspicious-stew effect (2× the vanilla duration).",
+  "random-perks-bingo.perk.harvest_bountiful_meal.desc": "Whenever you finish eating a food while your hunger bar is full, gain a random positive suspicious-stew effect (2× the vanilla duration).",
   "random-perks-bingo.perk.harvest_gourmet.name": "Eats Like a Bird",
   "random-perks-bingo.perk.harvest_gourmet.desc": "Eating any food restores 100% more hunger and saturation (hunger rounds up).",
 

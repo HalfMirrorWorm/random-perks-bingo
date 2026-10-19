@@ -114,9 +114,10 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: 每当饱食度回满时, 随机获得一种谜之炖菜的纯正面效果 (时长是原版炖菜的 **2 倍**)
-     *  —— 触发点由 HungerRefillMixin 注入原版 HungerManager.update, 抓"不满 → 满"的那一次跳变;
-     *  "满"的判定与原版"饱和回血"分支同源 (foodLevel >= 20), 不做周期轮询, 也不需要标志位。 */
+    /** 蓝 · 丰饶: **吃完一份食物时, 若饱食度已满**, 随机获得一种谜之炖菜的纯正面效果
+     *  (时长是原版炖菜的 **2 倍**)。
+     *  —— 触发点由 ConsumableBoostMixin 注入原版 ConsumableComponent.finishConsumption,
+     *  此时食物已结算完毕 (含"小鸟胃"的翻倍); 判定沿用原版"饱食度满"的标准 (foodLevel >= 20)。 */
     object BountifulMeal : PerkDefinition {
         override val id = "harvest_bountiful_meal"
         override val rarity = PerkRarity.BLUE
@@ -138,7 +139,7 @@ object HarvestPerks {
         /** 时长倍率: 表格里存的是原版数值, 实际发放时统一乘这个数 */
         private const val DURATION_MULTIPLIER = 2
 
-        override fun onHungerRefilled(ctx: PerkContext) {
+        override fun onFoodEaten(ctx: PerkContext) {
             val player = ctx.player
             val (effect, duration) = STEW_EFFECTS[player.random.nextInt(STEW_EFFECTS.size)]
             // 显示方式与原版炖菜略有出入: 不显示粒子 (保留图标) —— 避免与"回满"瞬间的视觉叠加

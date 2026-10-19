@@ -132,9 +132,9 @@ object PerkWorldEventService {
         dispatch(player) { ctx, perk -> perk.onEquipmentChange(ctx) }
     }
 
-    /** 饱食度刚回满 (由 HungerRefillMixin 注入原版 HungerManager.update 调用) */
-    fun dispatchHungerRefilled(player: ServerPlayerEntity) {
-        dispatch(player) { ctx, perk -> perk.onHungerRefilled(ctx) }
+    /** 吃完一份食物 (由 ConsumableBoostMixin 注入原版 ConsumableComponent.finishConsumption 调用) */
+    fun dispatchFoodEaten(player: ServerPlayerEntity) {
+        dispatch(player) { ctx, perk -> perk.onFoodEaten(ctx) }
     }
 
     private inline fun dispatch(

@@ -62,8 +62,9 @@ interface PerkDefinition {
     /** 装备槽变化时 (穿/脱护甲等) —— 用于即时重算装备相关效果 */
     fun onEquipmentChange(ctx: PerkContext) {}
 
-    /** 饱食度**刚刚回满**时 (由 HungerRefillMixin 注入原版 HungerManager.update 触发; 边沿触发, 只发一次) */
-    fun onHungerRefilled(ctx: PerkContext) {}
+    /** **吃完一份食物**时 (由 ConsumableBoostMixin 注入原版 ConsumableComponent.finishConsumption 触发;
+     *  此时饥饿值已按食物结算完毕) */
+    fun onFoodEaten(ctx: PerkContext) {}
 
     /** 该玩家的词条列表发生变化后 (获得/移除任一词条) —— 供"同流派联动"类词条即时重算 */
     fun onPerkListChanged(ctx: PerkContext) {}

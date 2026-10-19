@@ -20,7 +20,6 @@
     "PlayerInventoryEquipMixin",
     "NightVisionControllerMixin",
     "XrayDropSuppressMixin",
-    "HungerRefillMixin",
     "MobLootInvoker",
     "BigStomachMixin",
     "OldSchoolCombatMixin",
