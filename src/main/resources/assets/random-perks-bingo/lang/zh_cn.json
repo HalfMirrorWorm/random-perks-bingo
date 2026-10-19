@@ -17,6 +17,8 @@
   "random-perks-bingo.puny_target.hint": "点击一名玩家, 送他矿物并让蠹虫缠上他",
   "random-perks-bingo.screen.poisoner_target": "选择下毒目标",
   "random-perks-bingo.screen.quick_enchant": "快速附魔",
+  "random-perks-bingo.screen.open_choices": "随机词条",
+  "random-perks-bingo.message.no_pending_choices": "当前没有待选的词条",
   "random-perks-bingo.sort.default": "默认",
   "random-perks-bingo.sort.name": "名称",
   "random-perks-bingo.sort.rarity": "稀有度",
