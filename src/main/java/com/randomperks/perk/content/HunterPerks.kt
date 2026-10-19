@@ -869,13 +869,21 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: **良子冲击** —— 饱食度满 (饥饿值 20) 时, 你造成的伤害 +50%。
-     *  (结算在 LivingEntityDamageMixin, 与"恶魔契约"等按乘法叠加) */
+    /** 紫 · 猎杀: **良子冲击** —— 饱食度满 (饥饿值 20) 时, 你造成的伤害 +50%;
+     *  代价是**更容易饿**: 每秒额外累积消耗度, 饥饿掉得比常人快。
+     *  (伤害结算在 LivingEntityDamageMixin, 与"恶魔契约"等按乘法叠加) */
     object SatiationStrike : PerkDefinition {
         override val id = "hunter_satiation_strike"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.COOKED_BEEF)
+
+        /** 每秒额外增加的消耗度 —— 原版 4 点消耗度掉 1 点饥饿, 0.5/s 即 8 秒掉 1 点 */
+        private const val EXTRA_EXHAUSTION_PER_SECOND = 0.5f
+
+        override fun onTick(ctx: PerkContext) {
+            ctx.player.addExhaustion(EXTRA_EXHAUSTION_PER_SECOND)
+        }
     }
 
     /** 紫 · 猎杀: **TNT 投手** —— 获得 4 个 TNT; 手持 TNT 右键时改为抛射一枚点燃的 TNT
