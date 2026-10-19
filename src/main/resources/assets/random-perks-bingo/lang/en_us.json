@@ -140,7 +140,7 @@
   "random-perks-bingo.perk.harvest_gourmet.desc": "Eating any food restores 100% more hunger and saturation (hunger rounds up).",
 
   "random-perks-bingo.perk.hunter_strength.name": "Hunter's Instinct",
-  "random-perks-bingo.perk.hunter_strength.desc": "+25% attack damage.",
+  "random-perks-bingo.perk.hunter_strength.desc": "+25% damage to monsters (does not affect players).",
   "random-perks-bingo.perk.hunter_vitality.name": "Vitality",
   "random-perks-bingo.perk.hunter_vitality.desc": "+4 max health.",
   "random-perks-bingo.perk.hunter_vampire.name": "Field Medic",

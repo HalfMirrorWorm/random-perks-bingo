@@ -4,6 +4,7 @@ import com.randomperks.game.PerkBoostQuery;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
  * 分成多个 {@code @ModifyVariable} 去改同一个参数容易互相打架, 顺序也不直观。
  *
  * <ul>
+ *   <li>"猎人直觉" —— **对怪物 (Monster)** 造成的伤害 +25%, 对玩家/其他目标不加成</li>
  *   <li>"贪婪之手" —— 受到**其他生物 (非玩家)** 的 2 倍伤害</li>
  *   <li>"Jockey" —— 骑在别人身上时, 受到来自**被骑者**的伤害 -75%</li>
  *   <li>"恶魔契约" —— 造成的伤害翻倍, 受到的**任何**伤害也翻倍</li>
@@ -42,6 +44,13 @@ public class LivingEntityDamageMixin {
                 && PerkBoostQuery.INSTANCE.hasSatiationStrike(attackerPlayer)
                 && attackerPlayer.getHungerManager().getFoodLevel() >= 20) {
             amount *= 1.5f;
+        }
+
+        // "猎人直觉": 只对怪物 (Monster) 生效 —— 打玩家 / 其他目标不加成
+        if (attacker instanceof ServerPlayerEntity attackerPlayer
+                && (Object) this instanceof Monster
+                && PerkBoostQuery.INSTANCE.hasHunterInstinct(attackerPlayer)) {
+            amount *= 1.25f;
         }
 
         if (!((Object) this instanceof ServerPlayerEntity player)) return amount;

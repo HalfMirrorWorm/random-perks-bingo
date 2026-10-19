@@ -43,19 +43,19 @@ object HunterPerks {
     private val MOD_ATTACK = Identifier.of("random-perks-bingo", "hunter_strength")
     private val MOD_HEALTH = Identifier.of("random-perks-bingo", "hunter_health")
 
-    /** 蓝 · 猎人直觉: 攻击力 +25% */
+    /** 蓝 · 猎人直觉: **对怪物**造成的伤害 +25% (结算在 LivingEntityDamageMixin)。
+     *  旧实现是全局攻击力 +25% 的持久化修饰符, 获得/重生/失去时都清一遍, 免老存档残留。 */
     object Strength : PerkDefinition {
         override val id = "hunter_strength"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.IRON_SWORD)
 
-        override fun onAcquire(ctx: PerkContext) = apply(ctx)
-        override fun onRespawn(ctx: PerkContext) = apply(ctx)
-        private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_ATTACK, 0.25, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+        override fun onAcquire(ctx: PerkContext) = clearLegacy(ctx)
+        override fun onRespawn(ctx: PerkContext) = clearLegacy(ctx)
+        override fun onRemove(ctx: PerkContext) = clearLegacy(ctx)
 
-        override fun onRemove(ctx: PerkContext) =
+        private fun clearLegacy(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_ATTACK)
     }
 

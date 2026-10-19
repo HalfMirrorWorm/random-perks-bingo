@@ -16,6 +16,10 @@ import net.minecraft.util.Identifier
  */
 object PerkBoostQuery {
 
+    /** 玩家是否持有"猎人直觉" (对怪物造成伤害 +25%) */
+    fun hasHunterInstinct(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_strength") == true
+
     /** 玩家是否持有"贪婪之手" (受到其他生物 2 倍伤害) */
     fun hasFragileToMobs(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_greedy_hands") == true

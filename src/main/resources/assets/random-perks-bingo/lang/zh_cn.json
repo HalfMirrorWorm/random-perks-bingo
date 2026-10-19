@@ -140,7 +140,7 @@
   "random-perks-bingo.perk.harvest_gourmet.desc": "食用任意食物时, 恢复的饥饿值与饱和度提升 100% (饥饿值向上取整)。",
 
   "random-perks-bingo.perk.hunter_strength.name": "猎人直觉",
-  "random-perks-bingo.perk.hunter_strength.desc": "攻击力 +25%。",
+  "random-perks-bingo.perk.hunter_strength.desc": "你对怪物造成的伤害 +25% (对玩家无效)。",
   "random-perks-bingo.perk.hunter_vitality.name": "强壮体魄",
   "random-perks-bingo.perk.hunter_vitality.desc": "最大生命 +4。",
   "random-perks-bingo.perk.hunter_vampire.name": "战地急救",
