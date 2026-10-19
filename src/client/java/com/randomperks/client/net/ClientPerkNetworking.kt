@@ -284,8 +284,10 @@ object ClientPerkNetworking {
     /**
      * "易位" 的两次选择。
      *
-     * 注意: TargetPickScreen 的 mouseClicked 会先调 onPick、再 close() (把当前屏幕清空)。
-     * 所以第二次弹窗必须排到下一 tick —— 直接在 onPick 里 setScreen 会被紧接着的 close() 清掉。
+     * 用 closeOnPick = false: 第一次选完直接 setScreen 换到第二次的弹窗, 由 setScreen
+     * 负责移除旧屏。不能靠 client.execute 延迟 —— MinecraftClient.execute 在**主线程会
+     * 立即执行**, 紧接着 TargetPickScreen 的 close() 会把新屏幕一起清掉 (第二个选择器
+     * 因此从来没出现过)。
      */
     private fun openDualTargetPicker(
         client: MinecraftClient,
@@ -304,10 +306,12 @@ object ClientPerkNetworking {
             else "random-perks-bingo.swap_second.hint"
 
         client.setScreen(
-            TargetPickScreen(titleKey, hintKey, remaining) { uuid ->
+            TargetPickScreen(titleKey, hintKey, remaining, closeOnPick = false) { uuid ->
                 if (first == null) {
-                    client.execute { openDualTargetPicker(client, purpose, targets, uuid) }
+                    // 选中第一个 → 直接换成第二个选择器
+                    openDualTargetPicker(client, purpose, targets, uuid)
                 } else {
+                    client.setScreen(null)
                     ClientPlayNetworking.send(DualTargetPickC2S(purpose, first, uuid))
                 }
             },

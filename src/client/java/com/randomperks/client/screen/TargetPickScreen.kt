@@ -16,6 +16,13 @@ class TargetPickScreen(
     titleKey: String,
     private val hintKey: String,
     private val targets: List<PlayerTargetEntry>,
+    /**
+     * 选中后是否自动关闭。
+     *
+     * "易位"要连选两次, 第二次弹窗必须由调用方在 onPick 里直接 setScreen 换过去 ——
+     * 所以那边设成 false, 否则这里的 close() 会把刚换上去的屏幕一起清掉。
+     */
+    private val closeOnPick: Boolean = true,
     private val onPick: (UUID) -> Unit,
 ) : Screen(Text.translatable(titleKey)) {
 
@@ -78,7 +85,7 @@ class TargetPickScreen(
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         if (button == 0 && hovered >= 0) {
             onPick(targets[hovered].uuid)
-            close()
+            if (closeOnPick) close()
             return true
         }
         return super.mouseClicked(mouseX, mouseY, button)
