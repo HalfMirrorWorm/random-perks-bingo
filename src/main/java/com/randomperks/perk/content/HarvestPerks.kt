@@ -350,11 +350,11 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.WHEAT_SEEDS)
     }
 
-    /** 紫 · 丰饶: **乐魂** —— 召唤一只**自带挽具**的快乐恶魂 (1.21.6+ 的飞行坐骑),
+    /** 蓝 · 丰饶: **乐魂** —— 召唤一只**自带挽具**的快乐恶魂 (1.21.6+ 的飞行坐骑),
      *  并获得 4 根拴绳 */
     object HappyGhast : PerkDefinition {
         override val id = "harvest_happy_ghast"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.WHITE_HARNESS)
 
