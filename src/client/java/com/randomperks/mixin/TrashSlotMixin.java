@@ -27,8 +27,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *   <li>render: 在背包界面固定位置画一个 18×18 的格子</li>
  *   <li>mouseClicked: 光标上拿着物品时点它 → 发包 + 本地清光标（服务端随后同步确认）</li>
  * </ul>
+ *
+ * <p><b>注入目标是 InventoryScreen 而不是 HandledScreen</b>: InventoryScreen 自己
+ * override 了 render / mouseClicked, 注入到基类对它的实例完全不生效 (之前垃圾桶
+ * 从来不显示就是这个原因)。x / y 仍然通过 HandledScreen 上的 Accessor 读取。
  */
-@Mixin(HandledScreen.class)
+@Mixin(InventoryScreen.class)
 public class TrashSlotMixin {
 
     private static final String PERK_ID = "seeker_magnet_upgrade";
@@ -45,7 +49,6 @@ public class TrashSlotMixin {
 
     @Inject(method = "render", at = @At("TAIL"))
     private void randomperks$renderTrash(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (!((Object) this instanceof InventoryScreen)) return;
         if (!ClientPerkFlags.has(PERK_ID)) return;
 
         int x = ((HandledScreenAccessor) this).randomperks$getX() + OFFSET_X;
@@ -61,7 +64,6 @@ public class TrashSlotMixin {
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void randomperks$trashClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (button != 0) return;
-        if (!((Object) this instanceof InventoryScreen)) return;
         if (!ClientPerkFlags.has(PERK_ID)) return;
 
         int x = ((HandledScreenAccessor) this).randomperks$getX() + OFFSET_X;
