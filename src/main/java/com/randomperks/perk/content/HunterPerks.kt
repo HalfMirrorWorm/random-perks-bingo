@@ -244,7 +244,7 @@ object HunterPerks {
             if (PerkEffects.hasNoArmor(ctx.player)) {
                 PerkEffects.setAttribute(
                     ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE,
-                    0.40, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE,
+                    0.40, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
                 )
             } else {
                 PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)

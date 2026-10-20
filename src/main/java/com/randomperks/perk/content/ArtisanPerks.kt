@@ -216,7 +216,8 @@ object ArtisanPerks {
         }
     }
 
-    /** 金 · 匠造: 手持时钟右键 —— 首次设置传送点 (**设置后不可重设**), 之后右键传送回去 (10 分钟冷却, 不限距离) */
+    /** 金 · 匠造: 手持时钟右键 —— 传送到**上次死亡地点** (5 分钟冷却, 跨维度也可)。
+     *  死亡地点由 WaypointService 在 AFTER_DEATH 自动记录 (只记录持词条者, 再死一次覆盖旧点)。 */
     object WaypointClock : PerkDefinition {
         override val id = "artisan_waypoint_clock"
         override val rarity = PerkRarity.GOLD
