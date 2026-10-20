@@ -1,5 +1,6 @@
 package com.randomperks.mixin;
 
+import com.randomperks.client.TrashSlotLayout;
 import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.network.TrashItemC2S;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -28,11 +29,12 @@ public class TrashSlotClickMixin {
     private void randomperks$trashClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (button != 0) return;
         if (!((Object) this instanceof InventoryScreen)) return;
-        if (!ClientPerkFlags.has(TrashSlotMixin.PERK_ID)) return;
+        if (!ClientPerkFlags.has(TrashSlotLayout.PERK_ID)) return;
 
-        int x = ((HandledScreenAccessor) this).randomperks$getX() + TrashSlotMixin.OFFSET_X;
-        int y = ((HandledScreenAccessor) this).randomperks$getY() + TrashSlotMixin.OFFSET_Y;
-        if (mouseX < x || mouseX >= x + TrashSlotMixin.SIZE || mouseY < y || mouseY >= y + TrashSlotMixin.SIZE) return;
+        int x = ((HandledScreenAccessor) this).randomperks$getX() + TrashSlotLayout.OFFSET_X;
+        int y = ((HandledScreenAccessor) this).randomperks$getY() + TrashSlotLayout.OFFSET_Y;
+        if (mouseX < x || mouseX >= x + TrashSlotLayout.SIZE
+                || mouseY < y || mouseY >= y + TrashSlotLayout.SIZE) return;
 
         ScreenHandler handler = ((HandledScreen<?>) (Object) this).getScreenHandler();
         if (handler.getCursorStack().isEmpty()) return;

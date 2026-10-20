@@ -1,10 +1,9 @@
 package com.randomperks.mixin;
 
+import com.randomperks.client.TrashSlotLayout;
 import com.randomperks.game.ClientPerkFlags;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,39 +20,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <p><b>绘制注入 InventoryScreen</b>: InventoryScreen 自己 override 了 render, 注入到
  * HandledScreen 的 render 不会在 TAIL 跑到 (它被覆盖了)。
  *
- * <p><b>点击在 {@link TrashSlotClickMixin} 里</b>: mouseClicked 是 Inherited 方法
+ * <p><b>点击在 {@link TrashSlotClickMixin} 里</b>: mouseClicked 是继承方法
  * (声明在 HandledScreen, InventoryScreen 没有覆盖)。Loom 的 mixin 重映射只查目标类
  * **自己声明**的成员, 写成 {@code @Mixin(InventoryScreen.class)} + method="mouseClicked"
  * 会匹配不到 intermediary 名, 运行时注入失败。所以点击必须挂在 HandledScreen 上。
  *
- * <p>x / y 通过 HandledScreen 上的 Accessor 读取。
+ * <p><b>布局常量放在 {@link TrashSlotLayout}</b>: mixin 类的静态字段会被合并进目标类,
+ * 框架要求必须是 private; 两个 mixin 需要共用, 所以放普通类里。
  */
 @Mixin(InventoryScreen.class)
 public class TrashSlotMixin {
 
-    static final String PERK_ID = "seeker_magnet_upgrade";
-
-    /** 格子边长 */
-    static final int SIZE = 18;
-
-    /** 相对 GUI 左上角的位置 (背包界面里 crafting 输出下方、主背包上方那块空白) */
-    static final int OFFSET_X = 138;
-    static final int OFFSET_Y = 62;
-
-    /** 格子里的图标 (岩浆桶 = 销毁) */
-    static final ItemStack ICON = new ItemStack(Items.LAVA_BUCKET);
-
     @Inject(method = "render", at = @At("TAIL"))
     private void randomperks$renderTrash(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (!ClientPerkFlags.has(PERK_ID)) return;
+        if (!ClientPerkFlags.has(TrashSlotLayout.PERK_ID)) return;
 
-        int x = ((HandledScreenAccessor) this).randomperks$getX() + OFFSET_X;
-        int y = ((HandledScreenAccessor) this).randomperks$getY() + OFFSET_Y;
+        int x = ((HandledScreenAccessor) this).randomperks$getX() + TrashSlotLayout.OFFSET_X;
+        int y = ((HandledScreenAccessor) this).randomperks$getY() + TrashSlotLayout.OFFSET_Y;
 
         // 凹槽式背景: 主体 + 左上两道深色边
-        context.fill(x, y, x + SIZE, y + SIZE, 0xFF8B8B8B);
-        context.fill(x, y, x + SIZE, y + 1, 0xFF373737);
-        context.fill(x, y, x + 1, y + SIZE, 0xFF373737);
-        context.drawItem(ICON, x + 1, y + 1);
+        context.fill(x, y, x + TrashSlotLayout.SIZE, y + TrashSlotLayout.SIZE, 0xFF8B8B8B);
+        context.fill(x, y, x + TrashSlotLayout.SIZE, y + 1, 0xFF373737);
+        context.fill(x, y, x + 1, y + TrashSlotLayout.SIZE, 0xFF373737);
+        context.drawItem(TrashSlotLayout.INSTANCE.getICON(), x + 1, y + 1);
     }
 }
