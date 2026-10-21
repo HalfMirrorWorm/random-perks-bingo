@@ -105,15 +105,6 @@ object PerkWorldEventService {
             ActionResult.PASS
         }
 
-        // 右键方块 → "暖水考古": 手持刷子刷珊瑚块。
-        // 原版刷子只认可疑的沙/沙砾, 珊瑚不在其列 —— 所以这个交互必须自己接管。
-        UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
-            if (world.isClient) return@register ActionResult.PASS
-            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
-            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
-            WarmArchaeologyService.handleBrush(player, world as ServerWorld, hitResult.blockPos)
-        }
-
         // 右键方块 → "切洋葱": 手持镐在黑曜石 / 哭泣的黑曜石之间切换
         UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
             if (world.isClient) return@register ActionResult.PASS

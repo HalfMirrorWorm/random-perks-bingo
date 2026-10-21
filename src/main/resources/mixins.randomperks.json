@@ -22,6 +22,7 @@
     "XrayDropSuppressMixin",
     "PhoenixMixin",
     "BedBombMixin",
+    "BrushItemMixin",
     "MobLootInvoker",
     "BigStomachMixin",
     "OldSchoolCombatMixin",

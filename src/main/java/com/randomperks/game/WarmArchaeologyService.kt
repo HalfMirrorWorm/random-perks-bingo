@@ -10,37 +10,48 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.loot.LootTable
 import net.minecraft.loot.context.LootContextParameters
-import net.minecraft.loot.context.LootWorldContext
 import net.minecraft.loot.context.LootContextTypes
+import net.minecraft.loot.context.LootWorldContext
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
+import java.util.UUID
 
 /**
  * "暖水考古" —— 用刷子刷珊瑚块, 按颜色刷出对应的矿物。
  *
- * 原版刷子只认可疑的沙/沙砾 (BrushableBlockEntity), 珊瑚不在其列; 所以这里自己接管
- * "手持刷子右键珊瑚块" 这个交互 (由 [PerkWorldEventService] 注册 UseBlockCallback)。
+ * <p>节奏与**原版刷可疑沙**一致: 按住右键, 刷子每 10 tick 刷一下, 刷满 [BRUSH_STEPS] 次
+ * （约 5 秒）才完成 —— 不是右键一次立刻出结果。刷动期间原版 [net.minecraft.item.BrushItem]
+ * 自己会播放刷子音效与方块碎屑粒子, 这里只负责计数与结算。
  *
- * 每刷一次:
+ * <p>完成时:
  *  - 珊瑚块变成**失活**的同色珊瑚块 (不是消失);
- *  - 掉落从**暖水海洋废墟的考古战利品表**里抽一件, 其中 10% 换成该珊瑚颜色对应的矿物;
- *  - 刷子消耗 1 点耐久。
+ *  - 10% 概率掉该珊瑚颜色对应的矿物, 否则从**暖水海洋废墟的考古战利品表**里抽;
+ *  - 每刷一下消耗 1 点耐久 (与原版一致)。
  */
 object WarmArchaeologyService {
 
     const val PERK_ID = "harvest_warm_archaeology"
 
-    /** 矿物的占比: 每刷一次先掷 10%, 命中就掉对应颜色的矿物, 否则走考古战利品表 */
+    /** 矿物的占比: 完成时先掷 10%, 命中就掉对应颜色的矿物, 否则走考古战利品表 */
     private const val MINERAL_CHANCE = 0.10f
+
+    /** 刷满多少次才算完成 —— 原版刷可疑沙也是 10 次 (每次间隔 10 tick) */
+    private const val BRUSH_STEPS = 10
+
+    /** 两次刷动之间允许的最大间隔; 超过就当作重新开始 */
+    private const val BRUSH_TIMEOUT_TICKS = 20L
+
+    /** 单个玩家当前的刷动进度 */
+    private data class BrushProgress(val pos: BlockPos, var steps: Int, var lastTick: Long)
+
+    private val brushing = mutableMapOf<UUID, BrushProgress>()
 
     /** 暖水海洋废墟的考古战利品表 —— "暖水考古"这个名字就来自这里 */
     private val LOOT_TABLE: RegistryKey<LootTable> = RegistryKey.of(
@@ -76,18 +87,53 @@ object WarmArchaeologyService {
         Blocks.HORN_CORAL_BLOCK to CoralInfo(Blocks.DEAD_HORN_CORAL_BLOCK, Items.GOLD_NUGGET),        // 黄
     )
 
-    /** 手持刷子右键珊瑚块时调用; 返回 PASS 表示"这不是我管的事", 交还原版 */
-    fun handleBrush(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos): ActionResult {
-        if (!PerkSession.isEnabled()) return ActionResult.PASS
+    /**
+     * 每 10 tick 由 BrushItemMixin 调用一次 (与原版刷子的节奏一致)。
+     *
+     * @return true 表示这次刷动被"暖水考古"接管了
+     */
+    fun handleBrushTick(
+        player: ServerPlayerEntity,
+        world: ServerWorld,
+        pos: BlockPos,
+        stack: ItemStack,
+    ): Boolean {
+        if (!PerkSession.isEnabled()) return false
 
-        val state = PerkStateManager.get(player.uuid) ?: return ActionResult.PASS
-        if (!state.hasPerk(PERK_ID)) return ActionResult.PASS
+        val state = PerkStateManager.get(player.uuid) ?: return false
+        if (!state.hasPerk(PERK_ID)) return false
+        if (!stack.isOf(Items.BRUSH)) return false
 
-        val stack = player.getStackInHand(Hand.MAIN_HAND)
-        if (!stack.isOf(Items.BRUSH)) return ActionResult.PASS
+        val coral = CORALS[world.getBlockState(pos).block] ?: return false
 
-        val coral = CORALS[world.getBlockState(pos).block] ?: return ActionResult.PASS
+        val now = world.server?.ticks?.toLong() ?: return false
+        var progress = brushing[player.uuid]
+        if (progress == null || progress.pos != pos || now - progress.lastTick > BRUSH_TIMEOUT_TICKS) {
+            progress = BrushProgress(pos, 0, now)
+            brushing[player.uuid] = progress
+        }
 
+        progress.lastTick = now
+        progress.steps++
+
+        // 和原版刷子一样, 每刷一下消耗 1 点耐久 (归零时自动损坏)
+        stack.damage(1, player, EquipmentSlot.MAINHAND)
+
+        if (progress.steps < BRUSH_STEPS) return true
+
+        brushing.remove(player.uuid)
+        completeBrush(player, world, pos, coral, stack)
+        return true
+    }
+
+    /** 刷满之后: 变失活珊瑚 + 结算掉落 */
+    private fun completeBrush(
+        player: ServerPlayerEntity,
+        world: ServerWorld,
+        pos: BlockPos,
+        coral: CoralInfo,
+        tool: ItemStack,
+    ) {
         // 刷完变失活 (活珊瑚被"刷掉"了), 而不是直接消失
         world.setBlockState(pos, coral.deadBlock.defaultState)
         world.playSound(
@@ -97,17 +143,11 @@ object WarmArchaeologyService {
             1.0f, 1.0f,
         )
 
-        // 10% 出颜色对应的矿物; 其余从暖水海洋废墟的考古战利品表里抽一件
         if (player.random.nextFloat() < MINERAL_CHANCE) {
             Block.dropStack(world, pos, ItemStack(coral.mineral))
         } else {
-            dropArchaeologyLoot(player, world, pos, stack)
+            dropArchaeologyLoot(player, world, pos, tool)
         }
-
-        // 和原版刷子一样消耗 1 点耐久 (归零时自动损坏)
-        stack.damage(1, player, EquipmentSlot.MAINHAND)
-
-        return ActionResult.SUCCESS
     }
 
     /** 从暖水考古战利品表抽一次, 掉在方块所在位置 */
