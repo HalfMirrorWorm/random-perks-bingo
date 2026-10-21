@@ -7,7 +7,6 @@ import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.StealService
 import com.randomperks.game.VerminSwarmService
-import com.randomperks.mixin.VillagerInvoker
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
@@ -42,6 +41,10 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
+import net.minecraft.entity.passive.VillagerEntity
+import net.minecraft.resource.featuretoggle.FeatureFlags
+import net.minecraft.village.TradeOfferList
+import net.minecraft.village.TradeOffers
 import net.minecraft.village.VillagerData
 import net.minecraft.village.VillagerProfession
 import net.minecraft.village.VillagerType
@@ -579,15 +582,13 @@ object SeekerPerks {
                 .getOrThrow(VillagerType.PLAINS)
             val profession = registryManager.getOrThrow(RegistryKeys.VILLAGER_PROFESSION)
                 .getOrThrow(VillagerProfession.CLERIC)
-            // 原版只在**升级时**追加当前等级的交易 (fillRecipes 只取 map.get(level) 那一组),
-            // 所以直接设 5 级再取 offers 只会得到 5 级那 2 项。这里从 1 级开始逐级"升"上去,
-            // 每级手动补一次 fillRecipes, 最终累积成 5 个等级共 10 项。
-            villager.setVillagerData(VillagerData(type, profession, 1))
-            villager.offers
-            for (level in 2..5) {
-                villager.setVillagerData(VillagerData(type, profession, level))
-                (villager as VillagerInvoker).randomperksFillRecipes()
-            }
+            // 等级直接设 5 级 (界面显示为大师级)
+            villager.setVillagerData(VillagerData(type, profession, 5))
+            // 交易列表**自己按 1→5 级构建**: 顺序固定为 新手 → 学徒 → 老手 → 专家 → 大师,
+            // 每级 2 项 (与原版每次升级时 fillRecipesFromPool(count=2) 完全一致)。
+            // 不再走"逐级 setVillagerData + fillRecipes"的模拟 —— 那条路依赖懒加载与数据同步,
+            // 实测出现过交易顺序不对的问题。
+            villager.setOffers(buildMasterClericOffers(villager, world))
 
             villager.refreshPositionAndAngles(
                 pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
@@ -616,6 +617,36 @@ object SeekerPerks {
 
         private fun standable(world: ServerWorld, pos: BlockPos): Boolean =
             world.getBlockState(pos).isAir && world.getBlockState(pos.down()).isSolidBlock(world, pos.down())
+
+        /**
+         * 按 1→5 级从原版交易表构建大师级牧师的交易列表。
+         *
+         * 每级从该等级的工厂池里随机抽 2 项 (与原版 fillRecipesFromPool(count=2) 一致),
+         * 顺序固定为 新手 → 学徒 → 老手 → 专家 → 大师。
+         * 开了 TRADE_REBALANCE 的实验性世界优先用平衡表, 与 fillRecipes 的分支保持一致。
+         */
+        private fun buildMasterClericOffers(villager: VillagerEntity, world: ServerWorld): TradeOfferList {
+            val offers = TradeOfferList()
+
+            val rebalanced = if (world.enabledFeatures.contains(FeatureFlags.TRADE_REBALANCE)) {
+                TradeOffers.REBALANCED_PROFESSION_TO_LEVELED_TRADE[VillagerProfession.CLERIC]
+            } else {
+                null
+            }
+            val table = rebalanced
+                ?: TradeOffers.PROFESSION_TO_LEVELED_TRADE[VillagerProfession.CLERIC]
+                ?: return offers
+
+            for (level in 1..5) {
+                val factories = table.get(level) ?: continue
+                val pool = factories.toMutableList()
+                repeat(minOf(2, pool.size)) {
+                    val factory = pool.removeAt(villager.random.nextInt(pool.size))
+                    factory.create(villager, villager.random)?.let { offers.add(it) }
+                }
+            }
+            return offers
+        }
 
         private fun nearbyStandable(world: ServerWorld, center: BlockPos): BlockPos? {
             for (i in 0 until 12) {

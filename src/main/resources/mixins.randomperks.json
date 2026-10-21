@@ -33,7 +33,6 @@
     "CatFleeMixin",
     "DoomsdayMixin",
     "PlayerEntityInvoker",
-    "VillagerInvoker",
     "JockeyRideMixin",
     "CreeperChargedAccessor",
     "HomingArrowMixin",
