@@ -19,6 +19,7 @@
     "ElytraBondDeathMixin",
     "PlayerInventoryEquipMixin",
     "NightVisionControllerMixin",
+    "PerkMenuToggleMixin",
     "XrayDropSuppressMixin",
     "PhoenixMixin",
     "BedBombMixin",
