@@ -266,6 +266,23 @@ object DelverPerks {
         state.isIn(BlockTags.BASE_STONE_OVERWORLD) ||
             state.isOf(Blocks.COBBLESTONE) || state.isOf(Blocks.COBBLED_DEEPSLATE)
 
+    /** 紫 · 深掘: **不死鸟** —— 免疫火焰伤害; 处于岩浆中时每秒恢复 2 点生命。
+     *  免疫由 PhoenixMixin 在 LivingEntity.damage 的 HEAD 拦截 (仅 IS_FIRE 类伤害)。 */
+    object Phoenix : PerkDefinition {
+        override val id = "delver_phoenix"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.MAGMA_BLOCK)
+
+        /** 每秒恢复的生命值 (onTick 每 20 tick 驱动一次) */
+        private const val LAVA_HEAL = 2.0f
+
+        override fun onTick(ctx: PerkContext) {
+            if (!ctx.player.isInLava) return
+            ctx.player.heal(LAVA_HEAL)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Mining)
         PerkRegistry.register(NightVision)
@@ -276,5 +293,6 @@ object DelverPerks {
         PerkRegistry.register(XrayVision)
         PerkRegistry.register(LuckyDigger)
         PerkRegistry.register(Collector)
+        PerkRegistry.register(Phoenix)
     }
 }

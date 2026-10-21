@@ -106,6 +106,12 @@ object PerkBoostQuery {
     fun hasLuckyFishing(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_lucky_fishing") == true
 
+    // ---- "不死鸟": 免疫火焰伤害 (由 PhoenixMixin 在 LivingEntity.damage 拦截) ----
+
+    /** 玩家是否持有"不死鸟" */
+    fun hasPhoenix(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("delver_phoenix") == true
+
     // ---- "老吴!?" (拟声: 猫叫): 猫主动攻击持词条的玩家 (由 CatTargetMixin / CatFleeMixin 调用) ----
 
     /** 玩家是否持有"老吴!?" */

@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **96** 条词条：蓝 49 / 紫 31 / 金 13 / 神话 3。
+共 **97** 条词条：蓝 49 / 紫 32 / 金 13 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -45,6 +45,7 @@
 | `delver_xray_vision` | 透视之眼 | X-Ray Vision | 金 |
 | `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 紫 |
 | `delver_collector` | 收藏家 | Collector | 紫 |
+| `delver_phoenix` | 不死鸟 | Phoenix | 紫 |
 
 ## 丰饶 HARVEST
 
