@@ -10,6 +10,7 @@ import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
+import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
@@ -22,6 +23,8 @@ import net.minecraft.registry.tag.BlockTags
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
+import kotlin.math.abs
 
 /**
  * 深掘 DELVER —— 挖矿 / 地下探索。
@@ -267,6 +270,48 @@ object DelverPerks {
         state.isIn(BlockTags.BASE_STONE_OVERWORLD) ||
             state.isOf(Blocks.COBBLESTONE) || state.isOf(Blocks.COBBLED_DEEPSLATE)
 
+    /** 紫 · 深掘: **八十** —— 用镐挖石头类方块时, 顺着你正在看的那个面,
+     *  把以该方块为中心的 3×3 **同种**方块一并挖掉 (每块额外消耗 1 点耐久)。
+     *  面朝向取玩家视线的主轴: 挖墙 → 竖直平面, 挖地面/天花板 → 水平平面。 */
+    object Eighty : PerkDefinition {
+        override val id = "delver_eighty"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.IRON_PICKAXE)
+
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
+            val player = ctx.player
+            val tool = player.mainHandStack
+            if (!tool.isIn(ItemTags.PICKAXES)) return          // 只认镐
+            if (!isStoneBlock(blockState)) return              // 只认石头类方块
+            val world = player.world as? ServerWorld ?: return
+
+            val look = player.rotationVector
+            val ax = abs(look.x); val ay = abs(look.y); val az = abs(look.z)
+            val axis = when {
+                ax >= ay && ax >= az -> 0                       // 面向 X 轴 → YZ 平面
+                ay >= az -> 1                                   // 面向 Y 轴 → XZ 平面
+                else -> 2                                       // 面向 Z 轴 → XY 平面
+            }
+
+            val broken = blockState.block
+            for (a in -1..1) {
+                for (b in -1..1) {
+                    if (a == 0 && b == 0) continue              // 中心块已经挖掉了
+                    val target = when (axis) {
+                        0 -> pos.add(0, a, b)
+                        1 -> pos.add(a, 0, b)
+                        else -> pos.add(a, b, 0)
+                    }
+                    if (world.getBlockState(target).block !== broken) continue   // 同种类
+                    if (tool.isEmpty) return                    // 耐久挖断了就停
+                    world.breakBlock(target, true, player)
+                    if (!player.isCreative) tool.damage(1, player, EquipmentSlot.MAINHAND)
+                }
+            }
+        }
+    }
+
     /** 蓝 · 深掘: **切洋葱** —— 手持镐右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换
      *  (交互由 OnionCutService 接管; 原版里哭泣的黑曜石无法合成, 只能靠废墟/交易获取) */
     object OnionCut : PerkDefinition {
@@ -303,6 +348,7 @@ object DelverPerks {
         PerkRegistry.register(XrayVision)
         PerkRegistry.register(LuckyDigger)
         PerkRegistry.register(Collector)
+        PerkRegistry.register(Eighty)
         PerkRegistry.register(OnionCut)
         PerkRegistry.register(Phoenix)
     }
