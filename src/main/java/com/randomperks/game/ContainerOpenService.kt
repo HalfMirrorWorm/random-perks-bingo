@@ -29,6 +29,7 @@ import java.util.UUID
  * 末影箱更简单: 直接打开玩家自己的末影箱库存。
  *
  * <p>右键方块与右键空气是两条路径, 两个事件都要拦 (与 "TNT 投手" 同范式)。
+ * <b>潜行右键不拦截</b> —— 保留原版"放置方块"的行为。
  */
 object ContainerOpenService {
 
@@ -83,6 +84,9 @@ object ContainerOpenService {
 
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk(PERK_ID)) return false
+
+        // 潜行右键保留原版"放置方块"的行为
+        if (player.isSneaking) return false
 
         val stack = player.getStackInHand(Hand.MAIN_HAND)
         if (stack.isEmpty) return false
