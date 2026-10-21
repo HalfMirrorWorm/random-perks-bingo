@@ -10,9 +10,9 @@ package com.randomperks.perk
  * @param weight 抽取权重 (相对值)
  */
 enum class PerkRarity(val color: Int, val weight: Int) {
-    BLUE(0xFF4A90D9.toInt(), 64),
-    PURPLE(0xFF9B59B6.toInt(), 28),
-    GOLD(0xFFF1C40F.toInt(), 7),
+    BLUE(0xFF4A90D9.toInt(), 640),
+    PURPLE(0xFF9B59B6.toInt(), 280),
+    GOLD(0xFFF1C40F.toInt(), 70),
 
     /**
      * 神话 (比传说更高): 全局唯一 (同时只能一名玩家拥有), 彩色显示。

@@ -10,7 +10,7 @@
 
 - **词条 id**：`<流派>_<英文短名>`（如 `hunter_soul_harvest`）；神话单独使用 `mythic_` 前缀
 - **语言 key**：`random-perks-bingo.perk.<id>.name` / `.desc`（中英各一份）
-- **稀有度与抽取权重**：`blue` 64 / `purple` 28 / `gold` 7 / `mythic` 1
+- **稀有度与抽取权重**：`blue` 640 / `purple` 280 / `gold` 70 / `mythic` 1（神话约 0.1%）
 - 其他语言 key：`random-perks-bingo.rarity.<blue|purple|gold|mythic>`、
   `random-perks-bingo.message.*`（提示消息）、`random-perks-bingo.dimension.<overworld|nether|end>`、
   `random-perks-bingo.item.treasure_map`（藏宝图）
