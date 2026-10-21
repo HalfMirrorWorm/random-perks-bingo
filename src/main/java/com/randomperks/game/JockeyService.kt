@@ -78,7 +78,7 @@ object JockeyService {
         PerkNetworking.sendJockeyControl(carrier, JockeyControlS2C(forwarded, yaw, pitch))
     }
 
-    /** 被骑者连按 Shift 达到次数 → 挣脱, 骑乘者进入 3 分钟冷却 */
+    /** 被骑者按 WASD 任意键累计达到次数 → 挣脱, 骑乘者进入 3 分钟冷却 */
     fun handleBreakFree(carrier: ServerPlayerEntity) {
         val rider = carrier.passengerList
             .filterIsInstance<ServerPlayerEntity>()

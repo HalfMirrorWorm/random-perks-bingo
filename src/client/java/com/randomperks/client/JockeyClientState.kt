@@ -51,42 +51,58 @@ object JockeyClientState {
     @JvmStatic
     fun isControlled(): Boolean = forcedInput() != null
 
-    /** 被骑者连按 Shift 多少次可以挣脱 */
+    /** 被骑者按 WASD 任意键累计多少次可以挣脱 */
     private const val BREAK_FREE_PRESSES = 30
 
-    private var lastSneakPressed = false
-    private var sneakPresses = 0
+    private var lastForward = false
+    private var lastBack = false
+    private var lastLeft = false
+    private var lastRight = false
+    private var keyPresses = 0
 
     /**
-     * 记录一次"被骑者按 Shift"的边缘 —— 只在被操控期间计数。
+     * 记录一次"被骑者按 WASD"的按键边缘 —— 只在被操控期间计数。
      *
      * 被骑者的键盘输入在客户端就被 [com.randomperks.mixin.JockeyInputMixin] 覆盖成了骑乘者的,
-     * 所以服务端根本看不到他的 Shift, 只能在这里自己数。
+     * 所以服务端根本看不到他自己的按键, 只能在这里读**原始按键绑定**自己数。
+     * 四个键各自检测"按下"边缘, 累计满 [BREAK_FREE_PRESSES] 次即可挣脱。
      *
-     * @return true 表示凑满 [BREAK_FREE_PRESSES] 次, 可以请求脱离 (计数随即清零)
+     * @return true 表示凑满次数, 可以请求脱离 (计数随即清零)
      */
     @JvmStatic
-    fun noteSneak(pressed: Boolean): Boolean {
+    fun noteMovementKeys(forward: Boolean, back: Boolean, left: Boolean, right: Boolean): Boolean {
         if (forcedInput() == null) {
-            lastSneakPressed = false
-            sneakPresses = 0
+            lastForward = false
+            lastBack = false
+            lastLeft = false
+            lastRight = false
+            keyPresses = 0
             return false
         }
-        if (!pressed) {
-            lastSneakPressed = false
-            return false
-        }
-        if (lastSneakPressed) return false
-        lastSneakPressed = true
-        sneakPresses++
-        if (sneakPresses < BREAK_FREE_PRESSES) return false
-        sneakPresses = 0
+
+        var pressed = 0
+        if (forward && !lastForward) pressed++
+        if (back && !lastBack) pressed++
+        if (left && !lastLeft) pressed++
+        if (right && !lastRight) pressed++
+        lastForward = forward
+        lastBack = back
+        lastLeft = left
+        lastRight = right
+
+        if (pressed == 0) return false
+        keyPresses += pressed
+        if (keyPresses < BREAK_FREE_PRESSES) return false
+        keyPresses = 0
         return true
     }
 
     fun clear() {
         input = null
-        lastSneakPressed = false
-        sneakPresses = 0
+        lastForward = false
+        lastBack = false
+        lastLeft = false
+        lastRight = false
+        keyPresses = 0
     }
 }

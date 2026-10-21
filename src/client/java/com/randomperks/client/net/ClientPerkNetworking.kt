@@ -221,12 +221,18 @@ object ClientPerkNetworking {
             )
         }
 
-        // "Jockey": 被骑者连按 Shift 30 次 → 请求挣脱。
-        // 读的是**原始按键** (options.sneakKey): 被骑者的 playerInput 已经被 JockeyInputMixin
-        // 覆盖成骑乘者的了, 从 input 里读不到他自己的 Shift。
+        // "Jockey": 被骑者按 WASD 任意键累计 30 次 → 请求挣脱。
+        // 读的是**原始按键绑定**: 被骑者的 playerInput 已经被 JockeyInputMixin
+        // 覆盖成骑乘者的了, 从 input 里读不到他自己的 WASD。
         ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val pressed = client.options.sneakKey.isPressed
-            if (!JockeyClientState.noteSneak(pressed)) return@register
+            val options = client.options
+            val brokeFree = JockeyClientState.noteMovementKeys(
+                options.forwardKey.isPressed,
+                options.backKey.isPressed,
+                options.leftKey.isPressed,
+                options.rightKey.isPressed,
+            )
+            if (!brokeFree) return@register
             if (!ClientPlayNetworking.canSend(JockeyBreakFreeC2S.ID)) return@register
             ClientPlayNetworking.send(JockeyBreakFreeC2S())
         }
