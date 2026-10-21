@@ -36,8 +36,8 @@ import java.util.List;
 public class PerkMenuToggleMixin {
 
     /** 特性面板中心 → 右侧空位中心的水平偏移 */
-    private static final double TOGGLE_OFFSET_X = 8.15;
-    private static final double TOGGLE_WIDTH = 0.9;
+    private static final double TOGGLE_OFFSET_X = 8.10;
+    private static final double TOGGLE_WIDTH = 1.0;
 
     private static final String KEY_TITLE = "random-perks-bingo.menu.perks.title";
     private static final String KEY_NAME = "random-perks-bingo.menu.perks.name";
