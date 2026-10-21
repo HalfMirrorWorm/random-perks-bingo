@@ -270,12 +270,12 @@ object DelverPerks {
         state.isIn(BlockTags.BASE_STONE_OVERWORLD) ||
             state.isOf(Blocks.COBBLESTONE) || state.isOf(Blocks.COBBLED_DEEPSLATE)
 
-    /** 紫 · 深掘: **八十** —— 用镐挖石头类方块时, 顺着你正在看的那个面,
+    /** 蓝 · 深掘: **八十** —— 用镐挖石头类方块时, 顺着你正在看的那个面,
      *  把以该方块为中心的 3×3 **同种**方块一并挖掉 (每块额外消耗 1 点耐久)。
      *  面朝向取玩家视线的主轴: 挖墙 → 竖直平面, 挖地面/天花板 → 水平平面。 */
     object Eighty : PerkDefinition {
         override val id = "delver_eighty"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.IRON_PICKAXE)
 
