@@ -114,6 +114,14 @@ object PerkWorldEventService {
             WarmArchaeologyService.handleBrush(player, world as ServerWorld, hitResult.blockPos)
         }
 
+        // 右键方块 → "切洋葱": 手持镐在黑曜石 / 哭泣的黑曜石之间切换
+        UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
+            if (world.isClient) return@register ActionResult.PASS
+            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
+            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
+            OnionCutService.handleUse(player, world as ServerWorld, hitResult.blockPos)
+        }
+
         // "属于你的马"交互时的兼容修复 (含旧版本召唤的马):
         // 旧代码只设了主人没设驯服标志, 未驯服的马会被原版 openInventory 的
         // isTame 检查拒绝 (表现为"按 E 打不开装备界面"), 见到就补上驯服标志。

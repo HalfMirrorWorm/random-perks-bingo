@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **97** 条词条：蓝 49 / 紫 32 / 金 13 / 神话 3。
+共 **98** 条词条：蓝 50 / 紫 32 / 金 13 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -31,6 +31,7 @@
 | `artisan_treasure_chest` | 百宝箱 | Treasure Chest | 紫 |
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 蓝 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
+| `artisan_onion_cut` | 切洋葱 | Cutting Onions | 蓝 |
 
 ## 深掘 DELVER
 

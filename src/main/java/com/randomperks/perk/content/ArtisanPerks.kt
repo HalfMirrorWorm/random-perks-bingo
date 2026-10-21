@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.OnionCutService
 import com.randomperks.game.PerkSession
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
@@ -268,6 +269,15 @@ object ArtisanPerks {
         }
     }
 
+    /** 蓝 · 匠造: **切洋葱** —— 手持镐右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换
+     *  (交互由 OnionCutService 接管; 原版里哭泣的黑曜石无法合成, 只能靠废墟/交易获取) */
+    object OnionCut : PerkDefinition {
+        override val id = OnionCutService.PERK_ID
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.CRYING_OBSIDIAN)
+    }
+
     /** 紫 · 匠造: **绝命毒师** —— 获得时弹出玩家选择器, 选中一名玩家后给他施加
      *  **随机一种负面效果** (等级 I, 持续 30 秒) */
     object Poisoner : PerkDefinition {
@@ -409,6 +419,7 @@ object ArtisanPerks {
         PerkRegistry.register(WaypointClock)
         PerkRegistry.register(LongArms)
         PerkRegistry.register(FireTemper)
+        PerkRegistry.register(OnionCut)
         PerkRegistry.register(Poisoner)
         PerkRegistry.register(TreasureChest)
         PerkRegistry.register(ShulkerBox)
