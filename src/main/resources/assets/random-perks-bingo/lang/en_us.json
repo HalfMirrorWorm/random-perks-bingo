@@ -295,6 +295,8 @@
   "random-perks-bingo.perk.hunter_munitions.desc": "Gain 1 end crystal, 4 TNT, 6 fire charges and 8 gunpowder.",
   "random-perks-bingo.perk.hunter_bounty_hunter.name": "Bounty Hunter",
   "random-perks-bingo.perk.hunter_bounty_hunter.desc": "Killing a hostile mob type for the first time grants 3 gold ingots.",
+  "random-perks-bingo.perk.hunter_carefree_sleep.name": "Carefree Sleep",
+  "random-perks-bingo.perk.hunter_carefree_sleep.desc": "Sleeping in a bed in the Nether or the End doubles the explosion radius and deals 1.5x damage.",
   "random-perks-bingo.message.version_mismatch": "Random Perks mod version mismatch!\nServer: %s\nClient: %s",
   "random-perks-bingo.message.version_missing": "Random Perks mod not detected — please install the same version as the server and reconnect.",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",

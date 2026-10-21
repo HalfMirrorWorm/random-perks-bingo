@@ -21,6 +21,7 @@
     "NightVisionControllerMixin",
     "XrayDropSuppressMixin",
     "PhoenixMixin",
+    "BedBombMixin",
     "MobLootInvoker",
     "BigStomachMixin",
     "OldSchoolCombatMixin",

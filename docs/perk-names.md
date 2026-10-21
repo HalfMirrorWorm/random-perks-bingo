@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **100** 条词条：蓝 51 / 紫 32 / 金 14 / 神话 3。
+共 **101** 条词条：蓝 51 / 紫 33 / 金 14 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -105,6 +105,7 @@
 | `hunter_tnt_throw` | TNT 投手 | TNT Thrower | 紫 |
 | `hunter_munitions` | 军火补给 | Munitions Supply | 蓝 |
 | `hunter_bounty_hunter` | 赏金猎人 | Bounty Hunter | 蓝 |
+| `hunter_carefree_sleep` | 无忧的安眠 | Carefree Sleep | 紫 |
 
 ## 秘藏 SEEKER
 

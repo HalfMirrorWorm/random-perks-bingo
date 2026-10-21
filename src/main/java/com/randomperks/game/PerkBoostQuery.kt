@@ -112,6 +112,12 @@ object PerkBoostQuery {
     fun hasPhoenix(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("delver_phoenix") == true
 
+    // ---- "无忧的安眠": 在床上爆炸的维度里放大床爆炸 (由 BedBombMixin 调用) ----
+
+    /** 玩家是否持有"无忧的安眠" */
+    fun hasCarefreeSleep(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_carefree_sleep") == true
+
     // ---- "老吴!?" (拟声: 猫叫): 猫主动攻击持词条的玩家 (由 CatTargetMixin / CatFleeMixin 调用) ----
 
     /** 玩家是否持有"老吴!?" */

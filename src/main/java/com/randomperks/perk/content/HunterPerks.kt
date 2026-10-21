@@ -944,6 +944,15 @@ object HunterPerks {
         }
     }
 
+    /** 紫 · 猎杀: **无忧的安眠** —— 在地狱 / 末地睡床时, 床的爆炸**范围翻倍、伤害 1.5 倍**
+     *  (由 BedBombMixin 接管 BedBlock.onUse 里的 createExplosion 调用)。 */
+    object CarefreeSleep : PerkDefinition {
+        override val id = "hunter_carefree_sleep"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.RED_BED)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -971,5 +980,6 @@ object HunterPerks {
         PerkRegistry.register(TntThrow)
         PerkRegistry.register(Munitions)
         PerkRegistry.register(BountyHunter)
+        PerkRegistry.register(CarefreeSleep)
     }
 }
