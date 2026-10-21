@@ -20,7 +20,7 @@ import net.minecraft.util.math.BlockPos
  */
 object OnionCutService {
 
-    const val PERK_ID = "artisan_onion_cut"
+    const val PERK_ID = "delver_onion_cut"
 
     fun handleUse(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos): ActionResult {
         if (!PerkSession.isEnabled()) return ActionResult.PASS

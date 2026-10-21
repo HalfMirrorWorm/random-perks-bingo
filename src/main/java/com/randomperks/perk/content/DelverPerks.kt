@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.OnionCutService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -266,6 +267,15 @@ object DelverPerks {
         state.isIn(BlockTags.BASE_STONE_OVERWORLD) ||
             state.isOf(Blocks.COBBLESTONE) || state.isOf(Blocks.COBBLED_DEEPSLATE)
 
+    /** 蓝 · 深掘: **切洋葱** —— 手持镐右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换
+     *  (交互由 OnionCutService 接管; 原版里哭泣的黑曜石无法合成, 只能靠废墟/交易获取) */
+    object OnionCut : PerkDefinition {
+        override val id = OnionCutService.PERK_ID
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.CRYING_OBSIDIAN)
+    }
+
     /** 紫 · 深掘: **不死鸟** —— 免疫火焰伤害; 处于岩浆中时每秒恢复 2 点生命。
      *  免疫由 PhoenixMixin 在 LivingEntity.damage 的 HEAD 拦截 (仅 IS_FIRE 类伤害)。 */
     object Phoenix : PerkDefinition {
@@ -293,6 +303,7 @@ object DelverPerks {
         PerkRegistry.register(XrayVision)
         PerkRegistry.register(LuckyDigger)
         PerkRegistry.register(Collector)
+        PerkRegistry.register(OnionCut)
         PerkRegistry.register(Phoenix)
     }
 }

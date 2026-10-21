@@ -141,6 +141,8 @@
   "random-perks-bingo.perk.delver_iron_skin.desc": "+7 armor while wearing no armor.",
   "random-perks-bingo.perk.delver_phoenix.name": "Phoenix",
   "random-perks-bingo.perk.delver_phoenix.desc": "Immune to fire damage; regenerate 2 HP per second in lava.",
+  "random-perks-bingo.perk.delver_onion_cut.name": "Cutting Onions",
+  "random-perks-bingo.perk.delver_onion_cut.desc": "Right-click obsidian with a pickaxe to turn it into crying obsidian, and vice versa.",
 
   "random-perks-bingo.perk.harvest_gardener.name": "Gardener",
   "random-perks-bingo.perk.harvest_gardener.desc": "Gain 16 bread and 16 wheat.",
@@ -268,8 +270,6 @@
   "random-perks-bingo.perk.artisan_shulker_box.desc": "Gain a shulker box.",
   "random-perks-bingo.perk.artisan_tempering.name": "Tempering",
   "random-perks-bingo.perk.artisan_tempering.desc": "Gain a one-use damaged anvil, a furnace and a stonecutter.",
-  "random-perks-bingo.perk.artisan_onion_cut.name": "Cutting Onions",
-  "random-perks-bingo.perk.artisan_onion_cut.desc": "Right-click obsidian with a pickaxe to turn it into crying obsidian, and vice versa.",
   "random-perks-bingo.perk.harvest_gleaning.name": "Gleaning",
   "random-perks-bingo.perk.harvest_gleaning.desc": "Harvesting a mature crop has a 50% chance to drop an extra random seed.",
   "random-perks-bingo.perk.harvest_happy_ghast.name": "Happy Ghast",

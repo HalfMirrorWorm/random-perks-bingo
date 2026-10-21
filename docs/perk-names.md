@@ -31,7 +31,6 @@
 | `artisan_treasure_chest` | 百宝箱 | Treasure Chest | 紫 |
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 蓝 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
-| `artisan_onion_cut` | 切洋葱 | Cutting Onions | 蓝 |
 
 ## 深掘 DELVER
 
@@ -47,6 +46,7 @@
 | `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 紫 |
 | `delver_collector` | 收藏家 | Collector | 紫 |
 | `delver_phoenix` | 不死鸟 | Phoenix | 紫 |
+| `delver_onion_cut` | 切洋葱 | Cutting Onions | 蓝 |
 
 ## 丰饶 HARVEST
 
