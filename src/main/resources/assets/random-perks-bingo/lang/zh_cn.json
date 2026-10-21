@@ -220,7 +220,7 @@
   "random-perks-bingo.perk.artisan_long_arms.name": "手长",
   "random-perks-bingo.perk.artisan_long_arms.desc": "交互距离 +4 格。",
   "random-perks-bingo.perk.harvest_summon_horse.name": "马来",
-  "random-perks-bingo.perk.harvest_summon_horse.desc": "原地召唤一匹属性高的马。",
+  "random-perks-bingo.perk.harvest_summon_horse.desc": "原地召唤一匹属性高的马, 它会像驯服的狗一样在你走远时传送过来。",
   "random-perks-bingo.perk.harvest_big_stomach.name": "大胃袋",
   "random-perks-bingo.perk.harvest_big_stomach.desc": "你可以不受饱食度限制一直吃。",
   "random-perks-bingo.perk.harvest_yowl.name": "老吴!?",

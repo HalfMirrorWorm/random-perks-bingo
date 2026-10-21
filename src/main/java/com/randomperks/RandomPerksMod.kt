@@ -11,6 +11,7 @@ import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
+import com.randomperks.game.SummonedHorseService
 import com.randomperks.game.TntThrowService
 import com.randomperks.game.VerminSwarmService
 import com.randomperks.lifecycle.BingoLifecycle
@@ -68,8 +69,11 @@ object RandomPerksMod : ModInitializer {
         // "开摆" 的五分钟诅咒与结算
         LayFlatService.register()
 
-        // "磁力升级" 的 5 格拾取扫描
+        // "磁力升级" 的 16 格拾取扫描
         MagnetService.register()
+
+        // "马来"召唤的马会像驯服的狼一样跟着主人
+        SummonedHorseService.register()
 
         // "TNT 投手" 的右键抛射
         TntThrowService.register()
