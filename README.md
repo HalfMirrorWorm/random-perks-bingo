@@ -1,8 +1,9 @@
 # Random Perks Bingo（随机词条 Bingo 扩展）
 
 给 Minecraft Fabric mod [Yet Another Bingo](https://gitlab.com/horrificdev/bingo) 的扩展：
-团队完成 bingo 格子时，每位队员获得一次「三选一」词条选择机会；词条分蓝/紫/金三档品质，
-按六种流派（疾风/深掘/丰饶/猎杀/秘藏/匠造）设计，同流派词条之间有配合，构筑感强。
+团队完成 bingo 格子时，每位队员获得一次「三选一」词条选择机会；共 **96 个词条**，
+分蓝/紫/金/神话四档品质，按六种流派（疾风/深掘/丰饶/猎杀/秘藏/匠造）设计，
+同流派词条之间有配合，构筑感强。
 
 ## 目标环境
 
@@ -19,7 +20,7 @@
 
 - 团队完成一个 bingo 格子 → **每位队员**获得一次「三选一」词条机会（每人独立随机、互不影响）
 - 每局开局每人免费获得 1 次选择机会
-- 词条分三档品质（普通 / 稀有 / 传说），按六种流派设计（疾风 / 深掘 / 丰饶 / 猎杀 / 秘藏 / 匠造），同流派词条之间有配合
+- 共 96 个词条，分四档品质（普通 / 稀有 / 传说 / 神话），按六种流派设计（疾风 / 深掘 / 丰饶 / 猎杀 / 秘藏 / 匠造），同流派词条之间有配合
 
 | 按键 | 功能 |
 |---|---|
@@ -56,10 +57,13 @@
 
 ## 技术结构
 
-- **检测层**（仅有的 bingo 内部耦合）：`src/main/java/com/randomperks/mixin/`
-  - Mixin 注入 bingo 的 `ScoreUpdateService.sendItemCaptured`（每个格子被完成的语义正确触发点）
-  - `BingoHook` 把 bingo 类型转换为纯数据（UUID/String）后交给 Kotlin 侧
+- **检测层**（仅有的 bingo 内部耦合）：
+  - `src/main/java/com/randomperks/mixin/`：Mixin 注入 bingo 的 `ScoreUpdateService.sendItemCaptured`（每个格子被完成的语义正确触发点）
+  - `src/main/java/com/randomperks/hook/BingoHook.java`：把 bingo 类型转换为纯数据（UUID/String）后交给 Kotlin 侧
   - ⚠ 这些类必须用 **Java** 写（bingo 相关类型是 Kotlin `internal`，Kotlin 编译器禁止跨模块访问）
+- **词条定义**：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派 / 效果），
+  名称与描述在 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`；
+  完整 id 对照表见 [`docs/perk-names.md`](docs/perk-names.md)
 - **游戏逻辑**：`com.randomperks.*`（Kotlin）
 - **客户端**：`src/client/java/com/randomperks/client/`
 
@@ -68,10 +72,11 @@
 - [x] **M1** 工程骨架 + mixin 注入验证
   - 开发服务器启动即打印 `[RandomPerks] mixin applied to bingo ScoreUpdateService — scoring hook is ACTIVE`
 - [x] **M2** 最小闭环（完成格子 → 发放机会 → 三选一 → 效果生效）— 已通过自动化端到端测试
-- [x] **M3** 三选一 UI（品质色卡牌/图标/流派标签/悬停）+ 词条列表界面（按键 C）
+- [x] **M3** 三选一 UI（品质色卡牌/图标/流派标签/悬停）+ 词条列表界面（按键 V）
 - [x] **M4** 词条系统完整化（品质概率/去重池/生命周期/tick 驱动/重生重挂/单元测试）
 - [x] **M5**（第一批）27 个词条，覆盖 6 流派（金色词条暂 1 个）
-- [ ] **M6** 打磨与平衡（主动技能系统、信息类 HUD、更多金词条）
+- [x] **M6** 词条扩充至 **96 个**：4 档品质（蓝/紫/金/神话）、6 大流派，含主动技能、召唤物与全局唯一的神话词条
+- [ ] **M7** 打磨与平衡（信息类 HUD、数值平衡）
 
 ## 开发环境注意事项
 
@@ -96,6 +101,8 @@
 
 脚本会：生成假玩家 → 创建队伍 → 开局（验证开局送 1 次机会）→ 用物品触发格子完成
 （验证 Mixin hook 与机会发放）→ 执行三选一（验证抽取/选择/效果）。
+
+> 注：`scripts/` 仅本地保留，未随仓库发布。
 
 调试命令：`/randomperks status | enable | disable | grant [n] | simulate | pick <0-2> | perk add/remove/clear <玩家> [词条id]`（需要 OP 权限）。
 
