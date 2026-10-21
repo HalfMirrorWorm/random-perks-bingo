@@ -282,7 +282,7 @@ object SwiftPerks {
         override fun icon() = ItemStack(Items.RABBIT_FOOT)
     }
 
-    /** 紫 · 疾风: **易位** —— 获得时连续选择两名玩家 (可以选自己), 交换他们的位置。
+    /** 紫 · 疾风: **易位** —— 在 V 界面点击使用后连续选择两名玩家 (可以选自己), 交换他们的位置。
      *  跨维度的两人无法交换 —— 两边的坐标根本不在同一个空间里。 */
     object Swap : PerkDefinition {
         override val id = "swift_swap"
@@ -290,9 +290,11 @@ object SwiftPerks {
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.ENDER_PEARL)
 
+        override val isOneTime = true
+
         private const val PURPOSE = "swap"
 
-        override fun onAcquire(ctx: PerkContext) {
+        override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val candidates = player.server?.playerManager?.playerList
                 ?.filter { it.isAlive && !it.isSpectator }
@@ -313,6 +315,7 @@ object SwiftPerks {
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
             if (first == second) return
 
             val server = player.server ?: return
@@ -340,6 +343,7 @@ object SwiftPerks {
 
             a.teleport(worldA, posB.x, posB.y, posB.z, emptySet(), yawA, pitchA, true)
             b.teleport(worldB, posA.x, posA.y, posA.z, emptySet(), yawB, pitchB, true)
+            state.markUsed(id)
         }
     }
 

@@ -490,7 +490,7 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 猎杀: 获得时弹出玩家选择器, 选中**任意一名玩家**后在他的位置召唤一次闪电;
+    /** 蓝 · 猎杀: 在 V 界面点击使用后弹出玩家选择器, 选中**任意一名玩家**后在他的位置召唤一次闪电;
      *  16 格内若有引雷针, 闪电会被引导过去 */
     object CallLightning : PerkDefinition {
         override val id = "hunter_call_lightning"
@@ -498,7 +498,9 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.LIGHTNING_ROD)
 
-        override fun onAcquire(ctx: PerkContext) {
+        override val isOneTime = true
+
+        override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
@@ -518,10 +520,11 @@ object HunterPerks {
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
 
             // 校验: 必须是当下的合法候选 —— 否则客户端伪造 uuid 就能劈任意人 (含队友)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
-            strike(target)
+            if (strike(target)) state.markUsed(id)
         }
 
         /** 候选: **所有在线玩家** —— 不限队伍、不限维度, 也包括自己 (跨维度劈雷对目标依然有效,
@@ -529,13 +532,13 @@ object HunterPerks {
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
 
-        /** 在目标位置劈一次闪电 (16 格内的引雷针会把闪电引过去) */
-        private fun strike(target: ServerPlayerEntity) {
-            val world = target.world as? ServerWorld ?: return
+        /** 在目标位置劈一次闪电 (16 格内的引雷针会把闪电引过去); @return 是否成功生成 */
+        private fun strike(target: ServerPlayerEntity): Boolean {
+            val world = target.world as? ServerWorld ?: return false
 
             val rod = findNearbyLightningRod(world, target.blockPos, 16)
             val lightning = net.minecraft.entity.EntityType.LIGHTNING_BOLT
-                .create(world, net.minecraft.entity.SpawnReason.TRIGGERED) ?: return
+                .create(world, net.minecraft.entity.SpawnReason.TRIGGERED) ?: return false
 
             if (rod != null) {
                 lightning.refreshPositionAfterTeleport(rod.x + 0.5, rod.y.toDouble(), rod.z + 0.5)
@@ -543,6 +546,7 @@ object HunterPerks {
                 lightning.refreshPositionAfterTeleport(target.x, target.y, target.z)
             }
             world.spawnEntity(lightning)
+            return true
         }
 
         /** 在半径内寻找最近的引雷针 (找不到返回 null) */
@@ -647,7 +651,7 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK)
     }
 
-    /** 蓝 · 猎杀: **核电轻而易举** —— 获得时弹出玩家选择器, 选中一名玩家后**在他头顶**生成一只
+    /** 蓝 · 猎杀: **核电轻而易举** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后**在他头顶**生成一只
      *  **高亮显示的闪电苦力怕** (charged creeper), 并直接让它仇恨该玩家 */
     object Nuclear : PerkDefinition {
         override val id = "hunter_easy_nuke"
@@ -655,7 +659,9 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.CREEPER_HEAD)
 
-        override fun onAcquire(ctx: PerkContext) {
+        override val isOneTime = true
+
+        override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
@@ -675,10 +681,12 @@ object HunterPerks {
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
-            spawnChargedCreeper(target)
+            if (!spawnChargedCreeper(target)) return
+            state.markUsed(id)
             player.sendMessage(
                 Text.translatable("random-perks-bingo.message.nuke_spawned", target.name),
                 false,
@@ -697,15 +705,15 @@ object HunterPerks {
          *  引信不做任何调整, 就是原版苦力怕的 30 tick (1.5 秒)。
          *
          *  头顶位置 (脚下往上 2 格) 被挡住时退回脚下生成, 免得苦力怕卡在方块里憋死。 */
-        private fun spawnChargedCreeper(target: ServerPlayerEntity) {
-            val world = target.world as? ServerWorld ?: return
+        private fun spawnChargedCreeper(target: ServerPlayerEntity): Boolean {
+            val world = target.world as? ServerWorld ?: return false
             val random = world.random
 
             val headPos = target.blockPos.up(2)
             val pos = if (world.getBlockState(headPos).isAir) headPos else target.blockPos
 
             val creeper = net.minecraft.entity.EntityType.CREEPER
-                .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return
+                .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return false
             creeper.refreshPositionAndAngles(
                 pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
                 random.nextFloat() * 360f, 0f,
@@ -716,6 +724,7 @@ object HunterPerks {
             // 仇恨: 没有目标时 CreeperIgniteGoal 不会启动, 苦力怕就只会站着不动
             creeper.setTarget(target)
             world.spawnEntity(creeper)
+            return true
         }
     }
 

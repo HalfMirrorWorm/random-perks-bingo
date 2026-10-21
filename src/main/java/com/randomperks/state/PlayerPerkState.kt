@@ -20,8 +20,22 @@ class PlayerPerkState(val uuid: UUID) {
     /** 当前累积的待选机会次数 = 队列长度 */
     val pendingChoices: Int get() = pendingOffers.size
 
-    /** 已获得的词条 (本局内不可重复; 局内**不会**被移出, 一次性词条用 memory 记录已用状态) */
+    /** 已获得的词条 (本局内不可重复; 局内**不会**被移出) */
     val ownedPerks: MutableList<PerkDefinition> = mutableListOf()
+
+    /**
+     * 已经使用过的一次性词条 id。
+     *
+     * 一次性词条获得时不立即生效, 由玩家在 V 界面点击触发; 触发成功后记在这里,
+     * 词条卡面随之停止闪烁。局间随 [reset] 清空。
+     */
+    val usedPerks: MutableSet<String> = mutableSetOf()
+
+    fun isUsed(perkId: String): Boolean = perkId in usedPerks
+
+    fun markUsed(perkId: String) {
+        usedPerks.add(perkId)
+    }
 
     /** 主动技能/触发效果的冷却到期时间 (游戏 tick 时间) */
     val cooldowns: MutableMap<String, Long> = mutableMapOf()
@@ -48,6 +62,7 @@ class PlayerPerkState(val uuid: UUID) {
     fun reset() {
         pendingOffers.clear()
         ownedPerks.clear()
+        usedPerks.clear()
         cooldowns.clear()
         memory.clear()
         savedChestItem = null

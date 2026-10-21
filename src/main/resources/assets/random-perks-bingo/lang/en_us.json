@@ -38,6 +38,7 @@
   "random-perks-bingo.catalog.progress": "Collected %s / %s",
   "random-perks-bingo.list.pending": "Pending choices: %s",
   "random-perks-bingo.list.empty": "No perks acquired yet.",
+  "random-perks-bingo.list.click_to_use": "Click to use",
 
   "random-perks-bingo.rarity.blue": "Common",
   "random-perks-bingo.rarity.purple": "Rare",
@@ -195,7 +196,7 @@
   "random-perks-bingo.perk.artisan_enchanter.name": "Apprentice Enchanter",
   "random-perks-bingo.perk.artisan_enchanter.desc": "Gain a max-level enchanted book, then another every 6 minutes.",
   "random-perks-bingo.perk.artisan_quick_enchant.name": "Quick Enchant",
-  "random-perks-bingo.perk.artisan_quick_enchant.desc": "Choose one of your items to gain a random max-level enchantment.",
+  "random-perks-bingo.perk.artisan_quick_enchant.desc": "Click it in your perk list to choose one of your items and gain a random max-level enchantment.",
   "random-perks-bingo.perk.artisan_poisoner.name": "Breaking Bad",
   "random-perks-bingo.perk.artisan_poisoner.desc": "Choose any player: inflict a random debuff for 30 seconds.",
   "random-perks-bingo.perk.artisan_treasure_chest.name": "Treasure Chest",

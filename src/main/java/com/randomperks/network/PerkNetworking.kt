@@ -34,6 +34,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(PerkActivateC2S.ID, PerkActivateC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(DoubleJumpC2S.ID, DoubleJumpC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(DashC2S.ID, DashC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(StealOpenS2C.ID, StealOpenS2C.CODEC)
@@ -79,6 +80,13 @@ object PerkNetworking {
             val player = context.player()
             context.server().execute {
                 PerkOfferService.handleCatalogRequest(player)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(PerkActivateC2S.ID) { payload, context ->
+            val player = context.player()
+            context.server().execute {
+                PerkOfferService.handleActivate(player, payload.perkId)
             }
         }
 

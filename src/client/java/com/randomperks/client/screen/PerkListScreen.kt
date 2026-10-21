@@ -1,5 +1,6 @@
 package com.randomperks.client.screen
 
+import com.randomperks.client.net.ClientPerkNetworking
 import com.randomperks.network.PerkOptionData
 import com.randomperks.network.PlayerPerkList
 import net.minecraft.client.MinecraftClient
@@ -43,6 +44,9 @@ class PerkListScreen(
 
     private val sortState = PerkSortState()
     private var sortBoxes: List<Pair<PerkSortMode, IntArray>> = emptyList()
+
+    /** 本帧每张卡片的点击区域 (含当前排序/滚动后的位置) */
+    private val cardBoxes = mutableListOf<Pair<PerkOptionData, IntArray>>()
 
     private var listLeft = 0
     private var listWidth = 0
@@ -147,6 +151,7 @@ class PerkListScreen(
         }
 
         val perks = sortState.sort(current?.perks.orEmpty())
+        cardBoxes.clear()
         if (perks.isEmpty()) {
             context.drawCenteredTextWithShadow(
                 textRenderer,
@@ -171,6 +176,13 @@ class PerkListScreen(
         // 列表区域 (裁剪, 防止滚动时卡片画出界)
         context.enableScissor(listLeft - 4, listTop, listLeft + listWidth + 4, bottom)
 
+        // 只有自己的 tab 显示"点击使用"状态 —— 别人的词条不能由你触发
+        val pendingIds = if (current != null && current.uuid == self) {
+            current.pendingPerkIds.toSet()
+        } else {
+            emptySet()
+        }
+
         for ((index, perk) in perks.withIndex()) {
             val row = index / COLUMNS
             val col = index % COLUMNS
@@ -180,7 +192,8 @@ class PerkListScreen(
             val isHovered = mouseX in x..(x + cardWidth) && mouseY in y..(y + CARD_HEIGHT)
             if (isHovered) hovered = index
 
-            drawRow(context, perk, x, y, isHovered)
+            cardBoxes.add(perk to intArrayOf(x, y, cardWidth, CARD_HEIGHT))
+            drawRow(context, perk, x, y, isHovered, pending = perk.id in pendingIds)
         }
 
         context.disableScissor()
@@ -209,7 +222,14 @@ class PerkListScreen(
         super.render(context, mouseX, mouseY, delta)
     }
 
-    private fun drawRow(context: DrawContext, perk: PerkOptionData, x: Int, y: Int, isHovered: Boolean) {
+    private fun drawRow(
+        context: DrawContext,
+        perk: PerkOptionData,
+        x: Int,
+        y: Int,
+        isHovered: Boolean,
+        pending: Boolean,
+    ) {
         val displayColor = ScreenStyle.rarityDisplayColor(perk.rarityOrdinal)
         val archetype = ScreenStyle.archetype(perk.archetypeOrdinal)
 
@@ -220,6 +240,23 @@ class PerkListScreen(
             context.fill(x + 3, y, x + cardWidth, y + 1, ScreenStyle.BORDER_HOVER)
             context.fill(x + 3, y + CARD_HEIGHT - 1, x + cardWidth, y + CARD_HEIGHT, ScreenStyle.BORDER_HOVER)
             context.fill(x + cardWidth - 1, y, x + cardWidth, y + CARD_HEIGHT, ScreenStyle.BORDER_HOVER)
+        }
+
+        // 一次性词条还没用: 整张卡闪烁绿边, 提示"点我使用"
+        if (pending && (System.currentTimeMillis() / 500L) % 2L == 0L) {
+            val glow = ScreenStyle.TEXT_HIGHLIGHT
+            context.fill(x, y, x + cardWidth, y + 1, glow)
+            context.fill(x, y + CARD_HEIGHT - 1, x + cardWidth, y + CARD_HEIGHT, glow)
+            context.fill(x, y, x + 1, y + CARD_HEIGHT, glow)
+            context.fill(x + cardWidth - 1, y, x + cardWidth, y + CARD_HEIGHT, glow)
+        }
+        if (pending) {
+            val hint = Text.translatable("random-perks-bingo.list.click_to_use")
+            context.drawTextWithShadow(
+                textRenderer, hint,
+                x + cardWidth - 6 - textRenderer.getWidth(hint), y + 15,
+                ScreenStyle.TEXT_HIGHLIGHT,
+            )
         }
 
         // 图标 (16x16, 垂直居中)
@@ -259,6 +296,24 @@ class PerkListScreen(
                     scrollOffset = 0
                 }
                 return true
+            }
+        }
+
+        // 点击自己的一次性词条 → 触发使用流程
+        val current = players.getOrNull(selected)
+        if (button == 0 && current != null && current.uuid == selfUuid() &&
+            mouseX >= listLeft && mouseX <= listLeft + listWidth &&
+            mouseY >= listTop && mouseY <= listBottom()
+        ) {
+            for ((perk, box) in cardBoxes) {
+                if (mouseX in box[0].toDouble()..(box[0] + box[2]).toDouble() &&
+                    mouseY in box[1].toDouble()..(box[1] + box[3]).toDouble()
+                ) {
+                    if (perk.id in current.pendingPerkIds) {
+                        ClientPerkNetworking.activatePerk(perk.id)
+                        return true
+                    }
+                }
             }
         }
         return super.mouseClicked(mouseX, mouseY, button)

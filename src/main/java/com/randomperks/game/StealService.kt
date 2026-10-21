@@ -13,16 +13,13 @@ import java.util.UUID
 /**
  * "顺手牵羊"词条的服务端逻辑。
  *
- * 流程 (全程无需按键): 获得词条 → 自动下发候选玩家列表 → 玩家在选择器里点一名 → 下发他的背包 →
- * 点一格偷走。一次性: 偷取成功后词条即被消耗。
+ * 流程: 玩家在 V 界面点击该词条 → 下发候选玩家列表 → 玩家在选择器里点一名 → 下发他的背包 →
+ * 点一格偷走。一次性: 偷取成功后词条即记为已用。
  */
 object StealService {
 
     const val PERK_ID = "seeker_pickpocket"
     const val TARGET_KEY = "pickpocket_target"
-
-    /** 一次性: 偷过之后记为已用。**词条本身留在玩家身上** (局内不移除词条), 所以不会重复抽到 */
-    private const val USED_KEY = "pickpocket_used"
 
     /** 玩家背包格数 (快捷栏 9 + 主背包 27) */
     private const val SLOT_COUNT = 36
@@ -44,13 +41,13 @@ object StealService {
         }
     }
 
-    /** 获得词条时调用: 下发候选玩家列表, 由玩家自己挑 (没有候选就提示) */
+    /** 玩家点击词条时调用: 下发候选玩家列表, 由玩家自己挑 (没有候选就提示) */
     fun handleRequest(player: ServerPlayerEntity) {
         if (!PerkSession.isEnabled()) return
 
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.hasPerk(PERK_ID)) return
-        if (state.memory[USED_KEY] == "1") return   // 已经偷过: 不再弹选择器
+        if (state.isUsed(PERK_ID)) return   // 已经偷过: 不再弹选择器
 
         val targets = candidates(player).map { PlayerTargetEntry(it.uuid, it.name.string) }
         if (targets.isEmpty()) {
@@ -86,7 +83,7 @@ object StealService {
 
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.hasPerk(PERK_ID)) return
-        if (state.memory[USED_KEY] == "1") return   // 已经偷过
+        if (state.isUsed(PERK_ID)) return   // 已经偷过
 
         val target = resolveTarget(player, state)
         if (target == null) {
@@ -109,7 +106,7 @@ object StealService {
 
         // 一次性: 记为已用。**不移除词条** —— 词条继续留在列表里, 抽卡时天然处于排除集,
         // 所以同一局不会再次获得 (也就不需要"局内移出词条"这件事)
-        state.memory[USED_KEY] = "1"
+        state.markUsed(PERK_ID)
         state.memory.remove(TARGET_KEY)
         PerkGrantService.notifyPerkListChanged(player)
         PerkGrantService.syncAbilities(player)

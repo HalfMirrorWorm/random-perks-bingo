@@ -122,8 +122,8 @@ object ArtisanPerks {
         }
     }
 
-    /** 紫 · 匠造: **快速附魔** —— 获得时弹出装备选择器 (4 个护甲槽 + 副手), 给选中的那件装备
-     *  随机附加一个**该装备吃得下的满级附魔**, 不消耗经验。
+    /** 紫 · 匠造: **快速附魔** —— 在 V 界面点击使用后弹出装备选择器 (4 个护甲槽 + 副手),
+     *  给选中的那件装备随机附加一个**该装备吃得下的满级附魔**, 不消耗经验。
      *
      *  只生效一次 (获得词条那一刻), 所以"附在哪件装备上"是个一次性决策 —— 底材越好收益越大。 */
     object QuickEnchant : PerkDefinition {
@@ -131,6 +131,8 @@ object ArtisanPerks {
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.ANVIL)
+
+        override val isOneTime = true
 
         private const val PURPOSE = "quick_enchant"
 
@@ -146,7 +148,7 @@ object ArtisanPerks {
         /** 物品栏格子的 key 前缀, 后面跟 PlayerInventory 的原始索引 (0-8 是快捷栏) */
         private const val INV_PREFIX = "inv:"
 
-        override fun onAcquire(ctx: PerkContext) {
+        override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             if (!hasAnyItem(player)) {
                 player.sendMessage(Text.translatable("random-perks-bingo.message.quick_enchant_no_item"), true)
@@ -161,6 +163,7 @@ object ArtisanPerks {
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
 
             // 客户端可以伪造 key, 所以只认自己这份白名单, 并当场把物品查出来
             val stack = stackAt(player, key) ?: return
@@ -187,6 +190,7 @@ object ArtisanPerks {
 
             // 改的是物品栏里已有的 stack (引用没变), 不会自动触发同步 —— 手动推一次
             player.playerScreenHandler.syncState()
+            state.markUsed(id)
 
             player.sendMessage(
                 Text.translatable(
@@ -268,13 +272,15 @@ object ArtisanPerks {
         }
     }
 
-    /** 紫 · 匠造: **绝命毒师** —— 获得时弹出玩家选择器, 选中一名玩家后给他施加
+    /** 紫 · 匠造: **绝命毒师** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后给他施加
      *  **随机一种负面效果** (等级 I, 持续 30 秒) */
     object Poisoner : PerkDefinition {
         override val id = "artisan_poisoner"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.FERMENTED_SPIDER_EYE)
+
+        override val isOneTime = true
 
         /** 负面效果持续 30 秒 */
         private const val DURATION_TICKS = 30 * 20
@@ -294,7 +300,7 @@ object ArtisanPerks {
             StatusEffects.UNLUCK,
         )
 
-        override fun onAcquire(ctx: PerkContext) {
+        override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
@@ -314,12 +320,14 @@ object ArtisanPerks {
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
 
             val effect = DEBUFFS[target.random.nextInt(DEBUFFS.size)]
             target.addStatusEffect(StatusEffectInstance(effect, DURATION_TICKS, 0))
+            state.markUsed(id)
 
             val effectName = Text.translatable(effect.value().translationKey)
             player.sendMessage(

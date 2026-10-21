@@ -112,10 +112,30 @@ object PerkOfferService {
                 otherState?.ownedPerks?.map {
                     PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon())
                 } ?: emptyList(),
+                otherState?.ownedPerks
+                    ?.filter { it.isOneTime && !otherState.isUsed(it.id) }
+                    ?.map { it.id }
+                    ?: emptyList(),
             )
         }
 
         PerkNetworking.sendPerkList(player, state.pendingChoices, players)
+    }
+
+    /**
+     * 玩家在 V 界面点击了一个一次性词条 → 触发它的使用流程。
+     *
+     * 这里只负责"打开使用流程"(目标选择器 / 装备选择器 / 偷窃目标);
+     * "已使用"标记由各词条在效果真正生效时自己写入, 所以中途取消选择不会浪费词条。
+     */
+    fun handleActivate(player: ServerPlayerEntity, perkId: String) {
+        if (!PerkSession.isEnabled()) return
+
+        val state = PerkStateManager.get(player.uuid) ?: return
+        val perk = state.ownedPerks.firstOrNull { it.id == perkId } ?: return
+        if (!perk.isOneTime || state.isUsed(perk.id)) return
+
+        perk.onActivate(PerkContext(player, state))
     }
 
     /**

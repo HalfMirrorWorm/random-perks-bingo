@@ -38,6 +38,7 @@
   "random-perks-bingo.catalog.progress": "已收集 %s / %s",
   "random-perks-bingo.list.pending": "待选机会: %s 次",
   "random-perks-bingo.list.empty": "还没有获得任何词条。",
+  "random-perks-bingo.list.click_to_use": "点击使用",
 
   "random-perks-bingo.rarity.blue": "普通",
   "random-perks-bingo.rarity.purple": "稀有",
@@ -195,7 +196,7 @@
   "random-perks-bingo.perk.artisan_enchanter.name": "附魔学徒",
   "random-perks-bingo.perk.artisan_enchanter.desc": "获得一本满级附魔书, 之后每 6 分钟再获得一本。",
   "random-perks-bingo.perk.artisan_quick_enchant.name": "快速附魔",
-  "random-perks-bingo.perk.artisan_quick_enchant.desc": "获得时选择自己的一件物品, 为它随机附加一个满级附魔。",
+  "random-perks-bingo.perk.artisan_quick_enchant.desc": "获得后可在词条列表点击使用: 选择自己的一件物品, 为它随机附加一个满级附魔。",
   "random-perks-bingo.perk.artisan_poisoner.name": "绝命毒师",
   "random-perks-bingo.perk.artisan_poisoner.desc": "选择任意一名玩家, 给他施加 30 秒随机负面效果。",
   "random-perks-bingo.perk.artisan_treasure_chest.name": "百宝箱",

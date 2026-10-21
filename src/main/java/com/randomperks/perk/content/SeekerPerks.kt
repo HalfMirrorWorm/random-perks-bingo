@@ -203,8 +203,10 @@ object SeekerPerks {
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.LEAD)
 
-        /** 立即生效: 获得瞬间弹出目标选择器, 选定后打开其背包 (无候选时提示) */
-        override fun onAcquire(ctx: PerkContext) = StealService.handleRequest(ctx.player)
+        override val isOneTime = true
+
+        /** 由 V 界面点击触发: 弹出目标选择器, 选定后打开其背包 (无候选时提示) */
+        override fun onActivate(ctx: PerkContext) = StealService.handleRequest(ctx.player)
     }
 
     /** 金 · 秘藏 · 质变: 永久透视 —— 高亮标记 32 格内的所有生物 (不含玩家) */
@@ -421,7 +423,7 @@ object SeekerPerks {
         }
     }
 
-    /** 蓝 · 秘藏: **!?区区!?** —— 获得时弹出玩家选择器, 选中一名玩家后:
+    /** 蓝 · 秘藏: **!?区区!?** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后:
      *  1) 送他**随机一种矿物 4 个** (区区薄礼)
      *  2) **2 分钟内每 6 秒**在他 5 格内刷一只蠹虫 (由 [VerminSwarmService] 独立推进) */
     object Puny : PerkDefinition {
@@ -429,6 +431,8 @@ object SeekerPerks {
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.SILVERFISH_SPAWN_EGG)
+
+        override val isOneTime = true
 
         /** 每份"区区"矿物给 4 个 */
         private const val GIFT_COUNT = 4
@@ -447,7 +451,7 @@ object SeekerPerks {
             Items.AMETHYST_SHARD,
         )
 
-        override fun onAcquire(ctx: PerkContext) {
+        override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
@@ -467,6 +471,7 @@ object SeekerPerks {
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
@@ -474,6 +479,7 @@ object SeekerPerks {
             val mineral = MINERALS[target.random.nextInt(MINERALS.size)]
             PerkEffects.giveStack(target, ItemStack(mineral, GIFT_COUNT))
             VerminSwarmService.start(target)
+            state.markUsed(id)
 
             player.sendMessage(
                 Text.translatable("random-perks-bingo.message.puny_given", target.name, mineral.name),

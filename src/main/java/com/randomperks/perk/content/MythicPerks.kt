@@ -45,7 +45,7 @@ object MythicPerks {
         override fun icon() = ItemStack(Items.WITHER_ROSE)
     }
 
-    /** 神话 · 匠造 · 全局唯一: **游戏BUG** —— 获得时弹出玩家选择器, 选中一名玩家后,
+    /** 神话 · 匠造 · 全局唯一: **游戏BUG** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后,
      *  他背包里的**每一种物品各自随机变成另一种物品** (数量不变) */
     object Hodgepodge : PerkDefinition {
         override val id = "mythic_hodgepodge"
@@ -53,7 +53,9 @@ object MythicPerks {
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.BUNDLE)
 
-        override fun onAcquire(ctx: PerkContext) {
+        override val isOneTime = true
+
+        override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
@@ -73,6 +75,7 @@ object MythicPerks {
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
@@ -87,6 +90,7 @@ object MythicPerks {
                 main.set(index, ItemStack(replacement, stack.count))
                 changed++
             }
+            state.markUsed(id)
 
             player.sendMessage(
                 Text.translatable("random-perks-bingo.message.hodgepodge_applied", target.name, changed),

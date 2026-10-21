@@ -14,6 +14,7 @@ import com.randomperks.client.screen.TargetPickScreen
 import com.randomperks.game.ClientPerkFlags
 import com.randomperks.network.GlowMarkS2C
 import com.randomperks.network.PerkAbilitySyncS2C
+import com.randomperks.network.PerkActivateC2S
 import com.randomperks.network.PerkCatalogRequestC2S
 import com.randomperks.network.PerkCatalogS2C
 import com.randomperks.network.PerkListRequestC2S
@@ -255,6 +256,12 @@ object ClientPerkNetworking {
     fun requestCatalog() {
         if (!ClientPlayNetworking.canSend(PerkCatalogRequestC2S.ID)) return
         ClientPlayNetworking.send(PerkCatalogRequestC2S())
+    }
+
+    /** 在 V 界面点击一个未使用的一次性词条, 请求服务端打开它的使用流程 */
+    fun activatePerk(perkId: String) {
+        if (!ClientPlayNetworking.canSend(PerkActivateC2S.ID)) return
+        ClientPlayNetworking.send(PerkActivateC2S(perkId))
     }
 
     /** 在目标选择器里选中一名玩家 */

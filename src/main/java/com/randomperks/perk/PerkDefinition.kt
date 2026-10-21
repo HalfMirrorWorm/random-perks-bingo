@@ -37,6 +37,15 @@ interface PerkDefinition {
     fun icon(): ItemStack
 
     /**
+     * 一次性词条: 获得后**不会**立即触发, 而是留在词条列表里等玩家主动使用。
+     * 这类词条在 V 界面里未使用时闪烁, 点击后触发 [onActivate]。
+     */
+    val isOneTime: Boolean get() = false
+
+    /** 一次性词条的触发入口 (由 V 界面点击调用; 普通词条不会走到这里) */
+    fun onActivate(ctx: PerkContext) {}
+
+    /**
      * 该词条当前是否可用。
      *
      * 依赖外部 mod 的词条 (例如「开摆」需要 Nature's Compass / Explorer's Compass)
