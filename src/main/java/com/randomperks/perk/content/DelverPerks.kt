@@ -312,6 +312,53 @@ object DelverPerks {
         }
     }
 
+    /** 金 · 深掘: **连锁挖矿** —— 用镐挖矿石时, 把与它相连的**同种**矿石一并挖掉 (上限 64 块)。
+     *  额外方块每块消耗 1 点耐久; 掉落走原版 breakBlock, 因此会正常吃「透视之眼」的惩罚。 */
+    object ChainMining : PerkDefinition {
+        override val id = "delver_chain_mining"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.DIAMOND_ORE)
+
+        /** 单次连锁最多额外挖掉的方块数 (防止巨型矿脉一次刷爆) */
+        private const val MAX_CHAIN = 64
+
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
+            val player = ctx.player
+            val tool = player.mainHandStack
+            if (!tool.isIn(ItemTags.PICKAXES)) return          // 只认镐
+            if (!isOreBlock(blockState)) return                // 只认矿石
+            val world = player.world as? ServerWorld ?: return
+
+            val ore = blockState.block
+            val visited = HashSet<BlockPos>()
+            val queue = ArrayDeque<BlockPos>()
+            visited.add(pos)
+            queue.add(pos)
+
+            var broken = 0
+            while (queue.isNotEmpty() && broken < MAX_CHAIN) {
+                val cur = queue.removeFirst()
+                for (dx in -1..1) {
+                    for (dy in -1..1) {
+                        for (dz in -1..1) {
+                            if (dx == 0 && dy == 0 && dz == 0) continue
+                            val next = cur.add(dx, dy, dz)
+                            if (!visited.add(next)) continue
+                            if (world.getBlockState(next).block !== ore) continue   // 同种矿石
+                            if (tool.isEmpty) return                                // 挖断了就停
+                            world.breakBlock(next, true, player)
+                            if (!player.isCreative) tool.damage(1, player, EquipmentSlot.MAINHAND)
+                            broken++
+                            if (broken >= MAX_CHAIN) return
+                            queue.add(next)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /** 蓝 · 深掘: **切洋葱** —— 手持镐右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换
      *  (交互由 OnionCutService 接管; 原版里哭泣的黑曜石无法合成, 只能靠废墟/交易获取) */
     object OnionCut : PerkDefinition {
@@ -349,6 +396,7 @@ object DelverPerks {
         PerkRegistry.register(LuckyDigger)
         PerkRegistry.register(Collector)
         PerkRegistry.register(Eighty)
+        PerkRegistry.register(ChainMining)
         PerkRegistry.register(OnionCut)
         PerkRegistry.register(Phoenix)
     }

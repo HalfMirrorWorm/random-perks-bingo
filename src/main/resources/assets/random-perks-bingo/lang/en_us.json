@@ -145,6 +145,8 @@
   "random-perks-bingo.perk.delver_onion_cut.desc": "Right-click obsidian with a pickaxe to turn it into crying obsidian, and vice versa.",
   "random-perks-bingo.perk.delver_eighty.name": "Eighty",
   "random-perks-bingo.perk.delver_eighty.desc": "Mining a stone block with a pickaxe also breaks the 3x3 area of the same block facing you.",
+  "random-perks-bingo.perk.delver_chain_mining.name": "Chain Mining",
+  "random-perks-bingo.perk.delver_chain_mining.desc": "Mining an ore with a pickaxe also breaks connected ores of the same type (up to 64).",
 
   "random-perks-bingo.perk.harvest_gardener.name": "Gardener",
   "random-perks-bingo.perk.harvest_gardener.desc": "Gain 16 bread and 16 wheat.",

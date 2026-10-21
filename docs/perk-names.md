@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **99** 条词条：蓝 51 / 紫 32 / 金 13 / 神话 3。
+共 **100** 条词条：蓝 51 / 紫 32 / 金 14 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -48,6 +48,7 @@
 | `delver_phoenix` | 不死鸟 | Phoenix | 紫 |
 | `delver_onion_cut` | 切洋葱 | Cutting Onions | 蓝 |
 | `delver_eighty` | 八十 | Eighty | 蓝 |
+| `delver_chain_mining` | 连锁挖矿 | Chain Mining | 金 |
 
 ## 丰饶 HARVEST
 
