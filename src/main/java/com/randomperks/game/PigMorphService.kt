@@ -12,7 +12,7 @@ import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 
 /**
- * "变猪" (金 · 猎杀) 的服务端状态维护。
+ * "变群友" (蓝 · 丰饶) 的服务端状态维护。
  *
  * 词条效果是**永久**的: 只要玩家持有词条, 他就是一只猪 (0.9 格高, 可以钻 1 格高的缝)。
  * 所以这里不做"触发/计时", 而是持续把"谁该是猪"对账到 [MorphState]:
@@ -27,7 +27,7 @@ import net.minecraft.sound.SoundEvents
  */
 object PigMorphService {
 
-    const val PERK_ID = "hunter_pig_morph"
+    const val PERK_ID = "harvest_pig_morph"
 
     fun register() {
         // 每秒对账 (20 tick = 1 秒)

@@ -503,7 +503,7 @@ class BigSnowballS2C(val entityId: Int) : CustomPayload {
     override fun getId() = ID
 }
 
-/** S2C: 同步某个玩家**是否**处于"变猪"状态 (外观、尺寸、视角伪装全部由客户端完成) */
+/** S2C: 同步某个玩家**是否**处于"变猪"状态 ("变群友", 外观、尺寸、视角伪装全部由客户端完成) */
 class MorphS2C(
     val entityId: Int,
     val morphed: Boolean,

@@ -56,7 +56,7 @@ object RandomPerksMod : ModInitializer {
         // 驱动词条周期回调与重生重挂
         PerkTickService.register()
 
-        // "变猪"的持久变形状态 (自维护 + 广播给客户端)
+        // "变群友"的持久变形状态 (自维护 + 广播给客户端)
         PigMorphService.register()
 
         // 神话词条的创造闪光调度

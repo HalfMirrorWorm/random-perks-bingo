@@ -74,6 +74,7 @@
 | `harvest_warm_archaeology` | 暖水考古 | Warm Water Archaeology | 蓝 |
 | `harvest_dingdong_chicken` | 叮咚鸡 | Ding Dong Chicken | 蓝 |
 | `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 紫 |
+| `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
 
 ## 猎杀 HUNTER
 
@@ -97,7 +98,6 @@
 | `hunter_easy_nuke` | 核电轻而易举 | Easy Nuke | 蓝 |
 | `hunter_homing_bow` | 这不是挂？ | Is This a Hack? | 紫 |
 | `hunter_jockey` | Jockey | Jockey | 金 |
-| `hunter_pig_morph` | 变猪 | Pig Morph | 金 |
 | `hunter_big_snowball` | 打雪仗 | Snowball Fight | 蓝 |
 | `hunter_demon_pact` | 恶魔契约 | Demon Pact | 金 |
 | `hunter_pearl_gauntlet` | 珠光护手 | Pearl Gauntlet | 紫 |

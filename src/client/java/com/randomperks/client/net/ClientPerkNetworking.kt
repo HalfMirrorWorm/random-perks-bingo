@@ -194,7 +194,7 @@ object ClientPerkNetworking {
             }
         }
 
-        // "变猪": 某个玩家进入 / 退出变猪状态
+        // "变群友": 某个玩家进入 / 退出变猪状态
         ClientPlayNetworking.registerGlobalReceiver(MorphS2C.ID) { payload, context ->
             context.client().execute {
                 MorphState.setMorphed(payload.entityId, payload.morphed)
