@@ -138,7 +138,7 @@
 | `swift_double_jump` | 二段跳 | Double Jump | 金 |
 | `swift_elytra_bond` | 风之翼 | Wings of the Wind | 金 |
 | `swift_life_bucket` | 落地，水 | MLG Water | 蓝 |
-| `swift_gura_shark` | Gura鲨鱼 | Gura Shark | 金 |
+| `swift_gura_shark` | 古拉鲨鱼 | Gura Shark | 金 |
 | `swift_omnimovement` | 全向移动 | Omnimovement | 紫 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_swap` | 易位 | Swap | 紫 |
