@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * "变群友" 的视角伪装 —— 变猪期间眼睛高度跟着降下来。
+ * "变猪" 的视角伪装 —— 变猪期间眼睛高度跟着降下来。
  *
  * 和 main 源集的 MorphDimensionsMixin (碰撞箱) 用的是同一组常量, 只是分工不同:
  * 眼睛高度纯粹是客户端表现 (改这里不会顺带压扁碰撞箱), 碰撞箱则两端都要一致。

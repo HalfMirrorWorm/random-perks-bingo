@@ -194,10 +194,10 @@ object ClientPerkNetworking {
             }
         }
 
-        // "变群友": 某个实体进入变猪状态
+        // "变猪": 某个玩家进入 / 退出变猪状态
         ClientPlayNetworking.registerGlobalReceiver(MorphS2C.ID) { payload, context ->
             context.client().execute {
-                MorphState.mark(payload.entityId, payload.durationMillis)
+                MorphState.setMorphed(payload.entityId, payload.morphed)
                 // 碰撞箱要主动重算 —— 改 getBaseDimensions 的返回值不会更新已缓存的 boundingBox
                 context.client().world?.getEntityById(payload.entityId)?.calculateDimensions()
             }

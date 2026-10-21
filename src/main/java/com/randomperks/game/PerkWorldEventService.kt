@@ -6,7 +6,6 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.content.HarvestPerks
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
@@ -95,14 +94,6 @@ object PerkWorldEventService {
 
             player.addStatusEffect(StatusEffectInstance(StatusEffects.SPEED, ESCAPE_PLAN_TICKS, 1))
             player.addStatusEffect(StatusEffectInstance(StatusEffects.RESISTANCE, ESCAPE_PLAN_TICKS, 0))
-        }
-
-        // 攻击命中 → "变群友": 把目标变成猪 (内部自带词条校验与冷却)
-        AttackEntityCallback.EVENT.register { player, _, hand, entity, _ ->
-            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
-            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
-            if (entity is LivingEntity) MorphService.tryApply(player, entity)
-            ActionResult.PASS
         }
 
         // 右键方块 → "切洋葱": 手持镐在黑曜石 / 哭泣的黑曜石之间切换

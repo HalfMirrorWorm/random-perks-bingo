@@ -161,12 +161,6 @@ object PerkBoostQuery {
     fun hasJockey(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_jockey") == true
 
-    // ---- "变群友" (金): 攻击命中把目标变成猪 (由 MorphService 调用) ----
-
-    /** 玩家是否持有"变群友" */
-    fun hasPigMorph(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("hunter_pig_morph") == true
-
     // ---- "雪球大作战" (蓝): 扔出的雪球变大 + 3 伤害 + 击飞 (由 BigSnowballMixin 实现) ----
 
     /** 玩家是否持有"雪球大作战" */

@@ -4,6 +4,7 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkSession
+import com.randomperks.game.PigMorphService
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.state.PerkStateManager
@@ -807,14 +808,41 @@ object HunterPerks {
         }
     }
 
-    /** 金 · 猎杀: **变群友** —— 你的攻击会把目标变成猪 **2 秒** (冷却 8 秒)。
-     *  被变成猪的玩家, 猪头会换成他自己的皮肤, 视角高度也会变成猪的高度。
+    /** 金 · 猎杀: **变猪** —— 你永久变成一只猪:
+     *   - 视角高度与碰撞箱变成猪的 (0.9 格高, 可以站进 1 格高的空间);
+     *   - 模型真的渲染成猪, 但头部保留你自己的皮肤;
+     *   - 每 30 秒获得 1 根金胡萝卜。
      *  (渲染与视角伪装由客户端 PigMorphRenderer / MorphEyeHeightMixin 完成, 实体本身不变) */
     object PigMorph : PerkDefinition {
         override val id = "hunter_pig_morph"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.PIG_SPAWN_EGG)
+
+        /** 金胡萝卜的发放间隔 (秒); onTick 每秒触发一次 */
+        private const val CARROT_INTERVAL_SECONDS = 30
+        private const val CARROT_TIMER_KEY = "pig_carrot_seconds"
+
+        override fun onAcquire(ctx: PerkContext) {
+            ctx.state.memory[CARROT_TIMER_KEY] = "0"
+            // 立刻变形, 不等下一秒的对账
+            PigMorphService.refresh(ctx.player)
+        }
+
+        override fun onRespawn(ctx: PerkContext) {
+            // 重生后是新的实体 id, 需要重新打标记
+            PigMorphService.refresh(ctx.player)
+        }
+
+        override fun onTick(ctx: PerkContext) {
+            val seconds = (ctx.state.memory[CARROT_TIMER_KEY]?.toIntOrNull() ?: 0) + 1
+            if (seconds < CARROT_INTERVAL_SECONDS) {
+                ctx.state.memory[CARROT_TIMER_KEY] = seconds.toString()
+                return
+            }
+            ctx.state.memory[CARROT_TIMER_KEY] = "0"
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.GOLDEN_CARROT))
+        }
     }
 
     /** 蓝 · 猎杀: **打雪仗** —— 获得 32 个雪球; 你扔出的雪球会变大, 命中造成 3 点伤害并击飞目标 */

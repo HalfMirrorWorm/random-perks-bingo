@@ -256,7 +256,7 @@ object PerkNetworking {
         runCatching { ServerPlayNetworking.send(player, payload) }
     }
 
-    /** 通知客户端某个实体进入"变猪"状态 ("变群友") */
+    /** 同步某个玩家是否处于"变猪"状态 ("变猪") */
     fun sendMorph(player: ServerPlayerEntity, payload: MorphS2C) {
         if (!ServerPlayNetworking.canSend(player, MorphS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, payload) }

@@ -10,6 +10,7 @@ import com.randomperks.game.MagnetService
 import com.randomperks.game.ModVersionService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
+import com.randomperks.game.PigMorphService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
 import com.randomperks.game.SummonedHorseService
@@ -54,6 +55,9 @@ object RandomPerksMod : ModInitializer {
 
         // 驱动词条周期回调与重生重挂
         PerkTickService.register()
+
+        // "变猪"的持久变形状态 (自维护 + 广播给客户端)
+        PigMorphService.register()
 
         // 神话词条的创造闪光调度
         CreativeFlashService.register()
