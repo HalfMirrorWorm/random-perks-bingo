@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **102** 条词条：蓝 52 / 紫 33 / 金 14 / 神话 3。
+共 **102** 条词条：蓝 52 / 紫 32 / 金 15 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -141,7 +141,7 @@
 | `swift_gura_shark` | 古拉鲨鱼 | Gura Shark | 金 |
 | `swift_omnimovement` | 全向移动 | Omnimovement | 紫 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
-| `swift_dash` | 冲刺 | Dash | 紫 |
+| `swift_dash` | 冲刺 | Dash | 金 |
 | `swift_swap` | 易位 | Swap | 紫 |
 
 ## 神话 MYTHIC（全局唯一）

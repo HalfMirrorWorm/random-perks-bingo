@@ -261,11 +261,11 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, LEGACY_SPEED)
     }
 
-    /** 紫 · 疾风: **冲刺** —— 在空中按下潜行键, 朝视线水平方向冲刺一次 (每次腾空限一次)。
+    /** 金 · 疾风: **冲刺** —— 在空中按下潜行键, 朝视线水平方向冲刺一次 (每次腾空限一次)。
      *  由客户端 AbilityHandler 检测按键, 服务端 PerkAbilityService.handleDash 验证并施加冲量。 */
     object Dash : PerkDefinition {
         override val id = "swift_dash"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.WIND_CHARGE)
 
