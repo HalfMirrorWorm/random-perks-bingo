@@ -11,7 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * "天启日": 被持有该词条的玩家击杀时, **强制死亡掉落** —— 无视 keepInventory 游戏规则。
- * 触发次数有上限 (前 4 次击杀); 持词条者**自己死亡**时同样会强制掉落。
+ * 触发次数有上限 (前 3 次击杀, 见 PerkBoostQuery.DOOMSDAY_KILL_LIMIT);
+ * 持词条者**自己死亡**时同样会强制掉落。
  *
  * <p><b>为什么注入 onDeath 而不是 PlayerEntity.dropInventory</b>: 原版
  * {@code LivingEntity.damage()} 的执行顺序是

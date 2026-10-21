@@ -539,7 +539,8 @@ object SeekerPerks {
         override fun onAcquire(ctx: PerkContext) = LayFlatService.start(ctx.player)
     }
 
-    /** 蓝 · 秘藏: **磁力升级** —— 拾取范围扩大到 5 格 (MagnetService 每 0.25 秒扫描一次) */
+    /** 蓝 · 秘藏: **磁力升级** —— 拾取范围扩大到 16 格 (MagnetService 每 0.25 秒扫描一次);
+     *  背包界面额外显示一个垃圾桶格 (TrashSlotMixin 绘制 / TrashSlotClickMixin 处理点击)。 */
     object MagnetUpgrade : PerkDefinition {
         override val id = "seeker_magnet_upgrade"
         override val rarity = PerkRarity.BLUE
