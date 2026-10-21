@@ -23,6 +23,7 @@
     "PhoenixMixin",
     "BedBombMixin",
     "BrushItemMixin",
+    "FireballNoDeflectMixin",
     "MobLootInvoker",
     "BigStomachMixin",
     "OldSchoolCombatMixin",

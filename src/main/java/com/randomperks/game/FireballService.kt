@@ -18,6 +18,9 @@ object FireballService {
 
     private const val PERK_ID = "hunter_fireball"
 
+    /** 给"烈焰喷射"打出的火球打的标记 —— 用于禁止被攻击反弹 (见 FireballNoDeflectMixin) */
+    const val FIREBALL_TAG = "randomperks_fireball"
+
     fun register() {
         UseItemCallback.EVENT.register { player, _, hand ->
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
@@ -38,6 +41,7 @@ object FireballService {
 
         val fireball = FireballEntity(world, player, direction.multiply(1.0), 1)
         fireball.setPosition(player.x + direction.x, player.eyeY - 0.2, player.z + direction.z)
+        fireball.addCommandTag(FIREBALL_TAG)
         world.spawnEntity(fireball)
 
         // 消耗一枚火焰弹 (创造模式不消耗)
