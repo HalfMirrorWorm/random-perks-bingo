@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **101** 条词条：蓝 51 / 紫 33 / 金 14 / 神话 3。
+共 **101** 条词条：蓝 52 / 紫 32 / 金 14 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -111,7 +111,7 @@
 
 | id | 中文名 | 英文名 | 稀有度 |
 |---|---|---|---|
-| `seeker_scout` | 观鸟 | Birdwatcher | 紫 |
+| `seeker_scout` | 观鸟 | Birdwatcher | 蓝 |
 | `seeker_supply_line` | 补给线 | Supply Line | 蓝 |
 | `seeker_ender_supply` | 末影补给 | Ender Supply | 紫 |
 | `seeker_pickpocket` | 顺手牵羊 | Pickpocket | 金 |

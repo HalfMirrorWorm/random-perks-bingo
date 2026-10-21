@@ -56,10 +56,10 @@ import java.util.UUID
  */
 object SeekerPerks {
 
-    /** 紫 · 侦察兵: 望远镜(使用时高亮标记周围一切生物与玩家) + 指南针 + 藏宝图 */
+    /** 蓝 · 侦察兵: 望远镜(使用时高亮标记周围一切生物与玩家) + 指南针 + 藏宝图 */
     object Scout : PerkDefinition {
         override val id = "seeker_scout"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.SPYGLASS)
 
