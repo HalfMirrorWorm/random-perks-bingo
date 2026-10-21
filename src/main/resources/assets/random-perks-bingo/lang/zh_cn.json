@@ -259,6 +259,8 @@
   "random-perks-bingo.perk.seeker_random_ground.desc": "把你脚下 3×3 的地面各替换成一块随机方块。",
   "random-perks-bingo.perk.swift_escape_plan.name": "逃跑计划",
   "random-perks-bingo.perk.swift_escape_plan.desc": "受到生物伤害后, 获得速度 II 与抗性提升 I, 持续 10 秒。",
+  "random-perks-bingo.perk.swift_dash.name": "冲刺",
+  "random-perks-bingo.perk.swift_dash.desc": "在空中按下潜行键, 朝视线方向冲刺 (每次腾空限一次)。",
   "random-perks-bingo.perk.hunter_satiation_strike.name": "良子冲击",
   "random-perks-bingo.perk.hunter_satiation_strike.desc": "饱食度满时, 你造成的伤害增加 50%, 但是更容易饿。",
   "random-perks-bingo.perk.harvest_pokemon.name": "宝可梦",

@@ -261,6 +261,18 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, LEGACY_SPEED)
     }
 
+    /** 紫 · 疾风: **冲刺** —— 在空中按下潜行键, 朝视线水平方向冲刺一次 (每次腾空限一次)。
+     *  由客户端 AbilityHandler 检测按键, 服务端 PerkAbilityService.handleDash 验证并施加冲量。 */
+    object Dash : PerkDefinition {
+        override val id = "swift_dash"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.WIND_CHARGE)
+
+        /** 重生后复位"每段离地一次"标记 (新实体的空中状态已重置) */
+        override fun onRespawn(ctx: PerkContext) = PerkAbilityService.clearDashUsed(ctx.player)
+    }
+
     /** 蓝 · 迅捷: **逃跑计划** —— 受到生物伤害后, 自动获得速度 II 与抗性提升 I, 持续 10 秒。
      *  (触发逻辑在 PerkWorldEventService 的 ServerLivingEntityEvents.AFTER_DAMAGE) */
     object EscapePlan : PerkDefinition {
@@ -344,5 +356,6 @@ object SwiftPerks {
         com.randomperks.perk.PerkRegistry.register(LifeBucket)
         com.randomperks.perk.PerkRegistry.register(GuraShark)
         com.randomperks.perk.PerkRegistry.register(Omnimovement)
+        com.randomperks.perk.PerkRegistry.register(Dash)
     }
 }

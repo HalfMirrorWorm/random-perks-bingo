@@ -35,6 +35,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(DoubleJumpC2S.ID, DoubleJumpC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(DashC2S.ID, DashC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(StealOpenS2C.ID, StealOpenS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(StealTargetsS2C.ID, StealTargetsS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(ActionTargetsS2C.ID, ActionTargetsS2C.CODEC)
@@ -86,6 +87,13 @@ object PerkNetworking {
             val player = context.player()
             context.server().execute {
                 PerkAbilityService.handleDoubleJump(player)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(DashC2S.ID) { _, context ->
+            val player = context.player()
+            context.server().execute {
+                PerkAbilityService.handleDash(player)
             }
         }
 

@@ -66,4 +66,53 @@ object PerkAbilityService {
     fun clearDoubleJumpUsed(player: ServerPlayerEntity) {
         PerkStateManager.get(player.uuid)?.memory?.remove(DOUBLE_JUMP_USED_KEY)
     }
+
+    // ---- "冲刺" ----
+
+    private const val DASH_PERK_ID = "swift_dash"
+    private const val DASH_USED_KEY = "dash_used"
+
+    /** 冲刺的水平速度 (格/tick) */
+    private const val DASH_SPEED = 0.9
+
+    /**
+     * 处理客户端的冲刺请求。
+     * 服务端验证: 持有词条 / 在空中 / 未滑翔 / 未骑乘 / 本段离地未用过。
+     */
+    fun handleDash(player: ServerPlayerEntity) {
+        if (!PerkSession.isEnabled()) return
+        if (player.isOnGround) {
+            clearDashUsed(player)
+            return
+        }
+        if (player.isGliding) return      // 滑翔中不可用
+        if (player.getVehicle() != null) return
+
+        val state = PerkStateManager.get(player.uuid) ?: return
+        if (!state.hasPerk(DASH_PERK_ID)) return
+        if (state.memory[DASH_USED_KEY] == "1") return   // 每段离地只允许一次
+
+        state.memory[DASH_USED_KEY] = "1"
+
+        // 只改水平分量: 垂直速度保持不变, 所以它不会变成"第二个二段跳"
+        val look = player.rotationVector
+        val horizontal = Vec3d(look.x, 0.0, look.z)
+        val length = horizontal.length()
+        val dir = if (length < 1.0E-4) Vec3d.fromPolar(0.0f, player.yaw) else horizontal.multiply(1.0 / length)
+
+        player.velocity = Vec3d(dir.x * DASH_SPEED, player.velocity.y, dir.z * DASH_SPEED)
+        player.velocityModified = true
+
+        player.playSoundToPlayer(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.8f, 1.4f)
+        (player.world as? ServerWorld)?.spawnParticles(
+            ParticleTypes.CLOUD,
+            player.x, player.y + 0.4, player.z,
+            8, 0.25, 0.15, 0.25, 0.02,
+        )
+    }
+
+    /** 复位冲刺"每段离地一次"标记 (落地由 PlayerLandingMixin 调用) */
+    fun clearDashUsed(player: ServerPlayerEntity) {
+        PerkStateManager.get(player.uuid)?.memory?.remove(DASH_USED_KEY)
+    }
 }

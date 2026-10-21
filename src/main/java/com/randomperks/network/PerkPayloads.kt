@@ -554,6 +554,19 @@ class DoubleJumpC2S : CustomPayload {
     override fun getId() = ID
 }
 
+/** C2S: 客户端请求冲刺 (服务端验证词条与状态) */
+class DashC2S : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<DashC2S>(Identifier.of("random-perks-bingo", "dash"))
+        val CODEC: PacketCodec<RegistryByteBuf, DashC2S> = PacketCodec.of(
+            { _, _ -> },
+            { _ -> DashC2S() },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** S2C: "落地，水"触发 —— 客户端播放"水桶上浮旋转"演出 (参照图腾动画, 物品换成水桶) */
 class WaterBucketTotemS2C : CustomPayload {
     companion object {

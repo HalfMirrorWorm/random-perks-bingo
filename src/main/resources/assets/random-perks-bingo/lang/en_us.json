@@ -259,6 +259,8 @@
   "random-perks-bingo.perk.seeker_random_ground.desc": "Replaces each block in the 3x3 area under your feet with a random block.",
   "random-perks-bingo.perk.swift_escape_plan.name": "Escape Plan",
   "random-perks-bingo.perk.swift_escape_plan.desc": "Taking damage from a living thing grants Speed II and Resistance I for 10 seconds.",
+  "random-perks-bingo.perk.swift_dash.name": "Dash",
+  "random-perks-bingo.perk.swift_dash.desc": "Press sneak in mid-air to dash forward (once per airtime).",
   "random-perks-bingo.perk.hunter_satiation_strike.name": "Satiation Strike",
   "random-perks-bingo.perk.hunter_satiation_strike.desc": "While your hunger bar is full, you deal 50% more damage but get hungry faster.",
   "random-perks-bingo.perk.harvest_pokemon.name": "Pokemon",

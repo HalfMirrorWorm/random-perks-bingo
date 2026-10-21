@@ -3,6 +3,7 @@ package com.randomperks.client
 import com.randomperks.client.net.ClientPerkNetworking
 import com.randomperks.game.DoubleJumpGlideGate
 import com.randomperks.mixin.LivingEntityJumpVelocityInvoker
+import com.randomperks.network.DashC2S
 import com.randomperks.network.DoubleJumpC2S
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
@@ -24,9 +25,13 @@ import net.minecraft.util.math.Vec3d
 object AbilityHandler {
 
     private const val DOUBLE_JUMP_PERK = "swift_double_jump"
+    private const val DASH_PERK = "swift_dash"
 
     private var jumpHeldLastTick = false
     private var doubleJumpUsedThisAirTime = false
+
+    private var sneakHeldLastTick = false
+    private var dashUsedThisAirTime = false
 
     /** 二段跳后仍按住跳跃键: 继续让出滑翔, 直到松手 (否则"按住不放"会立刻转成滑翔) */
     private var glideSuppressedUntilRelease = false
@@ -39,6 +44,7 @@ object AbilityHandler {
             val player = client.player
             if (player == null || client.currentScreen != null) {
                 jumpHeldLastTick = false
+                sneakHeldLastTick = false
                 DoubleJumpGlideGate.suppress = false
                 return@register
             }
@@ -46,6 +52,7 @@ object AbilityHandler {
             // 落地重置; 滑翔**不**重置 —— 与服务端"每段离地只允许一次"的 memory 标记保持一致
             if (player.isOnGround) {
                 doubleJumpUsedThisAirTime = false
+                dashUsedThisAirTime = false
                 airTicks = 0
             } else {
                 airTicks++
@@ -81,6 +88,26 @@ object AbilityHandler {
                 player.networkHandler.sendPacket(
                     ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.START_FALL_FLYING),
                 )
+            }
+
+            // 冲刺: 空中按潜行键 → 朝视线水平方向冲一次 (每次腾空限一次)
+            val sneakPressed = client.options.sneakKey.isPressed
+            val sneakJustPressed = sneakPressed && !sneakHeldLastTick
+            sneakHeldLastTick = sneakPressed
+
+            if (sneakJustPressed && airborne && !dashUsedThisAirTime && ClientPerkNetworking.hasPerk(DASH_PERK)) {
+                dashUsedThisAirTime = true
+
+                // 本地预测: 只改水平分量, 垂直速度保持不变
+                val look = player.rotationVector
+                val horizontal = Vec3d(look.x, 0.0, look.z)
+                val length = horizontal.length()
+                val dir = if (length < 1.0E-4) Vec3d.fromPolar(0.0f, player.yaw) else horizontal.multiply(1.0 / length)
+                player.velocity = Vec3d(dir.x * 0.9, player.velocity.y, dir.z * 0.9)
+
+                if (ClientPlayNetworking.canSend(DashC2S.ID)) {
+                    ClientPlayNetworking.send(DashC2S())
+                }
             }
 
             // 给原版 checkGliding 的让位开关 (下一 tick 生效):

@@ -24,5 +24,6 @@ public class PlayerLandingMixin {
     private void randomperks$onLanded(PlayerMoveC2SPacket packet, CallbackInfo ci) {
         if (!packet.isOnGround()) return;
         PerkAbilityService.INSTANCE.clearDoubleJumpUsed(this.player);
+        PerkAbilityService.INSTANCE.clearDashUsed(this.player);
     }
 }
