@@ -50,7 +50,6 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyBreakFreeC2S.ID, JockeyBreakFreeC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(TrashItemC2S.ID, TrashItemC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
 
@@ -175,17 +174,6 @@ object PerkNetworking {
             }
         }
 
-        // "磁力升级" 的垃圾桶: 把光标上的物品销毁
-        ServerPlayNetworking.registerGlobalReceiver(TrashItemC2S.ID) { _, context ->
-            val player = context.player()
-            context.server().execute {
-                if (!PerkBoostQuery.hasMagnetUpgrade(player)) return@execute
-                val handler = player.currentScreenHandler
-                if (handler.cursorStack.isEmpty) return@execute
-                handler.cursorStack = ItemStack.EMPTY
-                handler.syncState()   // 让客户端的光标也跟着清掉
-            }
-        }
     }
 
     /** 通知玩家当前待选机会数 (客户端未安装本 mod 时静默跳过) */

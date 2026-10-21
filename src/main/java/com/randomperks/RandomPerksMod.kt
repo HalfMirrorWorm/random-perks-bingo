@@ -2,6 +2,7 @@ package com.randomperks
 
 import com.randomperks.command.RandomPerksCommands
 import com.randomperks.config.PerkConfig
+import com.randomperks.game.ContainerOpenService
 import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.FireballService
 import com.randomperks.game.LayFlatService
@@ -74,6 +75,9 @@ object RandomPerksMod : ModInitializer {
 
         // "马来"召唤的马会像驯服的狼一样跟着主人
         SummonedHorseService.register()
+
+        // "磁力升级": 手持潜影盒 / 末影箱右键直接打开
+        ContainerOpenService.register()
 
         // "TNT 投手" 的右键抛射
         TntThrowService.register()

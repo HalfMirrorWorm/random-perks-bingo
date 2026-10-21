@@ -58,10 +58,7 @@
     "BigSnowballRendererMixin",
     "BigSnowballRenderStateMixin",
     "OmnimovementMixin",
-    "HandledScreenAccessor",
-    "ScreenInvoker",
-    "TrashSlotMixin",
-    "TrashSlotClickMixin"
+    "ScreenInvoker"
   ],
   "injectors": {
     "defaultRequire": 1
