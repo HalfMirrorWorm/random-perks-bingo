@@ -129,8 +129,10 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
             return;
         }
 
+        boolean renderedAsPig = false;
         try {
             renderAsPig(state, matrices, vertexConsumers, light);
+            renderedAsPig = true;
         } catch (Throwable t) {
             // 纯外观问题不该拖垮整个客户端 —— 失败就退回原版玩家模型
             if (!warnedRenderFailure) {
@@ -138,6 +140,13 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
                 LOGGER.error("[RandomPerks] pig morph: render failed, falling back to player model", t);
             }
             super.render(state, matrices, vertexConsumers, light);
+        }
+
+        // 名牌: 原版是 EntityRenderer.render 在模型画完后顺手画的, 而我们绕过了它
+        // (super.render 会把整个玩家模型也画出来), 所以这里单独补一次。
+        // 此时 matrices 已经回到"实体原点", 和原版画名牌时的坐标系一致。
+        if (renderedAsPig && state.displayName != null) {
+            super.renderLabelIfPresent(state, state.displayName, matrices, vertexConsumers, light);
         }
     }
 
