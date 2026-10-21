@@ -39,7 +39,7 @@ class PerkCatalogScreen(
     /** null = 全部 */
     private var selectedArchetype: PerkArchetype? = null
 
-    private var sortMode = PerkSortMode.DEFAULT
+    private val sortState = PerkSortState()
     private var sortBoxes: List<Pair<PerkSortMode, IntArray>> = emptyList()
 
     private var scrollOffset = 0
@@ -66,7 +66,7 @@ class PerkCatalogScreen(
         } else {
             allPerks.filter { ScreenStyle.archetype(it.archetypeOrdinal) == selectedArchetype }
         }
-        return sortMode.sort(list)
+        return sortState.sort(list)
     }
 
     private fun tabWidth() = listWidth / tabs.size
@@ -77,8 +77,8 @@ class PerkCatalogScreen(
         // 不调 renderBackground, 避免 1.21.6+ 的二次 blur 崩溃
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
-        // 右上角的排序切换 (默认 / 名称 / 稀有度)
-        sortBoxes = drawPerkSortButtons(context, textRenderer, width - 8, 6, sortMode, mouseX, mouseY)
+        // 右上角的排序切换 (默认 / 名称↑↓ / 等级↑↓)
+        sortBoxes = drawPerkSortButtons(context, textRenderer, width - 8, 6, sortState, mouseX, mouseY)
 
         // 标题 + 收集进度
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 14, ScreenStyle.TEXT_NAME)
@@ -213,8 +213,7 @@ class PerkCatalogScreen(
             if (mouseX in box[0].toDouble()..(box[0] + box[2]).toDouble() &&
                 mouseY in box[1].toDouble()..(box[1] + box[3]).toDouble()
             ) {
-                sortMode = mode
-                scrollOffset = 0
+                if (sortState.click(mode)) scrollOffset = 0
                 return true
             }
         }

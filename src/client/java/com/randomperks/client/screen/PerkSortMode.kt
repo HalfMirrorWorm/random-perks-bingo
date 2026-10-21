@@ -8,8 +8,10 @@ import net.minecraft.text.Text
 /**
  * 词条列表的排序方式 (V 键「我的词条」与 K 键「词条百科」共用)。
  *
- * 名称按**翻译后的显示名**排序 (客户端语言表已加载), 稀有度按 ordinal 从高到低 ——
- * 也就是金/神话排在最前面。
+ * - 名称: 按**翻译后的显示名**排序 (不区分大小写)
+ * - 等级: 按稀有度 ordinal 排序 (原本的"稀有度", 界面上改叫"等级")
+ *
+ * 两种模式都支持升序/降序; 方向状态见 [PerkSortState]。
  */
 enum class PerkSortMode(val id: String) {
 
@@ -19,22 +21,68 @@ enum class PerkSortMode(val id: String) {
     /** 按显示名称 (不区分大小写) */
     NAME("name"),
 
-    /** 按稀有度, 高稀有度在前 */
+    /** 按等级 (稀有度) */
     RARITY("rarity");
 
-    fun sort(perks: List<PerkOptionData>): List<PerkOptionData> = when (this) {
+    fun sort(perks: List<PerkOptionData>, descending: Boolean): List<PerkOptionData> = when (this) {
         DEFAULT -> perks
-        NAME -> perks.sortedBy {
-            Text.translatable("random-perks-bingo.perk.${it.id}.name").string.lowercase()
+        NAME -> {
+            val comparator = compareBy<PerkOptionData> {
+                Text.translatable("random-perks-bingo.perk.${it.id}.name").string.lowercase()
+            }
+            if (descending) perks.sortedWith(comparator.reversed()) else perks.sortedWith(comparator)
         }
-        RARITY -> perks.sortedByDescending { it.rarityOrdinal }
+        RARITY -> {
+            val comparator = compareBy<PerkOptionData> { it.rarityOrdinal }
+            if (descending) perks.sortedWith(comparator.reversed()) else perks.sortedWith(comparator)
+        }
     }
 
-    fun label(): Text = Text.translatable("random-perks-bingo.sort.$id")
+    /** 按钮文字: 非默认模式会带上当前方向 (名称↑ / 名称↓ / 等级↑ / 等级↓) */
+    fun label(descending: Boolean = false): Text {
+        val base = Text.translatable("random-perks-bingo.sort.$id")
+        if (this == DEFAULT) return base
+        return base.copy().append(if (descending) "↓" else "↑")
+    }
 }
 
 /**
- * 在右上角画一排排序按钮 (从右往左: 稀有度 / 名称 / 默认)。
+ * 排序状态: 当前模式 + 每个模式各自的升降序方向 (默认都是升序 ↑)。
+ *
+ * 点击规则:
+ * - 点**当前模式** → 切换升/降序;
+ * - 点**其他模式** → 切换到该模式, 保持它上次的方向。
+ */
+class PerkSortState {
+
+    var mode: PerkSortMode = PerkSortMode.DEFAULT
+        private set
+
+    private val descendingModes = mutableSetOf<PerkSortMode>()
+
+    fun isDescending(mode: PerkSortMode): Boolean = mode in descendingModes
+
+    /** @return 状态是否发生变化 (调用方据此重置滚动位置) */
+    fun click(mode: PerkSortMode): Boolean {
+        return if (mode == this.mode) {
+            if (mode == PerkSortMode.DEFAULT) {
+                false
+            } else {
+                if (!descendingModes.add(mode)) descendingModes.remove(mode)
+                true
+            }
+        } else {
+            this.mode = mode
+            true
+        }
+    }
+
+    fun sort(perks: List<PerkOptionData>): List<PerkOptionData> =
+        mode.sort(perks, isDescending(mode))
+}
+
+/**
+ * 在右上角画一排排序按钮 (从左往右: 默认 / 名称↑↓ / 等级↑↓)。
  *
  * @return 每个按钮的 mode 与点击区域 `[x, y, w, h]`, 供调用方做命中检测
  */
@@ -43,7 +91,7 @@ fun drawPerkSortButtons(
     textRenderer: TextRenderer,
     right: Int,
     top: Int,
-    current: PerkSortMode,
+    state: PerkSortState,
     mouseX: Int,
     mouseY: Int,
 ): List<Pair<PerkSortMode, IntArray>> {
@@ -52,11 +100,11 @@ fun drawPerkSortButtons(
     var x = right
 
     for (mode in PerkSortMode.entries.reversed()) {
-        val label = mode.label()
+        val label = mode.label(state.isDescending(mode))
         val w = textRenderer.getWidth(label) + 8
         x -= w
 
-        val selected = mode == current
+        val selected = mode == state.mode
         val hover = mouseX in x until (x + w) && mouseY in top until (top + h)
         context.fill(x, top, x + w, top + h, when {
             selected -> ScreenStyle.CARD_BG_HOVER
