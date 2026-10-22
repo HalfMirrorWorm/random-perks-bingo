@@ -233,4 +233,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"骨粉撒花" */
     fun hasBoneMealFlowers(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_bone_meal_flowers") == true
+
+    // ---- "真菌感染" (金): 攻击敌方玩家时转化对方物品 ----
+
+    /** 玩家是否持有"真菌感染" */
+    fun hasFungalInfection(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_fungal_infection") == true
 }
