@@ -69,39 +69,34 @@ public class PerkMenuToggleMixin {
 
         IText label = text.translatable(KEY_NAME, "随机词条");
 
-        // tooltip 在每次菜单重绘时读取 -> 点击后能立刻显示"当前: 已启用/已禁用"
-        Property<List<IText>> tooltipProp = component.<List<IText>>computedProperty(() -> {
-            boolean enabled = PerkConfig.INSTANCE.getEnabled();
-            return List.of(
-                    text.translatable(KEY_NAME, "随机词条").formatted(Formatting.GREEN),
-                    text.translatable(enabled ? KEY_STATE_ON : KEY_STATE_OFF,
-                            enabled ? "当前: 已启用" : "当前: 已禁用"),
-                    text.translatable(KEY_TOOLTIP, "开启或关闭词条系统 (下一局生效)")
-            );
-        });
+        // 与特性页其他按钮保持一致: 图标在上、文字在下, 避免小尺寸 tile 里图标压住文字。
+        // tooltip 在菜单重绘时重建, 点击后由 bingo 的 OptionsChangedEvent 触发刷新。
+        boolean enabled = PerkConfig.INSTANCE.getEnabled();
+        List<IText> tooltip = List.of(
+                text.translatable(KEY_NAME, "随机词条").formatted(Formatting.GREEN),
+                text.translatable(enabled ? KEY_STATE_ON : KEY_STATE_OFF,
+                        enabled ? "当前: 已启用" : "当前: 已禁用"),
+                text.translatable(KEY_TOOLTIP, "开启或关闭词条系统 (下一局生效)")
+        );
 
-        ButtonKt.registerTileButton(
+        ButtonKt.registerIconButton(
                 component,
                 // 与第一行特性按钮同一高度: 标题下方 0.6 + 按钮高 0.6
                 new Vector3d(position).add(TOGGLE_OFFSET_X, -1.2, 0.0),
                 "🎲",
                 label,
                 component.<IText>computedProperty(() -> label),
-                0.7f,
-                null,
-                tooltipProp,
+                tooltip,
                 component.<Boolean>computedProperty(() -> PerkConfig.INSTANCE.getEnabled()),
-                null,
-                null,
                 TOGGLE_WIDTH,
                 0.6,
                 null,
                 player -> {
-                    boolean enabled = !PerkConfig.INSTANCE.getEnabled();
-                    PerkConfig.INSTANCE.set(enabled);
+                    boolean newEnabled = !PerkConfig.INSTANCE.getEnabled();
+                    PerkConfig.INSTANCE.set(newEnabled);
                     player.sendHotbarMessage(text.translatable(
-                            enabled ? KEY_ENABLED : KEY_DISABLED,
-                            enabled
+                            newEnabled ? KEY_ENABLED : KEY_DISABLED,
+                            newEnabled
                                     ? "[RandomPerks] 词条系统已启用 —— 将于【下一局】生效"
                                     : "[RandomPerks] 词条系统已禁用 —— 将于【下一局】生效"));
                     return kotlin.Unit.INSTANCE;
