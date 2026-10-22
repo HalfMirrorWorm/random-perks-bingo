@@ -32,7 +32,6 @@
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 蓝 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
 | `artisan_nya_axe` | 喵人斧 | Nya Axe | 紫 |
-| `artisan_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
 
 ## 深掘 DELVER
 
@@ -73,6 +72,7 @@
 | `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 紫 |
 | `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
 | `harvest_beekeeper` | 采蜜人 | Beekeeper | 蓝 |
+| `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
 
 ## 猎杀 HUNTER
 

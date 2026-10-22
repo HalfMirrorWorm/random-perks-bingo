@@ -18,7 +18,7 @@ import net.minecraft.util.math.BlockPos
  */
 object KelpToBoneService {
 
-    const val PERK_ID = "artisan_kelp_to_bone"
+    const val PERK_ID = "harvest_kelp_to_bone"
 
     fun handleUse(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos): ActionResult {
         if (!PerkSession.isEnabled()) return ActionResult.PASS

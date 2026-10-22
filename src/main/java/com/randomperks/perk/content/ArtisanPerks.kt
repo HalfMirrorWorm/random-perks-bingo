@@ -1,7 +1,6 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
-import com.randomperks.game.KelpToBoneService
 import com.randomperks.game.PerkSession
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
@@ -435,14 +434,6 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 匠造: **海带成骨** —— 右键干海带块, 把它变成骨块 (交互见 KelpToBoneService) */
-    object KelpToBone : PerkDefinition {
-        override val id = KelpToBoneService.PERK_ID
-        override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.ARTISAN
-        override fun icon() = ItemStack(Items.BONE_BLOCK)
-    }
-
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -457,6 +448,5 @@ object ArtisanPerks {
         PerkRegistry.register(ShulkerBox)
         PerkRegistry.register(Tempering)
         PerkRegistry.register(NyaAxe)
-        PerkRegistry.register(KelpToBone)
     }
 }

@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.ChickenDyeService
+import com.randomperks.game.KelpToBoneService
 import com.randomperks.game.PigMorphService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -530,6 +531,14 @@ object HarvestPerks {
         }
     }
 
+    /** 蓝 · 丰饶: **海带成骨** —— 右键干海带块, 把它变成骨块 (交互见 KelpToBoneService) */
+    object KelpToBone : PerkDefinition {
+        override val id = KelpToBoneService.PERK_ID
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.BONE_BLOCK)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -552,5 +561,6 @@ object HarvestPerks {
         PerkRegistry.register(LuckyFishing)
         PerkRegistry.register(PigMorph)
         PerkRegistry.register(Beekeeper)
+        PerkRegistry.register(KelpToBone)
     }
 }
