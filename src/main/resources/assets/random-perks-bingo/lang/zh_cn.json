@@ -146,7 +146,7 @@
   "random-perks-bingo.perk.delver_onion_cut.name": "切洋葱",
   "random-perks-bingo.perk.delver_onion_cut.desc": "手持镐右键黑曜石可将其变成哭泣的黑曜石, 右键哭泣的黑曜石可将其变回黑曜石。",
   "random-perks-bingo.perk.delver_eighty.name": "八十",
-  "random-perks-bingo.perk.delver_eighty.desc": "用镐挖石头类方块时, 会把以它为中心的 3×3 同种方块一并挖掉。",
+  "random-perks-bingo.perk.delver_eighty.desc": "用镐挖石头类方块 (含下界岩/玄武岩/黑石) 时, 会把以它为中心的 3×3 同种方块一并挖掉; 掉落与主方块共同结算。",
   "random-perks-bingo.perk.delver_chain_mining.name": "连锁挖矿",
   "random-perks-bingo.perk.delver_chain_mining.desc": "用镐挖矿石时, 会把相连的同种矿石一并挖掉 (最多 64 块); 连锁掉落与主矿石共同结算。",
 

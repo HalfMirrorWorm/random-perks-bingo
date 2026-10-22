@@ -265,14 +265,20 @@ object DelverPerks {
         return path == "ancient_debris" || path.contains("ore")
     }
 
-    /** "石头"判定: 自然石头 (石头/花岗岩/闪长岩/安山岩/凝灰岩/深板岩) + 两种圆石 */
+    /** "石头"判定: 自然石头 (石头/花岗岩/闪长岩/安山岩/凝灰岩/深板岩) +
+     *  下界石头 (下界岩/玄武岩/黑石) + 两种圆石 */
     private fun isStoneBlock(state: BlockState): Boolean =
         state.isIn(BlockTags.BASE_STONE_OVERWORLD) ||
+            state.isIn(BlockTags.BASE_STONE_NETHER) ||
             state.isOf(Blocks.COBBLESTONE) || state.isOf(Blocks.COBBLED_DEEPSLATE)
 
     /** 蓝 · 深掘: **八十** —— 用镐挖石头类方块时, 顺着你正在看的那个面,
      *  把以该方块为中心的 3×3 **同种**方块一并挖掉 (每块额外消耗 1 点耐久)。
-     *  面朝向取玩家视线的主轴: 挖墙 → 竖直平面, 挖地面/天花板 → 水平平面。 */
+     *  面朝向取玩家视线的主轴: 挖墙 → 竖直平面, 挖地面/天花板 → 水平平面。
+     *
+     *  支持主世界石头与下界石头 (下界岩/玄武岩/黑石)。
+     *  掉落与主方块**共同结算**: 透视之眼的 35% 判定只对主方块掷一次,
+     *  额外方块沿用结果, 且掉落统一生成在主方块的位置。 */
     object Eighty : PerkDefinition {
         override val id = "delver_eighty"
         override val rarity = PerkRarity.BLUE
@@ -294,6 +300,10 @@ object DelverPerks {
                 else -> 2                                       // 面向 Z 轴 → XY 平面
             }
 
+            // 与主方块共同结算: 主方块本 tick 被透视惩罚 → 额外方块也整批不掉落
+            val currentTick = (player.server?.ticks ?: 0).toString()
+            val suppressed = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY] == currentTick
+
             val broken = blockState.block
             for (a in -1..1) {
                 for (b in -1..1) {
@@ -303,9 +313,18 @@ object DelverPerks {
                         1 -> pos.add(a, 0, b)
                         else -> pos.add(a, b, 0)
                     }
-                    if (world.getBlockState(target).block !== broken) continue   // 同种类
+                    val targetState = world.getBlockState(target)
+                    if (targetState.block !== broken) continue  // 同种类
                     if (tool.isEmpty) return                    // 耐久挖断了就停
-                    world.breakBlock(target, true, player)
+
+                    // 只移除方块, 掉落统一按主方块的结算结果处理
+                    if (!world.breakBlock(target, false, player)) continue
+                    if (!suppressed) {
+                        // 掉落在主方块位置生成 (自动含时运/精准采集)
+                        PerkEffects.spawnBlockDrops(player, world, pos, targetState)
+                        // 挖掘经验仍按每块结算
+                        targetState.onStacksDropped(world, target, tool, true)
+                    }
                     if (!player.isCreative) tool.damage(1, player, EquipmentSlot.MAINHAND)
                 }
             }
