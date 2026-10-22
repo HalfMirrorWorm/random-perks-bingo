@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.BoneMealFlowerService
 import com.randomperks.game.ChickenDyeService
 import com.randomperks.game.KelpToBoneService
 import com.randomperks.game.PigMorphService
@@ -539,6 +540,15 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.BONE_BLOCK)
     }
 
+    /** 蓝 · 丰饶: **骨粉撒花** —— 对草方块使用骨粉时, 30% 概率额外长出 2 朵随机花
+     *  (交互见 BoneMealFlowerService + BoneMealFlowerMixin) */
+    object BoneMealFlowers : PerkDefinition {
+        override val id = BoneMealFlowerService.PERK_ID
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.POPPY)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -562,5 +572,6 @@ object HarvestPerks {
         PerkRegistry.register(PigMorph)
         PerkRegistry.register(Beekeeper)
         PerkRegistry.register(KelpToBone)
+        PerkRegistry.register(BoneMealFlowers)
     }
 }

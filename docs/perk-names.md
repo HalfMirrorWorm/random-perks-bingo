@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **105** 条词条：蓝 56 / 紫 32 / 金 14 / 神话 3。
+共 **106** 条词条：蓝 57 / 紫 32 / 金 14 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -73,6 +73,7 @@
 | `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
 | `harvest_beekeeper` | 采蜜人 | Beekeeper | 蓝 |
 | `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
+| `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 蓝 |
 
 ## 猎杀 HUNTER
 

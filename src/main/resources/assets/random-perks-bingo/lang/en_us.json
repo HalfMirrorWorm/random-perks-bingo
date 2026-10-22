@@ -244,6 +244,8 @@
   "random-perks-bingo.perk.artisan_nya_axe.desc": "Gain an expensive one-hit-kill axe.",
   "random-perks-bingo.perk.harvest_kelp_to_bone.name": "Kelp to Bone",
   "random-perks-bingo.perk.harvest_kelp_to_bone.desc": "Right-click a dried kelp block to turn it into a bone block.",
+  "random-perks-bingo.perk.harvest_bone_meal_flowers.name": "Bone Meal Bloom",
+  "random-perks-bingo.perk.harvest_bone_meal_flowers.desc": "When using bone meal on a grass block, 30% chance to grow 2 extra random flowers.",
   "random-perks-bingo.perk.hunter_veteran.name": "Veteran",
   "random-perks-bingo.perk.hunter_veteran.desc": "Your sword becomes a pre-1.9 sword.",
   "random-perks-bingo.perk.hunter_roly_poly.name": "Roly-Poly",

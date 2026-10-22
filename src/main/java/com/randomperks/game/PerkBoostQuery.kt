@@ -227,4 +227,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"TNT 投手" */
     fun hasTntThrow(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("summon_tnt_throw") == true
+
+    // ---- "骨粉撒花" (蓝): 对草方块用骨粉时概率额外长出随机花 ----
+
+    /** 玩家是否持有"骨粉撒花" */
+    fun hasBoneMealFlowers(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("harvest_bone_meal_flowers") == true
 }
