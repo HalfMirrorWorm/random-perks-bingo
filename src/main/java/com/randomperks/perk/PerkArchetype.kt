@@ -24,4 +24,7 @@ enum class PerkArchetype(val id: String) {
 
     /** 匠造: 合成 / 工具 / 功能物品 */
     ARTISAN("artisan"),
+
+    /** 唤法: 召唤 / 随从 */
+    SUMMON("summon"),
 }

@@ -144,6 +144,10 @@
 | `swift_dash` | 冲刺 | Dash | 金 |
 | `swift_swap` | 易位 | Swap | 紫 |
 
+## 唤法 SUMMON
+
+（流派已加入，词条待补充。）
+
 ## 神话 MYTHIC（全局唯一）
 
 | id | 中文名 | 英文名 | 稀有度 |

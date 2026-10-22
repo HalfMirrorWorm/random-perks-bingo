@@ -52,6 +52,7 @@
   "random-perks-bingo.archetype.hunter": "Hunter",
   "random-perks-bingo.archetype.seeker": "Seeker",
   "random-perks-bingo.archetype.artisan": "Artisan",
+  "random-perks-bingo.archetype.summon": "Summoning",
 
   "random-perks-bingo.message.gained_choice": "★ Perk choice available! (%s pending) — press X",
   "random-perks-bingo.message.choices_available": "You have %s perk choice(s) waiting.",

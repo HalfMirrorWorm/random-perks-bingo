@@ -52,6 +52,7 @@
   "random-perks-bingo.archetype.hunter": "猎杀",
   "random-perks-bingo.archetype.seeker": "秘藏",
   "random-perks-bingo.archetype.artisan": "匠造",
+  "random-perks-bingo.archetype.summon": "唤法",
 
   "random-perks-bingo.message.gained_choice": "★ 获得一次词条选择! (待选 %s 次) —— 按 X 打开",
   "random-perks-bingo.message.choices_available": "你有 %s 次词条选择待选。",
