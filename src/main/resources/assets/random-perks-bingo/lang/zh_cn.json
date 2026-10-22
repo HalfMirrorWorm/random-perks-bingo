@@ -242,6 +242,8 @@
   "random-perks-bingo.message.dragon_tamer_mounted": "你骑上了 %s —— 用 WASD 控制它, 右键使用能力, 潜行下马。",
   "random-perks-bingo.perk.artisan_nya_axe.name": "喵人斧",
   "random-perks-bingo.perk.artisan_nya_axe.desc": "获得一把昂贵的秒人斧。",
+  "random-perks-bingo.perk.artisan_kelp_to_bone.name": "海带成骨",
+  "random-perks-bingo.perk.artisan_kelp_to_bone.desc": "右键干海带块可以把它变成骨块。",
   "random-perks-bingo.perk.hunter_veteran.name": "老玩家",
   "random-perks-bingo.perk.hunter_veteran.desc": "你的剑变为 1.9 版本以前的剑。",
   "random-perks-bingo.perk.hunter_roly_poly.name": "不倒翁",

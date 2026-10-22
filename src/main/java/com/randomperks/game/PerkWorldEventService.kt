@@ -96,12 +96,15 @@ object PerkWorldEventService {
             player.addStatusEffect(StatusEffectInstance(StatusEffects.RESISTANCE, ESCAPE_PLAN_TICKS, 0))
         }
 
-        // 右键方块 → "切洋葱": 手持镐在黑曜石 / 哭泣的黑曜石之间切换
+        // 右键方块 → "切洋葱" / "海带成骨"
         UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
             if (world.isClient) return@register ActionResult.PASS
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
             if (player !is ServerPlayerEntity) return@register ActionResult.PASS
-            OnionCutService.handleUse(player, world as ServerWorld, hitResult.blockPos)
+            val serverWorld = world as ServerWorld
+            val onion = OnionCutService.handleUse(player, serverWorld, hitResult.blockPos)
+            if (onion != ActionResult.PASS) return@register onion
+            KelpToBoneService.handleUse(player, serverWorld, hitResult.blockPos)
         }
 
         // "属于你的马"交互时的兼容修复 (含旧版本召唤的马):
