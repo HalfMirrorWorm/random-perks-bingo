@@ -557,18 +557,23 @@ object SeekerPerks {
         override fun icon() = ItemStack(Items.HOPPER)
     }
 
-    /** 蓝 · 秘藏: **老牧师** —— 在脚下召唤一只**大师级牧师**村民, 但他的交易项会被随机标成
-     *  **缺货** 0~10 项 (交易项还在, 只是点不了; 10 项全缺就是一只什么也不卖的牧师)。 */
+    /** 蓝 · 秘藏: **老牧师** —— 获得 16 个绿宝石, 并在脚下召唤一只**大师级牧师**村民,
+     *  但他的交易项会被随机标成 **缺货** 0~3 项 (交易项还在, 只是点不了)。 */
     object OldPriest : PerkDefinition {
         override val id = "seeker_old_priest"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.EMERALD)
 
-        /** 大师级牧师的交易项总数: 2 项 × 5 个等级 */
-        private const val MAX_DISABLED = 10
+        /** 获得时赠送的绿宝石数量 */
+        private const val EMERALD_REWARD = 16
+
+        /** 最多随机缺货的交易项数量 */
+        private const val MAX_DISABLED = 3
 
         override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.EMERALD, EMERALD_REWARD))
+
             val world = ctx.player.world as? ServerWorld ?: return
             if (!spawnAt(world, ctx.player.blockPos)) {
                 ctx.player.sendMessage(
@@ -612,7 +617,7 @@ object SeekerPerks {
                 },
             )
 
-            // 交易是懒生成的: getOffers() 会按当前等级补满 10 项, 再把其中随机的 0~10 项标成缺货。
+            // 交易是懒生成的: getOffers() 会按当前等级补满 10 项, 再把其中随机的 0~3 项标成缺货。
             // TradeOffer.disable() 就是把 uses 顶到 maxUses —— 界面上显示为红色的缺货叉, 交易项本身还在。
             val pool = villager.offers.toMutableList()
             repeat(minOf(world.random.nextInt(MAX_DISABLED + 1), pool.size)) {
