@@ -203,6 +203,12 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
 
     private void renderPlayerHead(PlayerEntityRenderState state, MatrixStack matrices,
                                   VertexConsumerProvider vertexConsumers, int light, SkinTextures skin) {
+        // 先让 PlayerEntityModel 正常摆姿势。
+        // ★ 3D Skin Layers 之类的模组会在 setAngles 的 TAIL 处把外层皮肤 (hat 等)
+        //   替换成 3D mesh; 不调用 setAngles 的话它们不会注入, 外层皮肤会一直按
+        //   原版平面模型渲染 —— 这就是"变群友不兼容 3D 皮肤层"的原因。
+        this.headModel.setAngles(state);
+
         ModelPart head = this.headModel.head;
 
         // 套用**猪头**的轴心与朝向 —— 直接渲染的话玩家头会停在玩家模型的高度上。
