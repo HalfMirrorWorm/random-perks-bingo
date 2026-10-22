@@ -386,7 +386,7 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.WHEAT_SEEDS)
     }
 
-    /** 蓝 · 丰饶: **乐魂** —— 召唤一只**自带挽具**的快乐恶魂 (1.21.6+ 的飞行坐骑),
+    /** 蓝 · 丰饶: **乐魂** —— 召唤一只**自带挽具、永久速度 I** 的快乐恶魂 (1.21.6+ 的飞行坐骑),
      *  并获得 2 根拴绳 */
     object HappyGhast : PerkDefinition {
         override val id = "harvest_happy_ghast"
@@ -421,6 +421,16 @@ object HarvestPerks {
                 ItemStack(HARNESSES[player.random.nextInt(HARNESSES.size)]),
             )
             ghast.setPersistent()
+            // 永久速度 I: 快乐恶魂飞得慢, 给个常驻加速 (不显示粒子, 免得一直冒烟)
+            ghast.addStatusEffect(
+                StatusEffectInstance(
+                    StatusEffects.SPEED,
+                    StatusEffectInstance.INFINITE,
+                    0,
+                    false,
+                    false,
+                )
+            )
             world.spawnEntity(ghast)
 
             PerkEffects.giveStack(player, ItemStack(Items.LEAD, LEAD_COUNT))
