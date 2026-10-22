@@ -138,7 +138,7 @@
 | `swift_omnimovement` | 全向移动 | Omnimovement | 紫 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_dash` | 冲刺 | Dash | 金 |
-| `swift_swap` | 易位 | Swap | 紫 |
+| `swift_swap` | 何易位 | Swap | 紫 |
 
 ## 唤法 SUMMON
 
