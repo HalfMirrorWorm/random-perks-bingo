@@ -161,6 +161,12 @@ object PerkBoostQuery {
     fun hasJockey(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_jockey") == true
 
+    // ---- "驯龙高手" (金 · 唤法): 可骑乘其他生物并控制它们使用能力 ----
+
+    /** 玩家是否持有"驯龙高手" */
+    fun hasDragonTamer(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("summon_dragon_tamer") == true
+
     // ---- "雪球大作战" (蓝): 扔出的雪球变大 + 3 伤害 + 击飞 (由 BigSnowballMixin 实现) ----
 
     /** 玩家是否持有"雪球大作战" */

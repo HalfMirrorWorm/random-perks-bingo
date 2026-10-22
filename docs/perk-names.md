@@ -147,7 +147,9 @@
 
 ## 唤法 SUMMON
 
-（流派已加入，词条待补充。）
+| id | 中文名 | 英文名 | 稀有度 |
+|---|---|---|---|
+| `summon_dragon_tamer` | 驯龙高手 | Dragon Tamer | 金 |
 
 ## 神话 MYTHIC（全局唯一）
 

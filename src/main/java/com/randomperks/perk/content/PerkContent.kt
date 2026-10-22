@@ -11,6 +11,7 @@ object PerkContent {
         HunterPerks.registerAll()
         ArtisanPerks.registerAll()
         SeekerPerks.registerAll()
+        SummonPerks.registerAll()
         MythicPerks.registerAll()
     }
 }

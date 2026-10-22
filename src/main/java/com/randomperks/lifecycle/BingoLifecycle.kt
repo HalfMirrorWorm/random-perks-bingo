@@ -3,6 +3,7 @@ package com.randomperks.lifecycle
 import com.randomperks.RandomPerksMod
 import com.randomperks.config.PerkConfig
 import com.randomperks.game.PerkGrantService
+import com.randomperks.game.DragonTamerService
 import com.randomperks.game.JockeyService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
@@ -36,6 +37,7 @@ object BingoLifecycle {
         VerminSwarmService.clear()
         LayFlatService.clear()
         JockeyService.clear()
+        DragonTamerService.clear()
     }
 
     private fun onGameStarted() {

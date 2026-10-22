@@ -4,6 +4,7 @@ import com.randomperks.command.RandomPerksCommands
 import com.randomperks.config.PerkConfig
 import com.randomperks.game.ContainerOpenService
 import com.randomperks.game.CreativeFlashService
+import com.randomperks.game.DragonTamerService
 import com.randomperks.game.FireballService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.MagnetService
@@ -58,6 +59,9 @@ object RandomPerksMod : ModInitializer {
 
         // "变群友"的持久变形状态 (自维护 + 广播给客户端)
         PigMorphService.register()
+
+        // "驯龙高手": 骑乘其他生物并控制它们使用能力
+        DragonTamerService.register()
 
         // 神话词条的创造闪光调度
         CreativeFlashService.register()
