@@ -244,7 +244,7 @@
   "random-perks-bingo.perk.hunter_easy_nuke.name": "核电轻而易举",
   "random-perks-bingo.perk.hunter_easy_nuke.desc": "选择任意一名玩家, 在他头顶生成一只高亮显示的闪电苦力怕。",
   "random-perks-bingo.perk.hunter_homing_bow.name": "这不是挂？",
-  "random-perks-bingo.perk.hunter_homing_bow.desc": "获得一把弓, 每 2 分钟获得 4 支随机药水箭; 你的箭会追踪 16 格内最近的敌人。",
+  "random-perks-bingo.perk.hunter_homing_bow.desc": "获得一把弓, 每 2 分钟获得 4 支随机药水箭; 你的箭会追踪 16 格内最近的敌人, 追踪期间可穿过方块。",
   "random-perks-bingo.perk.hunter_jockey.name": "Jockey",
   "random-perks-bingo.perk.hunter_jockey.desc": "可以骑乘别的玩家, 期间他对你的伤害 -75%; 被挣脱后冷却 3 分钟。",
   "random-perks-bingo.perk.harvest_pig_morph.name": "变群友",

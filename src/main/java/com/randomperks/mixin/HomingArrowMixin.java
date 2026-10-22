@@ -5,6 +5,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,7 +16,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
  * "这不是挂?" —— 持有该词条的玩家射出的**箭**会自动追踪附近的目标。
@@ -23,6 +27,12 @@ import java.util.List;
  * 只处理 {@link ArrowEntity} (弓/弩射出的箭), 不碰三叉戟、雪球等其他弹射物。
  * 转向在每 tick 的 HEAD 完成: 先按当前速度与"指向目标"两个方向的加权平均求出新方向,
  * 再按原速度重新赋予 —— 于是箭会平滑拐弯而不是瞬间掉头。
+ *
+ * <p>★ 追踪期间临时开启 {@code noClip}: 原版箭只要路径上碰到方块就会立即
+ * {@code setInGround} 并停下, 哪怕目标就在 2 格外的墙角后面 —— 表现出来就是
+ * "追踪箭老被旁边的方块挡住"。开启后 {@code Entity.move} 直接位移、不产生方块碰撞,
+ * 箭可以穿墙追到锁定目标; 命中实体仍然走正常的 {@code getEntityCollision}。
+ * 目标丢失 (死亡/出范围/词条被清掉) 时恢复 {@code noClip = false}, 让箭按原版行为落地。
  */
 @Mixin(PersistentProjectileEntity.class)
 public abstract class HomingArrowMixin {
@@ -42,6 +52,14 @@ public abstract class HomingArrowMixin {
     /** 速度低于此值视为已落地/停滞, 不再追踪 */
     private static final double MIN_SPEED = 0.05;
 
+    /**
+     * 被本 mixin 临时开启过 noClip 的箭。
+     *
+     * 用弱引用集合, 箭被移除后自动回收; tick 只在服务端线程跑, 不需要同步。
+     */
+    private static final Set<PersistentProjectileEntity> HOMING_ARROWS =
+            Collections.newSetFromMap(new WeakHashMap<>());
+
     @Inject(method = "tick", at = @At("HEAD"))
     private void randomperks$homeToTarget(CallbackInfo ci) {
         PersistentProjectileEntity self = (PersistentProjectileEntity) (Object) this;
@@ -49,15 +67,29 @@ public abstract class HomingArrowMixin {
         if (!(self.getWorld() instanceof ServerWorld world)) return;
 
         Entity owner = self.getOwner();
-        if (!(owner instanceof ServerPlayerEntity shooter)) return;
-        if (!PerkBoostQuery.INSTANCE.hasHomingBow(shooter)) return;
+        if (!(owner instanceof ServerPlayerEntity shooter)
+                || !PerkBoostQuery.INSTANCE.hasHomingBow(shooter)) {
+            // 词条被清掉 / 箭的主人不是玩家: 恢复碰撞, 按原版行为落地
+            if (HOMING_ARROWS.remove(self)) self.setNoClip(false);
+            return;
+        }
 
         Vec3d velocity = self.getVelocity();
         double speed = velocity.length();
-        if (speed < MIN_SPEED) return;
+        if (speed < MIN_SPEED) {
+            // 已命中/落地/停滞: 恢复原版碰撞, 不要让它以后被推动时继续穿墙
+            if (HOMING_ARROWS.remove(self)) self.setNoClip(false);
+            return;
+        }
 
         LivingEntity target = findTarget(world, self, shooter);
-        if (target == null) return;
+        if (target == null) {
+            if (HOMING_ARROWS.remove(self)) self.setNoClip(false);
+            return;
+        }
+
+        // 追踪期间穿墙, 避免在墙角/门框/洞穴里被近处方块挡下
+        if (HOMING_ARROWS.add(self)) self.setNoClip(true);
 
         // 玩家目标: 满转向 + 贴近直接判中; 其他目标保持原来的平滑偏转
         boolean hardLock = target instanceof ServerPlayerEntity;
@@ -90,6 +122,20 @@ public abstract class HomingArrowMixin {
         if (hardLock && self.squaredDistanceTo(target) <= FORCE_HIT_RANGE * FORCE_HIT_RANGE) {
             self.setPosition(target.getX(), target.getY() + target.getHeight() * 0.5, target.getZ());
         }
+    }
+
+    /**
+     * 把同步过来的"穿墙"标记写进客户端实体的 {@code noClip} 字段。
+     *
+     * {@code PersistentProjectileEntity.isNoClip()} 在客户端读的是数据追踪器里的
+     * PROJECTILE_FLAGS 位, 但 {@code Entity.move()} 只看 {@code Entity.noClip} 字段 ——
+     * 不同步的话服务端的箭在穿墙, 客户端却仍会撞在方块上, 看起来一顿一顿的。
+     */
+    @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
+    private void randomperks$syncClientNoClip(TrackedData<?> data, CallbackInfo ci) {
+        PersistentProjectileEntity self = (PersistentProjectileEntity) (Object) this;
+        if (!self.getWorld().isClient) return;
+        ((Entity) (Object) self).noClip = self.isNoClip();
     }
 
     /** 最近的敌对目标 (射手自己、队友、射手驯服的生物除外); 找不到返回 null */
