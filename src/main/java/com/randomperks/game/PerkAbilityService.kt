@@ -75,9 +75,12 @@ object PerkAbilityService {
     /** 冲刺的水平速度 (格/tick) */
     private const val DASH_SPEED = 0.9
 
+    /** 冲刺冷却: 3 秒 */
+    private const val DASH_COOLDOWN_TICKS = 3 * 20
+
     /**
      * 处理客户端的冲刺请求。
-     * 服务端验证: 持有词条 / 在空中 / 未滑翔 / 未骑乘 / 本段离地未用过。
+     * 服务端验证: 持有词条 / 在空中 / 未滑翔 / 未骑乘 / 本段离地未用过 / 冷却已结束。
      */
     fun handleDash(player: ServerPlayerEntity) {
         if (!PerkSession.isEnabled()) return
@@ -92,7 +95,11 @@ object PerkAbilityService {
         if (!state.hasPerk(DASH_PERK_ID)) return
         if (state.memory[DASH_USED_KEY] == "1") return   // 每段离地只允许一次
 
+        val now = player.server?.ticks?.toLong() ?: 0L
+        if (now < (state.cooldowns[DASH_PERK_ID] ?: 0L)) return   // 3 秒冷却
+
         state.memory[DASH_USED_KEY] = "1"
+        state.cooldowns[DASH_PERK_ID] = now + DASH_COOLDOWN_TICKS
 
         // 只改水平分量: 垂直速度保持不变, 所以它不会变成"第二个二段跳"
         val look = player.rotationVector

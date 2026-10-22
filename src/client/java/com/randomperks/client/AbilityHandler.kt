@@ -33,6 +33,9 @@ object AbilityHandler {
     private var sneakHeldLastTick = false
     private var dashUsedThisAirTime = false
 
+    /** 冲刺的本地冷却截止时刻 (毫秒, System.currentTimeMillis) —— 服务端同样会校验 3 秒 */
+    private var dashCooldownUntilMillis = 0L
+
     /** 二段跳后仍按住跳跃键: 继续让出滑翔, 直到松手 (否则"按住不放"会立刻转成滑翔) */
     private var glideSuppressedUntilRelease = false
 
@@ -90,13 +93,17 @@ object AbilityHandler {
                 )
             }
 
-            // 冲刺: 空中按潜行键 → 朝视线水平方向冲一次 (每次腾空限一次)
+            // 冲刺: 空中按潜行键 → 朝视线水平方向冲一次 (每次腾空限一次, 冷却 3 秒)
             val sneakPressed = client.options.sneakKey.isPressed
             val sneakJustPressed = sneakPressed && !sneakHeldLastTick
             sneakHeldLastTick = sneakPressed
 
-            if (sneakJustPressed && airborne && !dashUsedThisAirTime && ClientPerkNetworking.hasPerk(DASH_PERK)) {
+            if (sneakJustPressed && airborne && !dashUsedThisAirTime &&
+                System.currentTimeMillis() >= dashCooldownUntilMillis &&
+                ClientPerkNetworking.hasPerk(DASH_PERK)
+            ) {
                 dashUsedThisAirTime = true
+                dashCooldownUntilMillis = System.currentTimeMillis() + 3_000L
 
                 // 本地预测: 只改水平分量, 垂直速度保持不变
                 val look = player.rotationVector
