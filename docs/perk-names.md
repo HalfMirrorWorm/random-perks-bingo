@@ -31,6 +31,7 @@
 | `artisan_treasure_chest` | 百宝箱 | Treasure Chest | 紫 |
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 蓝 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
+| `artisan_nya_axe` | 喵人斧 | Nya Axe | 紫 |
 
 ## 深掘 DELVER
 
@@ -93,7 +94,6 @@
 | `hunter_headhunter` | SMP玩家 | SMP Player | 金 |
 | `hunter_fireball` | 烈焰喷射 | Ghast Fireball | 紫 |
 | `hunter_call_lightning` | 引雷术 | Call Lightning | 蓝 |
-| `hunter_nya_axe` | 喵人斧 | Nya Axe | 紫 |
 | `hunter_veteran` | 老玩家 | Veteran | 金 |
 | `hunter_roly_poly` | 不倒翁 | Roly-Poly | 蓝 |
 | `hunter_easy_nuke` | 核电轻而易举 | Easy Nuke | 蓝 |

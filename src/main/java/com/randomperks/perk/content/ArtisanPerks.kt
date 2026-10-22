@@ -10,6 +10,7 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import com.randomperks.state.PerkStateManager
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.Enchantments
@@ -407,6 +408,32 @@ object ArtisanPerks {
         }
     }
 
+    /** 紫 · 匠造: **喵人斧** —— 获得一把**秒人斧** —— **金斧 + 锋利 1145 + 1 点耐久**。
+     *
+     *  与社区（EaseCation 服务器 / Funprops Killaxe）同款思路: 不靠自定义秒杀逻辑,
+     *  而是把锋利堆到荒谬的等级 —— 1145 级的单次附魔伤害 ≈ 1 + 0.5 × 1144 ≈ 573,
+     *  配上金斧基础伤害足以一击带走几乎任何生物 (含玩家); 代价是攻击一次斧头就坏。 */
+    object NyaAxe : PerkDefinition {
+        override val id = "artisan_nya_axe"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.GOLDEN_AXE)
+
+        /** 锋利等级 (EaseCation 的经典数值) */
+        private const val SHARPNESS_LEVEL = 1145
+
+        override fun onAcquire(ctx: PerkContext) {
+            val axe = ItemStack(Items.GOLDEN_AXE)
+            PerkEffects.enchant(ctx.player, axe, Enchantments.SHARPNESS, SHARPNESS_LEVEL)
+            // 只有 1 点耐久: 攻击一次由原版耐久结算自动损坏
+            axe.damage = axe.maxDamage - 1
+            // ★ 工作惩罚直接拉满: 铁砧成本一上来就 ≥ 40 级 → 永久"过于昂贵", 修不了也合不了。
+            //   这是原版组件, 不显示在 tooltip 上, 也不需要额外 mixin。
+            axe.set(DataComponentTypes.REPAIR_COST, 40)
+            PerkEffects.giveStack(ctx.player, axe)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -420,5 +447,6 @@ object ArtisanPerks {
         PerkRegistry.register(TreasureChest)
         PerkRegistry.register(ShulkerBox)
         PerkRegistry.register(Tempering)
+        PerkRegistry.register(NyaAxe)
     }
 }

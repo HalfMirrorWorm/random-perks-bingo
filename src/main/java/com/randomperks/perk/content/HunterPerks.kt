@@ -575,32 +575,6 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: 获得一把**秒人斧** —— **金斧 + 锋利 1145 + 1 点耐久**。
-     *
-     *  与社区（EaseCation 服务器 / Funprops Killaxe）同款思路: 不靠自定义秒杀逻辑,
-     *  而是把锋利堆到荒谬的等级 —— 1145 级的单次附魔伤害 ≈ 1 + 0.5 × 1144 ≈ 573,
-     *  配上金斧基础伤害足以一击带走几乎任何生物 (含玩家); 代价是攻击一次斧头就坏。 */
-    object NyaAxe : PerkDefinition {
-        override val id = "hunter_nya_axe"
-        override val rarity = PerkRarity.PURPLE
-        override val archetype = PerkArchetype.HUNTER
-        override fun icon() = ItemStack(Items.GOLDEN_AXE)
-
-        /** 锋利等级 (EaseCation 的经典数值) */
-        private const val SHARPNESS_LEVEL = 1145
-
-        override fun onAcquire(ctx: PerkContext) {
-            val axe = ItemStack(Items.GOLDEN_AXE)
-            PerkEffects.enchant(ctx.player, axe, Enchantments.SHARPNESS, SHARPNESS_LEVEL)
-            // 只有 1 点耐久: 攻击一次由原版耐久结算自动损坏
-            axe.damage = axe.maxDamage - 1
-            // ★ 工作惩罚直接拉满: 铁砧成本一上来就 ≥ 40 级 → 永久"过于昂贵", 修不了也合不了。
-            //   这是原版组件, 不显示在 tooltip 上, 也不需要额外 mixin。
-            axe.set(DataComponentTypes.REPAIR_COST, 40)
-            PerkEffects.giveStack(ctx.player, axe)
-        }
-    }
-
     /** 金 · 猎杀: **老玩家** —— 完全 1.9 战斗更新前的手感:
      *  1) 手持剑时攻击冷却始终视为已蓄满 (由 OldSchoolCombatMixin 实现)
      *  2) **没有横扫攻击** (1.9 新增的机制; 把 SWEEPING_DAMAGE_RATIO 压到 0)
@@ -956,7 +930,6 @@ object HunterPerks {
         PerkRegistry.register(Headhunter)
         PerkRegistry.register(Fireball)
         PerkRegistry.register(CallLightning)
-        PerkRegistry.register(NyaAxe)
         PerkRegistry.register(Veteran)
         PerkRegistry.register(RolyPoly)
         PerkRegistry.register(Nuclear)

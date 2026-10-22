@@ -86,7 +86,7 @@ object PerkBoostQuery {
     }
 
     // "喵人斧"不走自定义秒杀逻辑 —— 它是一把**金斧 + 锋利 1145 + 1 点耐久**,
-    // 靠荒谬的附魔等级本身打出致命伤害 (见 HunterPerks.NyaAxe)。
+    // 靠荒谬的附魔等级本身打出致命伤害 (见 ArtisanPerks.NyaAxe)。
 
     // ---- "大胃袋": 满饱食度也能吃 (由 BigStomachMixin 在 ConsumableComponent.canConsume 拦截) ----
 
