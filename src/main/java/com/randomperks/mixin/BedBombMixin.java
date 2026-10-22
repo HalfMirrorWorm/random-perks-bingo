@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * "无忧的安眠" (紫 · 猎杀): 在地狱 / 末地睡床时, 床的爆炸**范围翻倍、伤害 1.5 倍**。
+ * "无忧的安眠" (蓝 · 深掘): 在地狱 / 末地睡床时, 床的爆炸**范围翻倍、伤害 1.5 倍**。
  *
  * <p>原版逻辑在 {@link BedBlock#onUse}: 床不工作的维度里直接
  * {@code world.createExplosion(null, badRespawnPoint, null, pos, 5.0F, true, BLOCK)}。

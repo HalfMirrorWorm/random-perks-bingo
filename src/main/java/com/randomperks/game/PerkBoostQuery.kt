@@ -116,7 +116,7 @@ object PerkBoostQuery {
 
     /** 玩家是否持有"无忧的安眠" */
     fun hasCarefreeSleep(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("hunter_carefree_sleep") == true
+        PerkStateManager.get(player.uuid)?.hasPerk("delver_carefree_sleep") == true
 
     // ---- "老吴!?" (拟声: 猫叫): 猫主动攻击持词条的玩家 (由 CatTargetMixin / CatFleeMixin 调用) ----
 

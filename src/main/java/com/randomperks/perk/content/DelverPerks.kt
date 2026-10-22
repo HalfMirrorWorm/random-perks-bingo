@@ -378,6 +378,15 @@ object DelverPerks {
         }
     }
 
+    /** 蓝 · 深掘: **无忧的安眠** —— 在地狱 / 末地睡床时, 床的爆炸**范围翻倍、伤害 1.5 倍**
+     *  (由 BedBombMixin 接管 BedBlock.onUse 里的 createExplosion 调用)。 */
+    object CarefreeSleep : PerkDefinition {
+        override val id = "delver_carefree_sleep"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.RED_BED)
+    }
+
     /** 蓝 · 深掘: **切洋葱** —— 手持镐右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换
      *  (交互由 OnionCutService 接管; 原版里哭泣的黑曜石无法合成, 只能靠废墟/交易获取) */
     object OnionCut : PerkDefinition {
@@ -416,6 +425,7 @@ object DelverPerks {
         PerkRegistry.register(Collector)
         PerkRegistry.register(Eighty)
         PerkRegistry.register(ChainMining)
+        PerkRegistry.register(CarefreeSleep)
         PerkRegistry.register(OnionCut)
         PerkRegistry.register(Phoenix)
     }

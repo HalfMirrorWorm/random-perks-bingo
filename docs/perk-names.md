@@ -49,6 +49,7 @@
 | `delver_onion_cut` | 切洋葱 | Cutting Onions | 蓝 |
 | `delver_eighty` | 八十 | Eighty | 蓝 |
 | `delver_chain_mining` | 连锁挖矿 | Chain Mining | 紫 |
+| `delver_carefree_sleep` | 无忧的安眠 | Carefree Sleep | 蓝 |
 
 ## 丰饶 HARVEST
 
@@ -105,7 +106,6 @@
 | `hunter_tnt_throw` | TNT 投手 | TNT Thrower | 紫 |
 | `hunter_munitions` | 军火补给 | Munitions Supply | 蓝 |
 | `hunter_bounty_hunter` | 赏金猎人 | Bounty Hunter | 蓝 |
-| `hunter_carefree_sleep` | 无忧的安眠 | Carefree Sleep | 紫 |
 
 ## 秘藏 SEEKER
 
