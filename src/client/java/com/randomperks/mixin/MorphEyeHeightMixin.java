@@ -3,6 +3,7 @@ package com.randomperks.mixin;
 import com.randomperks.game.MorphState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,7 +28,9 @@ public class MorphEyeHeightMixin {
             cancellable = true)
     private void randomperks$pigEyeHeight(EntityPose pose, CallbackInfoReturnable<Float> cir) {
         Entity self = (Entity) (Object) this;
-        if (!MorphState.isMorphed(self.getId())) return;
+        // 只对玩家生效 (词条效果是玩家变猪), 且用 UUID —— 客户端重生会复用实体 id
+        if (!(self instanceof PlayerEntity player)) return;
+        if (!MorphState.isMorphed(player.getUuid())) return;
 
         cir.setReturnValue(MorphState.PIG_EYE_HEIGHT);
     }

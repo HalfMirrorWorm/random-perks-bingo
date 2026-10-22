@@ -198,9 +198,12 @@ object ClientPerkNetworking {
         // "变群友": 某个玩家进入 / 退出变猪状态
         ClientPlayNetworking.registerGlobalReceiver(MorphS2C.ID) { payload, context ->
             context.client().execute {
-                MorphState.setMorphed(payload.entityId, payload.morphed)
+                // 用 UUID 记录: 客户端重生会复用本地玩家的实体 id, 而服务端会换新 id
+                MorphState.setMorphed(payload.playerUuid, payload.morphed)
                 // 碰撞箱要主动重算 —— 改 getBaseDimensions 的返回值不会更新已缓存的 boundingBox
-                context.client().world?.getEntityById(payload.entityId)?.calculateDimensions()
+                context.client().world?.getPlayers()
+                    ?.firstOrNull { it.uuid == payload.playerUuid }
+                    ?.calculateDimensions()
             }
         }
 

@@ -532,17 +532,17 @@ class BigSnowballS2C(val entityId: Int) : CustomPayload {
 
 /** S2C: 同步某个玩家**是否**处于"变猪"状态 ("变群友", 外观、尺寸、视角伪装全部由客户端完成) */
 class MorphS2C(
-    val entityId: Int,
+    val playerUuid: UUID,
     val morphed: Boolean,
 ) : CustomPayload {
     companion object {
         val ID = CustomPayload.Id<MorphS2C>(Identifier.of("random-perks-bingo", "morph"))
         val CODEC: PacketCodec<RegistryByteBuf, MorphS2C> = PacketCodec.of(
             { value, buf ->
-                buf.writeVarInt(value.entityId)
+                buf.writeUuid(value.playerUuid)
                 buf.writeBoolean(value.morphed)
             },
-            { buf -> MorphS2C(buf.readVarInt(), buf.readBoolean()) },
+            { buf -> MorphS2C(buf.readUuid(), buf.readBoolean()) },
         )
     }
 

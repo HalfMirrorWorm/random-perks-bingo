@@ -1,6 +1,5 @@
 package com.randomperks.client.render;
 
-import com.randomperks.game.MorphState;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -124,11 +123,9 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
     @Override
     public void render(PlayerEntityRenderState state, MatrixStack matrices,
                        VertexConsumerProvider vertexConsumers, int light) {
-        if (!MorphState.isMorphed(state.id)) {
-            super.render(state, matrices, vertexConsumers, light);
-            return;
-        }
-
+        // 这个渲染器只会被 MorphRendererMixin 交给"变猪中"的玩家
+        // (它按 UUID 判断), 所以这里直接按猪渲染即可 —— 不要再依赖 render state 的实体 id,
+        // 客户端重生会复用本地玩家的实体 id, 与服务端的新 id 对不上。
         boolean renderedAsPig = false;
         try {
             renderAsPig(state, matrices, vertexConsumers, light);

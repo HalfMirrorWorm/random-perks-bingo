@@ -22,7 +22,7 @@ public class MorphSoundMixin {
     @Inject(method = "getHurtSound", at = @At("HEAD"), cancellable = true)
     private void randomperks$pigHurtSound(DamageSource source, CallbackInfoReturnable<SoundEvent> cir) {
         PlayerEntity self = (PlayerEntity) (Object) this;
-        if (MorphState.isMorphed(self.getId())) {
+        if (MorphState.isMorphed(self.getUuid())) {
             cir.setReturnValue(SoundEvents.ENTITY_PIG_HURT);
         }
     }
@@ -30,7 +30,7 @@ public class MorphSoundMixin {
     @Inject(method = "getDeathSound", at = @At("HEAD"), cancellable = true)
     private void randomperks$pigDeathSound(CallbackInfoReturnable<SoundEvent> cir) {
         PlayerEntity self = (PlayerEntity) (Object) this;
-        if (MorphState.isMorphed(self.getId())) {
+        if (MorphState.isMorphed(self.getUuid())) {
             cir.setReturnValue(SoundEvents.ENTITY_PIG_DEATH);
         }
     }

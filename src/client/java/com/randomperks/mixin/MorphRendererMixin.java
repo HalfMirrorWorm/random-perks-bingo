@@ -32,7 +32,7 @@ public class MorphRendererMixin {
             cancellable = true)
     private void randomperks$pigRenderer(Entity entity, CallbackInfoReturnable<EntityRenderer> cir) {
         if (!(entity instanceof AbstractClientPlayerEntity player)) return;
-        if (!MorphState.isMorphed(player.getId())) return;
+        if (!MorphState.isMorphed(player.getUuid())) return;
 
         SkinTextures skin = player.getSkinTextures();
         boolean slim = skin != null && skin.model() == SkinTextures.Model.SLIM;

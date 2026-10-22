@@ -22,8 +22,8 @@ import net.minecraft.sound.SoundEvents
  *    不会自动更新已缓存的 boundingBox;
  *  - 变化广播给所有客户端 (外观是客户端渲染的, 别人也得知道你是猪)。
  *
- * 实体 id 会在重生后更换, 所以对账时还要顺手清掉"已经不在玩家列表里"的旧 id,
- * 避免以后被别的实体复用 (那样它会莫名其妙显示成猪)。
+ * 状态以**玩家 UUID** 为键 (见 [MorphState]): 服务端重生会换实体 id,
+ * 客户端本地玩家的实体 id 却保持不变, 用 id 会让重生后的视角重置。
  */
 object PigMorphService {
 
@@ -35,7 +35,7 @@ object PigMorphService {
             if (server.ticks % 20 == 0) reconcile(server)
         }
 
-        // 重生后实体 id 变了: 立刻补一次, 不必等下一个整秒
+        // 重生后重新对账一次 (UUID 不变, 但新实体的碰撞箱需要立即刷新)
         ServerPlayerEvents.AFTER_RESPAWN.register { _, newPlayer, _ -> apply(newPlayer) }
 
         // 新玩家加入: 先把自己该看到的变形状态发过去
@@ -44,12 +44,12 @@ object PigMorphService {
             syncTo(handler.player)
         }
 
-        // 玩家离开: 清掉他的实体 id (客户端也收到 false, 免得 id 被复用时误判)
+        // 玩家离开: 清掉他的 UUID (客户端也收到 false)
         ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
-            val id = handler.player.id
-            if (MorphState.isMorphed(id)) {
-                MorphState.setMorphed(id, false)
-                broadcast(server, MorphS2C(id, false))
+            val uuid = handler.player.uuid
+            if (MorphState.isMorphed(uuid)) {
+                MorphState.setMorphed(uuid, false)
+                broadcast(server, MorphS2C(uuid, false))
             }
         }
     }
@@ -61,43 +61,47 @@ object PigMorphService {
         val online = server.playerManager.playerList
         for (player in online) apply(player)
 
-        // 清掉已经不存在的旧实体 id (例如死亡重生前的那个)
-        val currentIds = online.mapTo(HashSet()) { it.id }
-        for (id in MorphState.ids()) {
-            if (id !in currentIds) {
-                MorphState.setMorphed(id, false)
-                broadcast(server, MorphS2C(id, false))
+        // 清掉已经不在线的玩家 UUID
+        val currentIds = online.mapTo(HashSet()) { it.uuid }
+        for (uuid in MorphState.players()) {
+            if (uuid !in currentIds) {
+                MorphState.setMorphed(uuid, false)
+                broadcast(server, MorphS2C(uuid, false))
             }
         }
     }
 
     private fun apply(player: ServerPlayerEntity) {
         val wanted = PerkStateManager.get(player.uuid)?.hasPerk(PERK_ID) == true
-        if (MorphState.isMorphed(player.id) == wanted) return
+        val changed = MorphState.isMorphed(player.uuid) != wanted
 
-        MorphState.setMorphed(player.id, wanted)
-        player.calculateDimensions()
+        if (changed) {
+            MorphState.setMorphed(player.uuid, wanted)
+            broadcast(player.server, MorphS2C(player.uuid, wanted))
 
-        broadcast(player.server, MorphS2C(player.id, wanted))
-
-        // 变形的那一瞬间"哼"一声
-        if (wanted) {
-            player.world.playSound(
-                null,
-                player.x, player.y, player.z,
-                SoundEvents.ENTITY_PIG_AMBIENT,
-                SoundCategory.NEUTRAL,
-                1.0f,
-                0.9f + player.random.nextFloat() * 0.2f,
-            )
+            // 变形的那一瞬间"哼"一声
+            if (wanted) {
+                player.world.playSound(
+                    null,
+                    player.x, player.y, player.z,
+                    SoundEvents.ENTITY_PIG_AMBIENT,
+                    SoundCategory.NEUTRAL,
+                    1.0f,
+                    0.9f + player.random.nextFloat() * 0.2f,
+                )
+            }
         }
+
+        // ★ 即使 UUID 状态没变也要刷新碰撞箱: 重生会创建新的实体, 它的 boundingBox
+        //   是新算的; 不调用的话新实体仍是普通玩家尺寸 (钻不过 1 格缝)。
+        player.calculateDimensions()
     }
 
     /** 把"每位在线玩家是否是猪"完整发给某个客户端 (加入服务器时用) */
     private fun syncTo(player: ServerPlayerEntity) {
         val server = player.server ?: return
         for (other in server.playerManager.playerList) {
-            PerkNetworking.sendMorph(player, MorphS2C(other.id, MorphState.isMorphed(other.id)))
+            PerkNetworking.sendMorph(player, MorphS2C(other.uuid, MorphState.isMorphed(other.uuid)))
         }
     }
 

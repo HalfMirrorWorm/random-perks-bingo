@@ -29,7 +29,7 @@ public class MorphDimensionsMixin {
         if (pose == EntityPose.SLEEPING || pose == EntityPose.DYING) return;
 
         PlayerEntity self = (PlayerEntity) (Object) this;
-        if (MorphState.isMorphed(self.getId())) {
+        if (MorphState.isMorphed(self.getUuid())) {
             cir.setReturnValue(EntityDimensions.fixed(MorphState.PIG_WIDTH, MorphState.PIG_HEIGHT));
         }
     }
