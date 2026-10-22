@@ -216,8 +216,10 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
         head.pitch = state.pitch * 0.017453292f;
         head.yaw = state.relativeHeadYaw * 0.017453292f;
 
-        // 帽子层 (皮肤的第二层, 比如帽子/头发) 跟着头走
-        this.headModel.hat.copyTransform(head);
+        // 帽子层 (皮肤的第二层, 比如帽子/头发) 是 head 的**子部件**:
+        // head.render 会自动带着它一起渲染, 所以不要再单独 render 一次 ——
+        // 否则同一个头发层会被画两遍, 其中一遍还叠加了 head 的完整变换,
+        // 看起来就是"头发从头模型上分离出去、偏移了一小段"。
         this.headModel.hat.visible = state.hatVisible;
 
         matrices.push();
@@ -228,8 +230,8 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
 
             VertexConsumer headBuffer =
                     vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(skin.texture()));
+            // 同时渲染 head 的 cuboids 和它的子部件 hat
             head.render(matrices, headBuffer, light, OverlayTexture.DEFAULT_UV);
-            this.headModel.hat.render(matrices, headBuffer, light, OverlayTexture.DEFAULT_UV);
 
             // 头盔: 交给原版 ArmorFeatureRenderer。它的上下文模型就是上面这个 headModel,
             // 所以头盔会自动跟着猪头的位置和朝向。armorState 里只有头盔槽有东西。
