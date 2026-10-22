@@ -388,7 +388,7 @@ object HarvestPerks {
     }
 
     /** 蓝 · 丰饶: **乐魂** —— 召唤一只**自带挽具**的快乐恶魂 (1.21.6+ 的飞行坐骑),
-     *  并获得 4 根拴绳 */
+     *  并获得 2 根拴绳 */
     object HappyGhast : PerkDefinition {
         override val id = "harvest_happy_ghast"
         override val rarity = PerkRarity.BLUE
@@ -403,7 +403,7 @@ object HarvestPerks {
         )
 
         /** 赠送的拴绳数量 */
-        private const val LEAD_COUNT = 4
+        private const val LEAD_COUNT = 2
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
