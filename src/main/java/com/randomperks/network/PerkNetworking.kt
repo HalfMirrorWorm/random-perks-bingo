@@ -10,6 +10,7 @@ import com.randomperks.perk.content.ArtisanPerks
 import com.randomperks.perk.content.HunterPerks
 import com.randomperks.perk.content.MythicPerks
 import com.randomperks.perk.content.SeekerPerks
+import com.randomperks.perk.content.SummonPerks
 import com.randomperks.perk.content.SwiftPerks
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
@@ -137,7 +138,7 @@ object PerkNetworking {
                     "nuke" -> HunterPerks.Nuclear.handleTargetPick(player, uuid)
                     "puny" -> SeekerPerks.Puny.handleTargetPick(player, uuid)
                     "poisoner" -> ArtisanPerks.Poisoner.handleTargetPick(player, uuid)
-                    "remote_transfer" -> ArtisanPerks.RemoteTransfer.handleTargetPick(player, uuid)
+                    "remote_transfer" -> SummonPerks.RemoteTransfer.handleTargetPick(player, uuid)
                     "hodgepodge" -> MythicPerks.Hodgepodge.handleTargetPick(player, uuid)
                 }
             }

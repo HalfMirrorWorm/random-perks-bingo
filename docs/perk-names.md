@@ -32,7 +32,6 @@
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 蓝 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
 | `artisan_nya_axe` | 喵人斧 | Nya Axe | 紫 |
-| `artisan_remote_transfer` | 远程传输 | Remote Transfer | 蓝 |
 
 ## 深掘 DELVER
 
@@ -155,6 +154,7 @@
 | `summon_rancher` | 牧场主 | Rancher | 蓝 |
 | `summon_call_lightning` | 引雷术 | Call Lightning | 蓝 |
 | `summon_big_snowball` | 打雪仗 | Snowball Fight | 蓝 |
+| `summon_remote_transfer` | 远程传输 | Remote Transfer | 蓝 |
 
 ## 神话 MYTHIC（全局唯一）
 
