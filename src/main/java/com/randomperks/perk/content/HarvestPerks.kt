@@ -559,6 +559,15 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.SPORE_BLOSSOM)
     }
 
+    /** 紫 · 丰饶: **细嚼慢咽** —— 进食食物期间, 受到的伤害 -65%
+     *  (伤害修正在 LivingEntityDamageMixin) */
+    object SlowChewing : PerkDefinition {
+        override val id = "harvest_slow_chewing"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.BREAD)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -584,5 +593,6 @@ object HarvestPerks {
         PerkRegistry.register(KelpToBone)
         PerkRegistry.register(BoneMealFlowers)
         PerkRegistry.register(FungalInfection)
+        PerkRegistry.register(SlowChewing)
     }
 }

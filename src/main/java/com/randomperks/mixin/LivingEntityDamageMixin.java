@@ -1,6 +1,7 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -25,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
  *   <li>"Jockey" —— 骑在别人身上时, 受到来自**被骑者**的伤害 -75%</li>
  *   <li>"恶魔契约" —— 造成的伤害翻倍, 受到的**任何**伤害也翻倍</li>
  *   <li>"老玩家" —— 右键举剑格挡时, 受到的伤害减半</li>
+ *   <li>"细嚼慢咽" —— 正在进食食物时, 受到的伤害 -65%</li>
  * </ul>
  */
 @Mixin(LivingEntity.class)
@@ -82,6 +84,13 @@ public class LivingEntityDamageMixin {
                 && player.isUsingItem()
                 && player.getActiveItem().isIn(ItemTags.SWORDS)) {
             amount *= 0.5f;
+        }
+
+        // "细嚼慢咽": 正在进食 (使用带 FOOD 组件的物品) 时, 受到的伤害 -65%
+        if (PerkBoostQuery.INSTANCE.hasSlowChewing(player)
+                && player.isUsingItem()
+                && player.getActiveItem().get(DataComponentTypes.FOOD) != null) {
+            amount *= 0.35f;
         }
 
         return amount;

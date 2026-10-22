@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **107** 条词条：蓝 57 / 紫 32 / 金 15 / 神话 3。
+共 **108** 条词条：蓝 57 / 紫 33 / 金 15 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -75,6 +75,7 @@
 | `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
 | `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 蓝 |
 | `harvest_fungal_infection` | 真菌感染 | Fungal Infection | 金 |
+| `harvest_slow_chewing` | 细嚼慢咽 | Slow Chewing | 紫 |
 
 ## 猎杀 HUNTER
 

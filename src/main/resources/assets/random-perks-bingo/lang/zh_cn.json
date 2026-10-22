@@ -312,6 +312,8 @@
   "random-perks-bingo.perk.hunter_bounty_hunter.desc": "每击杀一种此前没杀过的敌对生物, 获得 3 个金锭。",
   "random-perks-bingo.perk.harvest_fungal_infection.name": "真菌感染",
   "random-perks-bingo.perk.harvest_fungal_infection.desc": "攻击敌方玩家时, 随机把他主背包里的 2 件物品变成繁茂洞穴物品 (30 秒冷却)。",
+  "random-perks-bingo.perk.harvest_slow_chewing.name": "细嚼慢咽",
+  "random-perks-bingo.perk.harvest_slow_chewing.desc": "进食食物期间, 受到的伤害 -65%。",
   "random-perks-bingo.perk.delver_carefree_sleep.name": "无忧的安眠",
   "random-perks-bingo.perk.delver_carefree_sleep.desc": "在地狱和末地睡床时, 床的爆炸范围翻倍, 伤害变为 1.5 倍。",
   "random-perks-bingo.message.version_mismatch": "随机词条模组版本不一致!\n服务端: %s\n客户端: %s",

@@ -312,6 +312,8 @@
   "random-perks-bingo.perk.hunter_bounty_hunter.desc": "Killing a hostile mob type for the first time grants 3 gold ingots.",
   "random-perks-bingo.perk.harvest_fungal_infection.name": "Fungal Infection",
   "random-perks-bingo.perk.harvest_fungal_infection.desc": "When you hit an enemy player, 2 random items in their inventory turn into lush cave items (30s cooldown).",
+  "random-perks-bingo.perk.harvest_slow_chewing.name": "Slow Chewing",
+  "random-perks-bingo.perk.harvest_slow_chewing.desc": "While eating food, you take 65% less damage.",
   "random-perks-bingo.perk.delver_carefree_sleep.name": "Carefree Sleep",
   "random-perks-bingo.perk.delver_carefree_sleep.desc": "Sleeping in a bed in the Nether or the End doubles the explosion radius and deals 1.5x damage.",
   "random-perks-bingo.message.version_mismatch": "Random Perks mod version mismatch!\nServer: %s\nClient: %s",
