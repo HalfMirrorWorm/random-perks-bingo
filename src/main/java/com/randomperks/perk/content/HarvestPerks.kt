@@ -205,19 +205,17 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: **马来** —— 可在 V 界面点击, 在脚下召唤一匹属于你的马 (自带鞍; 用剪刀右键可取下鞍) */
+    /** 蓝 · 丰饶: 立即在脚下召唤一匹属于你的马 (自带鞍; 用剪刀右键可取下鞍) */
     object SummonHorse : PerkDefinition {
         override val id = "harvest_summon_horse"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.SADDLE)
 
-        override val isOneTime = true
-
         /** 词条召唤的马身上的命令标签 (供"剪刀取鞍"识别, 不影响其他马) */
         const val TAG = "randomperks_summoned_horse"
 
-        override fun onActivate(ctx: PerkContext) {
+        override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
             val world = player.world as? ServerWorld ?: return
 
@@ -256,7 +254,6 @@ object HarvestPerks {
                 ?.baseValue = HORSE_SPEED
             horse.health = HORSE_HEALTH.toFloat()
             world.spawnEntity(horse)
-            ctx.state.markUsed(id)
         }
 
         /** 召唤马的固定属性: 血量 50 (超原版上限 30), 跳跃力/速度取原版上限 */
@@ -390,15 +387,13 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.WHEAT_SEEDS)
     }
 
-    /** 蓝 · 丰饶: **乐魂** —— 可在 V 界面点击, 召唤一只**自带挽具**的快乐恶魂 (1.21.6+ 的飞行坐骑),
+    /** 蓝 · 丰饶: **乐魂** —— 召唤一只**自带挽具**的快乐恶魂 (1.21.6+ 的飞行坐骑),
      *  并获得 4 根拴绳 */
     object HappyGhast : PerkDefinition {
         override val id = "harvest_happy_ghast"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.WHITE_HARNESS)
-
-        override val isOneTime = true
         /** 16 色挽具, 随机挑一个 */
         private val HARNESSES = listOf(
             Items.WHITE_HARNESS, Items.ORANGE_HARNESS, Items.MAGENTA_HARNESS, Items.LIGHT_BLUE_HARNESS,
@@ -410,7 +405,7 @@ object HarvestPerks {
         /** 赠送的拴绳数量 */
         private const val LEAD_COUNT = 4
 
-        override fun onActivate(ctx: PerkContext) {
+        override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
             val world = player.world as? ServerWorld ?: return
 
@@ -428,7 +423,6 @@ object HarvestPerks {
             )
             ghast.setPersistent()
             world.spawnEntity(ghast)
-            ctx.state.markUsed(id)
 
             PerkEffects.giveStack(player, ItemStack(Items.LEAD, LEAD_COUNT))
         }
