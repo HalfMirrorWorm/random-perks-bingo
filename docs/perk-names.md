@@ -73,7 +73,6 @@
 | `harvest_saplings` | 植岷 | Saplings | 蓝 |
 | `harvest_gleaning` | 拾穗 | Gleaning | 蓝 |
 | `harvest_happy_ghast` | 乐魂 | Happy Ghast | 蓝 |
-| `harvest_warm_archaeology` | 暖水考古 | Warm Water Archaeology | 蓝 |
 | `harvest_dingdong_chicken` | 叮咚鸡 | Ding Dong Chicken | 蓝 |
 | `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 紫 |
 | `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
@@ -125,6 +124,7 @@
 | `seeker_lay_flat` | 开摆 | Lay Flat | 紫 |
 | `seeker_magnet_upgrade` | 磁力升级 | Magnet Upgrade | 蓝 |
 | `seeker_old_priest` | 老牧师 | Old Priest | 蓝 |
+| `seeker_warm_archaeology` | 暖水考古 | Warm Water Archaeology | 蓝 |
 
 ## 迅捷 SWIFT
 

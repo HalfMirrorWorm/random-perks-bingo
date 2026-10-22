@@ -37,7 +37,7 @@ import java.util.UUID
  */
 object WarmArchaeologyService {
 
-    const val PERK_ID = "harvest_warm_archaeology"
+    const val PERK_ID = "seeker_warm_archaeology"
 
     /** 矿物的占比: 完成时先掷 10%, 命中就掉对应颜色的矿物, 否则走考古战利品表 */
     private const val MINERAL_CHANCE = 0.10f

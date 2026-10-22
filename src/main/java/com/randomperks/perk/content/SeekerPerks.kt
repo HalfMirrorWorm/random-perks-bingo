@@ -7,6 +7,7 @@ import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.StealService
 import com.randomperks.game.VerminSwarmService
+import com.randomperks.game.WarmArchaeologyService
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
@@ -669,6 +670,20 @@ object SeekerPerks {
         }
     }
 
+    /** 蓝 · 秘藏: **暖水考古** —— 获得一把刷子; 用刷子刷珊瑚块会把它刷掉, 并有 10% 概率
+     *  刷出一颗**颜色对应**的矿物 (蓝→青金石、粉→钻石、紫→紫水晶、红→红石、黄→金粒)。
+     *  交互由 [WarmArchaeologyService] 接管 (原版刷子不认可珊瑚)。 */
+    object WarmArchaeology : PerkDefinition {
+        override val id = WarmArchaeologyService.PERK_ID
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.BRUSH)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.BRUSH))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
@@ -684,5 +699,6 @@ object SeekerPerks {
         PerkRegistry.register(RandomGround)
         PerkRegistry.register(LayFlat)
         PerkRegistry.register(MagnetUpgrade)
+        PerkRegistry.register(WarmArchaeology)
     }
 }
