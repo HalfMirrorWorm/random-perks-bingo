@@ -85,17 +85,20 @@ class PerkChoiceScreen(
             centerX, y + 74, ScreenStyle.TEXT_NAME,
         )
 
-        // 品质 · 流派
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.rarity.${rarity.name.lowercase()}"),
-            centerX, y + 90, displayColor,
-        )
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.archetype.${archetype.id}"),
-            centerX, y + 102, ScreenStyle.TEXT_DIM,
-        )
+        // 品质 · 流派 (+ 贮藏标记)
+        val rarityLabel = Text.translatable("random-perks-bingo.rarity.${rarity.name.lowercase()}")
+        val archetypeLabel = Text.translatable("random-perks-bingo.archetype.${archetype.id}")
+        context.drawCenteredTextWithShadow(textRenderer, rarityLabel, centerX, y + 90, displayColor)
+        context.drawCenteredTextWithShadow(textRenderer, archetypeLabel, centerX, y + 102, ScreenStyle.TEXT_DIM)
+
+        // 贮藏标记: 可在 V 界面点击执行的一次性词条在获得后进入"待使用"状态
+        if (option.storable && rarity != com.randomperks.perk.PerkRarity.MYTHIC) {
+            context.drawCenteredTextWithShadow(
+                textRenderer,
+                Text.translatable("random-perks-bingo.option.storable"),
+                centerX, y + 114, ScreenStyle.TEXT_HIGHLIGHT,
+            )
+        }
 
         // 分隔线
         context.fill(x + 12, y + 118, x + cardWidth - 12, y + 119, ScreenStyle.DIVIDER)

@@ -305,7 +305,7 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 蓝 · 秘藏: 获得时**直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼。
+    /** 蓝 · 秘藏: **召唤游商** —— 可在 V 界面点击, 在玩家脚下生成一只流浪商人 + 2 只商队羊驼。
      *
      *  不再走原版刷新事件 —— WanderingTraderManager.trySpawn 有生物群系 / 白天 / 概率 / 计时器
      *  一堆限制, 经常刷不出来 ("先试原版、失败再兜底"的写法仍然会漏)。现在直接生成,
@@ -316,16 +316,15 @@ object SeekerPerks {
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.EMERALD)
 
-        private const val SPAWNED_KEY = "trader_spawned"
+        override val isOneTime = true
 
-        override fun onAcquire(ctx: PerkContext) {
-            if (ctx.state.memory[SPAWNED_KEY] == "1") return
-
-            val world = ctx.player.world as? ServerWorld ?: return
-            if (spawnAt(world, ctx.player.blockPos)) {
-                ctx.state.memory[SPAWNED_KEY] = "1"
+        override fun onActivate(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+            if (spawnAt(world, player.blockPos)) {
+                ctx.state.markUsed(id)
             } else {
-                ctx.player.sendMessage(
+                player.sendMessage(
                     Text.translatable("random-perks-bingo.message.trader_failed"),
                     false,
                 )
@@ -496,17 +495,19 @@ object SeekerPerks {
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
-    /** 蓝 · 秘藏: **随机地基** —— 获得瞬间, 把脚下 3×3 的地面各替换成一块随机方块 */
+    /** 蓝 · 秘藏: **随机地基** —— 可在 V 界面点击, 把脚下 3×3 的地面各替换成一块随机方块 */
     object RandomGround : PerkDefinition {
         override val id = "seeker_random_ground"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.GRASS_BLOCK)
 
+        override val isOneTime = true
+
         /** 3×3 = 以脚下为中心, 水平各外扩 1 格 */
         private const val RADIUS = 1
 
-        override fun onAcquire(ctx: PerkContext) {
+        override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val world = player.world as? ServerWorld ?: return
             val registry = world.registryManager.getOrThrow(RegistryKeys.BLOCK)
@@ -518,6 +519,7 @@ object SeekerPerks {
                     world.setBlockState(center.add(dx, 0, dz), block.defaultState)
                 }
             }
+            ctx.state.markUsed(id)
         }
 
         /** 从方块注册表里随机挑一个非空气方块 (getRandom 可能给到空气, 重试几次) */
@@ -557,7 +559,7 @@ object SeekerPerks {
         override fun icon() = ItemStack(Items.HOPPER)
     }
 
-    /** 蓝 · 秘藏: **老牧师** —— 在脚下召唤一只**大师级牧师**村民, 但他的交易项会被随机标成
+    /** 蓝 · 秘藏: **老牧师** —— 可在 V 界面点击, 在脚下召唤一只**大师级牧师**村民, 但他的交易项会被随机标成
      *  **缺货** 0~10 项 (交易项还在, 只是点不了; 10 项全缺就是一只什么也不卖的牧师)。 */
     object OldPriest : PerkDefinition {
         override val id = "seeker_old_priest"
@@ -565,17 +567,22 @@ object SeekerPerks {
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.EMERALD)
 
+        override val isOneTime = true
+
         /** 大师级牧师的交易项总数: 2 项 × 5 个等级 */
         private const val MAX_DISABLED = 10
 
-        override fun onAcquire(ctx: PerkContext) {
-            val world = ctx.player.world as? ServerWorld ?: return
-            if (!spawnAt(world, ctx.player.blockPos)) {
-                ctx.player.sendMessage(
+        override fun onActivate(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+            if (!spawnAt(world, player.blockPos)) {
+                player.sendMessage(
                     Text.translatable("random-perks-bingo.message.old_priest_failed"),
                     false,
                 )
+                return
             }
+            ctx.state.markUsed(id)
         }
 
         private fun spawnAt(world: ServerWorld, center: BlockPos): Boolean {

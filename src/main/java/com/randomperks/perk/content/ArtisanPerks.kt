@@ -345,13 +345,14 @@ object ArtisanPerks {
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
-    /** 紫 · 匠造: **百宝箱** —— 随机开出 **1~5 件**盔甲或工具 (材质上限钻石, 白板不附魔) */
+    /** 紫 · 匠造: **百宝箱** —— 可在 V 界面点击, 随机开出 **1~5 件**盔甲或工具 (材质上限钻石, 白板不附魔) */
     object TreasureChest : PerkDefinition {
         override val id = "artisan_treasure_chest"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.CHEST)
 
+        override val isOneTime = true
         /** 最少 / 最多开出的件数 */
         private const val MIN_COUNT = 1
         private const val MAX_COUNT = 5
@@ -372,12 +373,13 @@ object ArtisanPerks {
             Items.DIAMOND_SWORD, Items.DIAMOND_PICKAXE, Items.DIAMOND_AXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_HOE,
         )
 
-        override fun onAcquire(ctx: PerkContext) {
+        override fun onActivate(ctx: PerkContext) {
             val random = ctx.player.random
             val count = MIN_COUNT + random.nextInt(MAX_COUNT - MIN_COUNT + 1)
             repeat(count) {
                 PerkEffects.giveStack(ctx.player, ItemStack(POOL[random.nextInt(POOL.size)]))
             }
+            ctx.state.markUsed(id)
         }
     }
 

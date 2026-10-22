@@ -40,7 +40,7 @@ object PerkOfferService {
 
         PerkNetworking.sendOffer(
             player,
-            options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon()) },
+            options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
         )
     }
 
@@ -110,7 +110,7 @@ object PerkOfferService {
                 other.uuid,
                 other.name.string,
                 otherState?.ownedPerks?.map {
-                    PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon())
+                    PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime)
                 } ?: emptyList(),
                 otherState?.ownedPerks
                     ?.filter { it.isOneTime && !otherState.isUsed(it.id) }
@@ -165,7 +165,7 @@ object PerkOfferService {
         PerkNetworking.sendCatalog(
             player,
             state.ownedPerks.map { it.id },
-            PerkRegistry.all.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon()) },
+            PerkRegistry.all.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
         )
     }
 }

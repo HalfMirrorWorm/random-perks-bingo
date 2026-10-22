@@ -13,6 +13,8 @@ data class PerkOptionData(
     val rarityOrdinal: Int,
     val archetypeOrdinal: Int,
     val icon: ItemStack,
+    /** 是否带"贮藏"标记 —— 可以在 V 界面点击执行的一次性词条 */
+    val storable: Boolean = false,
 )
 
 private fun writeCards(buf: RegistryByteBuf, cards: List<PerkOptionData>) {
@@ -22,6 +24,7 @@ private fun writeCards(buf: RegistryByteBuf, cards: List<PerkOptionData>) {
         buf.writeVarInt(card.rarityOrdinal)
         buf.writeVarInt(card.archetypeOrdinal)
         ItemStack.PACKET_CODEC.encode(buf, card.icon)
+        buf.writeBoolean(card.storable)
     }
 }
 
@@ -33,7 +36,8 @@ private fun readCards(buf: RegistryByteBuf): List<PerkOptionData> {
         val rarity = buf.readVarInt()
         val archetype = buf.readVarInt()
         val icon = ItemStack.PACKET_CODEC.decode(buf)
-        list.add(PerkOptionData(id, rarity, archetype, icon))
+        val storable = buf.readBoolean()
+        list.add(PerkOptionData(id, rarity, archetype, icon, storable))
     }
     return list
 }
