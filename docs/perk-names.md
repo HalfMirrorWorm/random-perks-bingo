@@ -74,6 +74,7 @@
 | `harvest_beekeeper` | 采蜜人 | Beekeeper | 蓝 |
 | `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
 | `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 蓝 |
+| `harvest_fungal_infection` | 真菌感染 | Fungal Infection | 金 |
 
 ## 猎杀 HUNTER
 
@@ -99,7 +100,6 @@
 | `hunter_satiation_strike` | 良子冲击 | Satiation Strike | 紫 |
 | `hunter_munitions` | 军火补给 | Munitions Supply | 蓝 |
 | `hunter_bounty_hunter` | 赏金猎人 | Bounty Hunter | 蓝 |
-| `hunter_fungal_infection` | 真菌感染 | Fungal Infection | 金 |
 
 ## 秘藏 SEEKER
 

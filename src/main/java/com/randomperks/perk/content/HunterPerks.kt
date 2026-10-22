@@ -1,7 +1,6 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
-import com.randomperks.game.FungalInfectionService
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkSession
@@ -918,15 +917,6 @@ object HunterPerks {
         }
     }
 
-    /** 金 · 猎杀: **真菌感染** —— 攻击敌方玩家时, 随机把他主背包里的 2 件物品
-     *  变成繁茂洞穴物品 (30 秒冷却; 同队不触发) */
-    object FungalInfection : PerkDefinition {
-        override val id = FungalInfectionService.PERK_ID
-        override val rarity = PerkRarity.GOLD
-        override val archetype = PerkArchetype.HUNTER
-        override fun icon() = ItemStack(Items.SPORE_BLOSSOM)
-    }
-
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -952,6 +942,5 @@ object HunterPerks {
         PerkRegistry.register(TntThrow)
         PerkRegistry.register(Munitions)
         PerkRegistry.register(BountyHunter)
-        PerkRegistry.register(FungalInfection)
     }
 }

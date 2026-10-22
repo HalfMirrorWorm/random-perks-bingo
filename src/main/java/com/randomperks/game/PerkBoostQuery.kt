@@ -238,5 +238,5 @@ object PerkBoostQuery {
 
     /** 玩家是否持有"真菌感染" */
     fun hasFungalInfection(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("hunter_fungal_infection") == true
+        PerkStateManager.get(player.uuid)?.hasPerk("harvest_fungal_infection") == true
 }

@@ -3,6 +3,7 @@ package com.randomperks.perk.content
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.BoneMealFlowerService
 import com.randomperks.game.ChickenDyeService
+import com.randomperks.game.FungalInfectionService
 import com.randomperks.game.KelpToBoneService
 import com.randomperks.game.PigMorphService
 import com.randomperks.perk.PerkArchetype
@@ -549,6 +550,15 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.POPPY)
     }
 
+    /** 金 · 丰饶: **真菌感染** —— 攻击敌方玩家时, 随机把他主背包里的 2 件物品
+     *  变成繁茂洞穴物品 (30 秒冷却; 同队不触发) */
+    object FungalInfection : PerkDefinition {
+        override val id = FungalInfectionService.PERK_ID
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.SPORE_BLOSSOM)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
@@ -573,5 +583,6 @@ object HarvestPerks {
         PerkRegistry.register(Beekeeper)
         PerkRegistry.register(KelpToBone)
         PerkRegistry.register(BoneMealFlowers)
+        PerkRegistry.register(FungalInfection)
     }
 }

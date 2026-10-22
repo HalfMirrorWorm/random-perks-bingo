@@ -15,7 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity
  */
 object FungalInfectionService {
 
-    const val PERK_ID = "hunter_fungal_infection"
+    const val PERK_ID = "harvest_fungal_infection"
 
     /** 每次成功感染后的冷却 */
     private const val COOLDOWN_TICKS = 30 * 20L
