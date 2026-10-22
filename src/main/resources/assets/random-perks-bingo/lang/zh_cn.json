@@ -281,6 +281,8 @@
   "random-perks-bingo.perk.artisan_tempering.desc": "获得一次机会的损坏的铁砧、熔炉和切石机各一个。",
   "random-perks-bingo.perk.harvest_gleaning.name": "拾穗",
   "random-perks-bingo.perk.harvest_gleaning.desc": "收获成熟作物时, 有 50% 概率额外获得一个随机种子。",
+  "random-perks-bingo.perk.harvest_beekeeper.name": "采蜜人",
+  "random-perks-bingo.perk.harvest_beekeeper.desc": "破坏蜂巢或蜂箱时, 额外掉落 2 个蜜脾和 8 瓶蜂蜜。",
   "random-perks-bingo.perk.harvest_happy_ghast.name": "乐魂",
   "random-perks-bingo.perk.harvest_happy_ghast.desc": "召唤一只自带挽具、永久速度 I 的快乐恶魂, 并获得 2 根拴绳。",
   "random-perks-bingo.perk.seeker_warm_archaeology.name": "暖水考古",

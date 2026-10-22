@@ -8,7 +8,9 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
+import net.minecraft.block.BlockState
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.util.math.BlockPos
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -437,6 +439,25 @@ object HarvestPerks {
         }
     }
 
+    /** 蓝 · 丰饶: **采蜜人** —— 破坏蜂巢 / 蜂箱时, 额外掉落 2 个蜜脾和 8 瓶蜂蜜。 */
+    object Beekeeper : PerkDefinition {
+        override val id = "harvest_beekeeper"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.HONEYCOMB)
+
+        private const val HONEYCOMB_COUNT = 2
+        private const val HONEY_BOTTLE_COUNT = 8
+
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
+            if (!blockState.isIn(net.minecraft.registry.tag.BlockTags.BEEHIVES)) return
+            val world = ctx.player.world as? ServerWorld ?: return
+
+            net.minecraft.block.Block.dropStack(world, pos, ItemStack(Items.HONEYCOMB, HONEYCOMB_COUNT))
+            net.minecraft.block.Block.dropStack(world, pos, ItemStack(Items.HONEY_BOTTLE, HONEY_BOTTLE_COUNT))
+        }
+    }
+
     /** 蓝 · 丰收: **叮咚鸡** —— 获得 4 个鸡刷怪蛋; 之后可以用**任意染料**右键**任意**鸡给它染色
      *  (纯外观, 不影响掉落与行为)。染色逻辑在 [ChickenDyeService]。 */
     object DingDongChicken : PerkDefinition {
@@ -530,5 +551,6 @@ object HarvestPerks {
         PerkRegistry.register(DingDongChicken)
         PerkRegistry.register(LuckyFishing)
         PerkRegistry.register(PigMorph)
+        PerkRegistry.register(Beekeeper)
     }
 }

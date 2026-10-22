@@ -281,6 +281,8 @@
   "random-perks-bingo.perk.artisan_tempering.desc": "Gain a one-use damaged anvil, a furnace and a stonecutter.",
   "random-perks-bingo.perk.harvest_gleaning.name": "Gleaning",
   "random-perks-bingo.perk.harvest_gleaning.desc": "Harvesting a mature crop has a 50% chance to drop an extra random seed.",
+  "random-perks-bingo.perk.harvest_beekeeper.name": "Beekeeper",
+  "random-perks-bingo.perk.harvest_beekeeper.desc": "Breaking a bee nest or beehive also drops 2 honeycomb and 8 honey bottles.",
   "random-perks-bingo.perk.harvest_happy_ghast.name": "Happy Ghast",
   "random-perks-bingo.perk.harvest_happy_ghast.desc": "Summon a Happy Ghast wearing a harness with permanent Speed I, and gain 2 leads.",
   "random-perks-bingo.perk.seeker_warm_archaeology.name": "Warm Water Archaeology",

@@ -76,6 +76,7 @@
 | `harvest_dingdong_chicken` | 叮咚鸡 | Ding Dong Chicken | 蓝 |
 | `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 紫 |
 | `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
+| `harvest_beekeeper` | 采蜜人 | Beekeeper | 蓝 |
 
 ## 猎杀 HUNTER
 
