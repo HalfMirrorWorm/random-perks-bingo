@@ -348,7 +348,7 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: **植岷** —— 获得 5 个随机树苗 */
+    /** 蓝 · 丰饶: **植岷** —— 获得 8 个随机树苗 */
     object Saplings : PerkDefinition {
         override val id = "harvest_saplings"
         override val rarity = PerkRarity.BLUE
@@ -356,7 +356,7 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.OAK_SAPLING)
 
         /** 发放数量 */
-        private const val COUNT = 5
+        private const val COUNT = 8
 
         /** 可开出的树苗 (含红树胎生苗与 1.21.4 的苍白橡木) */
         private val POOL = listOf(
