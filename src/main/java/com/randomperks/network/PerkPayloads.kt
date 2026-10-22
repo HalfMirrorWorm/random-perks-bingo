@@ -477,9 +477,9 @@ class JockeyControlC2S(
 }
 
 /**
- * C2S: "Jockey" **被骑者**连按 Shift 达到次数, 请求脱离骑乘。
+ * C2S: "Jockey" **被骑者**连按 WASD 达到 30 次, 请求脱离骑乘。
  *
- * 被骑者的键盘输入在客户端就被骑乘者的输入覆盖掉了, 所以服务端看不到他按 Shift ——
+ * 被骑者的键盘输入在客户端就被骑乘者的输入覆盖掉了, 所以服务端看不到他按 WASD ——
  * 只能在客户端侧数按键次数, 到这里才上报。
  */
 class JockeyBreakFreeC2S : CustomPayload {

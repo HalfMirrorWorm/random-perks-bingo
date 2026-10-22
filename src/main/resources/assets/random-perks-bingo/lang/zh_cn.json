@@ -266,7 +266,7 @@
   "random-perks-bingo.perk.hunter_homing_bow.name": "这不是挂？",
   "random-perks-bingo.perk.hunter_homing_bow.desc": "获得一把弓, 每 2 分钟获得 4 支随机药水箭; 你的箭会追踪 16 格内最近的敌人, 追踪期间可穿过方块。",
   "random-perks-bingo.perk.hunter_jockey.name": "Jockey",
-  "random-perks-bingo.perk.hunter_jockey.desc": "可以骑乘别的玩家, 期间他对你的伤害 -75%; 被挣脱后冷却 3 分钟。",
+  "random-perks-bingo.perk.hunter_jockey.desc": "右键玩家可以骑乘并操控他, 期间他对你的伤害 -75%; 按 Shift 下来。被骑者连按 WASD 共 30 次可挣脱, 挣脱后你冷却 3 分钟。",
   "random-perks-bingo.perk.harvest_pig_morph.name": "变群友",
   "random-perks-bingo.perk.harvest_pig_morph.desc": "你变成猪: 视角与碰撞箱变成猪的, 可以钻过 1 格高的缝隙; 模型是猪, 但头部是你的皮肤; 每 30 秒获得 1 根金胡萝卜。",
   "random-perks-bingo.perk.summon_big_snowball.name": "打雪仗",

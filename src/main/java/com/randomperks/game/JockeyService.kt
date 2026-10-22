@@ -52,10 +52,11 @@ object JockeyService {
             Text.translatable("random-perks-bingo.message.jockey_mounted", target.name),
             false,
         )
-        target.sendMessage(
-            Text.translatable("random-perks-bingo.message.jockey_mounted_on", rider.name),
-            true,
-        )
+        // 被骑者提示: 聊天栏 + actionbar 各发一次, 避免 actionbar 被其他消息顶掉后
+        // 对方完全不知道可以连按 WASD 挣脱
+        val victimMessage = Text.translatable("random-perks-bingo.message.jockey_mounted_on", rider.name)
+        target.sendMessage(victimMessage, false)
+        target.sendMessage(victimMessage, true)
         return true
     }
 
