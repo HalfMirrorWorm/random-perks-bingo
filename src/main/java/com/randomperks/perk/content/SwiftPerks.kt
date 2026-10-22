@@ -297,7 +297,11 @@ object SwiftPerks {
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val candidates = player.server?.playerManager?.playerList
-                ?.filter { it.isAlive && !it.isSpectator }
+                ?.filter {
+                    it.isAlive && !it.isSpectator &&
+                        // "天启日"持有者免疫易位, 直接不给选
+                        !PerkBoostQuery.hasDoomsday(it)
+                }
                 ?.map { PlayerTargetEntry(it.uuid, it.name.string) }
                 ?: emptyList()
 
@@ -327,6 +331,15 @@ object SwiftPerks {
             val worldB = b.world
             if (worldA !== worldB) {
                 player.sendMessage(Text.translatable("random-perks-bingo.message.swap_cross_world"), true)
+                return
+            }
+
+            // "天启日"持有者免疫易位 (候选已过滤, 这里兜底防止 uuid 被伪造)
+            if (PerkBoostQuery.hasDoomsday(a) || PerkBoostQuery.hasDoomsday(b)) {
+                player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.swap_doomsday_immune"),
+                    true,
+                )
                 return
             }
 

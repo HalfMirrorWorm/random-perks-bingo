@@ -131,7 +131,7 @@ object PerkBoostQuery {
         PerkStateManager.get(player.uuid)?.hasPerk("mythic_doomsday") == true
 
     /** "天启日"最多对几次击杀生效 */
-    private const val DOOMSDAY_KILL_LIMIT = 3
+    private const val DOOMSDAY_KILL_LIMIT = 4
 
     /** 已生效次数记在 state.memory 里, 随对局重置 */
     private const val DOOMSDAY_KILL_KEY = "doomsday_kills"
