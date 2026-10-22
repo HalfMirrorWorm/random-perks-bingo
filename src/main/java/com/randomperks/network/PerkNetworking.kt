@@ -137,6 +137,7 @@ object PerkNetworking {
                     "nuke" -> HunterPerks.Nuclear.handleTargetPick(player, uuid)
                     "puny" -> SeekerPerks.Puny.handleTargetPick(player, uuid)
                     "poisoner" -> ArtisanPerks.Poisoner.handleTargetPick(player, uuid)
+                    "remote_transfer" -> ArtisanPerks.RemoteTransfer.handleTargetPick(player, uuid)
                     "hodgepodge" -> MythicPerks.Hodgepodge.handleTargetPick(player, uuid)
                 }
             }
