@@ -45,17 +45,16 @@ object MythicPerks {
         override fun icon() = ItemStack(Items.WITHER_ROSE)
     }
 
-    /** 神话 · 匠造 · 全局唯一: **游戏BUG** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后,
-     *  他背包里的**每一种物品各自随机变成另一种物品** (数量不变) */
+    /** 神话 · 匠造 · 全局唯一: **游戏BUG** —— 获得时立即弹出玩家选择器, 选中一名玩家后,
+     *  他背包里的**每一种物品各自随机变成另一种物品** (数量不变)
+     *  (神话词条不允许贮藏到 V 界面, 必须获得瞬间生效) */
     object Hodgepodge : PerkDefinition {
         override val id = "mythic_hodgepodge"
         override val rarity = PerkRarity.MYTHIC
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.BUNDLE)
 
-        override val isOneTime = true
-
-        override fun onActivate(ctx: PerkContext) {
+        override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
