@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **109** 条词条：蓝 58 / 紫 33 / 金 15 / 神话 3。
+共 **110** 条词条：蓝 59 / 紫 33 / 金 15 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -32,6 +32,7 @@
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 蓝 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
 | `artisan_nya_axe` | 喵人斧 | Nya Axe | 紫 |
+| `artisan_midas_touch` | 点石成金 | Midas Touch | 蓝 |
 
 ## 深掘 DELVER
 

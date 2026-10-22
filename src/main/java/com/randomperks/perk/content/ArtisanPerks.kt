@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.MidasTouchService
 import com.randomperks.game.PerkSession
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
@@ -434,6 +435,14 @@ object ArtisanPerks {
         }
     }
 
+    /** 蓝 · 匠造: **点石成金** —— 右键镶金黑石, 把它变成金块 (交互见 MidasTouchService) */
+    object MidasTouch : PerkDefinition {
+        override val id = MidasTouchService.PERK_ID
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.GOLD_BLOCK)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -448,5 +457,6 @@ object ArtisanPerks {
         PerkRegistry.register(ShulkerBox)
         PerkRegistry.register(Tempering)
         PerkRegistry.register(NyaAxe)
+        PerkRegistry.register(MidasTouch)
     }
 }

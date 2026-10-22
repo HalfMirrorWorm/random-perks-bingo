@@ -248,6 +248,8 @@
   "random-perks-bingo.message.dragon_tamer_mounted": "你骑上了 %s —— 用 WASD 控制它, 右键使用能力, 潜行下马。",
   "random-perks-bingo.perk.artisan_nya_axe.name": "喵人斧",
   "random-perks-bingo.perk.artisan_nya_axe.desc": "获得一把昂贵的秒人斧。",
+  "random-perks-bingo.perk.artisan_midas_touch.name": "点石成金",
+  "random-perks-bingo.perk.artisan_midas_touch.desc": "右键镶金黑石, 把它变成金块。",
   "random-perks-bingo.perk.summon_remote_transfer.name": "远程传输",
   "random-perks-bingo.perk.summon_remote_transfer.desc": "在词条列表点击使用, 选择一名队友, 随机把物品栏里的 4 件物品传送给他。",
   "random-perks-bingo.perk.harvest_kelp_to_bone.name": "海带成骨",

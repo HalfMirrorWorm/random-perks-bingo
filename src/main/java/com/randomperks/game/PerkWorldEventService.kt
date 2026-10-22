@@ -104,7 +104,7 @@ object PerkWorldEventService {
             FungalInfectionService.handleAttack(attacker, victim)
         }
 
-        // 右键方块 → "切洋葱" / "海带成骨"
+        // 右键方块 → "切洋葱" / "海带成骨" / "点石成金"
         UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
             if (world.isClient) return@register ActionResult.PASS
             if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
@@ -112,7 +112,9 @@ object PerkWorldEventService {
             val serverWorld = world as ServerWorld
             val onion = OnionCutService.handleUse(player, serverWorld, hitResult.blockPos)
             if (onion != ActionResult.PASS) return@register onion
-            KelpToBoneService.handleUse(player, serverWorld, hitResult.blockPos)
+            val kelp = KelpToBoneService.handleUse(player, serverWorld, hitResult.blockPos)
+            if (kelp != ActionResult.PASS) return@register kelp
+            MidasTouchService.handleUse(player, serverWorld, hitResult.blockPos)
         }
 
         // "属于你的马"交互时的兼容修复 (含旧版本召唤的马):
