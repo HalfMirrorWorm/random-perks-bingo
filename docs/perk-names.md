@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **102** 条词条：蓝 52 / 紫 32 / 金 15 / 神话 3。
+共 **104** 条词条：蓝 55 / 紫 32 / 金 14 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -63,16 +63,11 @@
 | `harvest_bounty` | 丰收之息 | Bounty | 紫 |
 | `harvest_bountiful_meal` | 丰盛大餐 | Bountiful Meal | 蓝 |
 | `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 蓝 |
-| `harvest_rancher` | 牧场主 | Rancher | 蓝 |
 | `harvest_cat_aura` | 哈基米 | Hakimi | 蓝 |
-| `harvest_summon_horse` | 马来 | Horse, Come | 蓝 |
 | `harvest_big_stomach` | 大胃袋 | Bottomless Stomach | 紫 |
 | `harvest_yowl` | 老吴!? | Yowl!? | 蓝 |
-| `harvest_big_dog` | 大狗嚼 | Big Doggo | 蓝 |
-| `harvest_pokemon` | 宝可梦 | Pokemon | 金 |
 | `harvest_saplings` | 植岷 | Saplings | 蓝 |
 | `harvest_gleaning` | 拾穗 | Gleaning | 蓝 |
-| `harvest_happy_ghast` | 乐魂 | Happy Ghast | 蓝 |
 | `harvest_dingdong_chicken` | 叮咚鸡 | Ding Dong Chicken | 蓝 |
 | `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 紫 |
 | `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
@@ -92,18 +87,14 @@
 | `hunter_greedy_hands` | 贪婪之手 | Greedy Hands | 紫 |
 | `hunter_predator` | 我饥饿 | Me Hungry | 紫 |
 | `hunter_headhunter` | SMP玩家 | SMP Player | 金 |
-| `hunter_fireball` | 烈焰喷射 | Ghast Fireball | 紫 |
-| `hunter_call_lightning` | 引雷术 | Call Lightning | 蓝 |
 | `hunter_veteran` | 老玩家 | Veteran | 金 |
 | `hunter_roly_poly` | 不倒翁 | Roly-Poly | 蓝 |
 | `hunter_easy_nuke` | 核电轻而易举 | Easy Nuke | 蓝 |
 | `hunter_homing_bow` | 这不是挂？ | Is This a Hack? | 紫 |
 | `hunter_jockey` | Jockey | Jockey | 金 |
-| `hunter_big_snowball` | 打雪仗 | Snowball Fight | 蓝 |
 | `hunter_demon_pact` | 恶魔契约 | Demon Pact | 金 |
 | `hunter_pearl_gauntlet` | 珠光护手 | Pearl Gauntlet | 紫 |
 | `hunter_satiation_strike` | 良子冲击 | Satiation Strike | 紫 |
-| `hunter_tnt_throw` | TNT 投手 | TNT Thrower | 紫 |
 | `hunter_munitions` | 军火补给 | Munitions Supply | 蓝 |
 | `hunter_bounty_hunter` | 赏金猎人 | Bounty Hunter | 蓝 |
 
@@ -118,7 +109,6 @@
 | `seeker_life_vision` | 生命透视 | Life Vision | 金 |
 | `seeker_ender_cache` | 末影仓库 | Ender Cache | 紫 |
 | `seeker_alchemist` | 药剂师 | Alchemist | 紫 |
-| `seeker_wandering_trader` | 流浪拴绳 | Wandering Leash | 蓝 |
 | `seeker_village_compass` | 回村的诱惑 | Homecoming | 蓝 |
 | `seeker_puny` | !?区区!? | Puny!? | 蓝 |
 | `seeker_random_ground` | 随机地基 | Random Ground | 蓝 |
@@ -150,6 +140,16 @@
 | id | 中文名 | 英文名 | 稀有度 |
 |---|---|---|---|
 | `summon_dragon_tamer` | 驯龙高手 | Dragon Tamer | 金 |
+| `summon_pokemon` | 宝可梦 | Pokemon | 金 |
+| `summon_fireball` | 烈焰喷射 | Ghast Fireball | 紫 |
+| `summon_tnt_throw` | TNT 投手 | TNT Thrower | 紫 |
+| `summon_horse` | 马来 | Horse, Come | 蓝 |
+| `summon_happy_ghast` | 乐魂 | Happy Ghast | 蓝 |
+| `summon_big_dog` | 大狗嚼 | Big Doggo | 蓝 |
+| `summon_wandering_trader` | 流浪拴绳 | Wandering Leash | 蓝 |
+| `summon_rancher` | 牧场主 | Rancher | 蓝 |
+| `summon_call_lightning` | 引雷术 | Call Lightning | 蓝 |
+| `summon_big_snowball` | 打雪仗 | Snowball Fight | 蓝 |
 
 ## 神话 MYTHIC（全局唯一）
 

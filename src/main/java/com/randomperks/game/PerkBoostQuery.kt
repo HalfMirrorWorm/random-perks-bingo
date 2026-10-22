@@ -171,7 +171,7 @@ object PerkBoostQuery {
 
     /** 玩家是否持有"雪球大作战" */
     fun hasBigSnowball(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("hunter_big_snowball") == true
+        PerkStateManager.get(player.uuid)?.hasPerk("summon_big_snowball") == true
 
     /** "雪球大作战" 大雪球的 commandTag (服务端标记; commandTags 不同步给客户端) */
     const val BIG_SNOWBALL_TAG = "randomperks_big_snowball"
@@ -208,7 +208,7 @@ object PerkBoostQuery {
 
     /** 玩家是否持有"宝可梦" */
     fun hasPokemon(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("harvest_pokemon") == true
+        PerkStateManager.get(player.uuid)?.hasPerk("summon_pokemon") == true
 
     // ---- "磁力升级" (蓝): 拾取范围 5 格 (由 MagnetService 定期扫描) ----
 
@@ -226,5 +226,5 @@ object PerkBoostQuery {
 
     /** 玩家是否持有"TNT 投手" */
     fun hasTntThrow(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("hunter_tnt_throw") == true
+        PerkStateManager.get(player.uuid)?.hasPerk("summon_tnt_throw") == true
 }

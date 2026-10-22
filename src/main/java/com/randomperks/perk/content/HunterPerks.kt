@@ -478,11 +478,11 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_MAX_HEALTH)
     }
 
-    /** 紫 · 猎杀: 获得 16 个火焰弹 —— 手持右键即可像恶魂一样发射火球 (发射逻辑见 FireballService) */
+    /** 紫 · 唤法: 获得 16 个火焰弹 —— 手持右键即可像恶魂一样发射火球 (发射逻辑见 FireballService) */
     object Fireball : PerkDefinition {
-        override val id = "hunter_fireball"
+        override val id = "summon_fireball"
         override val rarity = PerkRarity.PURPLE
-        override val archetype = PerkArchetype.HUNTER
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.FIRE_CHARGE)
 
         override fun onAcquire(ctx: PerkContext) {
@@ -490,12 +490,12 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 猎杀: 在 V 界面点击使用后弹出玩家选择器, 选中**任意一名玩家**后在他的位置召唤一次闪电;
+    /** 蓝 · 唤法: 在 V 界面点击使用后弹出玩家选择器, 选中**任意一名玩家**后在他的位置召唤一次闪电;
      *  16 格内若有引雷针, 闪电会被引导过去 */
     object CallLightning : PerkDefinition {
-        override val id = "hunter_call_lightning"
+        override val id = "summon_call_lightning"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.HUNTER
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.LIGHTNING_ROD)
 
         override val isOneTime = true
@@ -790,11 +790,11 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 猎杀: **打雪仗** —— 获得 32 个雪球; 你扔出的雪球会变大, 命中造成 3 点伤害并击飞目标 */
+    /** 蓝 · 唤法: **打雪仗** —— 获得 32 个雪球; 你扔出的雪球会变大, 命中造成 3 点伤害并击飞目标 */
     object BigSnowball : PerkDefinition {
-        override val id = "hunter_big_snowball"
+        override val id = "summon_big_snowball"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.HUNTER
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.SNOWBALL)
 
         /** 发放的雪球数量 */
@@ -861,12 +861,12 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: **TNT 投手** —— 获得 4 个 TNT; 手持 TNT 右键时改为抛射一枚点燃的 TNT
+    /** 紫 · 唤法: **TNT 投手** —— 获得 4 个 TNT; 手持 TNT 右键时改为抛射一枚点燃的 TNT
      *  (而非放置方块)。实现见 TntThrowService。 */
     object TntThrow : PerkDefinition {
-        override val id = "hunter_tnt_throw"
+        override val id = "summon_tnt_throw"
         override val rarity = PerkRarity.PURPLE
-        override val archetype = PerkArchetype.HUNTER
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.TNT)
 
         /** 获得时附赠的 TNT 数量 */

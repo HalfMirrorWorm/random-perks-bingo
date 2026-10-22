@@ -306,15 +306,15 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 蓝 · 秘藏: 获得时**直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼。
+    /** 蓝 · 唤法: 获得时**直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼。
      *
      *  不再走原版刷新事件 —— WanderingTraderManager.trySpawn 有生物群系 / 白天 / 概率 / 计时器
      *  一堆限制, 经常刷不出来 ("先试原版、失败再兜底"的写法仍然会漏)。现在直接生成,
      *  保证刷在玩家那边。 */
     object WanderingTrader : PerkDefinition {
-        override val id = "seeker_wandering_trader"
+        override val id = "summon_wandering_trader"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.SEEKER
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.EMERALD)
 
         private const val SPAWNED_KEY = "trader_spawned"

@@ -163,11 +163,11 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.GOLDEN_CARROT)
     }
 
-    /** 蓝 · 丰饶: 立即获得 4 个随机生物蛋 (互不相同) */
+    /** 蓝 · 唤法: 立即获得 4 个随机生物蛋 (互不相同) */
     object Rancher : PerkDefinition {
-        override val id = "harvest_rancher"
+        override val id = "summon_rancher"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.HARVEST
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.EGG)
 
         override fun onAcquire(ctx: PerkContext) {
@@ -206,11 +206,11 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: 立即在脚下召唤一匹属于你的马 (自带鞍; 用剪刀右键可取下鞍) */
+    /** 蓝 · 唤法: 立即在脚下召唤一匹属于你的马 (自带鞍; 用剪刀右键可取下鞍) */
     object SummonHorse : PerkDefinition {
-        override val id = "harvest_summon_horse"
+        override val id = "summon_horse"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.HARVEST
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.SADDLE)
 
         /** 词条召唤的马身上的命令标签 (供"剪刀取鞍"识别, 不影响其他马) */
@@ -286,12 +286,12 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: **大狗嚼** —— 立即召唤 **2 只属于你的狼**:
+    /** 蓝 · 唤法: **大狗嚼** —— 立即召唤 **2 只属于你的狼**:
      *  血量 50 (原版驯服狼 20)、攻击 6 (原版驯服狼 4), 已驯服且不会自然消失。 */
     object BigDog : PerkDefinition {
-        override val id = "harvest_big_dog"
+        override val id = "summon_big_dog"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.HARVEST
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.BONE)
 
         /** 召唤数量 */
@@ -333,12 +333,12 @@ object HarvestPerks {
         }
     }
 
-    /** 金 · 丰饶: **宝可梦** —— 获得 4 个鸡蛋; 你扔出的鸡蛋砸中非 Boss 生物时,
+    /** 金 · 唤法: **宝可梦** —— 获得 4 个鸡蛋; 你扔出的鸡蛋砸中非 Boss 生物时,
      *  把它变成对应的刷怪蛋 (生物消失)。实现见 PokemonEggMixin。 */
     object Pokemon : PerkDefinition {
-        override val id = "harvest_pokemon"
+        override val id = "summon_pokemon"
         override val rarity = PerkRarity.GOLD
-        override val archetype = PerkArchetype.HARVEST
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.EGG)
 
         /** 获得时附赠的鸡蛋数量 */
@@ -388,12 +388,12 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.WHEAT_SEEDS)
     }
 
-    /** 蓝 · 丰饶: **乐魂** —— 召唤一只**自带挽具、永久速度 I** 的快乐恶魂 (1.21.6+ 的飞行坐骑),
+    /** 蓝 · 唤法: **乐魂** —— 召唤一只**自带挽具、永久速度 I** 的快乐恶魂 (1.21.6+ 的飞行坐骑),
      *  并获得 2 根拴绳 */
     object HappyGhast : PerkDefinition {
-        override val id = "harvest_happy_ghast"
+        override val id = "summon_happy_ghast"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.HARVEST
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.WHITE_HARNESS)
         /** 16 色挽具, 随机挑一个 */
         private val HARNESSES = listOf(

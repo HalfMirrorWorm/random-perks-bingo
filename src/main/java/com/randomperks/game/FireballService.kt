@@ -16,7 +16,7 @@ import net.minecraft.util.Hand
  */
 object FireballService {
 
-    private const val PERK_ID = "hunter_fireball"
+    private const val PERK_ID = "summon_fireball"
 
     /** 给"烈焰喷射"打出的火球打的标记 —— 用于禁止被攻击反弹 (见 FireballNoDeflectMixin) */
     const val FIREBALL_TAG = "randomperks_fireball"
