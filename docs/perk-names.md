@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **110** 条词条：蓝 59 / 紫 33 / 金 15 / 神话 3。
+共 **110** 条词条：蓝 59 / 紫 34 / 金 14 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -91,7 +91,7 @@
 | `hunter_marked_prey` | 猎杀印记 | Hunter's Mark | 紫 |
 | `hunter_greedy_hands` | 贪婪之手 | Greedy Hands | 紫 |
 | `hunter_predator` | 我饥饿 | Me Hungry | 紫 |
-| `hunter_headhunter` | SMP玩家 | SMP Player | 金 |
+| `hunter_headhunter` | SMP玩家 | SMP Player | 紫 |
 | `hunter_veteran` | 老玩家 | Veteran | 金 |
 | `hunter_roly_poly` | 不倒翁 | Roly-Poly | 蓝 |
 | `hunter_easy_nuke` | 核电轻而易举 | Easy Nuke | 蓝 |

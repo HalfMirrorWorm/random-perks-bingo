@@ -426,7 +426,7 @@ object HunterPerks {
      *  通过本词条最多累计 +20 (10 颗心), 重生保留 */
     object Headhunter : PerkDefinition {
         override val id = "hunter_headhunter"
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.PLAYER_HEAD)
 
