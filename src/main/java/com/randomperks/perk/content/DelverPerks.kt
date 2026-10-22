@@ -312,11 +312,16 @@ object DelverPerks {
         }
     }
 
-    /** 金 · 深掘: **连锁挖矿** —— 用镐挖矿石时, 把与它相连的**同种**矿石一并挖掉 (上限 64 块)。
-     *  额外方块每块消耗 1 点耐久; 掉落走原版 breakBlock, 因此会正常吃「透视之眼」的惩罚。 */
+    /** 紫 · 深掘: **连锁挖矿** —— 用镐挖矿石时, 把与它相连的**同种**矿石一并挖掉 (上限 64 块)。
+     *  额外方块每块消耗 1 点耐久。
+     *
+     *  掉落与主矿石**共同结算**:
+     *  - 透视之眼的 35% 不掉落只对主矿石判定一次, 连锁块沿用这个结果 (整批掉 / 整批没);
+     *  - 连锁块的掉落统一生成在主矿石的位置, 和主矿石的掉落堆在一起;
+     *  - 连锁块不再走 Block.dropStacks, 避免每块单独掷透视概率、再触发其他联动。 */
     object ChainMining : PerkDefinition {
         override val id = "delver_chain_mining"
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.DIAMOND_ORE)
 
@@ -329,6 +334,11 @@ object DelverPerks {
             if (!tool.isIn(ItemTags.PICKAXES)) return          // 只认镐
             if (!isOreBlock(blockState)) return                // 只认矿石
             val world = player.world as? ServerWorld ?: return
+
+            // 主矿石的掉落已经由原版结算完毕: 若本 tick 的透视惩罚标记命中,
+            // 说明这次挖矿被判定为"不生成掉落", 连锁块沿用同一结果, 不再逐块掷 35%。
+            val currentTick = (player.server?.ticks ?: 0).toString()
+            val suppressed = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY] == currentTick
 
             val ore = blockState.block
             val visited = HashSet<BlockPos>()
@@ -345,9 +355,18 @@ object DelverPerks {
                             if (dx == 0 && dy == 0 && dz == 0) continue
                             val next = cur.add(dx, dy, dz)
                             if (!visited.add(next)) continue
-                            if (world.getBlockState(next).block !== ore) continue   // 同种矿石
-                            if (tool.isEmpty) return                                // 挖断了就停
-                            world.breakBlock(next, true, player)
+
+                            val chainState = world.getBlockState(next)
+                            if (chainState.block !== ore) continue                   // 同种矿石
+                            if (tool.isEmpty) return                                 // 挖断了就停
+                            // 只移除方块, 不在这里生成掉落 —— 掉落统一在下面按主矿石的结算结果处理
+                            if (!world.breakBlock(next, false, player)) continue
+                            if (!suppressed) {
+                                // 掉落在主矿石的位置生成 (自动含时运/精准采集), 与主矿石的掉落堆在一起
+                                PerkEffects.spawnBlockDrops(player, world, pos, chainState)
+                                // 挖矿经验仍按每块结算 (原版 dropStacks 被跳过, 这里补上)
+                                chainState.onStacksDropped(world, next, tool, true)
+                            }
                             if (!player.isCreative) tool.damage(1, player, EquipmentSlot.MAINHAND)
                             broken++
                             if (broken >= MAX_CHAIN) return

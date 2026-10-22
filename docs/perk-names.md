@@ -48,7 +48,7 @@
 | `delver_phoenix` | 不死鸟 | Phoenix | 紫 |
 | `delver_onion_cut` | 切洋葱 | Cutting Onions | 蓝 |
 | `delver_eighty` | 八十 | Eighty | 蓝 |
-| `delver_chain_mining` | 连锁挖矿 | Chain Mining | 金 |
+| `delver_chain_mining` | 连锁挖矿 | Chain Mining | 紫 |
 
 ## 丰饶 HARVEST
 
