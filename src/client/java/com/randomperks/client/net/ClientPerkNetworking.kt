@@ -13,7 +13,6 @@ import com.randomperks.client.screen.PerkListScreen
 import com.randomperks.client.screen.StealScreen
 import com.randomperks.client.screen.TargetPickScreen
 import com.randomperks.game.ClientPerkFlags
-import com.randomperks.network.DragonTamerInputC2S
 import com.randomperks.network.GlowMarkS2C
 import com.randomperks.network.ItemSelectC2S
 import com.randomperks.network.ItemSelectOpenS2C
@@ -46,7 +45,6 @@ import com.randomperks.network.StealTargetPickC2S
 import com.randomperks.network.StealTargetsS2C
 import com.randomperks.network.WaterBucketTotemS2C
 import net.minecraft.client.MinecraftClient
-import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -240,16 +238,6 @@ object ClientPerkNetworking {
             ClientPlayNetworking.send(
                 JockeyControlC2S(player.input.playerInput, player.yaw, player.pitch),
             )
-        }
-
-        // "驯龙高手": 骑乘生物时每 tick 上报输入 (服务端据此驱动坐骑)
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val player = client.player ?: return@register
-            if (!ClientPerkFlags.has("summon_dragon_tamer")) return@register
-            if (player.vehicle !is MobEntity) return@register
-            if (!ClientPlayNetworking.canSend(DragonTamerInputC2S.ID)) return@register
-
-            ClientPlayNetworking.send(DragonTamerInputC2S(player.input.playerInput))
         }
 
         // "Jockey": 被骑者按 WASD 任意键累计 30 次 → 请求挣脱。
