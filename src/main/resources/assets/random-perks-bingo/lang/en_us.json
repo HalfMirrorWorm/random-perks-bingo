@@ -266,6 +266,8 @@
   "random-perks-bingo.perk.artisan_midas_touch.desc": "Right-click gilded blackstone to turn it into a gold block.",
   "random-perks-bingo.perk.summon_remote_transfer.name": "Remote Transfer",
   "random-perks-bingo.perk.summon_remote_transfer.desc": "Activate from the perk list, choose a teammate, then pick 4 item slots from your inventory to send.",
+  "random-perks-bingo.perk.summon_boss_egg.name": "Boss Blind Box",
+  "random-perks-bingo.perk.summon_boss_egg.desc": "Gain a random boss spawn egg (Ender Dragon, Wither, Warden, or Elder Guardian).",
   "random-perks-bingo.perk.harvest_kelp_to_bone.name": "Kelp to Bone",
   "random-perks-bingo.perk.harvest_kelp_to_bone.desc": "Right-click a dried kelp block to turn it into a bone block.",
   "random-perks-bingo.perk.harvest_bone_meal_flowers.name": "Bone Meal Bloom",

@@ -296,9 +296,30 @@ object SummonPerks {
         }
     }
 
+    /** 金 · 唤法: **Boss盲盒** —— 随机获得一个 Boss 刷怪蛋 */
+    object BossEgg : PerkDefinition {
+        override val id = "summon_boss_egg"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.SUMMON
+        override fun icon() = ItemStack(Items.ENDER_DRAGON_SPAWN_EGG)
+
+        private val BOSS_EGGS = listOf(
+            Items.ENDER_DRAGON_SPAWN_EGG,
+            Items.WITHER_SPAWN_EGG,
+            Items.WARDEN_SPAWN_EGG,
+            Items.ELDER_GUARDIAN_SPAWN_EGG,
+        )
+
+        override fun onAcquire(ctx: PerkContext) {
+            val egg = BOSS_EGGS[ctx.player.random.nextInt(BOSS_EGGS.size)]
+            PerkEffects.giveStack(ctx.player, ItemStack(egg))
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(DragonTamer)
         PerkRegistry.register(RemoteTransfer)
         PerkRegistry.register(Swap)
+        PerkRegistry.register(BossEgg)
     }
 }

@@ -266,6 +266,8 @@
   "random-perks-bingo.perk.artisan_midas_touch.desc": "右键镶金黑石, 把它变成金块。",
   "random-perks-bingo.perk.summon_remote_transfer.name": "远程传输",
   "random-perks-bingo.perk.summon_remote_transfer.desc": "在词条列表点击使用, 选择一名队友, 再从物品栏里挑选 4 格物品传送给他。",
+  "random-perks-bingo.perk.summon_boss_egg.name": "Boss盲盒",
+  "random-perks-bingo.perk.summon_boss_egg.desc": "随机获得一个 Boss 刷怪蛋 (末影龙 / 凋灵 / 监守者 / 远古守卫者)。",
   "random-perks-bingo.perk.harvest_kelp_to_bone.name": "海带成骨",
   "random-perks-bingo.perk.harvest_kelp_to_bone.desc": "右键干海带块可以把它变成骨块。",
   "random-perks-bingo.perk.harvest_bone_meal_flowers.name": "骨粉撒花",
