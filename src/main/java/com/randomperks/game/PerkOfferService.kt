@@ -104,18 +104,27 @@ object PerkOfferService {
         val server = player.server ?: return
         val state = PerkStateManager.getOrCreate(player.uuid)
 
+        val viewerTeam = player.scoreboardTeam?.name
+
         val players = server.playerManager.playerList.map { other ->
             val otherState = PerkStateManager.get(other.uuid)
+
+            // 神话词条只对本人和同队可见; 其他队伍只看得到非神话词条
+            val visiblePerks = otherState?.ownedPerks?.filter { perk ->
+                perk.rarity != PerkRarity.MYTHIC ||
+                    other.uuid == player.uuid ||
+                    (viewerTeam != null && other.scoreboardTeam?.name == viewerTeam)
+            } ?: emptyList()
+
             PlayerPerkList(
                 other.uuid,
                 other.name.string,
-                otherState?.ownedPerks?.map {
+                visiblePerks.map {
                     PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime)
-                } ?: emptyList(),
-                otherState?.ownedPerks
-                    ?.filter { it.isOneTime && !otherState.isUsed(it.id) }
-                    ?.map { it.id }
-                    ?: emptyList(),
+                },
+                visiblePerks
+                    .filter { it.isOneTime && otherState?.isUsed(it.id) == false }
+                    .map { it.id },
             )
         }
 
