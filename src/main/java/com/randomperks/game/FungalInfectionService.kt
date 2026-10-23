@@ -11,14 +11,14 @@ import net.minecraft.server.network.ServerPlayerEntity
  *
  * - 只动主背包 (0..35), 不碰盔甲与副手, 也不动空槽;
  * - 同队玩家不触发 (未分队时视为敌方);
- * - 每次成功感染后 2 秒冷却, 背包为空时不消耗冷却。
+ * - 每次成功感染后 5 秒冷却, 背包为空时不消耗冷却。
  */
 object FungalInfectionService {
 
     const val PERK_ID = "harvest_fungal_infection"
 
     /** 每次成功感染后的冷却 */
-    private const val COOLDOWN_TICKS = 2 * 20L
+    private const val COOLDOWN_TICKS = 5 * 20L
 
     /** 每次转化的物品数量 */
     private const val SLOT_COUNT = 2

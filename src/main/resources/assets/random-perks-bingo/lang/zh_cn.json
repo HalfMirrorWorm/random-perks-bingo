@@ -340,7 +340,7 @@
   "random-perks-bingo.perk.hunter_hedgehog.name": "刺猬",
   "random-perks-bingo.perk.hunter_hedgehog.desc": "受到其他生物伤害时, 攻击你的生物会受到该次伤害 75% 的反弹伤害。",
   "random-perks-bingo.perk.harvest_fungal_infection.name": "真菌感染",
-  "random-perks-bingo.perk.harvest_fungal_infection.desc": "攻击敌方玩家时, 随机把他主背包里的 2 件物品变成繁茂洞穴物品 (2 秒冷却)。",
+  "random-perks-bingo.perk.harvest_fungal_infection.desc": "攻击敌方玩家时, 随机把他主背包里的 2 件物品变成繁茂洞穴物品 (5 秒冷却)。",
   "random-perks-bingo.perk.harvest_slow_chewing.name": "细嚼慢咽",
   "random-perks-bingo.perk.harvest_slow_chewing.desc": "进食食物期间, 受到的伤害 -65%。",
   "random-perks-bingo.perk.delver_carefree_sleep.name": "无忧的安眠",
