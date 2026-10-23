@@ -46,6 +46,7 @@
   "random-perks-bingo.catalog.progress": "已收集 %s / %s",
   "random-perks-bingo.list.pending": "待选机会: %s 次",
   "random-perks-bingo.list.empty": "还没有获得任何词条。",
+  "random-perks-bingo.list.no_team": "无团队",
   "random-perks-bingo.list.click_to_use": "点击使用",
   "random-perks-bingo.option.storable": "贮藏 · 可在词条列表点击使用",
 

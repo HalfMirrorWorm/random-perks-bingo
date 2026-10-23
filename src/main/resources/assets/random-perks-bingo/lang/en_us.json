@@ -46,6 +46,7 @@
   "random-perks-bingo.catalog.progress": "Collected %s / %s",
   "random-perks-bingo.list.pending": "Pending choices: %s",
   "random-perks-bingo.list.empty": "No perks acquired yet.",
+  "random-perks-bingo.list.no_team": "No Team",
   "random-perks-bingo.list.click_to_use": "Click to use",
   "random-perks-bingo.option.storable": "Storable — click it in your perk list to use",
 

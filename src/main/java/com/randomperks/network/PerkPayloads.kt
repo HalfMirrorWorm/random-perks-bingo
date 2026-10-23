@@ -127,6 +127,12 @@ data class PlayerPerkList(
     val perks: List<PerkOptionData>,
     /** 已获得但还没使用的一次性词条 id (V 界面里闪烁, 点击触发) */
     val pendingPerkIds: List<String> = emptyList(),
+    /** 所属队伍的内部 id (无队伍为空串) */
+    val teamId: String = "",
+    /** 队伍显示名 (无队伍为空串) */
+    val teamName: String = "",
+    /** 队伍颜色的 RGB 值 (无队伍时白色) */
+    val teamColor: Int = 0xFFFFFF,
 )
 
 private fun writePlayerLists(buf: RegistryByteBuf, lists: List<PlayerPerkList>) {
@@ -137,6 +143,9 @@ private fun writePlayerLists(buf: RegistryByteBuf, lists: List<PlayerPerkList>) 
         writeCards(buf, list.perks)
         buf.writeVarInt(list.pendingPerkIds.size)
         for (id in list.pendingPerkIds) buf.writeString(id)
+        buf.writeString(list.teamId)
+        buf.writeString(list.teamName)
+        buf.writeInt(list.teamColor)
     }
 }
 
@@ -150,7 +159,10 @@ private fun readPlayerLists(buf: RegistryByteBuf): List<PlayerPerkList> {
         val pendingSize = buf.readVarInt()
         val pending = ArrayList<String>(pendingSize)
         repeat(pendingSize) { pending.add(buf.readString()) }
-        result.add(PlayerPerkList(uuid, name, perks, pending))
+        val teamId = buf.readString()
+        val teamName = buf.readString()
+        val teamColor = buf.readInt()
+        result.add(PlayerPerkList(uuid, name, perks, pending, teamId, teamName, teamColor))
     }
     return result
 }

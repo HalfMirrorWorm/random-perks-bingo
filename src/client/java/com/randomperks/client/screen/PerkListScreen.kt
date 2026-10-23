@@ -36,8 +36,17 @@ class PerkListScreen(
     }
 
     private data class TabBox(val index: Int, val x: Int, val y: Int, val width: Int)
+    private data class TeamTab(val groupIndex: Int, val x: Int, val y: Int, val width: Int)
+    private data class TeamGroup(
+        val id: String,
+        val name: Text,
+        val color: Int,
+        val players: List<Int>,
+    )
 
     private var selected = -1
+    private var selectedTeam = 0
+    private var groups: List<TeamGroup> = emptyList()
     private var scrollOffset = 0
     private var maxScroll = 0
     private var hovered = -1
@@ -54,6 +63,7 @@ class PerkListScreen(
     private var listTop = TAB_TOP
 
     private val tabs = mutableListOf<TabBox>()
+    private val teamTabs = mutableListOf<TeamTab>()
 
     private fun selfUuid() = MinecraftClient.getInstance().player?.uuid
 
@@ -69,29 +79,78 @@ class PerkListScreen(
             selected = players.indexOfFirst { it.uuid == self }.coerceAtLeast(0)
         }
 
+        buildGroups()
+        val groupOfSelected = groups.indexOfFirst { selected in it.players }
+        if (selectedTeam !in groups.indices ||
+            (groupOfSelected >= 0 && selectedTeam != groupOfSelected)
+        ) {
+            selectedTeam = groupOfSelected.coerceAtLeast(0)
+        }
+
         buildTabs()
     }
 
-    /** tab 从左到右排, 一行放不下就换行 */
+    /** 按队伍把玩家分组; 无队伍单独一组 */
+    private fun buildGroups() {
+        val order = LinkedHashMap<String, MutableList<Int>>()
+        for ((index, player) in players.withIndex()) {
+            order.getOrPut(player.teamId) { mutableListOf() }.add(index)
+        }
+
+        groups = order.map { (id, members) ->
+            val first = players[members.first()]
+            val name = when {
+                id.isEmpty() -> Text.translatable("random-perks-bingo.list.no_team")
+                first.teamName.isNotEmpty() -> Text.literal(first.teamName)
+                else -> Text.literal(id)
+            }
+            val color = if (id.isEmpty()) {
+                0xFFAAAAAA.toInt()
+            } else {
+                0xFF000000.toInt() or (first.teamColor and 0xFFFFFF)
+            }
+            TeamGroup(id, name, color, members)
+        }
+    }
+
+    /** 上行队伍父 tab; 下行只显示当前队伍成员的名字 tab */
     private fun buildTabs() {
+        teamTabs.clear()
         tabs.clear()
-        if (players.isEmpty()) {
+        if (players.isEmpty() || groups.isEmpty()) {
             listTop = TAB_TOP
             return
         }
+        if (selectedTeam !in groups.indices) selectedTeam = 0
 
         var x = listLeft
         var y = TAB_TOP
-        for ((index, player) in players.withIndex()) {
-            val tabWidth = textRenderer.getWidth(player.name) + TAB_PAD * 2
+        for ((groupIndex, group) in groups.withIndex()) {
+            val tabWidth = textRenderer.getWidth(group.name) + TAB_PAD * 2
             if (x > listLeft && x + tabWidth > listLeft + listWidth) {
                 x = listLeft
                 y += TAB_HEIGHT + TAB_LINE_GAP
             }
-            tabs.add(TabBox(index, x, y, tabWidth))
+            teamTabs.add(TeamTab(groupIndex, x, y, tabWidth))
             x += tabWidth + TAB_GAP
         }
-        listTop = y + TAB_HEIGHT + 8
+
+        var childY = y + TAB_HEIGHT + TAB_LINE_GAP
+        var childBottom = childY
+        val group = groups[selectedTeam]
+        x = listLeft
+        for (playerIndex in group.players) {
+            val player = players[playerIndex]
+            val tabWidth = textRenderer.getWidth(player.name) + TAB_PAD * 2
+            if (x > listLeft && x + tabWidth > listLeft + listWidth) {
+                x = listLeft
+                childY += TAB_HEIGHT + TAB_LINE_GAP
+            }
+            tabs.add(TabBox(playerIndex, x, childY, tabWidth))
+            childBottom = childY + TAB_HEIGHT
+            x += tabWidth + TAB_GAP
+        }
+        listTop = childBottom + 8
     }
 
     private fun listBottom() = height - LIST_BOTTOM_MARGIN
@@ -124,7 +183,35 @@ class PerkListScreen(
             )
         }
 
-        // tab 栏
+        // 队伍父 tab (名称始终使用队伍颜色)
+        for (tab in teamTabs) {
+            val group = groups[tab.groupIndex]
+            val active = tab.groupIndex == selectedTeam
+            val hover = mouseX in tab.x..(tab.x + tab.width) && mouseY in tab.y..(tab.y + TAB_HEIGHT)
+            val background = when {
+                active -> ScreenStyle.CARD_BG_HOVER
+                hover -> ScreenStyle.CARD_BG
+                else -> 0x40000000
+            }
+            context.fill(tab.x, tab.y, tab.x + tab.width, tab.y + TAB_HEIGHT, background)
+            if (active) {
+                context.fill(
+                    tab.x, tab.y + TAB_HEIGHT - 2,
+                    tab.x + tab.width, tab.y + TAB_HEIGHT,
+                    group.color,
+                )
+            }
+            context.drawCenteredTextWithShadow(
+                textRenderer,
+                group.name,
+                tab.x + tab.width / 2,
+                tab.y + 3,
+                group.color,
+            )
+        }
+
+        // 玩家子 tab (名称同样使用队伍颜色)
+        val teamColor = groups.getOrNull(selectedTeam)?.color ?: ScreenStyle.TEXT_NAME
         for (tab in tabs) {
             val active = tab.index == selected
             val hover = mouseX in tab.x..(tab.x + tab.width) && mouseY in tab.y..(tab.y + TAB_HEIGHT)
@@ -138,7 +225,7 @@ class PerkListScreen(
                 context.fill(
                     tab.x, tab.y + TAB_HEIGHT - 2,
                     tab.x + tab.width, tab.y + TAB_HEIGHT,
-                    ScreenStyle.BORDER_HOVER,
+                    teamColor,
                 )
             }
             context.drawCenteredTextWithShadow(
@@ -146,7 +233,7 @@ class PerkListScreen(
                 Text.literal(players[tab.index].name),
                 tab.x + tab.width / 2,
                 tab.y + 3,
-                if (active) ScreenStyle.TEXT_NAME else ScreenStyle.TEXT_DIM,
+                teamColor,
             )
         }
 
@@ -286,7 +373,26 @@ class PerkListScreen(
             }
         }
 
-        // 点 tab 切换玩家
+        // 点队伍父 tab 切换队伍 (默认选中该队的自己, 否则第一个队员)
+        for (tab in teamTabs) {
+            if (mouseX in tab.x.toDouble()..(tab.x + tab.width).toDouble() &&
+                mouseY in tab.y.toDouble()..(tab.y + TAB_HEIGHT).toDouble()
+            ) {
+                if (selectedTeam != tab.groupIndex) {
+                    selectedTeam = tab.groupIndex
+                    val group = groups.getOrNull(selectedTeam)
+                    val self = selfUuid()
+                    selected = group?.players?.firstOrNull { players[it].uuid == self }
+                        ?: group?.players?.firstOrNull()
+                        ?: -1
+                    scrollOffset = 0
+                    buildTabs()
+                }
+                return true
+            }
+        }
+
+        // 点玩家子 tab 切换玩家
         for (tab in tabs) {
             if (mouseX in tab.x.toDouble()..(tab.x + tab.width).toDouble() &&
                 mouseY in tab.y.toDouble()..(tab.y + TAB_HEIGHT).toDouble()

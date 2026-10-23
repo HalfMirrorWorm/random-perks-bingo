@@ -117,6 +117,8 @@ object PerkOfferService {
                     (viewerTeam != null && other.scoreboardTeam?.name == viewerTeam)
             } ?: emptyList()
 
+            val team = other.scoreboardTeam
+
             PlayerPerkList(
                 other.uuid,
                 other.name.string,
@@ -126,6 +128,9 @@ object PerkOfferService {
                 visiblePerks
                     .filter { it.isOneTime && otherState?.isUsed(it.id) == false }
                     .map { it.id },
+                team?.name ?: "",
+                team?.displayName?.string ?: "",
+                team?.color?.colorValue ?: 0xFFFFFF,
             )
         }
 
