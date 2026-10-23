@@ -40,13 +40,15 @@ public abstract class HomingArrowMixin {
     /** 追踪半径 (格) */
     private static final double HOMING_RANGE = 16.0;
 
-    /** 每 tick 向目标偏转的比例 (0 = 不转, 1 = 立刻对准) */
-    private static final double TURN_RATE = 0.35;
+    /**
+     * 每 tick 向目标偏转的比例 (0 = 不转, 1 = 立刻对准)。
+     *
+     * ★ 必须满转向: 箭速约 3 格/tick, 0.35 的平滑偏转会让箭以约 8 格为半径绕圈,
+     *   目标一旦在半径内就永远追不上 (表现为"箭一直转但射不到人")。
+     */
+    private static final double TURN_RATE = 1.0;
 
-    /** 玩家目标用满转向 —— 每 tick 直接对准, 不再慢慢拐弯 */
-    private static final double PLAYER_TURN_RATE = 1.0;
-
-    /** 玩家目标进入这个距离 (格) 就直接结算为命中 */
+    /** 目标进入这个距离 (格) 就直接结算为命中 */
     private static final double FORCE_HIT_RANGE = 3.0;
 
     /** 速度低于此值视为已落地/停滞, 不再追踪 */
@@ -91,9 +93,8 @@ public abstract class HomingArrowMixin {
         // 追踪期间穿墙, 避免在墙角/门框/洞穴里被近处方块挡下
         if (HOMING_ARROWS.add(self)) self.setNoClip(true);
 
-        // 玩家目标: 满转向 + 贴近直接判中; 其他目标保持原来的平滑偏转
-        boolean hardLock = target instanceof ServerPlayerEntity;
-        double turnRate = hardLock ? PLAYER_TURN_RATE : TURN_RATE;
+        // 所有目标统一满转向 + 贴近直接判中 (平滑偏转会导致绕圈, 见 TURN_RATE 注释)
+        double turnRate = TURN_RATE;
 
         Vec3d aim = target.getPos()
                 .add(0.0, target.getHeight() * 0.5, 0.0)
@@ -119,7 +120,7 @@ public abstract class HomingArrowMixin {
         // 直接结算: 把箭挪到目标身体中心。本 tick 原版的碰撞检测用的是
         // getPos() → getPos() + velocity 这条射线, 起点落在目标碰撞箱里就必定判中,
         // 伤害/药水效果/丢弃箭实体全走正常的 onEntityHit 流程。
-        if (hardLock && self.squaredDistanceTo(target) <= FORCE_HIT_RANGE * FORCE_HIT_RANGE) {
+        if (self.squaredDistanceTo(target) <= FORCE_HIT_RANGE * FORCE_HIT_RANGE) {
             self.setPosition(target.getX(), target.getY() + target.getHeight() * 0.5, target.getZ());
         }
     }
