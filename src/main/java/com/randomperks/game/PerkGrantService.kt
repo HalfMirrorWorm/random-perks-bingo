@@ -49,19 +49,20 @@ object PerkGrantService {
     }
 
     /**
-     * 团队完成一条连线: 给每位在线队员额外发放一次选择机会。
+     * 团队完成了 [lineCount] 条新连线: 每位在线队员额外获得对应次数的选择机会。
      * 不影响格子计分的 [onTeamScored] 回调, 避免同一次捕获触发两次词条联动。
      */
-    fun onTeamLine(memberUuids: List<UUID>) {
+    fun onTeamLines(memberUuids: List<UUID>, lineCount: Int) {
+        if (lineCount <= 0) return
         if (!PerkSession.isEnabled()) return
         val server = ServerHolder.server ?: return
         val players = memberUuids.mapNotNull { server.playerManager.getPlayer(it) }
         if (players.isEmpty()) return
 
-        grantOffer(players)
+        grantOffer(players, lineCount)
         RandomPerksMod.logger.info(
-            "[RandomPerks] bingo line completed by team with {} member(s) → +1 choice each",
-            players.size,
+            "[RandomPerks] bingo {} line(s) completed by team with {} member(s) → +{} choice each",
+            lineCount, players.size, lineCount,
         )
     }
 
@@ -70,21 +71,30 @@ object PerkGrantService {
      *
      * @return 是否至少发放成功一次 (词条池耗尽时为 false)
      */
-    fun grantOffer(players: List<ServerPlayerEntity>): Boolean {
+    fun grantOffer(players: List<ServerPlayerEntity>, count: Int = 1): Boolean {
+        if (count <= 0) return false
         var anyGranted = false
 
         for (player in players) {
             val state = PerkStateManager.getOrCreate(player.uuid)
-            // 排除已被任何人持有的神话词条 (全局唯一)
-            val offer = PerkRollService.rollOptions(
-                state,
-                extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
-            ).map { it.id }
-            if (offer.isEmpty()) continue
+            var added = 0
 
-            state.pendingOffers.add(offer)
-            notifyChoicesAvailable(player, state.pendingChoices)
-            anyGranted = true
+            for (i in 0 until count) {
+                // 排除已被任何人持有的神话词条 (全局唯一)
+                val offer = PerkRollService.rollOptions(
+                    state,
+                    extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
+                ).map { it.id }
+                if (offer.isEmpty()) break
+
+                state.pendingOffers.add(offer)
+                added++
+            }
+
+            if (added > 0) {
+                notifyChoicesAvailable(player, state.pendingChoices)
+                anyGranted = true
+            }
         }
 
         if (!anyGranted && players.isNotEmpty()) {

@@ -44,18 +44,26 @@ public final class BingoHook {
                 scoredPlayer != null ? scoredPlayer.getUuid() : null,
                 objective.getId()
         );
+
+        // 完成格子后按"当前连线总数"补发连线奖励。
+        // bingo 自己的 sendLineCaptured 只在游戏目标为 Lines 时调用, 所以这里自己比较总数,
+        // 一次捕获同时完成多条连线时会按差值发多次。
+        if (card != null) {
+            RandomPerksHooks.INSTANCE.onTeamLineCount(
+                    team.getId(),
+                    members,
+                    card.getTeamScore(team).getLines()
+            );
+        }
     }
 
-    /** 某队完成一条连线 */
-    public static void onLineCaptured(BingoTeam team) {
-        if (team == null) return;
-
-        List<UUID> members = new ArrayList<>();
-        for (PlayerProfile profile : team.getPlayers()) {
-            members.add(profile.getUuid());
-        }
-
-        RandomPerksHooks.INSTANCE.onTeamLine(team.getId(), members);
+    /** 某队丢失一个已计分的格子: 同步连线基准, 避免重新完成同一条线时漏发/多算 */
+    public static void onItemLost(BingoTeam team, BingoCard card) {
+        if (team == null || card == null) return;
+        RandomPerksHooks.INSTANCE.updateLineBaseline(
+                team.getId(),
+                card.getTeamScore(team).getLines()
+        );
     }
 
     public static void logHookApplied() {

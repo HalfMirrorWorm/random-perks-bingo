@@ -34,14 +34,32 @@ object RandomPerksHooks {
         PerkGrantService.onTeamScored(memberUuids, objectiveId)
     }
 
+    /** 每个队伍上一次已知的连线数 (用于按差值补发, 支持一次捕获完成多条连线) */
+    private val lastLineCounts = mutableMapOf<String, Int>()
+
     /**
-     * 某个队伍完成了一条连线 —— 只额外发放一次选择机会, 不重复触发格子计分回调。
+     * 每次格子计分后调用, 按连线数差值发放选择机会。
+     *
+     * 不依赖 bingo 的 sendLineCaptured —— 那个只在游戏目标为 Lines 时调用。
      */
-    fun onTeamLine(teamId: String, memberUuids: List<UUID>) {
+    fun onTeamLineCount(teamId: String, memberUuids: List<UUID>, currentLines: Int) {
+        val previous = lastLineCounts[teamId] ?: 0
+        lastLineCounts[teamId] = currentLines
+        val newLines = currentLines - previous
+        if (newLines <= 0) return
+
         RandomPerksMod.logger.info(
-            "[RandomPerks] team '{}' completed a line → {} member(s)",
-            teamId, memberUuids.size,
+            "[RandomPerks] team '{}' completed {} new line(s) ({} → {}) → {} member(s)",
+            teamId, newLines, previous, currentLines, memberUuids.size,
         )
-        PerkGrantService.onTeamLine(memberUuids)
+        PerkGrantService.onTeamLines(memberUuids, newLines)
     }
+
+    /** 格子丢失后同步基准 (不发放, 只防止重新完成同一条线时算错) */
+    fun updateLineBaseline(teamId: String, currentLines: Int) {
+        lastLineCounts[teamId] = currentLines
+    }
+
+    /** 对局开始/重置时清空连线计数 */
+    fun resetLineCounts() = lastLineCounts.clear()
 }

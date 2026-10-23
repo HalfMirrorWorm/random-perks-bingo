@@ -10,6 +10,7 @@ import com.randomperks.game.PerkSession
 import com.randomperks.game.SwapService
 import com.randomperks.game.TemperingAnvilService
 import com.randomperks.game.VerminSwarmService
+import com.randomperks.hook.RandomPerksHooks
 import com.randomperks.perk.PerkContext
 import com.randomperks.server.ServerHolder
 import com.randomperks.state.PerkStateManager
@@ -42,6 +43,7 @@ object BingoLifecycle {
         DragonTamerService.clear()
         SwapService.clear()
         TemperingAnvilService.clear()
+        RandomPerksHooks.resetLineCounts()
     }
 
     private fun onGameStarted() {

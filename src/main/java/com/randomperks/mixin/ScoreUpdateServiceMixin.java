@@ -46,11 +46,16 @@ public class ScoreUpdateServiceMixin {
         }
     }
 
-    /** 某队完成一条连线 */
-    @Inject(method = "sendLineCaptured", at = @At("HEAD"))
-    private void randomperks$onLineCaptured(BingoTeam team, CallbackInfo ci) {
+    /** 某队丢失已计分的格子: 只同步连线基准, 不发放奖励 */
+    @Inject(method = "sendItemLost", at = @At("HEAD"))
+    private void randomperks$onItemLost(
+            BingoTeam team,
+            BingoObjective objective,
+            BingoCard card,
+            CallbackInfo ci
+    ) {
         try {
-            BingoHook.onLineCaptured(team);
+            BingoHook.onItemLost(team, card);
         } catch (Throwable t) {
             BingoHook.logFailure(t);
         }
