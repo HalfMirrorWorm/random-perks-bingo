@@ -3,6 +3,7 @@ package com.randomperks.perk.content
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.MidasTouchService
 import com.randomperks.game.PerkSession
+import com.randomperks.game.TemperingAnvilService
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
@@ -394,7 +395,7 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 匠造: **千锤百炼** —— 获得一个损坏的铁砧 (放置后还能用 1 次)、熔炉、切石机 */
+    /** 蓝 · 匠造: **千锤百炼** —— 获得一个只能用一次的铁砧、熔炉、切石机 */
     object Tempering : PerkDefinition {
         override val id = "artisan_tempering"
         override val rarity = PerkRarity.BLUE
@@ -402,8 +403,11 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.DAMAGED_ANVIL)
 
         override fun onAcquire(ctx: PerkContext) {
-            // DAMAGED_ANVIL 是铁砧的第三阶段: 放置后再用一次就会碎裂
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.DAMAGED_ANVIL))
+            // 损坏的铁砧本身可以反复用 (每次 12% 碎裂), 这里打上标记, 由
+            // TemperingAnvilService + 两个 mixin 强制"第一次使用后必碎"
+            val anvil = ItemStack(Items.DAMAGED_ANVIL)
+            TemperingAnvilService.markItem(anvil)
+            PerkEffects.giveStack(ctx.player, anvil)
             PerkEffects.giveStack(ctx.player, ItemStack(Items.FURNACE))
             PerkEffects.giveStack(ctx.player, ItemStack(Items.STONECUTTER))
         }

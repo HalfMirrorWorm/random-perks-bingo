@@ -45,7 +45,10 @@
     "MorphDimensionsMixin",
     "MorphSoundMixin",
     "FishingLootMixin",
-    "BoneMealFlowerMixin"
+    "BoneMealFlowerMixin",
+    "TemperingAnvilBlockMixin",
+    "TemperingAnvilUseMixin",
+    "ForgingScreenHandlerAccessor"
   ],
   "client": [
     "EntityGlowMixin",
