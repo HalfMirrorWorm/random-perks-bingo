@@ -82,6 +82,7 @@ object PerkOfferService {
         // 反馈
         val rarityName = when (perk.rarity) {
             PerkRarity.BLUE -> Text.translatable("random-perks-bingo.rarity.blue").formatted(Formatting.BLUE)
+            PerkRarity.GREEN -> Text.translatable("random-perks-bingo.rarity.green").formatted(Formatting.GREEN)
             PerkRarity.PURPLE -> Text.translatable("random-perks-bingo.rarity.purple").formatted(Formatting.LIGHT_PURPLE)
             PerkRarity.GOLD -> Text.translatable("random-perks-bingo.rarity.gold").formatted(Formatting.GOLD)
             PerkRarity.MYTHIC -> Text.translatable("random-perks-bingo.rarity.mythic").formatted(Formatting.LIGHT_PURPLE)
