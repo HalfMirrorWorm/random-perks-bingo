@@ -3,6 +3,7 @@ package com.randomperks.mixin;
 import com.randomperks.game.PerkBoostQuery;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.Monster;
@@ -35,23 +36,25 @@ public class LivingEntityDamageMixin {
     @ModifyVariable(method = "damage", at = @At("HEAD"), argsOnly = true)
     private float randomperks$modifyDamage(float amount, ServerWorld world, DamageSource source) {
         Entity attacker = source.getAttacker();
+        // 荆棘/刺猬反弹的伤害不吃攻击者侧的增伤, 保证反弹比例就是实际受到伤害的比例
+        boolean thorns = source.isOf(DamageTypes.THORNS);
 
         // 攻击者侧的修正: "恶魔契约" 造成伤害翻倍
         // (在受害者这一侧也能看到 attacker, 所以不用另开一个注入点)
-        if (attacker instanceof ServerPlayerEntity attackerPlayer
+        if (!thorns && attacker instanceof ServerPlayerEntity attackerPlayer
                 && PerkBoostQuery.INSTANCE.hasDemonPact(attackerPlayer)) {
             amount *= 2.0f;
         }
 
         // "良子冲击": 饱食度满 (饥饿值 20) 时造成伤害 +50%
-        if (attacker instanceof ServerPlayerEntity attackerPlayer
+        if (!thorns && attacker instanceof ServerPlayerEntity attackerPlayer
                 && PerkBoostQuery.INSTANCE.hasSatiationStrike(attackerPlayer)
                 && attackerPlayer.getHungerManager().getFoodLevel() >= 20) {
             amount *= 1.5f;
         }
 
         // "猎人直觉": 只对怪物 (Monster) 生效 —— 打玩家 / 其他目标不加成
-        if (attacker instanceof ServerPlayerEntity attackerPlayer
+        if (!thorns && attacker instanceof ServerPlayerEntity attackerPlayer
                 && (Object) this instanceof Monster
                 && PerkBoostQuery.INSTANCE.hasHunterInstinct(attackerPlayer)) {
             amount *= 1.25f;

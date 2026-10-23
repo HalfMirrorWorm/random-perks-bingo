@@ -14,6 +14,7 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.CropBlock
 import net.minecraft.block.NetherWartBlock
 import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.damage.DamageTypes
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.passive.AbstractHorseEntity
@@ -102,6 +103,24 @@ object PerkWorldEventService {
             val victim = entity as? ServerPlayerEntity ?: return@register
             val attacker = source.attacker as? ServerPlayerEntity ?: return@register
             FungalInfectionService.handleAttack(attacker, victim)
+        }
+
+        // 受到生物伤害 → "刺猬": 把 75% 伤害反弹给攻击者
+        ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
+            if (damageTaken <= 0.0f) return@register
+            val player = entity as? ServerPlayerEntity ?: return@register
+            if (!PerkBoostQuery.hasHedgehog(player)) return@register
+            // 反弹本身也走 THORNS 伤害; 跳过它, 避免两个刺猬互相递归
+            if (source.isOf(DamageTypes.THORNS)) return@register
+            val attacker = source.attacker as? LivingEntity ?: return@register
+            if (attacker === player) return@register
+            val attackerWorld = attacker.world as? ServerWorld ?: return@register
+
+            attacker.damage(
+                attackerWorld,
+                attackerWorld.damageSources.thorns(player),
+                damageTaken * 0.75f,
+            )
         }
 
         // 右键方块 → "切洋葱" / "海带成骨" / "点石成金"

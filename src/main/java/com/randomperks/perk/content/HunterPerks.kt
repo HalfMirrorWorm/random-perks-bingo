@@ -917,6 +917,15 @@ object HunterPerks {
         }
     }
 
+    /** 紫 · 猎杀: **刺猬** —— 受到其他生物伤害时, 攻击者受到该次伤害 75% 的反弹
+     *  (反弹使用 THORNS 伤害类型, 不会与另一个刺猬无限递归) */
+    object Hedgehog : PerkDefinition {
+        override val id = "hunter_hedgehog"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.CACTUS)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -942,5 +951,6 @@ object HunterPerks {
         PerkRegistry.register(TntThrow)
         PerkRegistry.register(Munitions)
         PerkRegistry.register(BountyHunter)
+        PerkRegistry.register(Hedgehog)
     }
 }

@@ -332,6 +332,8 @@
   "random-perks-bingo.perk.hunter_munitions.desc": "Gain 1 end crystal, 4 TNT, 6 fire charges and 8 gunpowder.",
   "random-perks-bingo.perk.hunter_bounty_hunter.name": "Bounty Hunter",
   "random-perks-bingo.perk.hunter_bounty_hunter.desc": "Killing a hostile mob type for the first time grants 3 gold ingots.",
+  "random-perks-bingo.perk.hunter_hedgehog.name": "Hedgehog",
+  "random-perks-bingo.perk.hunter_hedgehog.desc": "When another mob damages you, the attacker takes 75% of that damage as reflected damage.",
   "random-perks-bingo.perk.harvest_fungal_infection.name": "Fungal Infection",
   "random-perks-bingo.perk.harvest_fungal_infection.desc": "When you hit an enemy player, 2 random items in their inventory turn into lush cave items (30s cooldown).",
   "random-perks-bingo.perk.harvest_slow_chewing.name": "Slow Chewing",

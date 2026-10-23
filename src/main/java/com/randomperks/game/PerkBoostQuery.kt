@@ -245,4 +245,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"细嚼慢咽" */
     fun hasSlowChewing(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_slow_chewing") == true
+
+    // ---- "刺猬" (紫): 受到生物伤害时反弹 75% ----
+
+    /** 玩家是否持有"刺猬" */
+    fun hasHedgehog(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_hedgehog") == true
 }
