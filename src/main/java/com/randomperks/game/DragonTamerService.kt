@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.entity.Entity
 import net.minecraft.entity.Flutterer
+import net.minecraft.entity.MovementType
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.ai.RangedAttackMob
@@ -29,6 +30,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
+import net.minecraft.util.PlayerInput
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.RaycastContext
@@ -73,6 +75,14 @@ object DragonTamerService {
 
     private val active = mutableMapOf<UUID, Ride>()
 
+    private data class CachedInput(val input: PlayerInput, val tick: Long)
+
+    /** 客户端每 tick 上报的原始输入 (比原版 PlayerInput 包更可靠) */
+    private val inputs = mutableMapOf<UUID, CachedInput>()
+
+    /** 输入缓存有效期: 超过这么多 tick 视为客户端没在发 (界面暂停/断线), 回退到原版输入 */
+    private const val INPUT_TTL_TICKS = 5L
+
     fun register() {
         // 右键实体: 骑上生物 / 骑乘中使用能力
         UseEntityCallback.EVENT.register { player, world, hand, entity, _ ->
@@ -114,11 +124,27 @@ object DragonTamerService {
                     if (rider != null && rider.vehicle === mob) rider.stopRiding()
                     restore(ride)
                     active.remove(uuid)
+                    inputs.remove(uuid)
                     continue
                 }
                 if (ride.manualControl) drive(rider, mob)
             }
         }
+    }
+
+    /** 客户端上报的移动输入 (每 tick 一次) */
+    fun handleInput(player: ServerPlayerEntity, input: PlayerInput) {
+        if (!PerkBoostQuery.hasDragonTamer(player)) return
+        if (player.vehicle !is MobEntity) return
+
+        // 潜行 = 下马。原版对非标准载具的自动下马不一定生效, 这里显式处理
+        if (input.sneak()) {
+            player.stopRiding()
+            return
+        }
+
+        val now = player.server?.ticks?.toLong() ?: return
+        inputs[player.uuid] = CachedInput(input, now)
     }
 
     /** 尝试骑上一只生物 (失败返回 false, 交还原版交互) */
@@ -203,15 +229,24 @@ object DragonTamerService {
             restore(ride)
         }
         active.clear()
+        inputs.clear()
     }
 
     private fun restore(ride: Ride) {
         if (ride.manualControl) ride.mob.setAiDisabled(ride.previousAiDisabled)
     }
 
-    /** 手动驱动坐骑: 朝向跟随骑手, WASD 给水平速度, 跳跃/飞行给垂直速度 */
+    /** 手动驱动坐骑: 朝向跟随骑手, WASD 给水平位移, 跳跃/飞行给垂直速度 */
     private fun drive(rider: ServerPlayerEntity, mob: MobEntity) {
-        val input = rider.playerInput
+        val now = rider.server?.ticks?.toLong() ?: return
+        val cached = inputs[rider.uuid]
+        // 优先使用客户端专发的输入包; 缓存过期才回退到原版 PlayerInput
+        val input = if (cached != null && now - cached.tick <= INPUT_TTL_TICKS) {
+            cached.input
+        } else {
+            rider.playerInput
+        }
+
         val forward = (if (input.forward()) 1.0 else 0.0) - (if (input.backward()) 1.0 else 0.0)
         val strafe = (if (input.left()) 1.0 else 0.0) - (if (input.right()) 1.0 else 0.0)
 
@@ -233,18 +268,28 @@ object DragonTamerService {
             .coerceIn(0.12, 0.4)
         val horizontal = if (length > 1.0E-4) speed else 0.0
 
-        var vy = mob.velocity.y
-        if (isFlying(mob)) {
-            vy = when {
+        // ★ 水平位移直接 move, 不依赖 MobEntity.travel 对"AI 已关闭"的处理:
+        //   不同生物对 velocity / travel 的实现差异很大 (马、飞行生物、被骑乘时的
+        //   isLogicalSideForUpdatingMovement 等), 直接位移最稳; 垂直交给原版 tick。
+        if (horizontal > 0.0) {
+            mob.move(MovementType.SELF, Vec3d(mx * horizontal, 0.0, mz * horizontal))
+        }
+
+        // 清掉 AI 残留的前进/横移速度, 避免原版 travel 再叠加一份
+        mob.setForwardSpeed(0f)
+        mob.setSidewaysSpeed(0f)
+
+        val vy = when {
+            isFlying(mob) -> when {
                 input.jump() -> 0.18
                 rider.pitch > 25.0f -> -0.15
                 else -> 0.0
             }
-        } else if (input.jump() && mob.isOnGround) {
-            vy = 0.42
+            input.jump() && mob.isOnGround -> 0.42
+            else -> 0.0
         }
 
-        mob.velocity = Vec3d(mx * horizontal, vy, mz * horizontal)
+        mob.velocity = Vec3d(0.0, vy, 0.0)
         mob.velocityDirty = true
 
         mob.setYaw(rider.yaw)
@@ -293,8 +338,13 @@ object DragonTamerService {
     private fun isForbidden(mob: MobEntity): Boolean =
         mob is EnderDragonEntity || mob is WitherEntity || mob is WardenEntity
 
+    /**
+     * 马/猪/炽足兽只有在**确实有控制乘客** (装了鞍) 时才交给原版 ---
+     * 没鞍时原版根本不会响应 WASD, 必须由本服务手动驱动。
+     */
     private fun usesVanillaControl(mob: MobEntity): Boolean =
-        mob is AbstractHorseEntity || mob is PigEntity || mob is StriderEntity
+        (mob is AbstractHorseEntity || mob is PigEntity || mob is StriderEntity) &&
+            mob.controllingPassenger != null
 
     private fun isFlying(mob: MobEntity): Boolean =
         mob is GhastEntity || mob is PhantomEntity || mob is BatEntity || mob is VexEntity ||

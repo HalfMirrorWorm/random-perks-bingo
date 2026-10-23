@@ -537,6 +537,24 @@ class JockeyControlC2S(
 }
 
 /**
+ * C2S: "驯龙高手" 骑手每 tick 上报自己的移动输入。
+ *
+ * 不直接依赖原版 [ServerPlayerEntity.getPlayerInput] —— 骑乘非原版坐骑时它的更新时机
+ * 不受我们控制; 自己发一份能保证服务端拿到的输入与客户端按键一致。
+ */
+class DragonTamerInputC2S(val input: PlayerInput) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<DragonTamerInputC2S>(Identifier.of("random-perks-bingo", "dragon_tamer_input"))
+        val CODEC: PacketCodec<RegistryByteBuf, DragonTamerInputC2S> = PacketCodec.of(
+            { value, buf -> PlayerInput.PACKET_CODEC.encode(buf, value.input) },
+            { buf -> DragonTamerInputC2S(PlayerInput.PACKET_CODEC.decode(buf)) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/**
  * C2S: "Jockey" **被骑者**连按 WASD 达到 30 次, 请求脱离骑乘。
  *
  * 被骑者的键盘输入在客户端就被骑乘者的输入覆盖掉了, 所以服务端看不到他按 WASD ——

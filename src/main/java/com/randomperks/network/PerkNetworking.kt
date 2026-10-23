@@ -1,6 +1,7 @@
 package com.randomperks.network
 
 import com.randomperks.RandomPerksMod
+import com.randomperks.game.DragonTamerService
 import com.randomperks.game.JockeyService
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
@@ -53,6 +54,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(DualTargetPickC2S.ID, DualTargetPickC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(DragonTamerInputC2S.ID, DragonTamerInputC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(JockeyBreakFreeC2S.ID, JockeyBreakFreeC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
@@ -185,6 +187,13 @@ object PerkNetworking {
             val pitch = payload.pitch
             context.server().execute {
                 JockeyService.handleControl(player, input, yaw, pitch)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(DragonTamerInputC2S.ID) { payload, context ->
+            val player = context.player()
+            context.server().execute {
+                DragonTamerService.handleInput(player, payload.input)
             }
         }
 
