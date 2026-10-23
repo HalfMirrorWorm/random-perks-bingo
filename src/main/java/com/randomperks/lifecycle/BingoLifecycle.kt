@@ -7,6 +7,7 @@ import com.randomperks.game.DragonTamerService
 import com.randomperks.game.JockeyService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
+import com.randomperks.game.SwapService
 import com.randomperks.game.TemperingAnvilService
 import com.randomperks.game.VerminSwarmService
 import com.randomperks.perk.PerkContext
@@ -39,6 +40,7 @@ object BingoLifecycle {
         LayFlatService.clear()
         JockeyService.clear()
         DragonTamerService.clear()
+        SwapService.clear()
         TemperingAnvilService.clear()
     }
 

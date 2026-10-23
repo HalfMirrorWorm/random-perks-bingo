@@ -4,6 +4,7 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkSession
+import com.randomperks.game.SwapService
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
@@ -238,6 +239,13 @@ object SummonPerks {
 
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
+            if (SwapService.hasPending(player.uuid)) {
+                player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.swap_in_progress"),
+                    true,
+                )
+                return
+            }
             val candidates = player.server?.playerManager?.playerList
                 ?.filter {
                     it.isAlive && !it.isSpectator &&
@@ -285,20 +293,13 @@ object SummonPerks {
                 return
             }
 
-            // 骑着东西的话先下来, 否则载具留在原地、人却飞走了
-            a.stopRiding()
-            b.stopRiding()
-
-            val posA = a.pos
-            val yawA = a.yaw
-            val pitchA = a.pitch
-            val posB = b.pos
-            val yawB = b.yaw
-            val pitchB = b.pitch
-
-            a.teleport(worldA, posB.x, posB.y, posB.z, emptySet(), yawA, pitchA, true)
-            b.teleport(worldB, posA.x, posA.y, posA.z, emptySet(), yawB, pitchB, true)
-            state.markUsed(id)
+            // 10 秒倒计时后由 SwapService 结算; 成功启动才真正消耗词条 (结算时标记)
+            if (!SwapService.start(player, a, b)) {
+                player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.swap_in_progress"),
+                    true,
+                )
+            }
         }
     }
 
