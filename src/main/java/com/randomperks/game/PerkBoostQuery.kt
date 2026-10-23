@@ -251,4 +251,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"刺猬" */
     fun hasHedgehog(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_hedgehog") == true
+
+    // ---- "幽灵漫步" (金): 水平穿墙 + 免疫挤压伤害 ----
+
+    /** 玩家是否持有"幽灵漫步" */
+    fun hasGhostWalk(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("swift_ghost_walk") == true
 }

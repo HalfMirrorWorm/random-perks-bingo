@@ -4,6 +4,7 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.game.ElytraBondService
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
+import com.randomperks.game.PhaseWalkService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -128,6 +129,15 @@ object SwiftPerks {
 
         /** 重生后复位"每段离地一次"标记 (新实体的空中状态已重置) */
         override fun onRespawn(ctx: PerkContext) = PerkAbilityService.clearDoubleJumpUsed(ctx.player)
+    }
+
+    /** 金 · 疾风: **幽灵漫步** —— 水平方向可以穿过墙体, 且免疫墙体挤压伤害
+     *  (移动拆分由 PhaseWalkMixin 实现, 挤压伤害在 PerkWorldEventService 取消) */
+    object GhostWalk : PerkDefinition {
+        override val id = PhaseWalkService.PERK_ID
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.PHANTOM_MEMBRANE)
     }
 
     /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度降低 30%。
@@ -283,6 +293,7 @@ object SwiftPerks {
         com.randomperks.perk.PerkRegistry.register(WindStride)
         com.randomperks.perk.PerkRegistry.register(Tailwind)
         com.randomperks.perk.PerkRegistry.register(DoubleJump)
+        com.randomperks.perk.PerkRegistry.register(GhostWalk)
         com.randomperks.perk.PerkRegistry.register(ElytraBond)
         com.randomperks.perk.PerkRegistry.register(LifeBucket)
         com.randomperks.perk.PerkRegistry.register(GuraShark)

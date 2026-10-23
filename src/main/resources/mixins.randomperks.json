@@ -48,7 +48,8 @@
     "BoneMealFlowerMixin",
     "TemperingAnvilBlockMixin",
     "TemperingAnvilUseMixin",
-    "ForgingScreenHandlerAccessor"
+    "ForgingScreenHandlerAccessor",
+    "PhaseWalkMixin"
   ],
   "client": [
     "EntityGlowMixin",
