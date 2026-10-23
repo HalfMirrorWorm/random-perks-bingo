@@ -141,7 +141,8 @@ class PerkListScreen(
         x = listLeft
         for (playerIndex in group.players) {
             val player = players[playerIndex]
-            val tabWidth = textRenderer.getWidth(player.name) + TAB_PAD * 2
+            // 左侧预留头像位置: 4 + 8 + 2 + 右侧 4
+            val tabWidth = textRenderer.getWidth(player.name) + 18
             if (x > listLeft && x + tabWidth > listLeft + listWidth) {
                 x = listLeft
                 childY += TAB_HEIGHT + TAB_LINE_GAP
@@ -171,6 +172,10 @@ class PerkListScreen(
             Text.translatable("random-perks-bingo.screen.player_perks", current!!.name)
         } else {
             Text.translatable("random-perks-bingo.screen.my_perks")
+        }
+        if (viewingOther) {
+            val titleWidth = textRenderer.getWidth(title)
+            PlayerHeadRenderer.draw(context, current?.uuid, width / 2 - titleWidth / 2 - 12, 12)
         }
         context.drawCenteredTextWithShadow(
             textRenderer,
@@ -234,10 +239,11 @@ class PerkListScreen(
                     teamColor,
                 )
             }
-            context.drawCenteredTextWithShadow(
+            PlayerHeadRenderer.draw(context, players[tab.index].uuid, tab.x + 4, tab.y + 3)
+            context.drawTextWithShadow(
                 textRenderer,
                 Text.literal(players[tab.index].name),
-                tab.x + tab.width / 2,
+                tab.x + 14,
                 tab.y + 3,
                 teamColor,
             )

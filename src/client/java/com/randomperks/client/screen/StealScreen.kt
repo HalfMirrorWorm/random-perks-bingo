@@ -36,6 +36,8 @@ class StealScreen(
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
+        val titleWidth = textRenderer.getWidth(title)
+        PlayerHeadRenderer.drawByName(context, targetName, width / 2 - titleWidth / 2 - 12, gridTop - 34)
         context.drawCenteredTextWithShadow(
             textRenderer,
             title,

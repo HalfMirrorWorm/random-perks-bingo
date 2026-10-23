@@ -71,10 +71,11 @@ class TargetPickScreen(
                 listLeft, y, listLeft + ROW_WIDTH, y + ROW_H - 2,
                 if (isHovered) ROW_BG_HOVER else ROW_BG,
             )
+            PlayerHeadRenderer.draw(context, targets[index].uuid, listLeft + 5, y + 5)
             context.drawTextWithShadow(
                 textRenderer,
                 targets[index].name,
-                listLeft + 6, y + 4,
+                listLeft + 17, y + 4,
                 TeamColorUtil.forPlayer(targets[index].uuid),
             )
         }
