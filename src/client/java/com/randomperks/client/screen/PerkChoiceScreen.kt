@@ -91,21 +91,22 @@ class PerkChoiceScreen(
         context.drawCenteredTextWithShadow(textRenderer, rarityLabel, centerX, y + 90, displayColor)
         context.drawCenteredTextWithShadow(textRenderer, archetypeLabel, centerX, y + 102, ScreenStyle.TEXT_DIM)
 
-        // 贮藏标记: 可在 V 界面点击执行的一次性词条在获得后进入"待使用"状态
-        if (option.storable && rarity != com.randomperks.perk.PerkRarity.MYTHIC) {
-            context.drawCenteredTextWithShadow(
-                textRenderer,
-                Text.translatable("random-perks-bingo.option.storable"),
-                centerX, y + 114, ScreenStyle.TEXT_HIGHLIGHT,
-            )
-        }
-
         // 分隔线
         context.fill(x + 12, y + 118, x + cardWidth - 12, y + 119, ScreenStyle.DIVIDER)
 
-        // 描述 (自动换行)
+        // 贮藏标记: 放在分隔线下方、词条描述上一行 (神话词条不允许贮藏)
+        val showStorable = option.storable && rarity != com.randomperks.perk.PerkRarity.MYTHIC
+        if (showStorable) {
+            context.drawCenteredTextWithShadow(
+                textRenderer,
+                Text.translatable("random-perks-bingo.option.storable"),
+                centerX, y + 123, ScreenStyle.TEXT_HIGHLIGHT,
+            )
+        }
+
+        // 描述 (自动换行) —— 有贮藏标记时整体下移一行
         val desc = Text.translatable("random-perks-bingo.perk.${option.id}.desc")
-        var lineY = y + 128
+        var lineY = if (showStorable) y + 135 else y + 128
         for (line in textRenderer.wrapLines(desc, cardWidth - 20)) {
             context.drawCenteredTextWithShadow(textRenderer, line, centerX, lineY, ScreenStyle.TEXT_DESC)
             lineY += 10
