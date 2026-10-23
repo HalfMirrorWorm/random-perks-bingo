@@ -166,12 +166,18 @@ class PerkListScreen(
         sortBoxes = drawPerkSortButtons(context, textRenderer, width - 8, 6, sortState, mouseX, mouseY)
 
         // 标题: 看自己 → "我的词条"; 看别人 → "XXX 的词条"
-        val title = if (current != null && current.uuid != self) {
-            Text.translatable("random-perks-bingo.screen.player_perks", current.name)
+        val viewingOther = current != null && current.uuid != self
+        val title = if (viewingOther) {
+            Text.translatable("random-perks-bingo.screen.player_perks", current!!.name)
         } else {
             Text.translatable("random-perks-bingo.screen.my_perks")
         }
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 16, ScreenStyle.TEXT_NAME)
+        context.drawCenteredTextWithShadow(
+            textRenderer,
+            title,
+            width / 2, 16,
+            if (viewingOther) TeamColorUtil.forPlayer(current!!.uuid) else ScreenStyle.TEXT_NAME,
+        )
 
         // 待选数只对自己有意义
         if (current != null && current.uuid == self) {

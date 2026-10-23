@@ -75,7 +75,7 @@ class TargetPickScreen(
                 textRenderer,
                 targets[index].name,
                 listLeft + 6, y + 4,
-                if (isHovered) ScreenStyle.TEXT_HIGHLIGHT else ScreenStyle.TEXT_NAME,
+                TeamColorUtil.forPlayer(targets[index].uuid),
             )
         }
 

@@ -36,7 +36,12 @@ class StealScreen(
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, gridTop - 30, ScreenStyle.TEXT_NAME)
+        context.drawCenteredTextWithShadow(
+            textRenderer,
+            title,
+            width / 2, gridTop - 30,
+            TeamColorUtil.forPlayerName(targetName),
+        )
         context.drawCenteredTextWithShadow(
             textRenderer,
             Text.translatable("random-perks-bingo.steal.hint"),
