@@ -4,14 +4,10 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.game.ElytraBondService
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
-import com.randomperks.game.PerkSession
-import com.randomperks.network.PerkNetworking
-import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
-import com.randomperks.state.PerkStateManager
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.FireworksComponent
 import net.minecraft.enchantment.Enchantments
@@ -20,10 +16,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import java.util.UUID
 
 /**
  * 疾风 SWIFT —— 跑图 / 位移 / 机动。
@@ -282,87 +275,8 @@ object SwiftPerks {
         override fun icon() = ItemStack(Items.RABBIT_FOOT)
     }
 
-    /** 紫 · 疾风: **易位** —— 在 V 界面点击使用后连续选择两名玩家 (可以选自己), 交换他们的位置。
-     *  跨维度的两人无法交换 —— 两边的坐标根本不在同一个空间里。 */
-    object Swap : PerkDefinition {
-        override val id = "swift_swap"
-        override val rarity = PerkRarity.PURPLE
-        override val archetype = PerkArchetype.SWIFT
-        override fun icon() = ItemStack(Items.ENDER_PEARL)
-
-        override val isOneTime = true
-
-        private const val PURPOSE = "swap"
-
-        override fun onActivate(ctx: PerkContext) {
-            val player = ctx.player
-            val candidates = player.server?.playerManager?.playerList
-                ?.filter {
-                    it.isAlive && !it.isSpectator &&
-                        // "天启日"持有者免疫易位, 直接不给选
-                        !PerkBoostQuery.hasDoomsday(it)
-                }
-                ?.map { PlayerTargetEntry(it.uuid, it.name.string) }
-                ?: emptyList()
-
-            // 少于两人就没得选 —— 包括自己也算一个候选
-            if (candidates.size < 2) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.swap_not_enough"), true)
-                return
-            }
-            PerkNetworking.sendDualTargets(player, PURPOSE, candidates)
-        }
-
-        /** 客户端两次选择都完成后调用: 交换两人的位置 (朝向各自保留) */
-        fun handlePick(player: ServerPlayerEntity, first: UUID, second: UUID) {
-            if (!PerkSession.isEnabled()) return
-
-            val state = PerkStateManager.get(player.uuid) ?: return
-            if (!state.hasPerk(id)) return
-            if (state.isUsed(id)) return
-            if (first == second) return
-
-            val server = player.server ?: return
-            val a = server.playerManager.getPlayer(first) ?: return
-            val b = server.playerManager.getPlayer(second) ?: return
-            if (a === b) return
-
-            val worldA = a.world
-            val worldB = b.world
-            if (worldA !== worldB) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.swap_cross_world"), true)
-                return
-            }
-
-            // "天启日"持有者免疫易位 (候选已过滤, 这里兜底防止 uuid 被伪造)
-            if (PerkBoostQuery.hasDoomsday(a) || PerkBoostQuery.hasDoomsday(b)) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.swap_doomsday_immune"),
-                    true,
-                )
-                return
-            }
-
-            // 骑着东西的话先下来, 否则载具留在原地、人却飞走了
-            a.stopRiding()
-            b.stopRiding()
-
-            val posA = a.pos
-            val yawA = a.yaw
-            val pitchA = a.pitch
-            val posB = b.pos
-            val yawB = b.yaw
-            val pitchB = b.pitch
-
-            a.teleport(worldA, posB.x, posB.y, posB.z, emptySet(), yawA, pitchA, true)
-            b.teleport(worldB, posA.x, posA.y, posA.z, emptySet(), yawB, pitchB, true)
-            state.markUsed(id)
-        }
-    }
-
     fun registerAll() {
         com.randomperks.perk.PerkRegistry.register(EscapePlan)
-        com.randomperks.perk.PerkRegistry.register(Swap)
         com.randomperks.perk.PerkRegistry.register(Speed)
         com.randomperks.perk.PerkRegistry.register(FeatherFall)
         com.randomperks.perk.PerkRegistry.register(Jump)

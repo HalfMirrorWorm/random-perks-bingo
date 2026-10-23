@@ -138,7 +138,6 @@
 | `swift_omnimovement` | 全向移动 | Omnimovement | 紫 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_dash` | 冲刺 | Dash | 金 |
-| `swift_swap` | 何易位 | Swap | 紫 |
 
 ## 唤法 SUMMON
 
@@ -156,6 +155,7 @@
 | `summon_call_lightning` | 引雷术 | Call Lightning | 蓝 |
 | `summon_big_snowball` | 打雪仗 | Snowball Fight | 蓝 |
 | `summon_remote_transfer` | 远程传输 | Remote Transfer | 蓝 |
+| `summon_swap` | 何易位 | Swap | 紫 |
 
 ## 神话 MYTHIC（全局唯一）
 

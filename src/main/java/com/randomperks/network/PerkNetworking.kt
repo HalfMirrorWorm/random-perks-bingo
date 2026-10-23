@@ -173,7 +173,7 @@ object PerkNetworking {
             val second = payload.second
             context.server().execute {
                 when (purpose) {
-                    "swap" -> SwiftPerks.Swap.handlePick(player, first, second)
+                    "swap" -> SummonPerks.Swap.handlePick(player, first, second)
                 }
             }
         }
