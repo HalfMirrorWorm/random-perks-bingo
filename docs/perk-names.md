@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **114** 条词条：蓝 59 / 绿 0 / 紫 36 / 金 16 / 神话 3。
+共 **114** 条词条：绿 0 / 蓝 59 / 紫 36 / 金 16 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -10,9 +10,9 @@
 
 - **词条 id**：`<流派>_<英文短名>`（如 `hunter_soul_harvest`）；神话单独使用 `mythic_` 前缀
 - **语言 key**：`random-perks-bingo.perk.<id>.name` / `.desc`（中英各一份）
-- **稀有度与抽取权重**：`blue` 700 / `green` 250 / `purple` 235 / `gold` 60 / `mythic` 5
-  （合计 1250：蓝 56% / 绿 20% / 紫 18.8% / 金 4.8% / 神话 0.4%）
-- 绿色品质（优秀）已加入抽取体系，目前还没有词条使用
+- **稀有度与抽取权重**：`green` 1000 / `blue` 700 / `purple` 235 / `gold` 60 / `mythic` 5
+  （合计 2000：绿 50% / 蓝 35% / 紫 11.75% / 金 3% / 神话 0.25%）
+- 绿色品质（粗糙）比普通更低级，已加入抽取体系；目前还没有词条使用
 - 其他语言 key：`random-perks-bingo.rarity.<blue|purple|gold|mythic>`、
   `random-perks-bingo.message.*`（提示消息）、`random-perks-bingo.dimension.<overworld|nether|end>`、
   `random-perks-bingo.item.treasure_map`（藏宝图）
