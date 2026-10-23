@@ -122,7 +122,7 @@ object SwiftPerks {
     /** 金 · 疾风 · 质变: 空中可以再跳跃一次 (每段离地一次; 由 PerkAbilityService + PlayerLandingMixin 实现) */
     object DoubleJump : PerkDefinition {
         override val id = "swift_double_jump"
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.SLIME_BALL)
 
