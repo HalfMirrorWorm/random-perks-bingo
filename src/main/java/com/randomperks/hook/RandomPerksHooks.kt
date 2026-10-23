@@ -33,4 +33,15 @@ object RandomPerksHooks {
         // 给每位在线队员发放一次选择机会 (+ 触发词条联动)
         PerkGrantService.onTeamScored(memberUuids, objectiveId)
     }
+
+    /**
+     * 某个队伍完成了一条连线 —— 只额外发放一次选择机会, 不重复触发格子计分回调。
+     */
+    fun onTeamLine(teamId: String, memberUuids: List<UUID>) {
+        RandomPerksMod.logger.info(
+            "[RandomPerks] team '{}' completed a line → {} member(s)",
+            teamId, memberUuids.size,
+        )
+        PerkGrantService.onTeamLine(memberUuids)
+    }
 }

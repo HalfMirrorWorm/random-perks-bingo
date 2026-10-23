@@ -45,4 +45,14 @@ public class ScoreUpdateServiceMixin {
             BingoHook.logFailure(t);
         }
     }
+
+    /** 某队完成一条连线 */
+    @Inject(method = "sendLineCaptured", at = @At("HEAD"))
+    private void randomperks$onLineCaptured(BingoTeam team, CallbackInfo ci) {
+        try {
+            BingoHook.onLineCaptured(team);
+        } catch (Throwable t) {
+            BingoHook.logFailure(t);
+        }
+    }
 }

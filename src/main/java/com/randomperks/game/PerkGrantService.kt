@@ -49,6 +49,23 @@ object PerkGrantService {
     }
 
     /**
+     * 团队完成一条连线: 给每位在线队员额外发放一次选择机会。
+     * 不影响格子计分的 [onTeamScored] 回调, 避免同一次捕获触发两次词条联动。
+     */
+    fun onTeamLine(memberUuids: List<UUID>) {
+        if (!PerkSession.isEnabled()) return
+        val server = ServerHolder.server ?: return
+        val players = memberUuids.mapNotNull { server.playerManager.getPlayer(it) }
+        if (players.isEmpty()) return
+
+        grantOffer(players)
+        RandomPerksMod.logger.info(
+            "[RandomPerks] bingo line completed by team with {} member(s) → +1 choice each",
+            players.size,
+        )
+    }
+
+    /**
      * 给每位玩家发放一次选择机会 (每人独立生成一组固定候选)。
      *
      * @return 是否至少发放成功一次 (词条池耗尽时为 false)

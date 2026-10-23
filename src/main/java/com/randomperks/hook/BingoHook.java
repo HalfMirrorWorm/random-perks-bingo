@@ -46,6 +46,18 @@ public final class BingoHook {
         );
     }
 
+    /** 某队完成一条连线 */
+    public static void onLineCaptured(BingoTeam team) {
+        if (team == null) return;
+
+        List<UUID> members = new ArrayList<>();
+        for (PlayerProfile profile : team.getPlayers()) {
+            members.add(profile.getUuid());
+        }
+
+        RandomPerksHooks.INSTANCE.onTeamLine(team.getId(), members);
+    }
+
     public static void logHookApplied() {
         LOG.info("[RandomPerks] mixin applied to bingo ScoreUpdateService — scoring hook is ACTIVE");
     }
