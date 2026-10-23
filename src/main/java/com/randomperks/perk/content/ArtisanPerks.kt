@@ -49,7 +49,7 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 工具保养: 获得一把效率 II 的铁镐 (耐久只剩 24 点, 挖几下就报废) */
+    /** 蓝 · 工具保养: 获得一把效率 II 的铁镐 (剩余耐久 60 点) */
     object Toolkit : PerkDefinition {
         override val id = "artisan_toolkit"
         override val rarity = PerkRarity.BLUE
@@ -59,14 +59,14 @@ object ArtisanPerks {
         override fun onAcquire(ctx: PerkContext) {
             val pickaxe = ItemStack(Items.IRON_PICKAXE)
             PerkEffects.enchant(ctx.player, pickaxe, Enchantments.EFFICIENCY, 2)
-            // 只剩 24 点耐久: ItemStack 只存"已损耗值"(damage), 所以要写成 上限 - 剩余
-            // (铁镐上限 250 → 已损耗 226; 铁砧/经验修补修一下即可恢复满耐久)
+            // 只剩 60 点耐久: ItemStack 只存"已损耗值"(damage), 所以要写成 上限 - 剩余
+            // (铁镐上限 250 → 已损耗 190; 铁砧/经验修补修一下即可恢复满耐久)
             pickaxe.damage = pickaxe.maxDamage - REMAINING_DURABILITY
             PerkEffects.giveStack(ctx.player, pickaxe)
         }
 
         /** 发放的铁镐剩余耐久 */
-        private const val REMAINING_DURABILITY = 24
+        private const val REMAINING_DURABILITY = 60
     }
 
     /** 蓝 · 建筑师: 工作台 + 16 原木 + 建材 + 火把 */
