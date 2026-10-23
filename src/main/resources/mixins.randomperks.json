@@ -19,6 +19,7 @@
     "PlayerInventoryEquipMixin",
     "NightVisionControllerMixin",
     "PerkMenuToggleMixin",
+    "PerkModeConflictMixin",
     "XrayDropSuppressMixin",
     "PhoenixMixin",
     "BedBombMixin",

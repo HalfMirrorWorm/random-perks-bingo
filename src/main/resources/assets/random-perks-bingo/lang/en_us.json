@@ -373,5 +373,8 @@
   "random-perks-bingo.menu.perks.state.on": "Current: enabled",
   "random-perks-bingo.menu.perks.state.off": "Current: disabled",
   "random-perks-bingo.menu.perks.enabled": "[RandomPerks] Perk system enabled — applies next round",
-  "random-perks-bingo.menu.perks.disabled": "[RandomPerks] Perk system disabled — applies next round"
+  "random-perks-bingo.menu.perks.disabled": "[RandomPerks] Perk system disabled — applies next round",
+  "random-perks-bingo.menu.perks.conflict.inventory": "[RandomPerks] Perk mode conflicts with Inventory mode — Inventory mode has been disabled",
+  "random-perks-bingo.menu.perks.conflict.perk": "[RandomPerks] Inventory mode conflicts with Perk mode — the perk system has been disabled (applies next round)",
+  "random-perks-bingo.menu.perks.conflict.tooltip": "Incompatible with Inventory mode: enabling perks turns Inventory mode off"
 }

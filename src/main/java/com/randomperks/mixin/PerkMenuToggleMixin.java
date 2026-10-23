@@ -6,10 +6,12 @@ import me.jfenn.bingo.common.menu.ConstantProperty;
 import me.jfenn.bingo.common.menu.MenuComponent;
 import me.jfenn.bingo.common.menu.Property;
 import me.jfenn.bingo.common.menu.TitlePanelKt;
+import me.jfenn.bingo.common.options.BingoCardOptions;
 import me.jfenn.bingo.common.options.OptionsService;
 import me.jfenn.bingo.common.state.BingoState;
 import me.jfenn.bingo.common.text.TextProvider;
 import me.jfenn.bingo.platform.text.IText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.joml.Vector3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -46,6 +48,8 @@ public class PerkMenuToggleMixin {
     private static final String KEY_STATE_OFF = "random-perks-bingo.menu.perks.state.off";
     private static final String KEY_ENABLED = "random-perks-bingo.menu.perks.enabled";
     private static final String KEY_DISABLED = "random-perks-bingo.menu.perks.disabled";
+    private static final String KEY_CONFLICT_INVENTORY = "random-perks-bingo.menu.perks.conflict.inventory";
+    private static final String KEY_CONFLICT_TOOLTIP = "random-perks-bingo.menu.perks.conflict.tooltip";
 
     @Inject(method = "registerFeatures", at = @At("TAIL"))
     private static void randomperks$addPerkToggle(
@@ -76,7 +80,8 @@ public class PerkMenuToggleMixin {
                 text.translatable(KEY_NAME, "随机词条").formatted(Formatting.GREEN),
                 text.translatable(enabled ? KEY_STATE_ON : KEY_STATE_OFF,
                         enabled ? "当前: 已启用" : "当前: 已禁用"),
-                text.translatable(KEY_TOOLTIP, "开启或关闭词条系统 (下一局生效)")
+                text.translatable(KEY_TOOLTIP, "开启或关闭词条系统 (下一局生效)"),
+                text.translatable(KEY_CONFLICT_TOOLTIP, "与物品占领模式互斥: 开启词条会关闭物品占领模式")
         );
 
         ButtonKt.registerIconButton(
@@ -93,12 +98,33 @@ public class PerkMenuToggleMixin {
                 null,
                 player -> {
                     boolean newEnabled = !PerkConfig.INSTANCE.getEnabled();
+
+                    // 词条模式与物品占领模式(抢占)互斥 —— 与 bingo 自身的
+                    // 「物品占领 ↔ 消耗」互斥保持一致: 后打开的那个生效。
+                    boolean disabledInventory = false;
+                    if (newEnabled) {
+                        try {
+                            BingoCardOptions options = state.getActiveCard().getOptions();
+                            if (options.isInventoryMode()) {
+                                options.setInventoryMode(false);
+                                disabledInventory = true;
+                            }
+                        } catch (Throwable ignored) {
+                            // 没有活动卡牌等异常不应阻止开关本身
+                        }
+                    }
+
                     PerkConfig.INSTANCE.set(newEnabled);
                     player.sendHotbarMessage(text.translatable(
                             newEnabled ? KEY_ENABLED : KEY_DISABLED,
                             newEnabled
                                     ? "[RandomPerks] 词条系统已启用 —— 将于【下一局】生效"
                                     : "[RandomPerks] 词条系统已禁用 —— 将于【下一局】生效"));
+                    if (disabledInventory) {
+                        player.getPlayer().sendMessage(
+                                Text.translatable(KEY_CONFLICT_INVENTORY), false
+                        );
+                    }
                     return kotlin.Unit.INSTANCE;
                 }
         );

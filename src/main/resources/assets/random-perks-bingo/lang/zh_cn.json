@@ -373,5 +373,8 @@
   "random-perks-bingo.menu.perks.state.on": "当前: 已启用",
   "random-perks-bingo.menu.perks.state.off": "当前: 已禁用",
   "random-perks-bingo.menu.perks.enabled": "[RandomPerks] 词条系统已启用 —— 将于【下一局】生效",
-  "random-perks-bingo.menu.perks.disabled": "[RandomPerks] 词条系统已禁用 —— 将于【下一局】生效"
+  "random-perks-bingo.menu.perks.disabled": "[RandomPerks] 词条系统已禁用 —— 将于【下一局】生效",
+  "random-perks-bingo.menu.perks.conflict.inventory": "[RandomPerks] 词条模式与物品占领模式冲突 —— 已自动关闭物品占领模式",
+  "random-perks-bingo.menu.perks.conflict.perk": "[RandomPerks] 物品占领模式与词条模式冲突 —— 已自动关闭词条系统 (下一局生效)",
+  "random-perks-bingo.menu.perks.conflict.tooltip": "与物品占领模式互斥: 开启词条会关闭物品占领模式"
 }
