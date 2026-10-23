@@ -921,7 +921,7 @@ object HunterPerks {
      *  (反弹使用 THORNS 伤害类型, 不会与另一个刺猬无限递归) */
     object Hedgehog : PerkDefinition {
         override val id = "hunter_hedgehog"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.CACTUS)
     }
