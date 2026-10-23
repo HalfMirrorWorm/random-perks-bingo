@@ -157,8 +157,15 @@ object SummonPerks {
             }
             if (taken.isEmpty()) return
 
-            // 目标背包放不下时 offerOrDrop 会掉在他脚下, 不会蒸发
-            for (stack in taken) PerkEffects.giveStack(target, stack)
+            // 目标背包放不下时, 剩余部分显式掉在他脚下 —— 不允许静默吞掉
+            for (stack in taken) {
+                val remaining = stack.copy()
+                target.inventory.insertStack(remaining)
+                if (!remaining.isEmpty) {
+                    target.dropItem(remaining, false)
+                }
+            }
+            target.inventory.markDirty()
 
             state.markUsed(id)
             state.memory.remove(TARGET_KEY)
