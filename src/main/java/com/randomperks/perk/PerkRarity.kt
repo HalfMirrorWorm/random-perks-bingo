@@ -11,14 +11,14 @@ package com.randomperks.perk
  */
 enum class PerkRarity(val color: Int, val weight: Int) {
     /** 粗糙 (绿): 比普通更低级的品质 */
-    GREEN(0xFF4CAF50.toInt(), 500),
-    BLUE(0xFF4A90D9.toInt(), 700),
-    PURPLE(0xFF9B59B6.toInt(), 235),
-    GOLD(0xFFF1C40F.toInt(), 60),
+    GREEN(0xFF4CAF50.toInt(), 300),
+    BLUE(0xFF4A90D9.toInt(), 800),
+    PURPLE(0xFF9B59B6.toInt(), 315),
+    GOLD(0xFFF1C40F.toInt(), 82),
 
     /**
      * 神话 (比传说更高): 全局唯一 (同时只能一名玩家拥有), 彩色显示。
      * 颜色由客户端动态渲染 (彩虹渐变), 此处的值是回退色。
      */
-    MYTHIC(0xFFFF55FF.toInt(), 5),
+    MYTHIC(0xFFFF55FF.toInt(), 3),
 }

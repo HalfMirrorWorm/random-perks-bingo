@@ -10,8 +10,8 @@
 
 - **词条 id**：`<流派>_<英文短名>`（如 `hunter_soul_harvest`）；神话单独使用 `mythic_` 前缀
 - **语言 key**：`random-perks-bingo.perk.<id>.name` / `.desc`（中英各一份）
-- **稀有度与抽取权重**：`green` 500 / `blue` 700 / `purple` 235 / `gold` 60 / `mythic` 5
-  （合计 1500：绿 33.3% / 蓝 46.7% / 紫 15.7% / 金 4% / 神话 0.3%）
+- **稀有度与抽取权重**：`green` 300 / `blue` 800 / `purple` 315 / `gold` 82 / `mythic` 3
+  （合计 1500：绿 20% / 蓝 53.3% / 紫 21% / 金 5.5% / 神话 0.2%）
 - 绿色品质（粗糙）比普通更低级，已加入抽取体系；目前还没有词条使用
 - 其他语言 key：`random-perks-bingo.rarity.<blue|purple|gold|mythic>`、
   `random-perks-bingo.message.*`（提示消息）、`random-perks-bingo.dimension.<overworld|nether|end>`、
