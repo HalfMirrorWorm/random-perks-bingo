@@ -15,12 +15,15 @@ import net.minecraft.block.BlockState
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.enchantment.Enchantments
+import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
+import net.minecraft.registry.tag.BlockTags
+import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 
 /**
@@ -105,6 +108,63 @@ object HarvestPerks {
             val candidates = STRIPPED_LOGS.filter { it != ownStripped }
             val drop = candidates[ctx.player.random.nextInt(candidates.size)]
             net.minecraft.block.Block.dropStack(world, pos, ItemStack(drop))
+        }
+    }
+
+    /** 紫 · 丰饶: **一键伐木** —— 手持斧破坏原木时, 一键砍倒整棵相连的同种树
+     *  (最多 128 块; 额外每块消耗 1 点耐久; 掉落统一在原木位置结算)。 */
+    object TreeFeller : PerkDefinition {
+        override val id = "harvest_tree_feller"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.IRON_AXE)
+
+        /** 单次最多额外砍掉的方块数 */
+        private const val MAX_LOGS = 128
+
+        private val NEIGHBORS = arrayOf(
+            Triple(1, 0, 0), Triple(-1, 0, 0),
+            Triple(0, 1, 0), Triple(0, -1, 0),
+            Triple(0, 0, 1), Triple(0, 0, -1),
+        )
+
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
+            val player = ctx.player
+            val tool = player.mainHandStack
+            if (!tool.isIn(ItemTags.AXES)) return
+            if (!blockState.isIn(BlockTags.LOGS)) return
+            val world = player.world as? ServerWorld ?: return
+
+            val logBlock = blockState.block
+            val visited = HashSet<BlockPos>()
+            val queue = ArrayDeque<BlockPos>()
+            visited.add(pos)
+            queue.add(pos)
+            var broken = 0
+
+            while (queue.isNotEmpty() && broken < MAX_LOGS) {
+                val cur = queue.removeFirst()
+                for ((dx, dy, dz) in NEIGHBORS) {
+                    val next = cur.add(dx, dy, dz)
+                    if (!visited.add(next)) continue
+
+                    val nextState = world.getBlockState(next)
+                    if (nextState.block !== logBlock) continue
+                    if (tool.isEmpty) return
+
+                    if (!world.breakBlock(next, false, player)) continue
+                    if (!player.isCreative) {
+                        // 额外原木的掉落统一生成在主原木位置, 与主掉落堆在一起
+                        PerkEffects.spawnBlockDrops(player, world, pos, nextState)
+                        nextState.onStacksDropped(world, next, tool, true)
+                        tool.damage(1, player, EquipmentSlot.MAINHAND)
+                    }
+
+                    broken++
+                    if (broken >= MAX_LOGS) return
+                    queue.add(next)
+                }
+            }
         }
     }
 
@@ -573,6 +633,7 @@ object HarvestPerks {
         PerkRegistry.register(Lumberjack)
         PerkRegistry.register(Herder)
         PerkRegistry.register(Timber)
+        PerkRegistry.register(TreeFeller)
         PerkRegistry.register(Bounty)
         PerkRegistry.register(BountifulMeal)
         PerkRegistry.register(Gourmet)

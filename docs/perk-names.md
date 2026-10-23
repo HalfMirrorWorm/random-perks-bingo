@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **110** 条词条：蓝 59 / 紫 34 / 金 14 / 神话 3。
+共 **111** 条词条：蓝 59 / 紫 35 / 金 14 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -61,6 +61,7 @@
 | `harvest_lumberjack` | 伐木工 | Lumberjack | 蓝 |
 | `harvest_herder` | 牧羊人 | Herder | 蓝 |
 | `harvest_timber` | 樵夫之手 | Timber! | 蓝 |
+| `harvest_tree_feller` | 一键伐木 | One-Click Felling | 紫 |
 | `harvest_bounty` | 丰收之息 | Bounty | 紫 |
 | `harvest_bountiful_meal` | 丰盛大餐 | Bountiful Meal | 蓝 |
 | `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 蓝 |
