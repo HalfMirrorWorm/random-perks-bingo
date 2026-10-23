@@ -16,7 +16,6 @@
     "LivingEntityJumpVelocityInvoker",
     "WindStrideMixin",
     "PlayerLandingMixin",
-    "ElytraBondDeathMixin",
     "PlayerInventoryEquipMixin",
     "NightVisionControllerMixin",
     "PerkMenuToggleMixin",

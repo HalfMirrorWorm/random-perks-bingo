@@ -1,7 +1,6 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
-import com.randomperks.game.ElytraBondService
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PhaseWalkService
@@ -12,7 +11,6 @@ import com.randomperks.perk.PerkRarity
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.FireworksComponent
 import net.minecraft.enchantment.Enchantments
-import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.item.ItemStack
@@ -140,10 +138,7 @@ object SwiftPerks {
         override fun icon() = ItemStack(Items.PHANTOM_MEMBRANE)
     }
 
-    /** 金 · 疾风 · 质变: 胸甲槽永久绑定鞘翅 (获得飞行能力), 但移动速度降低 30%。
-     *  绑定 = 绑定诅咒 (界面层锁死, 拿不下来);
-     *  死亡不掉落 = 死亡时暂存、重生原样归还 (ElytraBondService + ElytraBondDeathMixin);
-     *  词条移除时直接收回鞘翅 (不归还)。 */
+    /** 金 · 疾风 · 质变: 获得一只**剩余 3/4 耐久**的鞘翅和 2 个烟花火箭, 移动速度降低 30%。 */
     object ElytraBond : PerkDefinition {
         override val id = "swift_elytra_bond"
         override val rarity = PerkRarity.GOLD
@@ -154,27 +149,19 @@ object SwiftPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             applySpeed(ctx)
-            enforceChest(ctx)
+
+            val elytra = ItemStack(Items.ELYTRA)
+            // 最大耐久 432 → 扣掉 1/4 = 108, 剩余 324 (3/4)
+            elytra.damage = elytra.maxDamage / 4
+            PerkEffects.giveStack(ctx.player, elytra)
+
             // 附赠 2 个烟花火箭 (飞行时长 2) —— 没有 FIREWORKS 组件的裸火箭是废品, 飞不了
             val rocket = ItemStack(Items.FIREWORK_ROCKET, 2)
             rocket.set(DataComponentTypes.FIREWORKS, FireworksComponent(2, emptyList()))
             PerkEffects.giveStack(ctx.player, rocket)
         }
 
-        override fun onRespawn(ctx: PerkContext) {
-            applySpeed(ctx)
-            // 死亡暂存的鞘翅原样装回 (同一件, 耐久等数据保留); 没有暂存则重新绑定
-            val saved = ElytraBondService.takeSaved(ctx.player)
-            if (saved != null && saved.isOf(Items.ELYTRA)) {
-                ctx.player.equipStack(EquipmentSlot.CHEST, saved)
-            } else {
-                enforceChest(ctx)
-            }
-        }
-
-        /** 胸甲槽被换下鞘翅的瞬间立即换回 (覆盖被替换/清空等非界面路径; 界面路径已被绑定诅咒锁死。
-         *  注: 鞘翅"飞坏"(同一件耐久耗尽) 不触发补装 —— 玩家需自行用幻翼膜修复) */
-        override fun onEquipmentChange(ctx: PerkContext) = enforceChest(ctx)
+        override fun onRespawn(ctx: PerkContext) = applySpeed(ctx)
 
         /** 移动速度降低 30% (总速度 x0.7) */
         private fun applySpeed(ctx: PerkContext) {
@@ -184,31 +171,8 @@ object SwiftPerks {
             )
         }
 
-        /** 胸甲槽强制为鞘翅 (带绑定诅咒, 界面层锁死); 被顶下来的装备退回背包 (放不下则会掉落) */
-        private fun enforceChest(ctx: PerkContext) {
-            val player = ctx.player
-            if (!player.isAlive) return  // 死亡瞬间不补装 (此时鞘翅已被死亡暂存取走)
-
-            val current = player.getEquippedStack(EquipmentSlot.CHEST)
-            if (current.isOf(Items.ELYTRA)) return
-
-            val elytra = ItemStack(Items.ELYTRA)
-            PerkEffects.enchant(player, elytra, Enchantments.BINDING_CURSE, 1)  // 界面层锁死: 拿不下来
-            player.equipStack(EquipmentSlot.CHEST, elytra)
-            if (!current.isEmpty) {
-                player.giveItemStack(current)
-            }
-        }
-
         override fun onRemove(ctx: PerkContext) {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
-            // 词条移除: 直接收回这只由词条发放的鞘翅 (不归还 —— 对局结束/命令移除统一语义;
-            // 死亡暂存中的那只也一并作废)
-            ctx.state.savedChestItem = null
-            val chest = ctx.player.getEquippedStack(EquipmentSlot.CHEST)
-            if (chest.isOf(Items.ELYTRA)) {
-                ctx.player.equipStack(EquipmentSlot.CHEST, ItemStack.EMPTY)
-            }
         }
     }
 
