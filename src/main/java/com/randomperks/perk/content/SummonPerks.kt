@@ -157,6 +157,9 @@ object SummonPerks {
             }
             if (taken.isEmpty()) return
 
+            // 在插入背包前把物品名抄下来 —— insertStack 会把 stack 的数量清零
+            val itemSummary = summarize(taken)
+
             // 目标背包放不下时, 剩余部分显式掉在他脚下 —— 不允许静默吞掉
             for (stack in taken) {
                 val remaining = stack.copy()
@@ -175,7 +178,7 @@ object SummonPerks {
             player.sendMessage(
                 Text.translatable(
                     "random-perks-bingo.message.remote_transfer_success",
-                    taken.size,
+                    itemSummary,
                     target.name,
                 ),
                 false,
@@ -184,10 +187,21 @@ object SummonPerks {
                 Text.translatable(
                     "random-perks-bingo.message.remote_transfer_received",
                     player.name,
-                    taken.size,
+                    itemSummary,
                 ),
                 false,
             )
+        }
+
+        /** 把物品列表拼成 "钻石 ×4, 面包 ×16" 这样的提示文本 */
+        private fun summarize(stacks: List<ItemStack>): Text {
+            var text = Text.empty()
+            stacks.forEachIndexed { index, stack ->
+                if (index > 0) text = text.append(Text.literal(", "))
+                text = text.append(stack.name.copy())
+                if (stack.count > 1) text = text.append(Text.literal(" ×${stack.count}"))
+            }
+            return text
         }
 
         /** 主背包里所有非空格子 */
