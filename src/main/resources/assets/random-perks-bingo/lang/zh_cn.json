@@ -248,7 +248,7 @@
   "random-perks-bingo.perk.harvest_big_stomach.name": "大胃袋",
   "random-perks-bingo.perk.harvest_big_stomach.desc": "你可以不受饱食度限制一直吃。",
   "random-perks-bingo.perk.harvest_yowl.name": "老吴!?",
-  "random-perks-bingo.perk.harvest_yowl.desc": "猫不再害怕你, 反而会主动攻击你; 但你杀死猫必掉落 3 根线。",
+  "random-perks-bingo.perk.harvest_yowl.desc": "猫不再害怕你, 反而会主动攻击你; 杀死猫必掉 3 根线, 并额外掉落 1 件猫的礼物 (高概率为幻翼膜)。",
   "random-perks-bingo.perk.summon_big_dog.name": "大狗嚼",
   "random-perks-bingo.perk.summon_big_dog.desc": "召唤 2 只属于你的高属性狗。",
   "random-perks-bingo.perk.summon_wandering_trader.name": "流浪拴绳",

@@ -335,17 +335,40 @@ object HarvestPerks {
         // 效果由 BigStomachMixin 在 ConsumableComponent.canConsume 实现
     }
 
-    /** 蓝 · 丰饶: **老吴!?** (猫叫的拟声) —— 猫不再害怕你, 反而会主动攻击你; 但你杀死猫必掉 3 根线 */
+    /** 蓝 · 丰饶: **老吴!?** (猫叫的拟声) —— 猫不再害怕你, 反而会主动攻击你;
+     *  你杀死猫必掉 3 根线, 并额外掉落 1 件猫的礼物 (高概率为幻翼膜) */
     object Yowl : PerkDefinition {
         override val id = "harvest_yowl"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.STRING)
 
+        /** 猫的礼物物品池: 幻翼膜权重 60, 其余各 10 (幻翼膜 50%) */
+        private val GIFT_ITEMS = listOf(
+            Items.PHANTOM_MEMBRANE to 60,
+            Items.RABBIT_HIDE to 10,
+            Items.RABBIT_FOOT to 10,
+            Items.CHICKEN to 10,
+            Items.FEATHER to 10,
+            Items.ROTTEN_FLESH to 10,
+            Items.STRING to 10,
+        )
+
         override fun onKill(ctx: PerkContext, victim: net.minecraft.entity.LivingEntity) {
             if (victim !is net.minecraft.entity.passive.CatEntity) return
             val world = ctx.player.world as? ServerWorld ?: return
             victim.dropStack(world, ItemStack(Items.STRING, 3))
+
+            // 额外掉落 1 件猫的礼物 (幻翼膜高概率)
+            val total = GIFT_ITEMS.sumOf { it.second }
+            var roll = ctx.player.random.nextInt(total)
+            for ((item, weight) in GIFT_ITEMS) {
+                roll -= weight
+                if (roll < 0) {
+                    victim.dropStack(world, ItemStack(item))
+                    return
+                }
+            }
         }
     }
 
