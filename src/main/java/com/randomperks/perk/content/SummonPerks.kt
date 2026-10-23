@@ -45,7 +45,8 @@ object SummonPerks {
     }
 
     /** 蓝 · 唤法 · 贮藏: **远程传输** —— 点击使用并选择一名**同队**玩家,
-     *  随机把物品栏里的 4 件物品传送给他 (交互见 ActionTargetPick 的 remote_transfer 分支) */
+     *  然后从自己的物品栏里挑选 4 格物品传送给他
+     *  (交互见 ActionTargetPick / ItemSelect 的 remote_transfer 分支) */
     object RemoteTransfer : PerkDefinition {
         override val id = "summon_remote_transfer"
         override val rarity = PerkRarity.BLUE
@@ -59,6 +60,11 @@ object SummonPerks {
 
         /** 传送的物品数量 (按格计算) */
         private const val TRANSFER_COUNT = 4
+
+        private const val PURPOSE = "remote_transfer"
+
+        /** 已选中的队友 uuid, 等待玩家挑选物品 */
+        private const val TARGET_KEY = "remote_transfer_target"
 
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
@@ -79,12 +85,12 @@ object SummonPerks {
             }
             PerkNetworking.sendActionTargets(
                 player,
-                "remote_transfer",
+                PURPOSE,
                 candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
             )
         }
 
-        /** 客户端在选择器里选中了一名队友 → 随机抽 4 件物品传送过去 */
+        /** 客户端选中队友 → 记住目标, 打开物品选择界面 */
         fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
@@ -102,12 +108,49 @@ object SummonPerks {
                 return
             }
 
-            val slots = itemSlots(player)
-            if (slots.isEmpty()) return
+            if (itemSlots(player).isEmpty()) {
+                player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.remote_transfer_empty"),
+                    true,
+                )
+                return
+            }
+
+            state.memory[TARGET_KEY] = target.uuid.toString()
+            val items = (0 until SLOT_COUNT).map { player.inventory.getStack(it).copy() }
+            PerkNetworking.sendItemSelectOpen(player, PURPOSE, items, TRANSFER_COUNT)
+        }
+
+        /** 客户端提交选中的物品格 → 传送过去 */
+        fun handleItemPick(player: ServerPlayerEntity, slots: List<Int>) {
+            if (!PerkSession.isEnabled()) return
+
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
+
+            val targetUuid = state.memory[TARGET_KEY]
+                ?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+                ?: return
+            val target = candidates(player).firstOrNull { it.uuid == targetUuid }
+            if (target == null) {
+                state.memory.remove(TARGET_KEY)
+                player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.remote_transfer_no_target"),
+                    true,
+                )
+                return
+            }
+
+            // 校验: 选中的格数必须等于"最多 4 格且不超过现有非空格数", 且互不重复、都非空
+            val nonEmpty = (0 until SLOT_COUNT).count { !player.inventory.getStack(it).isEmpty }
+            val required = minOf(TRANSFER_COUNT, nonEmpty)
+            val distinct = slots.toSet()
+            if (required == 0 || slots.size != required || distinct.size != slots.size) return
+            if (distinct.any { it !in 0 until SLOT_COUNT || player.inventory.getStack(it).isEmpty }) return
 
             val taken = mutableListOf<ItemStack>()
-            repeat(minOf(TRANSFER_COUNT, slots.size)) {
-                val slot = slots.removeAt(player.random.nextInt(slots.size))
+            for (slot in distinct) {
                 val stack = player.inventory.removeStack(slot)
                 if (!stack.isEmpty) taken += stack
             }
@@ -117,6 +160,7 @@ object SummonPerks {
             for (stack in taken) PerkEffects.giveStack(target, stack)
 
             state.markUsed(id)
+            state.memory.remove(TARGET_KEY)
             PerkGrantService.notifyPerkListChanged(player)
             PerkGrantService.syncAbilities(player)
 

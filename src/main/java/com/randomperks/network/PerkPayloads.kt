@@ -280,6 +280,66 @@ class StealPickC2S(val index: Int) : CustomPayload {
     override fun getId() = ID
 }
 
+/** S2C: 让客户端从自己的背包里挑选若干格物品 (远程传输等) */
+class ItemSelectOpenS2C(
+    val purpose: String,
+    val items: List<ItemStack>,
+    val count: Int,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<ItemSelectOpenS2C>(Identifier.of("random-perks-bingo", "item_select_open"))
+        val CODEC: PacketCodec<RegistryByteBuf, ItemSelectOpenS2C> = PacketCodec.of(
+            { value, buf ->
+                buf.writeString(value.purpose)
+                buf.writeVarInt(value.count)
+                buf.writeVarInt(value.items.size)
+                for (item in value.items) {
+                    buf.writeBoolean(!item.isEmpty)
+                    if (!item.isEmpty) ItemStack.PACKET_CODEC.encode(buf, item)
+                }
+            },
+            { buf ->
+                val purpose = buf.readString()
+                val count = buf.readVarInt()
+                val size = buf.readVarInt().coerceIn(0, 64)
+                val items = ArrayList<ItemStack>(size)
+                repeat(size) {
+                    items.add(if (buf.readBoolean()) ItemStack.PACKET_CODEC.decode(buf) else ItemStack.EMPTY)
+                }
+                ItemSelectOpenS2C(purpose, items, count)
+            },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** C2S: 客户端提交选中的物品格 (purpose 区分词条) */
+class ItemSelectC2S(
+    val purpose: String,
+    val slots: List<Int>,
+) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<ItemSelectC2S>(Identifier.of("random-perks-bingo", "item_select"))
+        val CODEC: PacketCodec<RegistryByteBuf, ItemSelectC2S> = PacketCodec.of(
+            { value, buf ->
+                buf.writeString(value.purpose)
+                buf.writeVarInt(value.slots.size)
+                for (slot in value.slots) buf.writeVarInt(slot)
+            },
+            { buf ->
+                val purpose = buf.readString()
+                val size = buf.readVarInt().coerceIn(0, 64)
+                val slots = ArrayList<Int>(size)
+                repeat(size) { slots.add(buf.readVarInt()) }
+                ItemSelectC2S(purpose, slots)
+            },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** 可选中的玩家目标 (uuid 供服务端校验, name 供界面显示) —— 顺手牵羊、引雷术等共用 */
 data class PlayerTargetEntry(val uuid: UUID, val name: String)
 

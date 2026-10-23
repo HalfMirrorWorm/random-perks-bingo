@@ -39,12 +39,14 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(DoubleJumpC2S.ID, DoubleJumpC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(DashC2S.ID, DashC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(StealOpenS2C.ID, StealOpenS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(ItemSelectOpenS2C.ID, ItemSelectOpenS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(StealTargetsS2C.ID, StealTargetsS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(ActionTargetsS2C.ID, ActionTargetsS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(EquipmentPickOpenS2C.ID, EquipmentPickOpenS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(DualTargetsS2C.ID, DualTargetsS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(StealRequestC2S.ID, StealRequestC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealPickC2S.ID, StealPickC2S.CODEC)
+        PayloadTypeRegistry.playC2S().register(ItemSelectC2S.ID, ItemSelectC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(StealTargetPickC2S.ID, StealTargetPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(EquipmentPickC2S.ID, EquipmentPickC2S.CODEC)
@@ -117,6 +119,15 @@ object PerkNetworking {
             val index = payload.index
             context.server().execute {
                 StealService.handlePick(player, index)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(ItemSelectC2S.ID) { payload, context ->
+            val player = context.player()
+            context.server().execute {
+                when (payload.purpose) {
+                    "remote_transfer" -> SummonPerks.RemoteTransfer.handleItemPick(player, payload.slots)
+                }
             }
         }
 
@@ -226,6 +237,18 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, StealOpenS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, StealOpenS2C(targetName, items)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send steal open: {}", it.toString()) }
+    }
+
+    /** 下发"从自己背包挑选若干格物品"的界面数据 */
+    fun sendItemSelectOpen(
+        player: ServerPlayerEntity,
+        purpose: String,
+        items: List<ItemStack>,
+        count: Int,
+    ) {
+        if (!ServerPlayNetworking.canSend(player, ItemSelectOpenS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, ItemSelectOpenS2C(purpose, items, count)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send item select open: {}", it.toString()) }
     }
 
     /** 下发"顺手牵羊"的候选目标列表 (客户端据此打开玩家选择器) */

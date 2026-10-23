@@ -6,6 +6,7 @@ import com.randomperks.client.JockeyClientState
 import com.randomperks.game.ModVersionService
 import com.randomperks.game.MorphState
 import com.randomperks.client.screen.EquipmentPickScreen
+import com.randomperks.client.screen.ItemSelectScreen
 import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
@@ -13,6 +14,8 @@ import com.randomperks.client.screen.StealScreen
 import com.randomperks.client.screen.TargetPickScreen
 import com.randomperks.game.ClientPerkFlags
 import com.randomperks.network.GlowMarkS2C
+import com.randomperks.network.ItemSelectC2S
+import com.randomperks.network.ItemSelectOpenS2C
 import com.randomperks.network.PerkAbilitySyncS2C
 import com.randomperks.network.PerkActivateC2S
 import com.randomperks.network.PerkCatalogRequestC2S
@@ -169,6 +172,17 @@ object ClientPerkNetworking {
             }
         }
 
+        // "远程传输": 打开自己的多格物品选择器
+        ClientPlayNetworking.registerGlobalReceiver(ItemSelectOpenS2C.ID) { payload, context ->
+            context.client().execute {
+                context.client().setScreen(
+                    ItemSelectScreen(payload.items, payload.count) { slots ->
+                        sendItemSelect(payload.purpose, slots)
+                    },
+                )
+            }
+        }
+
         ClientPlayNetworking.registerGlobalReceiver(GlowMarkS2C.ID) { payload, context ->
             context.client().execute {
                 GlowMarkState.mark(payload.entityIds, payload.durationMillis)
@@ -284,6 +298,12 @@ object ClientPerkNetworking {
     fun pickSteal(index: Int) {
         if (!ClientPlayNetworking.canSend(StealPickC2S.ID)) return
         ClientPlayNetworking.send(StealPickC2S(index))
+    }
+
+    /** 提交多格物品选择 */
+    fun sendItemSelect(purpose: String, slots: List<Int>) {
+        if (!ClientPlayNetworking.canSend(ItemSelectC2S.ID)) return
+        ClientPlayNetworking.send(ItemSelectC2S(purpose, slots))
     }
 
     /** 提交选择 */
