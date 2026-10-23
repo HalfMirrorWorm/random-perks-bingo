@@ -146,6 +146,7 @@ object PerkNetworking {
             context.server().execute {
                 when (purpose) {
                     "lightning" -> HunterPerks.CallLightning.handleTargetPick(player, uuid)
+                    "phantoms" -> SummonPerks.Insomnia.handleTargetPick(player, uuid)
                     "nuke" -> HunterPerks.Nuclear.handleTargetPick(player, uuid)
                     "puny" -> SeekerPerks.Puny.handleTargetPick(player, uuid)
                     "poisoner" -> ArtisanPerks.Poisoner.handleTargetPick(player, uuid)

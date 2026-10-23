@@ -13,11 +13,17 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.state.PerkStateManager
+import net.minecraft.entity.EntityType
+import net.minecraft.entity.SpawnReason
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
+import net.minecraft.util.math.BlockPos
 import java.util.UUID
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * 唤法 SUMMON —— 召唤 / 随从 / 驭兽。
@@ -296,6 +302,97 @@ object SummonPerks {
         }
     }
 
+    /** 蓝 · 唤法 · 贮藏: **失眠** —— 点击使用并选择一名玩家, 在他附近生成 3 只幻翼 */
+    object Insomnia : PerkDefinition {
+        override val id = "summon_insomnia"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SUMMON
+        override fun icon() = ItemStack(Items.PHANTOM_MEMBRANE)
+
+        override val isOneTime = true
+
+        private const val PHANTOM_COUNT = 3
+        private const val PURPOSE = "phantoms"
+
+        override fun onActivate(ctx: PerkContext) {
+            val player = ctx.player
+            val candidates = candidates(player)
+            if (candidates.isEmpty()) {
+                player.sendMessage(
+                    Text.translatable("random-perks-bingo.message.phantoms_no_target"),
+                    true,
+                )
+                return
+            }
+            PerkNetworking.sendActionTargets(
+                player,
+                PURPOSE,
+                candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
+            )
+        }
+
+        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+            if (!PerkSession.isEnabled()) return
+
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
+
+            val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            val world = target.world as? ServerWorld ?: return
+
+            var spawned = 0
+            for (index in 0 until PHANTOM_COUNT) {
+                val phantom = EntityType.PHANTOM.create(world, SpawnReason.COMMAND) ?: continue
+
+                // 在目标周围 4-8 格、上方 3-7 格找一个空气位置
+                var placed = false
+                for (attempt in 0 until 16) {
+                    val angle = world.random.nextDouble() * Math.PI * 2
+                    val radius = 4.0 + world.random.nextDouble() * 4.0
+                    val x = target.x + cos(angle) * radius
+                    val z = target.z + sin(angle) * radius
+                    val y = target.y + 3.0 + world.random.nextDouble() * 4.0
+                    val pos = BlockPos.ofFloored(x, y, z)
+                    if (!world.isAir(pos)) continue
+
+                    phantom.refreshPositionAndAngles(x, y, z, world.random.nextFloat() * 360f, 0f)
+                    placed = true
+                    break
+                }
+                if (!placed) {
+                    phantom.refreshPositionAndAngles(
+                        target.x, target.y + 6.0, target.z,
+                        world.random.nextFloat() * 360f, 0f,
+                    )
+                }
+
+                phantom.setPhantomSize(1)
+                phantom.setTarget(target)
+                world.spawnEntity(phantom)
+                spawned++
+            }
+
+            if (spawned <= 0) return
+
+            state.markUsed(id)
+            PerkGrantService.notifyPerkListChanged(player)
+            PerkGrantService.syncAbilities(player)
+
+            player.sendMessage(
+                Text.translatable("random-perks-bingo.message.insomnia_spawned", target.name),
+                false,
+            )
+            target.sendMessage(
+                Text.translatable("random-perks-bingo.message.insomnia_target", player.name),
+                true,
+            )
+        }
+
+        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
+            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+    }
+
     /** 金 · 唤法: **Boss盲盒** —— 随机获得一个 Boss 刷怪蛋 */
     object BossEgg : PerkDefinition {
         override val id = "summon_boss_egg"
@@ -318,6 +415,7 @@ object SummonPerks {
 
     fun registerAll() {
         PerkRegistry.register(DragonTamer)
+        PerkRegistry.register(Insomnia)
         PerkRegistry.register(RemoteTransfer)
         PerkRegistry.register(Swap)
         PerkRegistry.register(BossEgg)

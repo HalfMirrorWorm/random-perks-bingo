@@ -130,6 +130,7 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(ActionTargetsS2C.ID) { payload, context ->
             context.client().execute {
                 val (titleKey, hintKey) = when (payload.purpose) {
+                    "phantoms" -> "random-perks-bingo.screen.phantoms_target" to "random-perks-bingo.phantoms_target.hint"
                     "nuke" -> "random-perks-bingo.screen.nuke_target" to "random-perks-bingo.nuke_target.hint"
                     "puny" -> "random-perks-bingo.screen.puny_target" to "random-perks-bingo.puny_target.hint"
                     "poisoner" -> "random-perks-bingo.screen.poisoner_target" to "random-perks-bingo.poisoner_target.hint"
