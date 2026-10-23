@@ -268,7 +268,7 @@
   "random-perks-bingo.perk.hunter_easy_nuke.name": "Easy Nuke",
   "random-perks-bingo.perk.hunter_easy_nuke.desc": "Choose any player: a glowing charged creeper spawns above them.",
   "random-perks-bingo.perk.hunter_homing_bow.name": "Is This a Hack?",
-  "random-perks-bingo.perk.hunter_homing_bow.desc": "Gain a bow and 4 tipped arrows every 2 min. Arrows home in on enemies within 16 blocks and pass through blocks while homing.",
+  "random-perks-bingo.perk.hunter_homing_bow.desc": "Gain a bow and 4 tipped arrows every 2 min. Arrows lock onto the enemy closest to your crosshair within 64 blocks when fired (walls ignored) and pass through blocks while homing.",
   "random-perks-bingo.perk.hunter_jockey.name": "Jockey",
   "random-perks-bingo.perk.hunter_jockey.desc": "Right-click a player to ride and steer them; their damage to you -75%. Shift to dismount. Your victim can break free with 30 WASD presses, after which you are on cooldown for 3 minutes.",
   "random-perks-bingo.perk.harvest_pig_morph.name": "Groupmate",

@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -25,20 +26,25 @@ import java.util.WeakHashMap;
  * "这不是挂?" —— 持有该词条的玩家射出的**箭**会自动追踪附近的目标。
  *
  * 只处理 {@link ArrowEntity} (弓/弩射出的箭), 不碰三叉戟、雪球等其他弹射物。
- * 转向在每 tick 的 HEAD 完成: 先按当前速度与"指向目标"两个方向的加权平均求出新方向,
- * 再按原速度重新赋予 —— 于是箭会平滑拐弯而不是瞬间掉头。
+ *
+ * <p>索敌只在**箭生成后的第一 tick** 做一次: 以射手当时的准心方向为准, 在周围
+ * [ACQUIRE_RANGE] 格内选**与准心夹角最小**的生物 (不做视线遮挡判断, 可以隔墙锁定)。
+ * 锁定后整段飞行都不换目标, 不会因为途中出现更近的生物而改追别人。
  *
  * <p>★ 追踪期间临时开启 {@code noClip}: 原版箭只要路径上碰到方块就会立即
  * {@code setInGround} 并停下, 哪怕目标就在 2 格外的墙角后面 —— 表现出来就是
  * "追踪箭老被旁边的方块挡住"。开启后 {@code Entity.move} 直接位移、不产生方块碰撞,
  * 箭可以穿墙追到锁定目标; 命中实体仍然走正常的 {@code getEntityCollision}。
- * 目标丢失 (死亡/出范围/词条被清掉) 时恢复 {@code noClip = false}, 让箭按原版行为落地。
+ * 目标丢失 (死亡/被移除/词条被清掉) 时恢复 {@code noClip = false}, 让箭按原版行为落地。
  */
 @Mixin(PersistentProjectileEntity.class)
 public abstract class HomingArrowMixin {
 
-    /** 追踪半径 (格) */
-    private static final double HOMING_RANGE = 16.0;
+    /** 发射瞬间索敌的最大半径 (格) —— 只看准心角度, 穿墙 */
+    private static final double ACQUIRE_RANGE = 64.0;
+
+    /** 索敌的最小视线夹角余弦: 约 30° 锥角, 准心附近没有生物就不锁定 */
+    private static final double MIN_AIM_DOT = Math.cos(Math.toRadians(30.0));
 
     /**
      * 每 tick 向目标偏转的比例 (0 = 不转, 1 = 立刻对准)。
@@ -62,6 +68,17 @@ public abstract class HomingArrowMixin {
     private static final Set<PersistentProjectileEntity> HOMING_ARROWS =
             Collections.newSetFromMap(new WeakHashMap<>());
 
+    /**
+     * 每支箭在**发射瞬间**锁定的目标。之后不再重新索敌 ——
+     * 否则飞行途中最近的目标变了, 箭会突然改追别人。
+     */
+    private static final Map<PersistentProjectileEntity, LivingEntity> LOCKED_TARGETS =
+            new WeakHashMap<>();
+
+    /** 已经做过索敌尝试的箭; 第一 tick 没锁到目标也不再反复扫世界 */
+    private static final Set<PersistentProjectileEntity> ACQUIRE_ATTEMPTED =
+            Collections.newSetFromMap(new WeakHashMap<>());
+
     @Inject(method = "tick", at = @At("HEAD"))
     private void randomperks$homeToTarget(CallbackInfo ci) {
         PersistentProjectileEntity self = (PersistentProjectileEntity) (Object) this;
@@ -72,7 +89,7 @@ public abstract class HomingArrowMixin {
         if (!(owner instanceof ServerPlayerEntity shooter)
                 || !PerkBoostQuery.INSTANCE.hasHomingBow(shooter)) {
             // 词条被清掉 / 箭的主人不是玩家: 恢复碰撞, 按原版行为落地
-            if (HOMING_ARROWS.remove(self)) self.setNoClip(false);
+            stopTracking(self);
             return;
         }
 
@@ -80,13 +97,21 @@ public abstract class HomingArrowMixin {
         double speed = velocity.length();
         if (speed < MIN_SPEED) {
             // 已命中/落地/停滞: 恢复原版碰撞, 不要让它以后被推动时继续穿墙
-            if (HOMING_ARROWS.remove(self)) self.setNoClip(false);
+            stopTracking(self);
             return;
         }
 
-        LivingEntity target = findTarget(world, self, shooter);
-        if (target == null) {
-            if (HOMING_ARROWS.remove(self)) self.setNoClip(false);
+        // 只在箭生成后的第一 tick 索敌: 用射手当时的准心方向, 锁定后全程不再换目标。
+        // 索敌只看角度、不做视线遮挡判断 —— 隔着墙也能锁定准心对着的生物。
+        if (!ACQUIRE_ATTEMPTED.contains(self)) {
+            ACQUIRE_ATTEMPTED.add(self);
+            LivingEntity acquired = acquireTarget(world, shooter);
+            if (acquired != null) LOCKED_TARGETS.put(self, acquired);
+        }
+
+        LivingEntity target = LOCKED_TARGETS.get(self);
+        if (target == null || !target.isAlive() || target.isRemoved() || target.getWorld() != world) {
+            stopTracking(self);
             return;
         }
 
@@ -139,22 +164,40 @@ public abstract class HomingArrowMixin {
         ((Entity) (Object) self).noClip = self.isNoClip();
     }
 
-    /** 最近的敌对目标 (射手自己、队友、射手驯服的生物除外); 找不到返回 null */
-    private static LivingEntity findTarget(
-            ServerWorld world,
-            PersistentProjectileEntity arrow,
-            ServerPlayerEntity shooter) {
+    /** 停止追踪并恢复原版碰撞 */
+    private static void stopTracking(PersistentProjectileEntity arrow) {
+        if (HOMING_ARROWS.remove(arrow)) arrow.setNoClip(false);
+        LOCKED_TARGETS.remove(arrow);
+    }
+
+    /**
+     * 发射瞬间索敌: 在射手周围 [ACQUIRE_RANGE] 格内, 选**与准心夹角最小**的生物。
+     *
+     * 不做视线遮挡判断 —— 即使目标在墙后/洞里, 只要准心对着它就会被锁定。
+     * 射手自己、队友、自己驯服的生物除外; 距离不参与排序。
+     */
+    private static LivingEntity acquireTarget(ServerWorld world, ServerPlayerEntity shooter) {
+        Vec3d eye = shooter.getEyePos();
+        Vec3d look = shooter.getRotationVec(1.0f);
+
         List<LivingEntity> candidates = world.getEntitiesByClass(
                 LivingEntity.class,
-                arrow.getBoundingBox().expand(HOMING_RANGE),
-                entity -> entity != shooter && entity.isAlive() && !isAlly(shooter, entity));
+                shooter.getBoundingBox().expand(ACQUIRE_RANGE),
+                entity -> entity != shooter && entity.isAlive() && !entity.isRemoved()
+                        && !entity.isSpectator() && !isAlly(shooter, entity));
 
         LivingEntity best = null;
-        double bestDistance = Double.MAX_VALUE;
+        double bestDot = MIN_AIM_DOT;
         for (LivingEntity candidate : candidates) {
-            double distance = candidate.squaredDistanceTo(arrow);
-            if (distance < bestDistance) {
-                bestDistance = distance;
+            Vec3d aim = candidate.getPos()
+                    .add(0.0, candidate.getHeight() * 0.5, 0.0)
+                    .subtract(eye);
+            double length = aim.length();
+            if (length < 1.0E-4) continue;
+
+            double dot = aim.dotProduct(look) / length;
+            if (dot > bestDot) {
+                bestDot = dot;
                 best = candidate;
             }
         }
