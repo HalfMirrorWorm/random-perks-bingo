@@ -124,7 +124,6 @@ object SwapService {
 
         if (a == null || b == null || a === b ||
             !a.isAlive || !b.isAlive || a.isSpectator || b.isSpectator ||
-            a.world !== b.world ||
             PerkBoostQuery.hasDoomsday(a) || PerkBoostQuery.hasDoomsday(b)
         ) {
             notifyCancelled(server, swap)
@@ -135,6 +134,8 @@ object SwapService {
         a.stopRiding()
         b.stopRiding()
 
+        val worldA = a.world
+        val worldB = b.world
         val posA = a.pos
         val yawA = a.yaw
         val pitchA = a.pitch
@@ -142,8 +143,9 @@ object SwapService {
         val yawB = b.yaw
         val pitchB = b.pitch
 
-        a.teleport(a.world, posB.x, posB.y, posB.z, emptySet(), yawA, pitchA, true)
-        b.teleport(a.world, posA.x, posA.y, posA.z, emptySet(), yawB, pitchB, true)
+        // 允许跨维度: 各自传送到对方所在维度里的坐标
+        a.teleport(worldB, posB.x, posB.y, posB.z, emptySet(), yawA, pitchA, true)
+        b.teleport(worldA, posA.x, posA.y, posA.z, emptySet(), yawB, pitchB, true)
 
         // 真正生效后才记为已用; 倒计时被取消则词条仍可重新使用
         PerkStateManager.get(swap.caster)?.markUsed(PERK_ID)

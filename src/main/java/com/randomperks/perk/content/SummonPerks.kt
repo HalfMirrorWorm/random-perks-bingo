@@ -226,7 +226,7 @@ object SummonPerks {
     }
 
     /** 紫 · 唤法: **何易位** —— 在 V 界面点击使用后连续选择两名玩家 (可以选自己), 交换他们的位置。
-     *  跨维度的两人无法交换 —— 两边的坐标根本不在同一个空间里。 */
+     *  允许跨维度: 两人各自传送到对方所在维度的坐标。 */
     object Swap : PerkDefinition {
         override val id = "summon_swap"
         override val rarity = PerkRarity.PURPLE
@@ -276,13 +276,6 @@ object SummonPerks {
             val a = server.playerManager.getPlayer(first) ?: return
             val b = server.playerManager.getPlayer(second) ?: return
             if (a === b) return
-
-            val worldA = a.world
-            val worldB = b.world
-            if (worldA !== worldB) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.swap_cross_world"), true)
-                return
-            }
 
             // "天启日"持有者免疫何易位 (候选已过滤, 这里兜底防止 uuid 被伪造)
             if (PerkBoostQuery.hasDoomsday(a) || PerkBoostQuery.hasDoomsday(b)) {
