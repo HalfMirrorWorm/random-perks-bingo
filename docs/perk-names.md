@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **115** 条词条：绿 0 / 蓝 61 / 紫 36 / 金 15 / 神话 3。
+共 **115** 条词条：绿 10 / 蓝 51 / 紫 36 / 金 15 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -23,15 +23,15 @@
 |---|---|---|---|
 | `artisan_supply` | 战地补给 | Field Supply | 蓝 |
 | `artisan_toolkit` | 工具保养 | Toolkit | 蓝 |
-| `artisan_builder` | 建筑师 | Builder | 蓝 |
+| `artisan_builder` | 建筑师 | Builder | 绿 |
 | `artisan_enchanter` | 附魔学徒 | Apprentice Enchanter | 蓝 |
 | `artisan_quick_enchant` | 快速附魔 | Quick Enchant | 紫 |
 | `artisan_waypoint_clock` | 传送时钟 | Waypoint Clock | 金 |
 | `artisan_long_arms` | 手长 | Long Arms | 紫 |
-| `artisan_fire_temper` | 火炼 | Smelting | 蓝 |
+| `artisan_fire_temper` | 火炼 | Smelting | 绿 |
 | `artisan_poisoner` | 绝命毒师 | Breaking Bad | 紫 |
 | `artisan_treasure_chest` | 百宝箱 | Treasure Chest | 紫 |
-| `artisan_shulker_box` | 随身仓库 | Portable Storage | 蓝 |
+| `artisan_shulker_box` | 随身仓库 | Portable Storage | 绿 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
 | `artisan_nya_axe` | 喵人斧 | Nya Axe | 紫 |
 | `artisan_midas_touch` | 点石成金 | Midas Touch | 蓝 |
@@ -50,7 +50,7 @@
 | `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 紫 |
 | `delver_collector` | 收藏家 | Collector | 紫 |
 | `delver_phoenix` | 不死鸟 | Phoenix | 紫 |
-| `delver_onion_cut` | 切洋葱 | Cutting Onions | 蓝 |
+| `delver_onion_cut` | 切洋葱 | Cutting Onions | 绿 |
 | `delver_eighty` | 八十 | Eighty | 蓝 |
 | `delver_chain_mining` | 连锁挖矿 | Chain Mining | 紫 |
 | `delver_carefree_sleep` | 无忧的安眠 | Carefree Sleep | 蓝 |
@@ -62,22 +62,22 @@
 | `harvest_gardener` | 园艺家 | Gardener | 蓝 |
 | `harvest_lumberjack` | 伐木工 | Lumberjack | 蓝 |
 | `harvest_herder` | 牧羊人 | Herder | 蓝 |
-| `harvest_timber` | 樵夫之手 | Timber! | 蓝 |
+| `harvest_timber` | 樵夫之手 | Timber! | 绿 |
 | `harvest_tree_feller` | 一键伐木 | One-Click Felling | 蓝 |
 | `harvest_bounty` | 丰收之息 | Bounty | 紫 |
 | `harvest_bountiful_meal` | 丰盛大餐 | Bountiful Meal | 蓝 |
 | `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 蓝 |
-| `harvest_cat_aura` | 哈基米 | Hakimi | 蓝 |
+| `harvest_cat_aura` | 哈基米 | Hakimi | 绿 |
 | `harvest_big_stomach` | 大胃袋 | Bottomless Stomach | 紫 |
-| `harvest_yowl` | 老吴!? | Yowl!? | 蓝 |
-| `harvest_saplings` | 植岷 | Saplings | 蓝 |
-| `harvest_gleaning` | 拾穗 | Gleaning | 蓝 |
+| `harvest_yowl` | 老吴!? | Yowl!? | 绿 |
+| `harvest_saplings` | 植岷 | Saplings | 绿 |
+| `harvest_gleaning` | 拾穗 | Gleaning | 绿 |
 | `harvest_dingdong_chicken` | 叮咚鸡 | Ding Dong Chicken | 蓝 |
 | `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 紫 |
 | `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
 | `harvest_beekeeper` | 采蜜人 | Beekeeper | 蓝 |
 | `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
-| `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 蓝 |
+| `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 绿 |
 | `harvest_fungal_infection` | 真菌感染 | Fungal Infection | 金 |
 | `harvest_slow_chewing` | 细嚼慢咽 | Slow Chewing | 紫 |
 

@@ -71,11 +71,11 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 樵夫之手: 砍**未去皮**的原木时, 5% 概率额外掉落一根**其他种类**的去皮原木
+    /** 绿 · 樵夫之手: 砍**未去皮**的原木时, 10% 概率额外掉落一根**其他种类**的去皮原木
      *  (掉落在原方块位置, 不进背包)。去皮原木自身不再触发。 */
     object Timber : PerkDefinition {
         override val id = "harvest_timber"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.OAK_LOG)
 
@@ -242,11 +242,11 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: 苦力怕会像害怕猫一样害怕你并主动远离 (不生成猫; 效果由 CatAuraMixin 实现);
+    /** 绿 · 丰饶: 苦力怕会像害怕猫一样害怕你并主动远离 (不生成猫; 效果由 CatAuraMixin 实现);
      *  另外泡在水里时, 每 5 秒获得一条随机鱼 */
     object CatAura : PerkDefinition {
         override val id = "harvest_cat_aura"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.CAT_SPAWN_EGG)
 
@@ -335,11 +335,11 @@ object HarvestPerks {
         // 效果由 BigStomachMixin 在 ConsumableComponent.canConsume 实现
     }
 
-    /** 蓝 · 丰饶: **老吴!?** (猫叫的拟声) —— 猫不再害怕你, 反而会主动攻击你;
+    /** 绿 · 丰饶: **老吴!?** (猫叫的拟声) —— 猫不再害怕你, 反而会主动攻击你;
      *  你杀死猫必掉 3 根线, 并额外掉落 1 件猫的礼物 (高概率为幻翼膜) */
     object Yowl : PerkDefinition {
         override val id = "harvest_yowl"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.STRING)
 
@@ -435,10 +435,10 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: **植岷** —— 获得 8 个随机树苗 */
+    /** 绿 · 丰饶: **植岷** —— 获得 8 个随机树苗 */
     object Saplings : PerkDefinition {
         override val id = "harvest_saplings"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.OAK_SAPLING)
 
@@ -466,10 +466,10 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: **拾穗** —— 收获成熟作物时, 50% 概率额外获得一个随机种子 */
+    /** 绿 · 丰饶: **拾穗** —— 收获成熟作物时, 50% 概率额外获得一个随机种子 */
     object Gleaning : PerkDefinition {
         override val id = "harvest_gleaning"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.WHEAT_SEEDS)
     }
@@ -624,11 +624,11 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.BONE_BLOCK)
     }
 
-    /** 蓝 · 丰饶: **骨粉撒花** —— 对草方块使用骨粉时, 30% 概率额外长出 2 朵随机花
+    /** 绿 · 丰饶: **骨粉撒花** —— 对草方块使用骨粉时, 30% 概率额外长出 2 朵随机花
      *  (交互见 BoneMealFlowerService + BoneMealFlowerMixin) */
     object BoneMealFlowers : PerkDefinition {
         override val id = BoneMealFlowerService.PERK_ID
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.POPPY)
     }

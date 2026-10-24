@@ -406,11 +406,11 @@ object DelverPerks {
         override fun icon() = ItemStack(Items.RED_BED)
     }
 
-    /** 蓝 · 深掘: **切洋葱** —— 手持镐右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换
+    /** 绿 · 深掘: **切洋葱** —— 手持镐右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换
      *  (交互由 OnionCutService 接管; 原版里哭泣的黑曜石无法合成, 只能靠废墟/交易获取) */
     object OnionCut : PerkDefinition {
         override val id = OnionCutService.PERK_ID
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.CRYING_OBSIDIAN)
     }

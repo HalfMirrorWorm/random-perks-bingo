@@ -69,10 +69,10 @@ object ArtisanPerks {
         private const val REMAINING_DURABILITY = 60
     }
 
-    /** 蓝 · 建筑师: 工作台 + 16 原木 + 建材 + 火把 */
+    /** 绿 · 建筑师: 工作台 + 16 原木 + 建材 + 火把 */
     object Builder : PerkDefinition {
         override val id = "artisan_builder"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.CRAFTING_TABLE)
 
@@ -261,10 +261,10 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 匠造: 获得高炉、烟熏炉与营火各一个 */
+    /** 绿 · 匠造: 获得高炉、烟熏炉与营火各一个 */
     object FireTemper : PerkDefinition {
         override val id = "artisan_fire_temper"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.BLAST_FURNACE)
 
@@ -383,10 +383,10 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 匠造: **随身仓库** —— 获得一个潜影盒 (27 格随身存储) */
+    /** 绿 · 匠造: **随身仓库** —— 获得一个潜影盒 (27 格随身存储) */
     object ShulkerBox : PerkDefinition {
         override val id = "artisan_shulker_box"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.SHULKER_BOX)
 
