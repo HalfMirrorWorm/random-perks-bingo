@@ -154,13 +154,13 @@ object DelverPerks {
         // 透视渲染在客户端 (XrayRenderer); 掉落抑制在 XrayDropSuppressMixin
     }
 
-    /** 紫 · 深掘: 用镐子挖方块时, 按**方块所需的镐等级**概率掉落一件随机物品
+    /** 蓝 · 深掘: 用镐子挖方块时, 按**方块所需的镐等级**概率掉落一件随机物品
      *  (需求木/石/铁/钻石镐的方块分别为 0.1% / 0.5% / 1% / 10%); 奖品取自全部原版物品
      *  (**含刷怪蛋**), 只排除纯指令方块/工具与"无组件即废品"的模板物品。
      *  以掉落物形态落地 —— 与"矿脉嗅觉"同范式, 参与透视之眼的惩罚与收藏家的复制等一切掉落物交互。 */
     object LuckyDigger : PerkDefinition {
         override val id = "delver_lucky_digger"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.GOLDEN_PICKAXE)
 

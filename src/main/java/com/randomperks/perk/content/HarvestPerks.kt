@@ -168,10 +168,10 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 丰收之息: 获得 32 胡萝卜 + 锄头(时运III) */
+    /** 蓝 · 丰收之息: 获得 32 胡萝卜 + 锄头(时运III) */
     object Bounty : PerkDefinition {
         override val id = "harvest_bounty"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.CARROT)
 
@@ -183,13 +183,13 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰饶: **吃完一份食物时, 若饱食度已满**, 随机获得一种谜之炖菜的纯正面效果
+    /** 绿 · 丰饶: **吃完一份食物时, 若饱食度已满**, 随机获得一种谜之炖菜的纯正面效果
      *  (时长是原版炖菜的 **2 倍**)。
      *  —— 触发点由 ConsumableBoostMixin 注入原版 ConsumableComponent.finishConsumption,
      *  此时食物已结算完毕 (含"小鸟胃"的翻倍); 判定沿用原版"饱食度满"的标准 (foodLevel >= 20)。 */
     object BountifulMeal : PerkDefinition {
         override val id = "harvest_bountiful_meal"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.SUSPICIOUS_STEW)
 
@@ -419,11 +419,11 @@ object HarvestPerks {
         }
     }
 
-    /** 金 · 唤法: **宝可梦** —— 获得 4 个鸡蛋; 你扔出的鸡蛋砸中非 Boss 生物时,
+    /** 紫 · 唤法: **宝可梦** —— 获得 4 个鸡蛋; 你扔出的鸡蛋砸中非 Boss 生物时,
      *  把它变成对应的刷怪蛋 (生物消失)。实现见 PokemonEggMixin。 */
     object Pokemon : PerkDefinition {
         override val id = "summon_pokemon"
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.EGG)
 
@@ -544,11 +544,11 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 丰收: **叮咚鸡** —— 获得 4 个鸡刷怪蛋; 之后可以用**任意染料**右键**任意**鸡给它染色
+    /** 绿 · 丰饶: **叮咚鸡** —— 获得 4 个鸡刷怪蛋; 之后可以用**任意染料**右键**任意**鸡给它染色
      *  (纯外观, 不影响掉落与行为)。染色逻辑在 [ChickenDyeService]。 */
     object DingDongChicken : PerkDefinition {
         override val id = ChickenDyeService.PERK_ID
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.CHICKEN_SPAWN_EGG)
 
@@ -559,11 +559,11 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 丰收: **渔者之幸** —— 幸运 +8; 钓鱼时额外有 10% 概率多钓一个鹦鹉螺壳。
+    /** 蓝 · **渔者之幸** —— 幸运 +8; 钓鱼时额外有 10% 概率多钓一个鹦鹉螺壳。
      *  幸运本身就会提高宝藏类的权重 (5% → 约 21%), 鹦鹉螺壳是额外的一层。 */
     object LuckyFishing : PerkDefinition {
         override val id = "harvest_lucky_fishing"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.NAUTILUS_SHELL)
 

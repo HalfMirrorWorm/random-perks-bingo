@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **115** 条词条：绿 10 / 蓝 51 / 紫 36 / 金 15 / 神话 3。
+共 **115** 条词条：绿 16 / 蓝 52 / 紫 30 / 金 14 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -47,7 +47,7 @@
 | `delver_haste` | 深层专注 | Deep Focus | 紫 |
 | `delver_vein_scent` | 矿脉嗅觉 | Vein Scent | 紫 |
 | `delver_xray_vision` | 透视之眼 | X-Ray Vision | 金 |
-| `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 紫 |
+| `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 蓝 |
 | `delver_collector` | 收藏家 | Collector | 紫 |
 | `delver_phoenix` | 不死鸟 | Phoenix | 紫 |
 | `delver_onion_cut` | 切洋葱 | Cutting Onions | 绿 |
@@ -64,16 +64,16 @@
 | `harvest_herder` | 牧羊人 | Herder | 蓝 |
 | `harvest_timber` | 樵夫之手 | Timber! | 绿 |
 | `harvest_tree_feller` | 一键伐木 | One-Click Felling | 蓝 |
-| `harvest_bounty` | 丰收之息 | Bounty | 紫 |
-| `harvest_bountiful_meal` | 丰盛大餐 | Bountiful Meal | 蓝 |
+| `harvest_bounty` | 丰收之息 | Bounty | 蓝 |
+| `harvest_bountiful_meal` | 丰盛大餐 | Bountiful Meal | 绿 |
 | `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 蓝 |
 | `harvest_cat_aura` | 哈基米 | Hakimi | 绿 |
 | `harvest_big_stomach` | 大胃袋 | Bottomless Stomach | 紫 |
 | `harvest_yowl` | 老吴!? | Yowl!? | 绿 |
 | `harvest_saplings` | 植岷 | Saplings | 绿 |
 | `harvest_gleaning` | 拾穗 | Gleaning | 绿 |
-| `harvest_dingdong_chicken` | 叮咚鸡 | Ding Dong Chicken | 蓝 |
-| `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 紫 |
+| `harvest_dingdong_chicken` | 叮咚鸡 | Ding Dong Chicken | 绿 |
+| `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 蓝 |
 | `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
 | `harvest_beekeeper` | 采蜜人 | Beekeeper | 蓝 |
 | `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
@@ -96,11 +96,11 @@
 | `hunter_predator` | 我饥饿 | Me Hungry | 紫 |
 | `hunter_headhunter` | SMP玩家 | SMP Player | 紫 |
 | `hunter_veteran` | 老玩家 | Veteran | 金 |
-| `hunter_roly_poly` | 不倒翁 | Roly-Poly | 蓝 |
+| `hunter_roly_poly` | 不倒翁 | Roly-Poly | 绿 |
 | `hunter_homing_bow` | 这不是挂？ | Is This a Hack? | 紫 |
 | `hunter_jockey` | Jockey | Jockey | 金 |
 | `hunter_demon_pact` | 恶魔契约 | Demon Pact | 金 |
-| `hunter_pearl_gauntlet` | 珠光护手 | Pearl Gauntlet | 紫 |
+| `hunter_pearl_gauntlet` | 珠光护手 | Pearl Gauntlet | 蓝 |
 | `hunter_satiation_strike` | 良子冲击 | Satiation Strike | 紫 |
 | `hunter_munitions` | 军火补给 | Munitions Supply | 蓝 |
 | `hunter_bounty_hunter` | 赏金猎人 | Bounty Hunter | 蓝 |
@@ -121,7 +121,7 @@
 | `seeker_puny` | !?区区!? | Puny!? | 蓝 |
 | `seeker_random_ground` | 随机地基 | Random Ground | 蓝 |
 | `seeker_lay_flat` | 开摆 | Lay Flat | 紫 |
-| `seeker_magnet_upgrade` | 磁力升级 | Magnet Upgrade | 蓝 |
+| `seeker_magnet_upgrade` | 磁力升级 | Magnet Upgrade | 绿 |
 | `seeker_old_priest` | 老牧师 | Old Priest | 蓝 |
 | `seeker_warm_archaeology` | 暖水考古 | Warm Water Archaeology | 蓝 |
 
@@ -137,9 +137,9 @@
 | `swift_double_jump` | 二段跳 | Double Jump | 紫 |
 | `swift_ghost_walk` | 幽灵漫步 | Ghost Walk | 金 |
 | `swift_elytra_bond` | 风之翼 | Wings of the Wind | 金 |
-| `swift_life_bucket` | 落地，水 | MLG Water | 蓝 |
+| `swift_life_bucket` | 落地，水 | MLG Water | 绿 |
 | `swift_gura_shark` | 古拉鲨鱼 | Gura Shark | 金 |
-| `swift_omnimovement` | 全向移动 | Omnimovement | 紫 |
+| `swift_omnimovement` | 全向移动 | Omnimovement | 蓝 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_dash` | 冲刺 | Dash | 金 |
 
@@ -148,16 +148,16 @@
 | id | 中文名 | 英文名 | 稀有度 |
 |---|---|---|---|
 | `summon_dragon_tamer` | 驯龙高手 | Dragon Tamer | 金 |
-| `summon_pokemon` | 宝可梦 | Pokemon | 金 |
-| `summon_fireball` | 烈焰喷射 | Ghast Fireball | 紫 |
-| `summon_tnt_throw` | TNT 投手 | TNT Thrower | 紫 |
+| `summon_pokemon` | 宝可梦 | Pokemon | 紫 |
+| `summon_fireball` | 烈焰喷射 | Ghast Fireball | 蓝 |
+| `summon_tnt_throw` | TNT 投手 | TNT Thrower | 蓝 |
 | `summon_horse` | 马来 | Horse, Come | 蓝 |
 | `summon_happy_ghast` | 乐魂 | Happy Ghast | 蓝 |
 | `summon_big_dog` | 大狗嚼 | Big Doggo | 蓝 |
 | `summon_wandering_trader` | 流浪拴绳 | Wandering Leash | 蓝 |
 | `summon_rancher` | 牧场主 | Rancher | 蓝 |
 | `summon_call_lightning` | 引雷术 | Call Lightning | 蓝 |
-| `summon_big_snowball` | 打雪仗 | Snowball Fight | 蓝 |
+| `summon_big_snowball` | 打雪仗 | Snowball Fight | 绿 |
 | `summon_remote_transfer` | 远程传输 | Remote Transfer | 蓝 |
 | `summon_swap` | 何易位 | Swap | 紫 |
 | `summon_boss_egg` | Boss盲盒 | Boss Blind Box | 紫 |

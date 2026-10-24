@@ -478,10 +478,10 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_MAX_HEALTH)
     }
 
-    /** 紫 · 唤法: 获得 16 个火焰弹 —— 手持右键即可像恶魂一样发射火球 (发射逻辑见 FireballService) */
+    /** 蓝 · 唤法: 获得 16 个火焰弹 —— 手持右键即可像恶魂一样发射火球 (发射逻辑见 FireballService) */
     object Fireball : PerkDefinition {
         override val id = "summon_fireball"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.FIRE_CHARGE)
 
@@ -602,10 +602,10 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
     }
 
-    /** 蓝 · 猎杀: **不倒翁** —— 受到的击退效果降低 80% */
+    /** 绿 · 猎杀: **不倒翁** —— 受到的击退效果降低 80% */
     object RolyPoly : PerkDefinition {
         override val id = "hunter_roly_poly"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.IRON_BLOCK)
 
@@ -790,10 +790,10 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 唤法: **打雪仗** —— 获得 32 个雪球; 你扔出的雪球会变大, 命中造成 3 点伤害并击飞目标 */
+    /** 绿 · 唤法: **打雪仗** —— 获得 32 个雪球; 你扔出的雪球会变大, 命中造成 3 点伤害并击飞目标 */
     object BigSnowball : PerkDefinition {
         override val id = "summon_big_snowball"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.SNOWBALL)
 
@@ -814,12 +814,12 @@ object HunterPerks {
         override fun icon() = ItemStack(Items.WITHER_SKELETON_SKULL)
     }
 
-    /** 紫 · 猎杀: **珠光护手** —— 你的每次攻击都会暴击 (伤害 ×1.5 + 暴击粒子);
+    /** 蓝 · 猎杀: **珠光护手** —— 你的每次攻击都会暴击 (伤害 ×1.5 + 暴击粒子);
      *  代价是剑不再能横扫, 并且永久带着**挖掘疲劳 I**。
      *  (暴击由 PearlGauntletMixin 把原版判定条件逐项 redirect 成恒真) */
     object PearlGauntlet : PerkDefinition {
         override val id = "hunter_pearl_gauntlet"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.DIAMOND_SWORD)
 
@@ -861,11 +861,11 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 唤法: **TNT 投手** —— 获得 4 个 TNT; 手持 TNT 右键时改为抛射一枚点燃的 TNT
+    /** 蓝 · 唤法: **TNT 投手** —— 获得 4 个 TNT; 手持 TNT 右键时改为抛射一枚点燃的 TNT
      *  (而非放置方块)。实现见 TntThrowService。 */
     object TntThrow : PerkDefinition {
         override val id = "summon_tnt_throw"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.TNT)
 

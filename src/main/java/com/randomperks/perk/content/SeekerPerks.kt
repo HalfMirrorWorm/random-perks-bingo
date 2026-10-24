@@ -549,11 +549,11 @@ object SeekerPerks {
         override fun onAcquire(ctx: PerkContext) = LayFlatService.start(ctx.player)
     }
 
-    /** 蓝 · 秘藏: **磁力升级** —— 拾取范围扩大到 5 格 (MagnetService 每 0.25 秒扫描一次);
+    /** 绿 · 秘藏: **磁力升级** —— 拾取范围扩大到 5 格 (MagnetService 每 0.25 秒扫描一次);
      *  手持潜影盒 / 末影箱右键可直接打开 (ContainerOpenService)。 */
     object MagnetUpgrade : PerkDefinition {
         override val id = "seeker_magnet_upgrade"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.HOPPER)
     }
