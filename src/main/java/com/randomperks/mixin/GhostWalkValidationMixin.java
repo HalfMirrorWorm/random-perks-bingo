@@ -39,6 +39,8 @@ public class GhostWalkValidationMixin {
             )
     )
     private boolean randomperks$allowGhostWalkThroughBlocks(
+            // @Redirect 的目标方法是非静态方法, 处理器必须在参数 0 接收调用者实例
+            ServerPlayNetworkHandler handler,
             WorldView world,
             Entity entity,
             Box box,
@@ -51,7 +53,7 @@ public class GhostWalkValidationMixin {
             return false;
         }
         // 没有词条: 走原版逻辑
-        return ((GhostWalkValidationInvoker) (Object) this)
+        return ((GhostWalkValidationInvoker) (Object) handler)
                 .randomperks$invokeIsEntityNotCollidingWithBlocks(world, entity, box, newX, newY, newZ);
     }
 }
