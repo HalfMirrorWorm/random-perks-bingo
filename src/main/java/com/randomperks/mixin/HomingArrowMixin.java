@@ -3,13 +3,15 @@ package com.randomperks.mixin;
 import com.randomperks.game.PerkBoostQuery;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -34,7 +37,16 @@ import java.util.WeakHashMap;
  * <p>★ 追踪期间临时开启 {@code noClip}: 原版箭只要路径上碰到方块就会立即
  * {@code setInGround} 并停下, 哪怕目标就在 2 格外的墙角后面 —— 表现出来就是
  * "追踪箭老被旁边的方块挡住"。开启后 {@code Entity.move} 直接位移、不产生方块碰撞,
- * 箭可以穿墙追到锁定目标; 命中实体仍然走正常的 {@code getEntityCollision}。
+ * 箭可以穿墙追到锁定目标。
+ *
+ * <p>★ 但 {@code noClip} 的箭在原版里**不参与实体碰撞**: {@code tick()} 的
+ * {@code bl = !isNoClip()} 为 false 时走的是 {@code setPosition} 分支, 根本不会调用
+ * {@code applyCollision}; 即使调用了, {@code applyCollision} 里也有
+ * {@code !this.noClip} 的检查。所以命中必须由本 mixin 自己做 —— 沿本 tick 的位移线段
+ * 对锁定目标做一次射线检测, 命中后手动调用原版的 {@code hitOrDeflect}。
+ * 以前"把箭挪到目标身上"的写法只会每 tick 把箭拽回目标中心再飞出去 (看起来像绕圈),
+ * 不会造成任何伤害。
+ *
  * 目标丢失 (死亡/被移除/词条被清掉) 时恢复 {@code noClip = false}, 让箭按原版行为落地。
  */
 @Mixin(PersistentProjectileEntity.class)
@@ -54,8 +66,8 @@ public abstract class HomingArrowMixin {
      */
     private static final double TURN_RATE = 1.0;
 
-    /** 目标进入这个距离 (格) 就直接结算为命中 */
-    private static final double FORCE_HIT_RANGE = 3.0;
+    /** 命中检测时目标碰撞箱的额外容差 (格) */
+    private static final double HIT_BOX_MARGIN = 0.3;
 
     /** 速度低于此值视为已落地/停滞, 不再追踪 */
     private static final double MIN_SPEED = 0.05;
@@ -142,11 +154,21 @@ public abstract class HomingArrowMixin {
         //   (弹反 / 爆炸 / 命中回弹) 都会手动置位。
         self.velocityDirty = true;
 
-        // 直接结算: 把箭挪到目标身体中心。本 tick 原版的碰撞检测用的是
-        // getPos() → getPos() + velocity 这条射线, 起点落在目标碰撞箱里就必定判中,
-        // 伤害/药水效果/丢弃箭实体全走正常的 onEntityHit 流程。
-        if (self.squaredDistanceTo(target) <= FORCE_HIT_RANGE * FORCE_HIT_RANGE) {
-            self.setPosition(target.getX(), target.getY() + target.getHeight() * 0.5, target.getZ());
+        // ★ 命中结算 (noClip 的箭原版不做实体碰撞, 原因见类注释):
+        //   沿本 tick 的位移线段 [当前位置, 当前位置 + 速度] 对锁定目标做射线检测。
+        Vec3d from = self.getPos();
+        Vec3d to = from.add(self.getVelocity());
+        Box hitBox = target.getBoundingBox().expand(HIT_BOX_MARGIN);
+        Optional<Vec3d> hitPos = hitBox.raycast(from, to);
+        if (hitPos.isPresent() || hitBox.contains(from)) {
+            // hitOrDeflect 是 ProjectileEntity 上的 protected 方法, 通过 @Invoker 调用
+            // (箭实体一定实现了这个接口)
+            ((ProjectileHitInvoker) self).randomperks$invokeHitOrDeflect(
+                    new EntityHitResult(target, hitPos.orElse(from))
+            );
+            // 命中或弹反后都不再追踪 —— 否则下一 tick 又会把箭拽回目标,
+            // 被盾弹反的箭会反复撞盾。
+            stopTracking(self);
         }
     }
 
