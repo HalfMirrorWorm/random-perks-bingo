@@ -212,6 +212,12 @@ object DragonTamerService {
         if (ride.manualControl) ride.mob.setAiDisabled(ride.previousAiDisabled)
     }
 
+    /** 该玩家当前是否在手动操控这只生物 (供 MobEntity.getControllingPassenger 的 mixin 判定) */
+    fun isManualRide(rider: ServerPlayerEntity, mob: MobEntity): Boolean {
+        val ride = active[rider.uuid] ?: return false
+        return ride.manualControl && ride.mob === mob
+    }
+
     /** 手动驱动坐骑: 朝向跟随骑手, WASD 给水平速度, 跳跃/飞行给垂直速度 */
     private fun drive(rider: ServerPlayerEntity, mob: MobEntity) {
         val input = rider.playerInput
