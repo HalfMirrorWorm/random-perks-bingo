@@ -393,10 +393,10 @@ object SummonPerks {
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
-    /** 金 · 唤法: **Boss盲盒** —— 随机获得一个 Boss 刷怪蛋 */
+    /** 紫 · 唤法: **Boss盲盒** —— 随机获得一个 Boss 刷怪蛋 */
     object BossEgg : PerkDefinition {
         override val id = "summon_boss_egg"
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.ENDER_DRAGON_SPAWN_EGG)
 
