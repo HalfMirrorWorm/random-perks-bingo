@@ -14,6 +14,8 @@
     "ServerWorldAccessor",
     "WanderingTraderManagerInvoker",
     "ProjectileHitInvoker",
+    "GhostWalkValidationMixin",
+    "GhostWalkValidationInvoker",
     "LivingEntityJumpVelocityInvoker",
     "WindStrideMixin",
     "PlayerLandingMixin",
