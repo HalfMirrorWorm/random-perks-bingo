@@ -12,6 +12,7 @@ import com.randomperks.state.PerkStateManager
 import com.randomperks.state.PlayerPerkState
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.text.TranslatableTextContent
 import net.minecraft.util.Formatting
 
 /**
@@ -118,6 +119,20 @@ object PerkOfferService {
             } ?: emptyList()
 
             val team = other.scoreboardTeam
+            // 队伍名在 bingo 里是可翻译文本 (如 bingo.team.red); 直接取 .string 会在服务端
+            // 按服务端语言解析成英文, 客户端就永远看到 "Red"。这里把 key 一起发过去,
+            // 让客户端按玩家自己的语言显示 (红队 / Red)。
+            // 临时队伍的名字是 "队伍：%s" 这种带 1 个参数的形式, 参数也一并带上。
+            val teamNameText = team?.displayName?.content as? TranslatableTextContent
+            val teamNameKey: String
+            val teamNameArg: String
+            if (teamNameText != null && teamNameText.args.size <= 1) {
+                teamNameKey = teamNameText.key
+                teamNameArg = teamNameText.args.firstOrNull()?.toString() ?: ""
+            } else {
+                teamNameKey = ""
+                teamNameArg = ""
+            }
 
             PlayerPerkList(
                 other.uuid,
@@ -130,6 +145,8 @@ object PerkOfferService {
                     .map { it.id },
                 team?.name ?: "",
                 team?.displayName?.string ?: "",
+                teamNameKey,
+                teamNameArg,
                 team?.color?.colorValue ?: 0xFFFFFF,
             )
         }

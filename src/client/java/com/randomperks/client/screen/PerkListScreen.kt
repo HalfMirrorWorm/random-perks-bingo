@@ -6,6 +6,7 @@ import com.randomperks.network.PlayerPerkList
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.Text
 
 /**
@@ -101,6 +102,10 @@ class PerkListScreen(
             val first = players[members.first()]
             val name = when {
                 id.isEmpty() -> Text.translatable("random-perks-bingo.list.no_team")
+                // 服务端传来的队伍名是已按服务端语言解析后的文本 (通常是英文),
+                // 这里优先用翻译 key 在客户端按当前语言重新解析。
+                first.teamNameKey.isNotEmpty() ->
+                    localizedTeamName(first.teamNameKey, first.teamNameArg, first.teamName)
                 first.teamName.isNotEmpty() -> Text.literal(first.teamName)
                 else -> Text.literal(id)
             }
@@ -111,6 +116,12 @@ class PerkListScreen(
             }
             TeamGroup(id, name, color, members)
         }
+    }
+
+    /** 用翻译 key 按客户端语言重新解析队伍名; 没有对应翻译时退回服务端给的文本 */
+    private fun localizedTeamName(key: String, arg: String, fallback: String): Text {
+        if (!I18n.hasTranslation(key)) return Text.literal(fallback.ifEmpty { key })
+        return if (arg.isNotEmpty()) Text.translatable(key, arg) else Text.translatable(key)
     }
 
     /** 上行队伍父 tab; 下行只显示当前队伍成员的名字 tab */

@@ -129,8 +129,12 @@ data class PlayerPerkList(
     val pendingPerkIds: List<String> = emptyList(),
     /** 所属队伍的内部 id (无队伍为空串) */
     val teamId: String = "",
-    /** 队伍显示名 (无队伍为空串) */
+    /** 队伍显示名 (无队伍为空串)。注意: 这是服务端已解析的文本, 通常固定为英文 */
     val teamName: String = "",
+    /** 队伍显示名的翻译 key (如 bingo.team.red); 客户端据此按自己的语言显示 */
+    val teamNameKey: String = "",
+    /** 翻译 key 的唯一参数 (如临时队伍的编号; 无参数为空串) */
+    val teamNameArg: String = "",
     /** 队伍颜色的 RGB 值 (无队伍时白色) */
     val teamColor: Int = 0xFFFFFF,
 )
@@ -145,6 +149,8 @@ private fun writePlayerLists(buf: RegistryByteBuf, lists: List<PlayerPerkList>) 
         for (id in list.pendingPerkIds) buf.writeString(id)
         buf.writeString(list.teamId)
         buf.writeString(list.teamName)
+        buf.writeString(list.teamNameKey)
+        buf.writeString(list.teamNameArg)
         buf.writeInt(list.teamColor)
     }
 }
@@ -161,8 +167,12 @@ private fun readPlayerLists(buf: RegistryByteBuf): List<PlayerPerkList> {
         repeat(pendingSize) { pending.add(buf.readString()) }
         val teamId = buf.readString()
         val teamName = buf.readString()
+        val teamNameKey = buf.readString()
+        val teamNameArg = buf.readString()
         val teamColor = buf.readInt()
-        result.add(PlayerPerkList(uuid, name, perks, pending, teamId, teamName, teamColor))
+        result.add(
+            PlayerPerkList(uuid, name, perks, pending, teamId, teamName, teamNameKey, teamNameArg, teamColor)
+        )
     }
     return result
 }
