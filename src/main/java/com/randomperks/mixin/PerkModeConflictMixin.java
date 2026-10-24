@@ -5,7 +5,6 @@ import kotlin.reflect.KMutableProperty1;
 import me.jfenn.bingo.common.card.BingoCard;
 import me.jfenn.bingo.common.options.BingoCardOptions;
 import me.jfenn.bingo.common.options.OptionsService;
-import net.minecraft.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,8 +27,6 @@ public class PerkModeConflictMixin {
 
     private static final Logger LOG = LoggerFactory.getLogger("random-perks-bingo/mode-conflict");
 
-    private static final String KEY_CONFLICT = "random-perks-bingo.menu.perks.conflict.perk";
-
     @Inject(method = "toggleCardMode", at = @At("TAIL"))
     private void randomperks$enforceModeConflict(
             OptionsService.Context ctx,
@@ -47,12 +44,6 @@ public class PerkModeConflictMixin {
 
             PerkConfig.INSTANCE.set(false);
             LOG.info("[RandomPerks] inventory mode enabled → perk system disabled (conflict)");
-
-            if (ctx != null && ctx.getPlayer() != null) {
-                ctx.getPlayer().getPlayer().sendMessage(
-                        Text.translatable(KEY_CONFLICT), false
-                );
-            }
         } catch (Throwable t) {
             // 冲突处理失败绝不能影响 bingo 自己的选项逻辑
             LOG.error("[RandomPerks] failed to enforce perk/inventory mode conflict", t);
