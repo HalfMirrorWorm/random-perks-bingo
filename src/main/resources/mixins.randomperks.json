@@ -14,8 +14,6 @@
     "ServerWorldAccessor",
     "WanderingTraderManagerInvoker",
     "ProjectileHitInvoker",
-    "GhostWalkValidationMixin",
-    "GhostWalkValidationInvoker",
     "LivingEntityJumpVelocityInvoker",
     "WindStrideMixin",
     "PlayerLandingMixin",
@@ -51,8 +49,7 @@
     "BoneMealFlowerMixin",
     "TemperingAnvilBlockMixin",
     "TemperingAnvilUseMixin",
-    "ForgingScreenHandlerAccessor",
-    "PhaseWalkMixin"
+    "ForgingScreenHandlerAccessor"
   ],
   "client": [
     "EntityGlowMixin",

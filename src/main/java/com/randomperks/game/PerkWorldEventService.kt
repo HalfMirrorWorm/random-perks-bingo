@@ -105,13 +105,6 @@ object PerkWorldEventService {
             FungalInfectionService.handleAttack(attacker, victim)
         }
 
-        // "幽灵漫步": 免疫墙体挤压 (窒息) 伤害
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register { entity, source, _ ->
-            !(entity is ServerPlayerEntity &&
-                source.isOf(DamageTypes.IN_WALL) &&
-                PerkBoostQuery.hasGhostWalk(entity))
-        }
-
         // 受到生物伤害 → "刺猬": 把 75% 伤害反弹给攻击者
         ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
             if (damageTaken <= 0.0f) return@register
