@@ -65,9 +65,6 @@ public class PerkMenuToggleMixin {
 
     private static final String KEY_NAME = "random-perks-bingo.menu.perks.name";
     private static final String KEY_TOOLTIP = "random-perks-bingo.menu.perks.tooltip";
-    private static final String KEY_STATE_ON = "random-perks-bingo.menu.perks.state.on";
-    private static final String KEY_STATE_OFF = "random-perks-bingo.menu.perks.state.off";
-    private static final String KEY_CONFLICT_TOOLTIP = "random-perks-bingo.menu.perks.conflict.tooltip";
 
     /** 「特性」按钮: 从整行挪到第三行右格 */
     @ModifyArg(
@@ -111,14 +108,11 @@ public class PerkMenuToggleMixin {
         TextProvider text = component.getText();
 
         IText label = text.translatable(KEY_NAME, "随机词条");
-        boolean enabled = PerkConfig.INSTANCE.getEnabled();
 
+        // 与其他模式按钮一致: 标题 + 一行说明
         List<IText> tooltip = List.of(
                 text.translatable(KEY_NAME, "随机词条").formatted(Formatting.GREEN),
-                text.translatable(enabled ? KEY_STATE_ON : KEY_STATE_OFF,
-                        enabled ? "当前: 已启用" : "当前: 已禁用"),
-                text.translatable(KEY_TOOLTIP, "开启或关闭词条系统 (下一局生效)"),
-                text.translatable(KEY_CONFLICT_TOOLTIP, "与物品占领模式互斥: 开启词条会关闭物品占领模式")
+                text.translatable(KEY_TOOLTIP, "当团队完成格子或连线时，可以三选一词条效果")
         );
 
         ButtonKt.registerIconButton(

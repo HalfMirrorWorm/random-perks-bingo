@@ -369,7 +369,7 @@
   "random-perks-bingo.perk.seeker_puny.desc": "选择任意一名玩家, 他获得随机一种矿物 4 个, 并在 2 分钟内每 6 秒在他 5 格内生成一只蠹虫。",
   "random-perks-bingo.menu.perks.title": "词条",
   "random-perks-bingo.menu.perks.name": "随机词条",
-  "random-perks-bingo.menu.perks.tooltip": "开启或关闭词条系统 (下一局生效)",
+  "random-perks-bingo.menu.perks.tooltip": "当团队完成格子或连线时，可以三选一词条效果",
   "random-perks-bingo.menu.perks.state.on": "当前: 已启用",
   "random-perks-bingo.menu.perks.state.off": "当前: 已禁用",
   "random-perks-bingo.menu.perks.enabled": "[RandomPerks] 词条系统已启用 —— 将于【下一局】生效",

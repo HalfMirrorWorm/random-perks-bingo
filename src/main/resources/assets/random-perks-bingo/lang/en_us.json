@@ -369,7 +369,7 @@
   "random-perks-bingo.perk.seeker_puny.desc": "Choose any player: they get 4 of a random mineral, plus a silverfish within 5 blocks every 6s for 2 min.",
   "random-perks-bingo.menu.perks.title": "Perks",
   "random-perks-bingo.menu.perks.name": "Perks",
-  "random-perks-bingo.menu.perks.tooltip": "Enable or disable the perk system (applies next round)",
+  "random-perks-bingo.menu.perks.tooltip": "When your team completes a cell or a line, choose one of three perks",
   "random-perks-bingo.menu.perks.state.on": "Current: enabled",
   "random-perks-bingo.menu.perks.state.off": "Current: disabled",
   "random-perks-bingo.menu.perks.enabled": "[RandomPerks] Perk system enabled — applies next round",
