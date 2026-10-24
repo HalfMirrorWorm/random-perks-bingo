@@ -97,7 +97,6 @@
 | `hunter_headhunter` | SMP玩家 | SMP Player | 紫 |
 | `hunter_veteran` | 老玩家 | Veteran | 金 |
 | `hunter_roly_poly` | 不倒翁 | Roly-Poly | 蓝 |
-| `hunter_easy_nuke` | 核电轻而易举 | Easy Nuke | 蓝 |
 | `hunter_homing_bow` | 这不是挂？ | Is This a Hack? | 紫 |
 | `hunter_jockey` | Jockey | Jockey | 金 |
 | `hunter_demon_pact` | 恶魔契约 | Demon Pact | 金 |
@@ -163,6 +162,7 @@
 | `summon_swap` | 何易位 | Swap | 紫 |
 | `summon_boss_egg` | Boss盲盒 | Boss Blind Box | 紫 |
 | `summon_insomnia` | 失眠 | Insomnia | 蓝 |
+| `hunter_easy_nuke` | 核电轻而易举 | Easy Nuke | 蓝 |
 
 ## 神话 MYTHIC（全局唯一）
 

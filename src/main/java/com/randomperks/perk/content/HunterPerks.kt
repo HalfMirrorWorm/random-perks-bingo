@@ -625,12 +625,12 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK)
     }
 
-    /** 蓝 · 猎杀: **核电轻而易举** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后**在他头顶**生成一只
+    /** 蓝 · 唤法: **核电轻而易举** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后**在他头顶**生成一只
      *  **高亮显示的闪电苦力怕** (charged creeper), 并直接让它仇恨该玩家 */
     object Nuclear : PerkDefinition {
         override val id = "hunter_easy_nuke"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.HUNTER
+        override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.CREEPER_HEAD)
 
         override val isOneTime = true
