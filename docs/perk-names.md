@@ -35,6 +35,8 @@
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
 | `artisan_nya_axe` | 喵人斧 | Nya Axe | 紫 |
 | `artisan_midas_touch` | 点石成金 | Midas Touch | 蓝 |
+| `delver_toughness` | 坚韧 | Toughness | 蓝 |
+| `delver_iron_skin` | 皇帝新衣 | Emperor's New Clothes | 蓝 |
 
 ## 深掘 DELVER
 
@@ -42,10 +44,8 @@
 |---|---|---|---|
 | `delver_mining` | 矿工手腕 | Miner's Wrist | 蓝 |
 | `delver_night_vision` | 地下视野 | Underground Sight | 蓝 |
-| `delver_toughness` | 坚韧 | Toughness | 蓝 |
 | `delver_haste` | 深层专注 | Deep Focus | 紫 |
 | `delver_vein_scent` | 矿脉嗅觉 | Vein Scent | 紫 |
-| `delver_iron_skin` | 皇帝新衣 | Emperor's New Clothes | 蓝 |
 | `delver_xray_vision` | 透视之眼 | X-Ray Vision | 金 |
 | `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 紫 |
 | `delver_collector` | 收藏家 | Collector | 紫 |

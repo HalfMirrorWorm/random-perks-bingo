@@ -63,11 +63,11 @@ object DelverPerks {
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.NIGHT_VISION)
     }
 
-    /** 蓝 · 坚韧: 抗性提升 I */
+    /** 蓝 · 匠造: 抗性提升 I */
     object Toughness : PerkDefinition {
         override val id = "delver_toughness"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.DELVER
+        override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.SHIELD)
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
@@ -114,11 +114,11 @@ object DelverPerks {
         }
     }
 
-    /** 蓝 · 深掘: 未穿护甲时获得 +7 护甲值 (鞘翅不算护甲) */
+    /** 蓝 · 匠造: 未穿护甲时获得 +7 护甲值 (鞘翅不算护甲) */
     object IronSkin : PerkDefinition {
         override val id = "delver_iron_skin"
         override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.DELVER
+        override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.IRON_CHESTPLATE)
 
         private val MOD_IRON_SKIN = Identifier.of("random-perks-bingo", "delver_iron_skin")
