@@ -111,11 +111,11 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 丰饶: **一键伐木** —— 手持斧破坏原木时, 一键砍倒整棵相连的同种树
+    /** 蓝 · 丰饶: **一键伐木** —— 手持斧破坏原木时, 一键砍倒整棵相连的同种树
      *  (最多 128 块; 额外每块消耗 1 点耐久; 掉落统一在原木位置结算)。 */
     object TreeFeller : PerkDefinition {
         override val id = "harvest_tree_feller"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.IRON_AXE)
 
