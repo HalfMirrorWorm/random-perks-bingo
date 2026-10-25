@@ -18,6 +18,7 @@
     "DragonTamerVehicleMoveMixin",
     "ReviveArmorMixin",
     "SmallDamageGuardMixin",
+    "VillagerFillRecipesInvoker",
     "LivingEntityJumpVelocityInvoker",
     "WindStrideMixin",
     "PlayerLandingMixin",

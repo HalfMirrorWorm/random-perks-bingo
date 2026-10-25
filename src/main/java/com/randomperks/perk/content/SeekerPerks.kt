@@ -5,6 +5,7 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
+import com.randomperks.game.SavageMagicService
 import com.randomperks.game.StealService
 import com.randomperks.game.VerminSwarmService
 import com.randomperks.game.WarmArchaeologyService
@@ -684,6 +685,21 @@ object SeekerPerks {
         }
     }
 
+    /** 紫 · 秘藏: **野人魔了** —— 获得 10 个绿宝石;
+     *  手持职业方块右键傻子村民, 消耗方块把他变成该职业的大师级村民 */
+    object SavageMagic : PerkDefinition {
+        override val id = SavageMagicService.PERK_ID
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.VILLAGER_SPAWN_EGG)
+
+        private const val EMERALDS = 10
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.EMERALD, EMERALDS))
+        }
+    }
+
     /** 蓝 · 秘藏: **村庄英雄** —— 永久获得村庄英雄效果 */
     object VillageHero : PerkDefinition {
         override val id = "seeker_village_hero"
@@ -718,5 +734,6 @@ object SeekerPerks {
         PerkRegistry.register(MagnetUpgrade)
         PerkRegistry.register(WarmArchaeology)
         PerkRegistry.register(VillageHero)
+        PerkRegistry.register(SavageMagic)
     }
 }

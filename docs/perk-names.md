@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **122** 条词条：绿 16 / 蓝 53 / 紫 33 / 金 17 / 神话 3。
+共 **123** 条词条：绿 16 / 蓝 53 / 紫 34 / 金 17 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -130,6 +130,7 @@
 | `seeker_old_priest` | 老牧师 | Old Priest | 蓝 |
 | `seeker_warm_archaeology` | 暖水考古 | Warm Water Archaeology | 蓝 |
 | `seeker_village_hero` | 村庄英雄 | Hero of the Village | 蓝 |
+| `seeker_savage_magic` | 野人魔了 | Savage Magic | 紫 |
 
 ## 迅捷 SWIFT
 

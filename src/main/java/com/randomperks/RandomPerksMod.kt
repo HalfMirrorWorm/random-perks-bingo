@@ -14,6 +14,7 @@ import com.randomperks.game.PerkTickService
 import com.randomperks.game.PigMorphService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
+import com.randomperks.game.SavageMagicService
 import com.randomperks.game.SummonedHorseService
 import com.randomperks.game.TntThrowService
 import com.randomperks.game.VerminSwarmService
@@ -62,6 +63,9 @@ object RandomPerksMod : ModInitializer {
 
         // "驯龙高手": 骑乘其他生物并控制它们使用能力
         DragonTamerService.register()
+
+        // "野人魔了": 职业方块把傻子村民变成大师级村民
+        SavageMagicService.register()
 
         // 神话词条的创造闪光调度
         CreativeFlashService.register()

@@ -296,4 +296,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"不痛不痒" */
     fun hasSmallDamageGuard(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("artisan_barely_a_scratch") == true
+
+    // ---- "野人魔了" (紫): 职业方块把傻子村民变成大师级村民 ----
+
+    /** 玩家是否持有"野人魔了" */
+    fun hasSavageMagic(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk(SavageMagicService.PERK_ID) == true
 }
