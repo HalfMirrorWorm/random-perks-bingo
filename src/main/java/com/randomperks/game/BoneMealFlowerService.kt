@@ -10,7 +10,7 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 
 /**
- * "骨粉撒花" —— 对**草方块**使用骨粉时, 有 30% 概率在周围额外长出 2 朵随机花。
+ * "骨粉撒花" —— 对**草方块**使用骨粉时, 在周围额外长出 2 朵随机花 (必定触发)。
  *
  * 只认草方块 (对作物 / 花 / 苔藓等使用骨粉不触发); 附近找不到可放置的位置时,
  * 剩余的花会直接以掉落物形式掉在骨粉使用的位置。
@@ -18,9 +18,6 @@ import net.minecraft.util.math.BlockPos
 object BoneMealFlowerService {
 
     const val PERK_ID = "harvest_bone_meal_flowers"
-
-    /** 触发概率 */
-    private const val CHANCE = 0.30f
 
     /** 额外长出的花的数量 */
     private const val FLOWER_COUNT = 2
@@ -48,7 +45,6 @@ object BoneMealFlowerService {
         if (!PerkSession.isEnabled()) return
         if (!PerkBoostQuery.hasBoneMealFlowers(player)) return
         if (!world.getBlockState(pos).isOf(Blocks.GRASS_BLOCK)) return
-        if (world.random.nextFloat() >= CHANCE) return
 
         val random = world.random
         var placed = 0

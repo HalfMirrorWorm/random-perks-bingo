@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * "骨粉撒花"词条: 骨粉催草成功后, 交给 [BoneMealFlowerService] 决定是否额外长出随机花。
+ * "骨粉撒花"词条: 骨粉催草成功后, 交给 [BoneMealFlowerService] 额外长出随机花。
  */
 @Mixin(BoneMealItem.class)
 public class BoneMealFlowerMixin {

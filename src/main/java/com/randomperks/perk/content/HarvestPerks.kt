@@ -656,7 +656,7 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.BONE_BLOCK)
     }
 
-    /** 绿 · 丰饶: **骨粉撒花** —— 对草方块使用骨粉时, 30% 概率额外长出 2 朵随机花
+    /** 绿 · 丰饶: **骨粉撒花** —— 对草方块使用骨粉时, 额外长出 2 朵随机花
      *  (交互见 BoneMealFlowerService + BoneMealFlowerMixin) */
     object BoneMealFlowers : PerkDefinition {
         override val id = BoneMealFlowerService.PERK_ID

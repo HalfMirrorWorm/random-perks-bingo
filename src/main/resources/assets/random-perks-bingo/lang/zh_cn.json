@@ -297,7 +297,7 @@
   "random-perks-bingo.perk.harvest_kelp_to_bone.name": "海带成骨",
   "random-perks-bingo.perk.harvest_kelp_to_bone.desc": "右键干海带块可以把它变成骨块。",
   "random-perks-bingo.perk.harvest_bone_meal_flowers.name": "骨粉撒花",
-  "random-perks-bingo.perk.harvest_bone_meal_flowers.desc": "对草方块使用骨粉时, 有 30% 概率额外长出 2 朵随机花。",
+  "random-perks-bingo.perk.harvest_bone_meal_flowers.desc": "对草方块使用骨粉时, 额外长出 2 朵随机花。",
   "random-perks-bingo.perk.hunter_veteran.name": "老玩家",
   "random-perks-bingo.perk.hunter_veteran.desc": "你的剑变为 1.9 版本以前的剑。",
   "random-perks-bingo.perk.hunter_roly_poly.name": "不倒翁",
