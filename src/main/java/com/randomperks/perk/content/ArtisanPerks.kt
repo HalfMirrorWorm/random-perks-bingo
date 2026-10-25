@@ -448,10 +448,10 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.GOLD_BLOCK)
     }
 
-    /** 紫 · 匠造: **复活甲** —— 受到致命伤害时自动触发一次不死图腾效果 (冷却 20 分钟) */
+    /** 金 · 匠造: **复活甲** —— 受到致命伤害时自动触发一次不死图腾效果 (冷却 20 分钟) */
     object ReviveArmor : PerkDefinition {
         override val id = ReviveArmorService.PERK_ID
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.TOTEM_OF_UNDYING)
     }
