@@ -525,10 +525,10 @@ object HarvestPerks {
         }
     }
 
-    /** 绿 · 丰饶: **饱食终日** —— 每 30 秒获得 7 秒的饱和效果 */
+    /** 紫 · 丰饶: **饱食终日** —— 每 30 秒获得 7 秒的饱和效果 */
     object WellFed : PerkDefinition {
         override val id = "harvest_well_fed"
-        override val rarity = PerkRarity.GREEN
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.GOLDEN_CARROT)
 
