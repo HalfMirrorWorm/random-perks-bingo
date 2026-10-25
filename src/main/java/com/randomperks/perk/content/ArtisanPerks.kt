@@ -3,6 +3,7 @@ package com.randomperks.perk.content
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.MidasTouchService
 import com.randomperks.game.PerkSession
+import com.randomperks.game.ReviveArmorService
 import com.randomperks.game.TemperingAnvilService
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
@@ -447,6 +448,14 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.GOLD_BLOCK)
     }
 
+    /** 紫 · 匠造: **复活甲** —— 受到致命伤害时自动触发一次不死图腾效果 (冷却 20 分钟) */
+    object ReviveArmor : PerkDefinition {
+        override val id = ReviveArmorService.PERK_ID
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.TOTEM_OF_UNDYING)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -462,5 +471,6 @@ object ArtisanPerks {
         PerkRegistry.register(Tempering)
         PerkRegistry.register(NyaAxe)
         PerkRegistry.register(MidasTouch)
+        PerkRegistry.register(ReviveArmor)
     }
 }

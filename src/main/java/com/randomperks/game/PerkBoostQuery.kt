@@ -251,4 +251,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"刺猬" */
     fun hasHedgehog(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_hedgehog") == true
+
+    // ---- "复活甲" (紫): 致命伤害时自动触发不死图腾 ----
+
+    /** 玩家是否持有"复活甲" */
+    fun hasReviveArmor(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk(ReviveArmorService.PERK_ID) == true
 }

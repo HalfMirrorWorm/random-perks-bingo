@@ -269,6 +269,8 @@
   "random-perks-bingo.perk.artisan_nya_axe.desc": "获得一把昂贵的秒人斧。",
   "random-perks-bingo.perk.artisan_midas_touch.name": "点石成金",
   "random-perks-bingo.perk.artisan_midas_touch.desc": "右键镶金黑石, 把它变成金块。",
+  "random-perks-bingo.perk.artisan_revive_armor.name": "复活甲",
+  "random-perks-bingo.perk.artisan_revive_armor.desc": "受到致命伤害时，自动触发一次不死图腾效果（冷却 20 分钟）。",
   "random-perks-bingo.perk.summon_remote_transfer.name": "远程传输",
   "random-perks-bingo.perk.summon_remote_transfer.desc": "在词条列表点击使用, 选择一名队友, 再从物品栏里挑选 4 格物品传送给他。",
   "random-perks-bingo.perk.summon_boss_egg.name": "Boss盲盒",

@@ -16,6 +16,7 @@
     "ProjectileHitInvoker",
     "DragonTamerMountMixin",
     "DragonTamerVehicleMoveMixin",
+    "ReviveArmorMixin",
     "LivingEntityJumpVelocityInvoker",
     "WindStrideMixin",
     "PlayerLandingMixin",
