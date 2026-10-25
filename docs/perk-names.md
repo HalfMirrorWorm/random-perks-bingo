@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **117** 条词条：绿 16 / 蓝 52 / 紫 29 / 金 17 / 神话 3。
+共 **118** 条词条：绿 16 / 蓝 53 / 紫 29 / 金 17 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -36,6 +36,7 @@
 | `artisan_nya_axe` | 喵人斧 | Nya Axe | 金 |
 | `artisan_midas_touch` | 点石成金 | Midas Touch | 蓝 |
 | `artisan_revive_armor` | 复活甲 | Revive Armor | 金 |
+| `artisan_barely_a_scratch` | 不痛不痒 | Barely a Scratch | 蓝 |
 | `delver_toughness` | 坚韧 | Toughness | 蓝 |
 | `delver_iron_skin` | 皇帝新衣 | Emperor's New Clothes | 蓝 |
 

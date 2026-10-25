@@ -263,4 +263,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"忠心护主" */
     fun hasLoyalGuard(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk(LoyalGuardService.PERK_ID) == true
+
+    // ---- "不痛不痒" (蓝): 5 点及以下伤害改为 1 点 ----
+
+    /** 玩家是否持有"不痛不痒" */
+    fun hasSmallDamageGuard(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("artisan_barely_a_scratch") == true
 }

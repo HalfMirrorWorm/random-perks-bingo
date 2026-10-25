@@ -458,6 +458,14 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.GOLD_BLOCK)
     }
 
+    /** 蓝 · 匠造: **不痛不痒** —— 最终伤害在 2~5 点时改为只受 1 点 (由 SmallDamageGuardMixin 实现) */
+    object BarelyAScratch : PerkDefinition {
+        override val id = "artisan_barely_a_scratch"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.SHIELD)
+    }
+
     /** 金 · 匠造: **复活甲** —— 受到致命伤害时自动触发一次不死图腾效果 (冷却 20 分钟) */
     object ReviveArmor : PerkDefinition {
         override val id = ReviveArmorService.PERK_ID
@@ -482,5 +490,6 @@ object ArtisanPerks {
         PerkRegistry.register(NyaAxe)
         PerkRegistry.register(MidasTouch)
         PerkRegistry.register(ReviveArmor)
+        PerkRegistry.register(BarelyAScratch)
     }
 }

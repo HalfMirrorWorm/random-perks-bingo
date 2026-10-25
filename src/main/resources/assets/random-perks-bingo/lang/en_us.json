@@ -276,6 +276,8 @@
   "random-perks-bingo.perk.artisan_midas_touch.desc": "Right-click gilded blackstone to turn it into a gold block.",
   "random-perks-bingo.perk.artisan_revive_armor.name": "Revive Armor",
   "random-perks-bingo.perk.artisan_revive_armor.desc": "When you take fatal damage, automatically trigger a Totem of Undying effect (20-minute cooldown).",
+  "random-perks-bingo.perk.artisan_barely_a_scratch.name": "Barely a Scratch",
+  "random-perks-bingo.perk.artisan_barely_a_scratch.desc": "When you take 5 damage or less, you only take 1 damage instead.",
   "random-perks-bingo.perk.summon_remote_transfer.name": "Remote Transfer",
   "random-perks-bingo.perk.summon_remote_transfer.desc": "Activate from the perk list, choose a teammate, then pick 4 item slots from your inventory to send.",
   "random-perks-bingo.perk.summon_boss_egg.name": "Boss Blind Box",
