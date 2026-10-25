@@ -365,7 +365,7 @@
   "random-perks-bingo.perk.hunter_hedgehog.name": "Hedgehog",
   "random-perks-bingo.perk.hunter_hedgehog.desc": "When another mob damages you, the attacker takes 75% of that damage as reflected damage.",
   "random-perks-bingo.perk.harvest_fungal_infection.name": "Fungal Infection",
-  "random-perks-bingo.perk.harvest_fungal_infection.desc": "When you hit an enemy player, 2 random items in their inventory turn into lush cave items (5s cooldown).",
+  "random-perks-bingo.perk.harvest_fungal_infection.desc": "When you hit an enemy player, 2 random items in their inventory turn into lush cave items (5s cooldown); every 1m45s, 1 slot in your own inventory (excluding the hotbar) also turns into a lush cave item.",
   "random-perks-bingo.perk.harvest_slow_chewing.name": "Slow Chewing",
   "random-perks-bingo.perk.harvest_slow_chewing.desc": "While eating food, you take 65% less damage.",
   "random-perks-bingo.perk.delver_carefree_sleep.name": "Carefree Sleep",

@@ -672,6 +672,25 @@ object HarvestPerks {
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.SPORE_BLOSSOM)
+
+        /** 自身感染间隔: 1 分 45 秒 */
+        private const val SELF_INTERVAL_SECONDS = 105
+
+        private const val SELF_TIMER_KEY = "fungal_self_seconds"
+
+        override fun onAcquire(ctx: PerkContext) {
+            ctx.state.memory[SELF_TIMER_KEY] = "0"
+        }
+
+        override fun onTick(ctx: PerkContext) {
+            val seconds = (ctx.state.memory[SELF_TIMER_KEY]?.toIntOrNull() ?: 0) + 1
+            if (seconds < SELF_INTERVAL_SECONDS) {
+                ctx.state.memory[SELF_TIMER_KEY] = seconds.toString()
+                return
+            }
+            ctx.state.memory[SELF_TIMER_KEY] = "0"
+            FungalInfectionService.corruptOwnBackpack(ctx.player)
+        }
     }
 
     /** 紫 · 丰饶: **细嚼慢咽** —— 进食食物期间, 受到的伤害 -65%
