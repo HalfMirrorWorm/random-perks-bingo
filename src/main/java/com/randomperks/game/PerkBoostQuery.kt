@@ -302,4 +302,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"野人魔了" */
     fun hasSavageMagic(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk(SavageMagicService.PERK_ID) == true
+
+    // ---- "盘丝大仙" (绿): 受到你伤害的蜘蛛获得织网效果 ----
+
+    /** 玩家是否持有"盘丝大仙" */
+    fun hasSpiderWeaving(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_spider_weaving") == true
 }

@@ -17,6 +17,7 @@ import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.damage.DamageTypes
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.entity.mob.SpiderEntity
 import net.minecraft.entity.passive.AbstractHorseEntity
 import net.minecraft.entity.passive.ChickenEntity
 import net.minecraft.item.Item
@@ -103,6 +104,15 @@ object PerkWorldEventService {
             val victim = entity as? ServerPlayerEntity ?: return@register
             val attacker = source.attacker as? ServerPlayerEntity ?: return@register
             FungalInfectionService.handleAttack(attacker, victim)
+        }
+
+        // 受到玩家伤害 → "盘丝大仙": 蜘蛛获得 5 秒盘丝 (织网) 效果
+        ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
+            if (damageTaken <= 0.0f) return@register
+            val spider = entity as? SpiderEntity ?: return@register
+            val attacker = source.attacker as? ServerPlayerEntity ?: return@register
+            if (!PerkBoostQuery.hasSpiderWeaving(attacker)) return@register
+            spider.addStatusEffect(StatusEffectInstance(StatusEffects.WEAVING, 5 * 20, 0))
         }
 
         // 受到伤害 → "忠心护主": 由附近属于该玩家的宠物承受 2 倍伤害

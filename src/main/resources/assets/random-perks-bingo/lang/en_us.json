@@ -286,6 +286,8 @@
   "random-perks-bingo.perk.seeker_village_hero.desc": "Permanently gain the Hero of the Village effect.",
   "random-perks-bingo.perk.seeker_savage_magic.name": "Savage Magic",
   "random-perks-bingo.perk.seeker_savage_magic.desc": "Gain 10 emeralds. Right-click a nitwit villager with a profession block to turn it into a master-level villager of that profession.",
+  "random-perks-bingo.perk.hunter_spider_weaving.name": "Web Spinner",
+  "random-perks-bingo.perk.hunter_spider_weaving.desc": "Spiders damaged by you gain 5 seconds of Weaving.",
   "random-perks-bingo.perk.harvest_well_fed.name": "Well-Fed",
   "random-perks-bingo.perk.harvest_well_fed.desc": "Gain 7 seconds of Saturation every 30 seconds.",
   "random-perks-bingo.perk.summon_remote_transfer.name": "Remote Transfer",

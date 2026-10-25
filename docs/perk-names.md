@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **123** 条词条：绿 16 / 蓝 53 / 紫 34 / 金 17 / 神话 3。
+共 **124** 条词条：绿 17 / 蓝 53 / 紫 34 / 金 17 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -110,6 +110,7 @@
 | `hunter_munitions` | 军火补给 | Munitions Supply | 蓝 |
 | `hunter_bounty_hunter` | 赏金猎人 | Bounty Hunter | 蓝 |
 | `hunter_hedgehog` | 刺猬 | Hedgehog | 金 |
+| `hunter_spider_weaving` | 盘丝大仙 | Web Spinner | 绿 |
 
 ## 秘藏 SEEKER
 

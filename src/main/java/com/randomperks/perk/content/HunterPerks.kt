@@ -926,6 +926,14 @@ object HunterPerks {
         override fun icon() = ItemStack(Items.CACTUS)
     }
 
+    /** 绿 · 猎杀: **盘丝大仙** —— 受到你伤害的蜘蛛获得 5 秒盘丝 (织网) 效果 */
+    object SpiderWeaving : PerkDefinition {
+        override val id = "hunter_spider_weaving"
+        override val rarity = PerkRarity.GREEN
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.COBWEB)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
@@ -952,5 +960,6 @@ object HunterPerks {
         PerkRegistry.register(Munitions)
         PerkRegistry.register(BountyHunter)
         PerkRegistry.register(Hedgehog)
+        PerkRegistry.register(SpiderWeaving)
     }
 }
