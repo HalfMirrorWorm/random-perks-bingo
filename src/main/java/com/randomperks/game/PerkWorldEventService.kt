@@ -105,6 +105,12 @@ object PerkWorldEventService {
             FungalInfectionService.handleAttack(attacker, victim)
         }
 
+        // 受到伤害 → "忠心护主": 由附近属于该玩家的宠物承受 2 倍伤害
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register { entity, source, amount ->
+            val player = entity as? ServerPlayerEntity ?: return@register true
+            !LoyalGuardService.tryRedirect(player, source, amount)
+        }
+
         // 受到生物伤害 → "刺猬": 把 75% 伤害反弹给攻击者
         ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
             if (damageTaken <= 0.0f) return@register

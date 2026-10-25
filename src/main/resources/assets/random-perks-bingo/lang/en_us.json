@@ -282,6 +282,8 @@
   "random-perks-bingo.perk.summon_boss_egg.desc": "Gain a random boss spawn egg (Ender Dragon, Wither, Warden, or Elder Guardian).",
   "random-perks-bingo.perk.summon_end_portal.name": "End It",
   "random-perks-bingo.perk.summon_end_portal.desc": "Spawn an End portal block above your head and announce its coordinates to everyone.",
+  "random-perks-bingo.perk.summon_loyal_guard.name": "Loyal Guardian",
+  "random-perks-bingo.perk.summon_loyal_guard.desc": "When you take damage, a nearby pet of yours takes double damage instead.",
   "random-perks-bingo.perk.summon_insomnia.name": "Insomnia",
   "random-perks-bingo.perk.summon_insomnia.desc": "Activate from the perk list, choose a player, and spawn 3 phantoms near them.",
   "random-perks-bingo.perk.harvest_kelp_to_bone.name": "Kelp to Bone",

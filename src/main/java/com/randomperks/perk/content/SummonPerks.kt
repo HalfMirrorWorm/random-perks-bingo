@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.game.LoyalGuardService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkSession
@@ -388,6 +389,14 @@ object SummonPerks {
         }
     }
 
+    /** 紫 · 唤法: **忠心护主** —— 受到伤害时, 由附近属于你的宠物替你承受 2 倍伤害 */
+    object LoyalGuard : PerkDefinition {
+        override val id = LoyalGuardService.PERK_ID
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SUMMON
+        override fun icon() = ItemStack(Items.WOLF_SPAWN_EGG)
+    }
+
     /** 金 · 唤法: **结束吧** —— 在头顶生成一格末地传送门方块, 并向全服公告坐标 */
     object EndPortal : PerkDefinition {
         override val id = "summon_end_portal"
@@ -433,5 +442,6 @@ object SummonPerks {
         PerkRegistry.register(Swap)
         PerkRegistry.register(BossEgg)
         PerkRegistry.register(EndPortal)
+        PerkRegistry.register(LoyalGuard)
     }
 }

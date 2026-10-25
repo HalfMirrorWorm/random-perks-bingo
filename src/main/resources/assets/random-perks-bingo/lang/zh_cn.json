@@ -282,6 +282,8 @@
   "random-perks-bingo.perk.summon_boss_egg.desc": "随机获得一个 Boss 刷怪蛋 (末影龙 / 凋灵 / 监守者 / 远古守卫者)。",
   "random-perks-bingo.perk.summon_end_portal.name": "结束吧",
   "random-perks-bingo.perk.summon_end_portal.desc": "在头顶生成一格末地传送门方块，并向全服公告它的坐标。",
+  "random-perks-bingo.perk.summon_loyal_guard.name": "忠心护主",
+  "random-perks-bingo.perk.summon_loyal_guard.desc": "受到伤害时，由附近属于你的宠物替你承受 2 倍伤害。",
   "random-perks-bingo.perk.summon_insomnia.name": "失眠",
   "random-perks-bingo.perk.summon_insomnia.desc": "在词条列表点击使用, 选择一名玩家, 在他附近生成 3 只幻翼。",
   "random-perks-bingo.perk.harvest_kelp_to_bone.name": "海带成骨",

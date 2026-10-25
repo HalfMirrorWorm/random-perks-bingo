@@ -257,4 +257,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"复活甲" */
     fun hasReviveArmor(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk(ReviveArmorService.PERK_ID) == true
+
+    // ---- "忠心护主" (紫): 受到的伤害由宠物承受 ----
+
+    /** 玩家是否持有"忠心护主" */
+    fun hasLoyalGuard(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk(LoyalGuardService.PERK_ID) == true
 }
