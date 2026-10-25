@@ -118,17 +118,11 @@ object PerkOfferService {
         val server = player.server ?: return
         val state = PerkStateManager.getOrCreate(player.uuid)
 
-        val viewerTeam = player.scoreboardTeam?.name
-
         val players = server.playerManager.playerList.map { other ->
             val otherState = PerkStateManager.get(other.uuid)
 
-            // 神话词条只对本人和同队可见; 其他队伍只看得到非神话词条
-            val visiblePerks = otherState?.ownedPerks?.filter { perk ->
-                perk.rarity != PerkRarity.MYTHIC ||
-                    other.uuid == player.uuid ||
-                    (viewerTeam != null && other.scoreboardTeam?.name == viewerTeam)
-            } ?: emptyList()
+            // 所有词条 (含神话) 对所有人可见
+            val visiblePerks = otherState?.ownedPerks ?: emptyList()
 
             val team = other.scoreboardTeam
             // 队伍名在 bingo 里是可翻译文本 (如 bingo.team.red); 直接取 .string 会在服务端
