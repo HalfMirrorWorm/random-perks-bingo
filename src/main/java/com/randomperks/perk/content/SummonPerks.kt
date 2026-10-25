@@ -13,6 +13,7 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.state.PerkStateManager
+import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
 import net.minecraft.item.ItemStack
@@ -413,11 +414,50 @@ object SummonPerks {
         }
     }
 
+    /** 金 · 唤法: **结束吧** —— 在头顶生成一格末地传送门方块, 并向全服公告坐标 */
+    object EndPortal : PerkDefinition {
+        override val id = "summon_end_portal"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.SUMMON
+        override fun icon() = ItemStack(Items.END_PORTAL_FRAME)
+
+        override fun onAcquire(ctx: PerkContext) {
+            val player = ctx.player
+            val world = player.world as? ServerWorld ?: return
+
+            // 头顶 (脚上方 2 格) 开始向上找第一个空气方块, 最多找 8 格
+            val base = player.blockPos.up(2)
+            var pos = base
+            for (dy in 0..8) {
+                val candidate = base.up(dy)
+                if (world.getBlockState(candidate).isAir) {
+                    pos = candidate
+                    break
+                }
+            }
+            world.setBlockState(pos, Blocks.END_PORTAL.defaultState)
+
+            val dimension = Text.translatable(
+                "dimension.${world.registryKey.value.namespace}.${world.registryKey.value.path}"
+            )
+            val message = Text.translatable(
+                "random-perks-bingo.message.end_portal_announce",
+                player.name,
+                dimension,
+                pos.x,
+                pos.y,
+                pos.z,
+            )
+            player.server?.playerManager?.playerList?.forEach { it.sendMessage(message, false) }
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(DragonTamer)
         PerkRegistry.register(Insomnia)
         PerkRegistry.register(RemoteTransfer)
         PerkRegistry.register(Swap)
         PerkRegistry.register(BossEgg)
+        PerkRegistry.register(EndPortal)
     }
 }

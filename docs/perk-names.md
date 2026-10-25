@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **115** 条词条：绿 16 / 蓝 52 / 紫 30 / 金 14 / 神话 3。
+共 **116** 条词条：绿 16 / 蓝 52 / 紫 30 / 金 15 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -161,6 +161,7 @@
 | `summon_remote_transfer` | 远程传输 | Remote Transfer | 蓝 |
 | `summon_swap` | 何易位 | Swap | 紫 |
 | `summon_boss_egg` | Boss盲盒 | Boss Blind Box | 紫 |
+| `summon_end_portal` | 结束吧 | End It | 金 |
 | `summon_insomnia` | 失眠 | Insomnia | 蓝 |
 | `hunter_easy_nuke` | 核电轻而易举 | Easy Nuke | 蓝 |
 
