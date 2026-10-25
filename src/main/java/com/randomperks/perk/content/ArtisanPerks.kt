@@ -14,6 +14,7 @@ import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import com.randomperks.state.PerkStateManager
 import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.PotionContentsComponent
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.Enchantments
@@ -24,6 +25,7 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.potion.Potions
 import net.minecraft.item.Items
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.EnchantmentTags
@@ -458,6 +460,26 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.GOLD_BLOCK)
     }
 
+    /** 绿 · 匠造: **神龟护体** —— 获得 3 瓶喷溅型神龟药水 */
+    object TurtleMaster : PerkDefinition {
+        override val id = "artisan_turtle_master"
+        override val rarity = PerkRarity.GREEN
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() =
+            PotionContentsComponent.createStack(Items.SPLASH_POTION, Potions.TURTLE_MASTER)
+
+        private const val COUNT = 3
+
+        override fun onAcquire(ctx: PerkContext) {
+            repeat(COUNT) {
+                PerkEffects.giveStack(
+                    ctx.player,
+                    PotionContentsComponent.createStack(Items.SPLASH_POTION, Potions.TURTLE_MASTER),
+                )
+            }
+        }
+    }
+
     /** 紫 · 匠造: **不痛不痒** —— 最终伤害在 2~5 点时改为只受 1 点 (由 SmallDamageGuardMixin 实现) */
     object BarelyAScratch : PerkDefinition {
         override val id = "artisan_barely_a_scratch"
@@ -491,5 +513,6 @@ object ArtisanPerks {
         PerkRegistry.register(MidasTouch)
         PerkRegistry.register(ReviveArmor)
         PerkRegistry.register(BarelyAScratch)
+        PerkRegistry.register(TurtleMaster)
     }
 }
