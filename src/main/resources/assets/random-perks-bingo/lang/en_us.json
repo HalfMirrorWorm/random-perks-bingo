@@ -375,7 +375,7 @@
   "random-perks-bingo.perk.mythic_creative_flash.name": "Creative Flash",
   "random-perks-bingo.perk.mythic_creative_flash.desc": "Gain 1.5 seconds of creative mode.",
   "random-perks-bingo.perk.mythic_doomsday.name": "Doomsday",
-  "random-perks-bingo.perk.mythic_doomsday.desc": "The first 4 players you kill drop their items; you also drop yours on death this game.",
+  "random-perks-bingo.perk.mythic_doomsday.desc": "Lasts 20 minutes: the first 4 players you kill drop their backpack items; if an enemy player kills you, you also drop your backpack items and the effect ends.",
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",
   "random-perks-bingo.perk.seeker_supply_line.desc": "Gain a random supply, then another every 2 minutes.",
   "random-perks-bingo.perk.seeker_ender_supply.name": "Ender Supply",

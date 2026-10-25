@@ -130,6 +130,33 @@ object PerkBoostQuery {
     fun hasDoomsday(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("mythic_doomsday") == true
 
+    /** "天启日"效果持续时间: 20 分钟 */
+    private const val DOOMSDAY_DURATION_TICKS = 20L * 60L * 20L
+
+    /** 效果结束时刻 (server ticks); 不存在表示效果已结束 */
+    private const val DOOMSDAY_END_TICK_KEY = "doomsday_end_tick"
+
+    /** 获得词条时开始计时 */
+    fun beginDoomsday(player: ServerPlayerEntity) {
+        val state = PerkStateManager.get(player.uuid) ?: return
+        val now = player.server?.ticks?.toLong() ?: return
+        state.memory[DOOMSDAY_END_TICK_KEY] = (now + DOOMSDAY_DURATION_TICKS).toString()
+    }
+
+    /** 效果立即结束 (被敌方玩家击杀时调用) */
+    fun endDoomsday(player: ServerPlayerEntity) {
+        PerkStateManager.get(player.uuid)?.memory?.remove(DOOMSDAY_END_TICK_KEY)
+    }
+
+    /** 天启日效果是否仍在持续: 持有词条、未超时、未被击杀结束 */
+    fun hasDoomsdayEffect(player: ServerPlayerEntity): Boolean {
+        val state = PerkStateManager.get(player.uuid) ?: return false
+        if (!state.hasPerk("mythic_doomsday")) return false
+        val endTick = state.memory[DOOMSDAY_END_TICK_KEY]?.toLongOrNull() ?: return false
+        val now = player.server?.ticks?.toLong() ?: return false
+        return now < endTick
+    }
+
     /** "天启日"最多对几次击杀生效 */
     private const val DOOMSDAY_KILL_LIMIT = 4
 

@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.game.CreativeFlashService
+import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkSession
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
@@ -36,13 +37,19 @@ object MythicPerks {
         }
     }
 
-    /** 神话 · 猎杀 · 全局唯一: **天启日** —— 被你击杀的玩家, 这次死亡**强制掉落全部物品**
-     *  (无视 keepInventory 规则; 由 DoomsdayMixin 在 PlayerEntity.dropInventory 实现) */
+    /** 神话 · 猎杀 · 全局唯一: **天启日** —— 效果持续 20 分钟:
+     *  - 期间被你击杀的前 4 名玩家强制掉落**背包位**物品 (无视 keepInventory);
+     *  - 你被敌方玩家击杀时也会强制掉落背包位物品, 随后效果立即结束。
+     *  (由 DoomsdayMixin 在 ServerPlayerEntity.onDeath 实现) */
     object Doomsday : PerkDefinition {
         override val id = "mythic_doomsday"
         override val rarity = PerkRarity.MYTHIC
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.WITHER_ROSE)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkBoostQuery.beginDoomsday(ctx.player)
+        }
     }
 
     /** 神话 · 唤法 · 全局唯一: **游戏BUG** —— 获得时立即弹出玩家选择器, 选中一名玩家后,
