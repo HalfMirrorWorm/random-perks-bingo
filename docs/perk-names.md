@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **119** 条词条：绿 16 / 蓝 52 / 紫 31 / 金 17 / 神话 3。
+共 **120** 条词条：绿 17 / 蓝 52 / 紫 31 / 金 17 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -83,6 +83,7 @@
 | `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 绿 |
 | `harvest_fungal_infection` | 真菌感染 | Fungal Infection | 金 |
 | `harvest_slow_chewing` | 细嚼慢咽 | Slow Chewing | 紫 |
+| `harvest_well_fed` | 饱食终日 | Well-Fed | 绿 |
 
 ## 猎杀 HUNTER
 

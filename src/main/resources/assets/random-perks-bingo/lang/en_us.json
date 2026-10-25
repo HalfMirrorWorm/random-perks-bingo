@@ -280,6 +280,8 @@
   "random-perks-bingo.perk.artisan_barely_a_scratch.desc": "When you take 5 damage or less, you only take 1 damage instead.",
   "random-perks-bingo.perk.artisan_turtle_master.name": "Turtle Master",
   "random-perks-bingo.perk.artisan_turtle_master.desc": "Gain 3 splash Potions of the Turtle Master.",
+  "random-perks-bingo.perk.harvest_well_fed.name": "Well-Fed",
+  "random-perks-bingo.perk.harvest_well_fed.desc": "Gain 7 seconds of Saturation every 30 seconds.",
   "random-perks-bingo.perk.summon_remote_transfer.name": "Remote Transfer",
   "random-perks-bingo.perk.summon_remote_transfer.desc": "Activate from the perk list, choose a teammate, then pick 4 item slots from your inventory to send.",
   "random-perks-bingo.perk.summon_boss_egg.name": "Boss Blind Box",

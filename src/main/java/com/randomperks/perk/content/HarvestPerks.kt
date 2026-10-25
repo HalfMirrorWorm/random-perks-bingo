@@ -525,6 +525,38 @@ object HarvestPerks {
         }
     }
 
+    /** 绿 · 丰饶: **饱食终日** —— 每 30 秒获得 7 秒的饱和效果 */
+    object WellFed : PerkDefinition {
+        override val id = "harvest_well_fed"
+        override val rarity = PerkRarity.GREEN
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.GOLDEN_CARROT)
+
+        /** 触发间隔 (秒); onTick 每秒触发一次 */
+        private const val INTERVAL_SECONDS = 30
+
+        /** 饱和效果持续时间: 7 秒 */
+        private const val EFFECT_TICKS = 7 * 20
+
+        private const val TIMER_KEY = "well_fed_seconds"
+
+        override fun onAcquire(ctx: PerkContext) {
+            ctx.state.memory[TIMER_KEY] = "0"
+        }
+
+        override fun onTick(ctx: PerkContext) {
+            val seconds = (ctx.state.memory[TIMER_KEY]?.toIntOrNull() ?: 0) + 1
+            if (seconds < INTERVAL_SECONDS) {
+                ctx.state.memory[TIMER_KEY] = seconds.toString()
+                return
+            }
+            ctx.state.memory[TIMER_KEY] = "0"
+            ctx.player.addStatusEffect(
+                StatusEffectInstance(StatusEffects.SATURATION, EFFECT_TICKS, 0)
+            )
+        }
+    }
+
     /** 蓝 · 丰饶: **采蜜人** —— 破坏蜂巢 / 蜂箱时, 额外掉落 2 个蜜脾和 8 瓶蜂蜜。 */
     object Beekeeper : PerkDefinition {
         override val id = "harvest_beekeeper"
@@ -673,6 +705,7 @@ object HarvestPerks {
         PerkRegistry.register(DingDongChicken)
         PerkRegistry.register(LuckyFishing)
         PerkRegistry.register(PigMorph)
+        PerkRegistry.register(WellFed)
         PerkRegistry.register(Beekeeper)
         PerkRegistry.register(KelpToBone)
         PerkRegistry.register(BoneMealFlowers)
