@@ -458,10 +458,10 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.GOLD_BLOCK)
     }
 
-    /** 蓝 · 匠造: **不痛不痒** —— 最终伤害在 2~5 点时改为只受 1 点 (由 SmallDamageGuardMixin 实现) */
+    /** 紫 · 匠造: **不痛不痒** —— 最终伤害在 2~5 点时改为只受 1 点 (由 SmallDamageGuardMixin 实现) */
     object BarelyAScratch : PerkDefinition {
         override val id = "artisan_barely_a_scratch"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.SHIELD)
     }
