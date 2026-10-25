@@ -271,7 +271,7 @@
   "random-perks-bingo.message.dragon_tamer_mounted": "You mounted %s — steer with WASD, right-click to use its ability, sneak to dismount.",
   "random-perks-bingo.message.end_portal_announce": "「End It」%s opened an End portal at %s (%s, %s, %s)!",
   "random-perks-bingo.perk.artisan_nya_axe.name": "Nya Axe",
-  "random-perks-bingo.perk.artisan_nya_axe.desc": "Gain an expensive one-hit-kill axe.",
+  "random-perks-bingo.perk.artisan_nya_axe.desc": "Gain an expensive one-hit-kill axe, but permanently gain Weakness I.",
   "random-perks-bingo.perk.artisan_midas_touch.name": "Midas Touch",
   "random-perks-bingo.perk.artisan_midas_touch.desc": "Right-click gilded blackstone to turn it into a gold block.",
   "random-perks-bingo.perk.artisan_revive_armor.name": "Revive Armor",

@@ -271,7 +271,7 @@
   "random-perks-bingo.message.dragon_tamer_mounted": "你骑上了 %s —— 用 WASD 控制它, 右键使用能力, 潜行下马。",
   "random-perks-bingo.message.end_portal_announce": "「结束吧」%s 在 %s (%s, %s, %s) 生成了一格末地传送门！",
   "random-perks-bingo.perk.artisan_nya_axe.name": "喵人斧",
-  "random-perks-bingo.perk.artisan_nya_axe.desc": "获得一把昂贵的秒人斧。",
+  "random-perks-bingo.perk.artisan_nya_axe.desc": "获得一把昂贵的秒人斧，但永久获得虚弱 I。",
   "random-perks-bingo.perk.artisan_midas_touch.name": "点石成金",
   "random-perks-bingo.perk.artisan_midas_touch.desc": "右键镶金黑石, 把它变成金块。",
   "random-perks-bingo.perk.artisan_revive_armor.name": "复活甲",

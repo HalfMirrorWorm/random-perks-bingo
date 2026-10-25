@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **116** 条词条：绿 16 / 蓝 52 / 紫 30 / 金 15 / 神话 3。
+共 **116** 条词条：绿 16 / 蓝 52 / 紫 29 / 金 16 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -33,7 +33,7 @@
 | `artisan_treasure_chest` | 百宝箱 | Treasure Chest | 紫 |
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 绿 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
-| `artisan_nya_axe` | 喵人斧 | Nya Axe | 紫 |
+| `artisan_nya_axe` | 喵人斧 | Nya Axe | 金 |
 | `artisan_midas_touch` | 点石成金 | Midas Touch | 蓝 |
 | `artisan_revive_armor` | 复活甲 | Revive Armor | 金 |
 | `delver_toughness` | 坚韧 | Toughness | 蓝 |

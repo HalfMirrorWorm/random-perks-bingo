@@ -414,14 +414,15 @@ object ArtisanPerks {
         }
     }
 
-    /** 紫 · 匠造: **喵人斧** —— 获得一把**秒人斧** —— **金斧 + 锋利 1145 + 1 点耐久**。
+    /** 金 · 匠造: **喵人斧** —— 获得一把**秒人斧** —— **金斧 + 锋利 1145 + 1 点耐久**;
+     *  代价是**永久虚弱 I**。
      *
      *  与社区（EaseCation 服务器 / Funprops Killaxe）同款思路: 不靠自定义秒杀逻辑,
      *  而是把锋利堆到荒谬的等级 —— 1145 级的单次附魔伤害 ≈ 1 + 0.5 × 1144 ≈ 573,
      *  配上金斧基础伤害足以一击带走几乎任何生物 (含玩家); 代价是攻击一次斧头就坏。 */
     object NyaAxe : PerkDefinition {
         override val id = "artisan_nya_axe"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.GOLDEN_AXE)
 
@@ -437,7 +438,16 @@ object ArtisanPerks {
             //   这是原版组件, 不显示在 tooltip 上, 也不需要额外 mixin。
             axe.set(DataComponentTypes.REPAIR_COST, 40)
             PerkEffects.giveStack(ctx.player, axe)
+
+            // 代价: 永久虚弱 I
+            PerkEffects.permanentEffect(ctx.player, StatusEffects.WEAKNESS, 0)
         }
+
+        override fun onRespawn(ctx: PerkContext) =
+            PerkEffects.permanentEffect(ctx.player, StatusEffects.WEAKNESS, 0)
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeEffect(ctx.player, StatusEffects.WEAKNESS)
     }
 
     /** 蓝 · 匠造: **点石成金** —— 右键镶金黑石, 把它变成金块 (交互见 MidasTouchService) */
