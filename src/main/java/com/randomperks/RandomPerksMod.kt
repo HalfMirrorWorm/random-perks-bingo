@@ -15,7 +15,6 @@ import com.randomperks.game.PigMorphService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
 import com.randomperks.game.SummonedHorseService
-import com.randomperks.game.SwapService
 import com.randomperks.game.TntThrowService
 import com.randomperks.game.VerminSwarmService
 import com.randomperks.lifecycle.BingoLifecycle
@@ -63,9 +62,6 @@ object RandomPerksMod : ModInitializer {
 
         // "驯龙高手": 骑乘其他生物并控制它们使用能力
         DragonTamerService.register()
-
-        // "何易位"的 10 秒延迟结算
-        SwapService.register()
 
         // 神话词条的创造闪光调度
         CreativeFlashService.register()

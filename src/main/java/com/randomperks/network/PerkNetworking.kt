@@ -152,6 +152,7 @@ object PerkNetworking {
                     "poisoner" -> ArtisanPerks.Poisoner.handleTargetPick(player, uuid)
                     "remote_transfer" -> SummonPerks.RemoteTransfer.handleTargetPick(player, uuid)
                     "hodgepodge" -> MythicPerks.Hodgepodge.handleTargetPick(player, uuid)
+                    "swap" -> SummonPerks.Swap.handleTargetPick(player, uuid)
                 }
             }
         }
@@ -163,18 +164,6 @@ object PerkNetworking {
             context.server().execute {
                 when (purpose) {
                     "quick_enchant" -> ArtisanPerks.QuickEnchant.handlePick(player, slot)
-                }
-            }
-        }
-
-        ServerPlayNetworking.registerGlobalReceiver(DualTargetPickC2S.ID) { payload, context ->
-            val player = context.player()
-            val purpose = payload.purpose
-            val first = payload.first
-            val second = payload.second
-            context.server().execute {
-                when (purpose) {
-                    "swap" -> SummonPerks.Swap.handlePick(player, first, second)
                 }
             }
         }

@@ -136,6 +136,7 @@ object ClientPerkNetworking {
                     "poisoner" -> "random-perks-bingo.screen.poisoner_target" to "random-perks-bingo.poisoner_target.hint"
                     "remote_transfer" -> "random-perks-bingo.screen.remote_transfer_target" to "random-perks-bingo.remote_transfer_target.hint"
                     "hodgepodge" -> "random-perks-bingo.screen.hodgepodge_target" to "random-perks-bingo.hodgepodge_target.hint"
+                    "swap" -> "random-perks-bingo.screen.swap_target" to "random-perks-bingo.swap_target.hint"
                     else -> "random-perks-bingo.screen.lightning_target" to "random-perks-bingo.lightning_target.hint"
                 }
                 context.client().setScreen(

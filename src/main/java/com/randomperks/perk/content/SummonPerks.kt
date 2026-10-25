@@ -232,8 +232,7 @@ object SummonPerks {
         }
     }
 
-    /** 紫 · 唤法: **何易位** —— 在 V 界面点击使用后连续选择两名玩家 (可以选自己), 交换他们的位置。
-     *  允许跨维度: 两人各自传送到对方所在维度的坐标。 */
+    /** 紫 · 唤法: **何易位** —— 在 V 界面点击使用后选择一名玩家, 立即传送到他的位置 (可跨维度)。 */
     object Swap : PerkDefinition {
         override val id = "summon_swap"
         override val rarity = PerkRarity.PURPLE
@@ -246,60 +245,35 @@ object SummonPerks {
 
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
-            if (SwapService.hasPending(player.uuid)) {
+            val candidates = player.server?.playerManager?.playerList
+                ?.filter { it.isAlive && !it.isSpectator && it.uuid != player.uuid }
+                ?.map { PlayerTargetEntry(it.uuid, it.name.string) }
+                ?: emptyList()
+
+            if (candidates.isEmpty()) {
                 player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.swap_in_progress"),
+                    Text.translatable("random-perks-bingo.message.swap_not_enough"),
                     true,
                 )
                 return
             }
-            val candidates = player.server?.playerManager?.playerList
-                ?.filter {
-                    it.isAlive && !it.isSpectator &&
-                        // "天启日"持有者免疫何易位, 直接不给选
-                        !PerkBoostQuery.hasDoomsday(it)
-                }
-                ?.map { PlayerTargetEntry(it.uuid, it.name.string) }
-                ?: emptyList()
-
-            // 少于两人就没得选 —— 包括自己也算一个候选
-            if (candidates.size < 2) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.swap_not_enough"), true)
-                return
-            }
-            PerkNetworking.sendDualTargets(player, PURPOSE, candidates)
+            PerkNetworking.sendActionTargets(player, PURPOSE, candidates)
         }
 
-        /** 客户端两次选择都完成后调用: 交换两人的位置 (朝向各自保留) */
-        fun handlePick(player: ServerPlayerEntity, first: UUID, second: UUID) {
+        /** 客户端选中目标后调用: 立即传送过去 (朝向保留), 成功后标记为已使用 */
+        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
             if (state.isUsed(id)) return
-            if (first == second) return
 
-            val server = player.server ?: return
-            val a = server.playerManager.getPlayer(first) ?: return
-            val b = server.playerManager.getPlayer(second) ?: return
-            if (a === b) return
+            val target = player.server?.playerManager?.getPlayer(uuid) ?: return
+            if (!SwapService.teleportTo(player, target)) return
 
-            // "天启日"持有者免疫何易位 (候选已过滤, 这里兜底防止 uuid 被伪造)
-            if (PerkBoostQuery.hasDoomsday(a) || PerkBoostQuery.hasDoomsday(b)) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.swap_doomsday_immune"),
-                    true,
-                )
-                return
-            }
-
-            // 10 秒倒计时后由 SwapService 结算; 成功启动才真正消耗词条 (结算时标记)
-            if (!SwapService.start(player, a, b)) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.swap_in_progress"),
-                    true,
-                )
-            }
+            state.markUsed(id)
+            PerkGrantService.notifyPerkListChanged(player)
+            PerkGrantService.syncAbilities(player)
         }
     }
 
