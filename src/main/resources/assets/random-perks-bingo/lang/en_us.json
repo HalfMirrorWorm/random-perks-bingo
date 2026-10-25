@@ -71,6 +71,7 @@
   "random-perks-bingo.message.choices_available": "You have %s perk choice(s) waiting.",
   "random-perks-bingo.message.game_started": "Random Perks Bingo: you start with 1 free perk choice!",
   "random-perks-bingo.message.acquired": "Acquired %s %s",
+  "random-perks-bingo.message.high_rarity_announce": "「%s」 obtained the %s perk 「%s」!",
   "random-perks-bingo.message.already_owned": "You already own %s — pick another perk.",
   "random-perks-bingo.message.loot_bag": "★ Loot bag!",
   "random-perks-bingo.message.prey_tracker": "Prey: %s · %sm · (%s, %s) %s",

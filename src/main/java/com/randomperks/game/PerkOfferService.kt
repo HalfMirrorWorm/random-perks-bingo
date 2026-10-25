@@ -94,6 +94,17 @@ object PerkOfferService {
             false,
         )
 
+        // 金色及以上词条向全服公告
+        if (perk.rarity.ordinal >= PerkRarity.GOLD.ordinal) {
+            val announce = Text.translatable(
+                "random-perks-bingo.message.high_rarity_announce",
+                player.name,
+                rarityName,
+                Text.translatable("random-perks-bingo.perk.${perk.id}.name"),
+            )
+            player.server?.playerManager?.playerList?.forEach { it.sendMessage(announce, false) }
+        }
+
         PerkNetworking.sendNotify(player, state.pendingChoices)
         PerkGrantService.syncAbilities(player)
         RandomPerksMod.logger.info(
