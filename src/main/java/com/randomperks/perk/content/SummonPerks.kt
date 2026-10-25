@@ -389,10 +389,10 @@ object SummonPerks {
         }
     }
 
-    /** 紫 · 唤法: **忠心护主** —— 受到伤害时, 由附近属于你的宠物替你承受 2 倍伤害 */
+    /** 金 · 唤法: **忠心护主** —— 受到伤害时, 由附近属于你的宠物替你承受 2 倍伤害 */
     object LoyalGuard : PerkDefinition {
         override val id = LoyalGuardService.PERK_ID
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.WOLF_SPAWN_EGG)
     }
