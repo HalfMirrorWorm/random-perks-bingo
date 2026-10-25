@@ -684,6 +684,23 @@ object SeekerPerks {
         }
     }
 
+    /** 蓝 · 秘藏: **村庄英雄** —— 永久获得村庄英雄效果 */
+    object VillageHero : PerkDefinition {
+        override val id = "seeker_village_hero"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.EMERALD)
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        private fun apply(ctx: PerkContext) =
+            PerkEffects.permanentEffect(ctx.player, StatusEffects.HERO_OF_THE_VILLAGE, 0)
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeEffect(ctx.player, StatusEffects.HERO_OF_THE_VILLAGE)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Scout)
         PerkRegistry.register(SupplyLine)
@@ -700,5 +717,6 @@ object SeekerPerks {
         PerkRegistry.register(LayFlat)
         PerkRegistry.register(MagnetUpgrade)
         PerkRegistry.register(WarmArchaeology)
+        PerkRegistry.register(VillageHero)
     }
 }
