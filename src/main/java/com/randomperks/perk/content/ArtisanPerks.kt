@@ -480,6 +480,53 @@ object ArtisanPerks {
         }
     }
 
+    /** 蓝 · 匠造: **纹饰护体** —— 每穿戴一件带盔甲纹饰的装备, 生命上限 +4 (最多 4 件) */
+    object TrimmedArmor : PerkDefinition {
+        override val id = "artisan_trimmed_armor"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE)
+
+        private val MOD_HEALTH = Identifier.of("random-perks-bingo", "trimmed_armor_health")
+
+        private val ARMOR_SLOTS = arrayOf(
+            EquipmentSlot.HEAD,
+            EquipmentSlot.CHEST,
+            EquipmentSlot.LEGS,
+            EquipmentSlot.FEET,
+        )
+
+        /** 每件纹饰装备提供的生命上限 */
+        private const val HEALTH_PER_PIECE = 4.0
+
+        override fun onAcquire(ctx: PerkContext) = refresh(ctx)
+        override fun onRespawn(ctx: PerkContext) = refresh(ctx)
+
+        /** 穿/脱护甲的瞬间即时重算 (EquipmentChangeMixin + PlayerInventoryEquipMixin 分发) */
+        override fun onEquipmentChange(ctx: PerkContext) = refresh(ctx)
+
+        private fun refresh(ctx: PerkContext) {
+            val trimmed = ARMOR_SLOTS.count { slot ->
+                ctx.player.getEquippedStack(slot).get(DataComponentTypes.TRIM) != null
+            }
+
+            if (trimmed == 0) {
+                PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_HEALTH)
+            } else {
+                PerkEffects.setAttribute(
+                    ctx.player,
+                    EntityAttributes.MAX_HEALTH,
+                    MOD_HEALTH,
+                    HEALTH_PER_PIECE * trimmed,
+                    EntityAttributeModifier.Operation.ADD_VALUE,
+                )
+            }
+        }
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_HEALTH)
+    }
+
     /** 紫 · 匠造: **不痛不痒** —— 最终伤害在 2~5 点时改为只受 1 点 (由 SmallDamageGuardMixin 实现) */
     object BarelyAScratch : PerkDefinition {
         override val id = "artisan_barely_a_scratch"
@@ -514,5 +561,6 @@ object ArtisanPerks {
         PerkRegistry.register(ReviveArmor)
         PerkRegistry.register(BarelyAScratch)
         PerkRegistry.register(TurtleMaster)
+        PerkRegistry.register(TrimmedArmor)
     }
 }

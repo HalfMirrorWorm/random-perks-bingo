@@ -280,6 +280,8 @@
   "random-perks-bingo.perk.artisan_barely_a_scratch.desc": "受到 5 点及以下的伤害时，改为只受到 1 点伤害。",
   "random-perks-bingo.perk.artisan_turtle_master.name": "神龟护体",
   "random-perks-bingo.perk.artisan_turtle_master.desc": "获得 3 瓶喷溅型神龟药水。",
+  "random-perks-bingo.perk.artisan_trimmed_armor.name": "纹饰护体",
+  "random-perks-bingo.perk.artisan_trimmed_armor.desc": "每穿戴一件带有盔甲纹饰的装备，生命上限 +4。",
   "random-perks-bingo.perk.harvest_well_fed.name": "饱食终日",
   "random-perks-bingo.perk.harvest_well_fed.desc": "每 30 秒获得 7 秒的饱和效果。",
   "random-perks-bingo.perk.summon_remote_transfer.name": "远程传输",
