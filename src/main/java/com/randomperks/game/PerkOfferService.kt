@@ -86,6 +86,7 @@ object PerkOfferService {
             PerkRarity.GREEN -> Text.translatable("random-perks-bingo.rarity.green").formatted(Formatting.GREEN)
             PerkRarity.PURPLE -> Text.translatable("random-perks-bingo.rarity.purple").formatted(Formatting.LIGHT_PURPLE)
             PerkRarity.GOLD -> Text.translatable("random-perks-bingo.rarity.gold").formatted(Formatting.GOLD)
+            PerkRarity.RED -> Text.translatable("random-perks-bingo.rarity.red").formatted(Formatting.RED)
             PerkRarity.MYTHIC -> Text.translatable("random-perks-bingo.rarity.mythic").formatted(Formatting.LIGHT_PURPLE)
         }
         player.sendMessage(
