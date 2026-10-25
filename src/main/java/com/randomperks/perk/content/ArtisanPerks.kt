@@ -480,10 +480,10 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 匠造: **纹饰护体** —— 每穿戴一件带盔甲纹饰的装备, 生命上限 +4 (最多 4 件) */
+    /** 紫 · 匠造: **纹饰护体** —— 每穿戴一件带盔甲纹饰的装备, 生命上限 +4 (最多 4 件) */
     object TrimmedArmor : PerkDefinition {
         override val id = "artisan_trimmed_armor"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE)
 
