@@ -525,7 +525,7 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 丰饶: **饱食终日** —— 每 30 秒获得 7 秒的饱和效果 */
+    /** 紫 · 丰饶: **饱食终日** —— 每 2 分钟获得 7 秒的饱和效果 */
     object WellFed : PerkDefinition {
         override val id = "harvest_well_fed"
         override val rarity = PerkRarity.PURPLE
@@ -533,7 +533,7 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.GOLDEN_CARROT)
 
         /** 触发间隔 (秒); onTick 每秒触发一次 */
-        private const val INTERVAL_SECONDS = 30
+        private const val INTERVAL_SECONDS = 2 * 60
 
         /** 饱和效果持续时间: 7 秒 */
         private const val EFFECT_TICKS = 7 * 20

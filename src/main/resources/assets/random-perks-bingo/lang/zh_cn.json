@@ -293,7 +293,7 @@
   "random-perks-bingo.perk.hunter_spider_weaving.name": "盘丝大仙",
   "random-perks-bingo.perk.hunter_spider_weaving.desc": "受到你伤害的蜘蛛会获得 5 秒的盘丝（织网）效果。",
   "random-perks-bingo.perk.harvest_well_fed.name": "饱食终日",
-  "random-perks-bingo.perk.harvest_well_fed.desc": "每 30 秒获得 7 秒的饱和效果。",
+  "random-perks-bingo.perk.harvest_well_fed.desc": "每 2 分钟获得 7 秒的饱和效果。",
   "random-perks-bingo.perk.summon_remote_transfer.name": "远程传输",
   "random-perks-bingo.perk.summon_remote_transfer.desc": "在词条列表点击使用, 选择一名队友, 再从物品栏里挑选 4 格物品传送给他。",
   "random-perks-bingo.perk.summon_boss_egg.name": "Boss盲盒",
