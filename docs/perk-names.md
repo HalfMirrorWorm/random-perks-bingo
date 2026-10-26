@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **125** 条词条：绿 17 / 蓝 53 / 紫 34 / 金 18 / 红 0 / 神话 3。
+共 **125** 条词条：绿 17 / 蓝 54 / 紫 33 / 金 18 / 红 0 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -74,7 +74,7 @@
 | `harvest_bountiful_meal` | 丰盛大餐 | Bountiful Meal | 绿 |
 | `harvest_gourmet` | 小鸟胃 | Eats Like a Bird | 蓝 |
 | `harvest_cat_aura` | 哈基米 | Hakimi | 绿 |
-| `harvest_big_stomach` | 大胃袋 | Bottomless Stomach | 紫 |
+| `harvest_big_stomach` | 大胃袋 | Bottomless Stomach | 蓝 |
 | `harvest_yowl` | 老吴!? | Yowl!? | 绿 |
 | `harvest_saplings` | 植岷 | Saplings | 绿 |
 | `harvest_gleaning` | 拾穗 | Gleaning | 绿 |
