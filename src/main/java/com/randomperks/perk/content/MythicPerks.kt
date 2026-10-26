@@ -3,6 +3,7 @@ package com.randomperks.perk.content
 import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkSession
+import com.randomperks.game.RewindService
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
@@ -126,9 +127,24 @@ object MythicPerks {
             player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
+    /** 神话 · 秘藏 · 全局唯一: **逆转时间** —— 获得时立即触发,
+     *  本局 Bingo 进度、计时与所有玩家的词条回到 30 分钟前
+     *  (不足 30 分钟则回到开局)。世界方块与玩家位置/背包不回溯。 */
+    object TimeRewind : PerkDefinition {
+        override val id = "mythic_time_rewind"
+        override val rarity = PerkRarity.MYTHIC
+        override val archetype = PerkArchetype.SEEKER
+        override fun icon() = ItemStack(Items.CLOCK)
+
+        override fun onAcquire(ctx: PerkContext) {
+            RewindService.begin(ctx.player, id)
+        }
+    }
+
     fun registerAll() {
         PerkRegistry.register(CreativeFlash)
         PerkRegistry.register(Doomsday)
         PerkRegistry.register(Hodgepodge)
+        PerkRegistry.register(TimeRewind)
     }
 }

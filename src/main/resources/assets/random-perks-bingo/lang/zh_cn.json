@@ -390,6 +390,8 @@
   "random-perks-bingo.perk.mythic_creative_flash.desc": "获得 1.5 秒创造模式。",
   "random-perks-bingo.perk.mythic_doomsday.name": "天启日",
   "random-perks-bingo.perk.mythic_doomsday.desc": "效果持续 20 分钟：期间被你击杀的前 4 名玩家会掉落背包位物品；你被敌方玩家击杀时也会掉落背包位物品，随后效果结束。",
+  "random-perks-bingo.perk.mythic_time_rewind.name": "逆转时间",
+  "random-perks-bingo.perk.mythic_time_rewind.desc": "获得后立即触发：本局 Bingo 棋盘进度、分数、计时与所有玩家的词条回到 30 分钟前（不足 30 分钟则回到开局）。玩家位置/背包与世界方块不会回溯；「逆转时间」本身保留。",
   "random-perks-bingo.perk.seeker_supply_line.name": "补给线",
   "random-perks-bingo.perk.seeker_supply_line.desc": "获得一份随机补给, 之后每 2 分钟再获得一份。",
   "random-perks-bingo.perk.seeker_ender_supply.name": "末影补给",

@@ -12,6 +12,7 @@ import com.randomperks.game.ModVersionService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.PigMorphService
+import com.randomperks.game.RewindService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
 import com.randomperks.game.SavageMagicService
@@ -49,12 +50,16 @@ object RandomPerksMod : ModInitializer {
         // 服务端实例追踪
         ServerLifecycleEvents.SERVER_STARTED.register { ServerHolder.server = it }
         ServerLifecycleEvents.SERVER_STOPPED.register {
+            RewindService.stopGame()
             ServerHolder.server = null
             PerkStateManager.resetAll()
         }
 
         // 对接 bingo 游戏生命周期 (开局赠送 / 结束清理)
         BingoLifecycle.register()
+
+        // 「逆转时间」: 记录本局快照, 在需要时在线回退
+        RewindService.register()
 
         // 驱动词条周期回调与重生重挂
         PerkTickService.register()

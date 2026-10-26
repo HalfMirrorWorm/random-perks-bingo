@@ -7,6 +7,7 @@ import com.randomperks.game.DragonTamerService
 import com.randomperks.game.JockeyService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
+import com.randomperks.game.RewindService
 import com.randomperks.game.SoulOutService
 import com.randomperks.game.SwapService
 import com.randomperks.game.TemperingAnvilService
@@ -28,11 +29,18 @@ object BingoLifecycle {
     fun register() {
         BingoEvents.GAME_STARTED.register { onGameStarted() }
         BingoEvents.GAME_ENDED.register {
+            RewindService.stopGame()
             clearAllPerkState()
             PerkSession.reset()
         }
-        BingoEvents.GAME_RESET.register { resetAll() }
-        BingoEvents.CLOSE.register { resetAll() }
+        BingoEvents.GAME_RESET.register {
+            RewindService.stopGame()
+            resetAll()
+        }
+        BingoEvents.CLOSE.register {
+            RewindService.stopGame()
+            resetAll()
+        }
     }
 
     /** 清空词条状态 + 一切与对局绑定的持续效果 */
@@ -56,12 +64,16 @@ object BingoLifecycle {
         PerkSession.beginRound()
         if (!PerkSession.isEnabled()) {
             RandomPerksMod.logger.info("[RandomPerks] perk system is disabled for this round — no choices granted")
+            RewindService.startGame()
             return
         }
 
         val server = ServerHolder.server ?: return
         val players = server.playerManager.playerList
-        if (players.isEmpty()) return
+        if (players.isEmpty()) {
+            RewindService.startGame()
+            return
+        }
 
         // 开局赠送: 每位玩家一次选择机会 (各自独立随机)
         val granted = PerkGrantService.grantOffer(players)
@@ -81,6 +93,9 @@ object BingoLifecycle {
             "[RandomPerks] game started → granted 1 free choice to {} player(s)",
             players.size,
         )
+
+        // 开始为「逆转时间」记录本局快照
+        RewindService.startGame()
     }
 
     /**
