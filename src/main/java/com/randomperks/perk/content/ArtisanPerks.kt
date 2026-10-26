@@ -279,7 +279,7 @@ object ArtisanPerks {
     }
 
     /** 紫 · 匠造: **绝命毒师** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后给他施加
-     *  **随机一种负面效果** (等级 I, 持续 30 秒) */
+     *  **随机一种负面效果** (等级 I, 持续 1 分钟) */
     object Poisoner : PerkDefinition {
         override val id = "artisan_poisoner"
         override val rarity = PerkRarity.PURPLE
@@ -288,8 +288,8 @@ object ArtisanPerks {
 
         override val isOneTime = true
 
-        /** 负面效果持续 30 秒 */
-        private const val DURATION_TICKS = 30 * 20
+        /** 负面效果持续 1 分钟 */
+        private const val DURATION_TICKS = 60 * 20
 
         /** 随机负面效果池 (等级 I) */
         private val DEBUFFS = listOf(

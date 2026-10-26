@@ -93,7 +93,7 @@
   "random-perks-bingo.message.puny_given": "已给 %s 送去 %s ×4 —— 区区薄礼, 不成敬意。",
   "random-perks-bingo.message.puny_received": "你收到了 %s ×4 …… 好像有什么东西跟过来了。",
   "random-perks-bingo.message.poisoner_no_target": "没有可选的目标。",
-  "random-perks-bingo.message.poisoner_applied": "已对 %s 施加 %s (30 秒)!",
+  "random-perks-bingo.message.poisoner_applied": "已对 %s 施加 %s (1 分钟)!",
   "random-perks-bingo.message.quick_enchant_no_item": "身上一件物品都没有, 快速附魔没有生效。",
   "random-perks-bingo.message.quick_enchant_none": "这件物品已经没有可附加的满级附魔了。",
   "random-perks-bingo.message.quick_enchant_done": "已为 %s 附加满级 %s!",
@@ -233,7 +233,7 @@
   "random-perks-bingo.perk.artisan_quick_enchant.name": "快速附魔",
   "random-perks-bingo.perk.artisan_quick_enchant.desc": "获得后可在词条列表点击使用: 选择自己的一件物品, 为它随机附加一个满级附魔。",
   "random-perks-bingo.perk.artisan_poisoner.name": "绝命毒师",
-  "random-perks-bingo.perk.artisan_poisoner.desc": "选择任意一名玩家, 给他施加 30 秒随机负面效果。",
+  "random-perks-bingo.perk.artisan_poisoner.desc": "选择任意一名玩家, 给他施加 1 分钟随机负面效果。",
   "random-perks-bingo.perk.artisan_treasure_chest.name": "百宝箱",
   "random-perks-bingo.perk.artisan_treasure_chest.desc": "随机开出 1~5 件钻石及以下盔甲或工具。",
 
