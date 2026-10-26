@@ -460,10 +460,10 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.GOLD_BLOCK)
     }
 
-    /** 紫 · 匠造: **神龟护体** —— 获得 3 瓶喷溅型神龟药水 */
+    /** 绿 · 匠造: **神龟护体** —— 获得 3 瓶喷溅型神龟药水 */
     object TurtleMaster : PerkDefinition {
         override val id = "artisan_turtle_master"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() =
             PotionContentsComponent.createStack(Items.SPLASH_POTION, Potions.TURTLE_MASTER)
