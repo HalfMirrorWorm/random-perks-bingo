@@ -50,7 +50,7 @@ object RandomPerksMod : ModInitializer {
         // 服务端实例追踪
         ServerLifecycleEvents.SERVER_STARTED.register { ServerHolder.server = it }
         ServerLifecycleEvents.SERVER_STOPPED.register {
-            RewindService.stopGame()
+            RewindService.shutdown()
             ServerHolder.server = null
             PerkStateManager.resetAll()
         }

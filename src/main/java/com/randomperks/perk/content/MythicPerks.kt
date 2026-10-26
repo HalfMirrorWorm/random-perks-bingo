@@ -128,8 +128,9 @@ object MythicPerks {
     }
 
     /** 神话 · 秘藏 · 全局唯一: **逆转时间** —— 获得时立即触发,
-     *  本局 Bingo 进度、计时与所有玩家的词条回到 30 分钟前
-     *  (不足 30 分钟则回到开局)。世界方块与玩家位置/背包不回溯。 */
+     *  本局回到最近一次检查点 (开局与每 30 分钟各记录一次, 最多回退 30 分钟):
+     *  玩家状态/背包/位置、容器物品、地形、重要生物、Bingo 进度与词条一起回退。
+     *  新生成地形、已死亡的重要生物与离线玩家不还原 (伪回溯)。 */
     object TimeRewind : PerkDefinition {
         override val id = "mythic_time_rewind"
         override val rarity = PerkRarity.MYTHIC

@@ -55,7 +55,8 @@
     "BoneMealFlowerMixin",
     "TemperingAnvilBlockMixin",
     "TemperingAnvilUseMixin",
-    "ForgingScreenHandlerAccessor"
+    "ForgingScreenHandlerAccessor",
+    "WorldBlockChangeMixin"
   ],
   "client": [
     "EntityGlowMixin",
