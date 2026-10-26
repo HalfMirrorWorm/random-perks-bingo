@@ -480,7 +480,7 @@ object ArtisanPerks {
         }
     }
 
-    /** 紫 · 匠造: **纹饰护体** —— 每穿戴一件带盔甲纹饰的装备, 生命上限 +4 (最多 4 件) */
+    /** 紫 · 匠造: **纹饰护体** —— 每穿戴一件带盔甲纹饰的装备, 生命上限 +5 (最多 4 件) */
     object TrimmedArmor : PerkDefinition {
         override val id = "artisan_trimmed_armor"
         override val rarity = PerkRarity.PURPLE
@@ -497,7 +497,7 @@ object ArtisanPerks {
         )
 
         /** 每件纹饰装备提供的生命上限 */
-        private const val HEALTH_PER_PIECE = 4.0
+        private const val HEALTH_PER_PIECE = 5.0
 
         override fun onAcquire(ctx: PerkContext) = refresh(ctx)
         override fun onRespawn(ctx: PerkContext) = refresh(ctx)
