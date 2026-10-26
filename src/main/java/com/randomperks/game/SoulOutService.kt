@@ -24,7 +24,7 @@ import net.minecraft.text.Text
  */
 object SoulOutService {
 
-    const val PERK_ID = "swift_soul_out"
+    const val PERK_ID = "delver_soul_out"
 
     /** 灵魂出窍持续时间: 60 秒 */
     private const val DURATION_TICKS = 60 * 20

@@ -3,7 +3,6 @@ package com.randomperks.perk.content
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
-import com.randomperks.game.SoulOutService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -231,29 +230,6 @@ object SwiftPerks {
         override fun onRespawn(ctx: PerkContext) = PerkAbilityService.clearDashUsed(ctx.player)
     }
 
-    /** 金 · 疾风: **灵魂出窍** (贮藏) —— 参考 FreeCam 类 mod: 在 V 界面点击使用后
-     *  灵魂 (相机) 离体 60 秒, 可自由飞行并穿过方块; 身体留在原地、仍会受伤,
-     *  期间无法移动/攻击/使用物品。 */
-    object SoulOut : PerkDefinition {
-        override val id = "swift_soul_out"
-        override val rarity = PerkRarity.GOLD
-        override val archetype = PerkArchetype.SWIFT
-        override fun icon() = ItemStack(Items.SOUL_LANTERN)
-
-        override val isOneTime = true
-
-        override fun onActivate(ctx: PerkContext) = SoulOutService.activate(ctx)
-        override fun onTick(ctx: PerkContext) = SoulOutService.tick(ctx)
-
-        /** 词条被移除 / 对局结束时结束灵魂状态 (客户端相机会自动归位) */
-        override fun onRemove(ctx: PerkContext) =
-            SoulOutService.end(ctx.player, ctx.state)
-
-        /** 重生时清理 (身体在灵魂状态下仍然会受伤, 死亡后要结束状态) */
-        override fun onRespawn(ctx: PerkContext) =
-            SoulOutService.end(ctx.player, ctx.state)
-    }
-
     /** 蓝 · 迅捷: **逃跑计划** —— 受到生物伤害后, 自动获得速度 II 与抗性提升 I, 持续 10 秒。
      *  (触发逻辑在 PerkWorldEventService 的 ServerLivingEntityEvents.AFTER_DAMAGE) */
     object EscapePlan : PerkDefinition {
@@ -276,6 +252,5 @@ object SwiftPerks {
         com.randomperks.perk.PerkRegistry.register(GuraShark)
         com.randomperks.perk.PerkRegistry.register(Omnimovement)
         com.randomperks.perk.PerkRegistry.register(Dash)
-        com.randomperks.perk.PerkRegistry.register(SoulOut)
     }
 }

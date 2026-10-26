@@ -59,6 +59,7 @@
 | `delver_eighty` | 八十 | Eighty | 蓝 |
 | `delver_chain_mining` | 连锁挖矿 | Chain Mining | 紫 |
 | `delver_carefree_sleep` | 无忧的安眠 | Carefree Sleep | 蓝 |
+| `delver_soul_out` | 灵魂出窍 | Out of Body | 金 |
 
 ## 丰饶 HARVEST
 
@@ -150,7 +151,6 @@
 | `swift_omnimovement` | 全向移动 | Omnimovement | 蓝 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_dash` | 冲刺 | Dash | 金 |
-| `swift_soul_out` | 灵魂出窍 | Out of Body | 金 |
 
 ## 唤法 SUMMON
 
