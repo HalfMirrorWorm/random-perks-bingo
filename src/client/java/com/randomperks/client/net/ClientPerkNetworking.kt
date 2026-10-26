@@ -43,6 +43,7 @@ import com.randomperks.network.StealOpenS2C
 import com.randomperks.network.StealPickC2S
 import com.randomperks.network.StealTargetPickC2S
 import com.randomperks.network.StealTargetsS2C
+import com.randomperks.network.SoulOutS2C
 import com.randomperks.network.WaterBucketTotemS2C
 import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
@@ -112,6 +113,13 @@ object ClientPerkNetworking {
                 ownedPerkIds = payload.perkIds.toSet()
                 // 同步给 main 源集的镜像 —— mixin 那边引用不到 client 源集的类
                 ClientPerkFlags.ownedPerkIds = ownedPerkIds
+            }
+        }
+
+        // "灵魂出鞘": 开启/关闭水平穿墙
+        ClientPlayNetworking.registerGlobalReceiver(SoulOutS2C.ID) { payload, context ->
+            context.client().execute {
+                ClientPerkFlags.soulOutActive = payload.active
             }
         }
 
@@ -360,6 +368,7 @@ object ClientPerkNetworking {
     fun reset() {
         pendingChoices = 0
         currentOptions = null
+        ClientPerkFlags.soulOutActive = false
         JockeyClientState.clear()
         MorphState.clear()
         BigSnowballState.clear()

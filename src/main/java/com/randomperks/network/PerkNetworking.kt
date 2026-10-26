@@ -56,6 +56,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(JockeyBreakFreeC2S.ID, JockeyBreakFreeC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(SoulOutS2C.ID, SoulOutS2C.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -297,5 +298,12 @@ object PerkNetworking {
     fun sendWaterBucketTotem(player: ServerPlayerEntity) {
         if (!ServerPlayNetworking.canSend(player, WaterBucketTotemS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, WaterBucketTotemS2C()) }
+    }
+
+    /** 同步"灵魂出鞘"状态 (客户端据此启用/关闭穿墙移动) */
+    fun sendSoulOut(player: ServerPlayerEntity, active: Boolean) {
+        if (!ServerPlayNetworking.canSend(player, SoulOutS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, SoulOutS2C(active)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send soul out: {}", it.toString()) }
     }
 }

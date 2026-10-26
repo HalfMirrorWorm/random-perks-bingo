@@ -54,7 +54,10 @@
     "BoneMealFlowerMixin",
     "TemperingAnvilBlockMixin",
     "TemperingAnvilUseMixin",
-    "ForgingScreenHandlerAccessor"
+    "ForgingScreenHandlerAccessor",
+    "SoulOutMovementMixin",
+    "SoulOutValidationMixin",
+    "SoulOutValidationInvoker"
   ],
   "client": [
     "EntityGlowMixin",

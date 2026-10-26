@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **124** 条词条：绿 16 / 蓝 54 / 紫 34 / 金 17 / 红 0 / 神话 3。
+共 **125** 条词条：绿 16 / 蓝 54 / 紫 34 / 金 18 / 红 0 / 神话 3。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -150,6 +150,7 @@
 | `swift_omnimovement` | 全向移动 | Omnimovement | 蓝 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_dash` | 冲刺 | Dash | 金 |
+| `swift_soul_out` | 灵魂出鞘 | Soul Out | 金 |
 
 ## 唤法 SUMMON
 

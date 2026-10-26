@@ -245,6 +245,19 @@ class PerkAbilitySyncS2C(val perkIds: List<String>) : CustomPayload {
     override fun getId() = ID
 }
 
+/** S2C: "灵魂出鞘"状态 (客户端据此启用穿墙移动) */
+class SoulOutS2C(val active: Boolean) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<SoulOutS2C>(Identifier.of("random-perks-bingo", "soul_out"))
+        val CODEC: PacketCodec<RegistryByteBuf, SoulOutS2C> = PacketCodec.of(
+            { value, buf -> buf.writeBoolean(value.active) },
+            { buf -> SoulOutS2C(buf.readBoolean()) },
+        )
+    }
+
+    override fun getId() = ID
+}
+
 /** C2S: 客户端请求打开偷窃界面 (需持有"顺手牵羊"词条) */
 class StealRequestC2S : CustomPayload {
     companion object {

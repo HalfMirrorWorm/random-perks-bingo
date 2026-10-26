@@ -7,6 +7,7 @@ import com.randomperks.game.DragonTamerService
 import com.randomperks.game.JockeyService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
+import com.randomperks.game.SoulOutService
 import com.randomperks.game.SwapService
 import com.randomperks.game.TemperingAnvilService
 import com.randomperks.game.VerminSwarmService
@@ -36,6 +37,8 @@ object BingoLifecycle {
 
     /** 清空词条状态 + 一切与对局绑定的持续效果 */
     private fun resetAll() {
+        // 必须在清空 memory 之前: 让还处于"灵魂出鞘"状态的玩家归位并恢复飞行能力
+        SoulOutService.clear()
         PerkStateManager.resetAll()
         VerminSwarmService.clear()
         LayFlatService.clear()

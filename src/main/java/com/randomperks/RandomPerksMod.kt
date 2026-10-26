@@ -15,6 +15,7 @@ import com.randomperks.game.PigMorphService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
 import com.randomperks.game.SavageMagicService
+import com.randomperks.game.SoulOutService
 import com.randomperks.game.SummonedHorseService
 import com.randomperks.game.TntThrowService
 import com.randomperks.game.VerminSwarmService
@@ -100,6 +101,8 @@ object RandomPerksMod : ModInitializer {
         // 玩家加入时同步词条能力状态 (断线重连后恢复)
         net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             PerkGrantService.syncAbilities(handler.player)
+            // "灵魂出鞘"进行中断线重连: 把穿墙标记与飞行能力补回去
+            SoulOutService.syncOnJoin(handler.player)
         }
 
         // 客户端/服务端 mod 版本一致性校验 (登录阶段, 不一致或客户端没装则拒绝进入)
