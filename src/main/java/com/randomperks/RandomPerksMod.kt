@@ -101,7 +101,7 @@ object RandomPerksMod : ModInitializer {
         // 玩家加入时同步词条能力状态 (断线重连后恢复)
         net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             PerkGrantService.syncAbilities(handler.player)
-            // "灵魂出鞘"进行中断线重连: 把穿墙标记与飞行能力补回去
+            // "灵魂出窍"进行中断线重连: 把灵魂相机状态补回去
             SoulOutService.syncOnJoin(handler.player)
         }
 

@@ -121,12 +121,6 @@ object PerkWorldEventService {
             !LoyalGuardService.tryRedirect(player, source, amount)
         }
 
-        // 受到伤害 → "灵魂出鞘": 灵魂状态下免疫普通伤害
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register { entity, source, _ ->
-            val player = entity as? ServerPlayerEntity ?: return@register true
-            !SoulOutService.blocksDamage(player, source)
-        }
-
         // 受到生物伤害 → "刺猬": 把 75% 伤害反弹给攻击者
         ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
             if (damageTaken <= 0.0f) return@register

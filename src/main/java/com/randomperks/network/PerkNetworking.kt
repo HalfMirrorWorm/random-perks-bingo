@@ -300,7 +300,7 @@ object PerkNetworking {
         runCatching { ServerPlayNetworking.send(player, WaterBucketTotemS2C()) }
     }
 
-    /** 同步"灵魂出鞘"状态 (客户端据此启用/关闭穿墙移动) */
+    /** 同步"灵魂出窍"状态 (客户端据此开启/关闭灵魂相机) */
     fun sendSoulOut(player: ServerPlayerEntity, active: Boolean) {
         if (!ServerPlayNetworking.canSend(player, SoulOutS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, SoulOutS2C(active)) }

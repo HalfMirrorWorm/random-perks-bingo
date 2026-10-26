@@ -3,6 +3,7 @@ package com.randomperks.client.net
 import com.randomperks.client.BigSnowballState
 import com.randomperks.client.GlowMarkState
 import com.randomperks.client.JockeyClientState
+import com.randomperks.client.SoulCameraClient
 import com.randomperks.game.ModVersionService
 import com.randomperks.game.MorphState
 import com.randomperks.client.screen.EquipmentPickScreen
@@ -51,6 +52,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.text.Text
@@ -116,10 +118,10 @@ object ClientPerkNetworking {
             }
         }
 
-        // "灵魂出鞘": 开启/关闭水平穿墙
+        // "灵魂出窍": 开启/关闭灵魂相机 (身体留在原地)
         ClientPlayNetworking.registerGlobalReceiver(SoulOutS2C.ID) { payload, context ->
             context.client().execute {
-                ClientPerkFlags.soulOutActive = payload.active
+                if (payload.active) SoulCameraClient.start() else SoulCameraClient.stop()
             }
         }
 
@@ -265,6 +267,11 @@ object ClientPerkNetworking {
             if (!ClientPlayNetworking.canSend(JockeyBreakFreeC2S.ID)) return@register
             ClientPlayNetworking.send(JockeyBreakFreeC2S())
         }
+
+        // 断线时清理客户端状态 —— 否则"灵魂出窍"的相机可能卡在离体状态
+        ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
+            reset()
+        }
     }
 
     /** 请求服务端生成并下发三选一 */
@@ -368,7 +375,7 @@ object ClientPerkNetworking {
     fun reset() {
         pendingChoices = 0
         currentOptions = null
-        ClientPerkFlags.soulOutActive = false
+        SoulCameraClient.stop()
         JockeyClientState.clear()
         MorphState.clear()
         BigSnowballState.clear()

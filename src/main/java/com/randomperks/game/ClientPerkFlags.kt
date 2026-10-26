@@ -14,10 +14,6 @@ object ClientPerkFlags {
     @JvmField
     var ownedPerkIds: Set<String> = emptySet()
 
-    /** "灵魂出鞘"是否正在进行中 (由 SoulOutS2C 同步; 客户端据此启用穿墙移动) */
-    @JvmField
-    var soulOutActive: Boolean = false
-
     @JvmStatic
     fun has(id: String): Boolean = id in ownedPerkIds
 }

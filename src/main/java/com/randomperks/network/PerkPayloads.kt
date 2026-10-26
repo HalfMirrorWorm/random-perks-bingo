@@ -245,7 +245,7 @@ class PerkAbilitySyncS2C(val perkIds: List<String>) : CustomPayload {
     override fun getId() = ID
 }
 
-/** S2C: "灵魂出鞘"状态 (客户端据此启用穿墙移动) */
+/** S2C: "灵魂出窍"状态 (客户端据此开启/关闭灵魂相机) */
 class SoulOutS2C(val active: Boolean) : CustomPayload {
     companion object {
         val ID = CustomPayload.Id<SoulOutS2C>(Identifier.of("random-perks-bingo", "soul_out"))

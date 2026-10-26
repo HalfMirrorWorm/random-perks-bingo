@@ -150,7 +150,7 @@
 | `swift_omnimovement` | 全向移动 | Omnimovement | 蓝 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_dash` | 冲刺 | Dash | 金 |
-| `swift_soul_out` | 灵魂出鞘 | Soul Out | 金 |
+| `swift_soul_out` | 灵魂出窍 | Out of Body | 金 |
 
 ## 唤法 SUMMON
 

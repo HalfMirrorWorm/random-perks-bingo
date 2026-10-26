@@ -37,7 +37,7 @@ object BingoLifecycle {
 
     /** 清空词条状态 + 一切与对局绑定的持续效果 */
     private fun resetAll() {
-        // 必须在清空 memory 之前: 让还处于"灵魂出鞘"状态的玩家归位并恢复飞行能力
+        // 必须在清空 memory 之前: 让还处于"灵魂出窍"状态的玩家结束灵魂相机
         SoulOutService.clear()
         PerkStateManager.resetAll()
         VerminSwarmService.clear()

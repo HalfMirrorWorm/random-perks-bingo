@@ -54,10 +54,7 @@
     "BoneMealFlowerMixin",
     "TemperingAnvilBlockMixin",
     "TemperingAnvilUseMixin",
-    "ForgingScreenHandlerAccessor",
-    "SoulOutMovementMixin",
-    "SoulOutValidationMixin",
-    "SoulOutValidationInvoker"
+    "ForgingScreenHandlerAccessor"
   ],
   "client": [
     "EntityGlowMixin",
@@ -71,7 +68,12 @@
     "BigSnowballRendererMixin",
     "BigSnowballRenderStateMixin",
     "OmnimovementMixin",
-    "ScreenInvoker"
+    "ScreenInvoker",
+    "SoulCameraMixin",
+    "SoulHandMixin",
+    "SoulLookMixin",
+    "SoulInputMixin",
+    "SoulInteractionMixin"
   ],
   "injectors": {
     "defaultRequire": 1
