@@ -14,7 +14,7 @@
     "ServerWorldAccessor",
     "WanderingTraderManagerInvoker",
     "ProjectileHitInvoker",
-    "DragonTamerMountMixin",
+    "DragonTamerActMixin",
     "DragonTamerVehicleMoveMixin",
     "ReviveArmorMixin",
     "SmallDamageGuardMixin",
