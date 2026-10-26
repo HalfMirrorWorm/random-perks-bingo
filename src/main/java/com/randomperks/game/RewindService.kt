@@ -1,7 +1,5 @@
 package com.randomperks.game
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.randomperks.RandomPerksMod
 import com.randomperks.lifecycle.BingoLifecycle
 import com.randomperks.perk.PerkContext
@@ -11,33 +9,39 @@ import com.randomperks.state.PerkStateManager
 import com.randomperks.state.PlayerPerkState
 import me.jfenn.bingo.api.BingoEvents
 import me.jfenn.bingo.api.IBingoApi
-import kotlinx.serialization.json.Json
+import me.jfenn.bingo.common.card.objective.BingoObjectiveCapture
 import me.jfenn.bingo.common.state.BingoState
+import me.jfenn.bingo.common.state.GameState
+import me.jfenn.bingo.common.team.BingoTeamKey
+import me.jfenn.bingo.common.team.TeamCompletedCard
+import me.jfenn.bingo.common.team.TeamScore
+import me.jfenn.bingo.common.team.TeamWinner
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import java.lang.reflect.Modifier
+import java.time.Duration
+import java.time.Instant
 import java.util.UUID
 
 /**
- * "逆转时间" mythic perk (low-overhead, in-process version).
+ * 「逆转时间」的数据层: 每 30 秒记录一份**进度快照**, 需要时把本局进度回退。
  *
- * <p>Every 30 seconds it snapshots two things:
+ * <p>性能设计: 快照里**只拷贝会变化的进度字段**, 不做 JSON 序列化、不反射整棵对象树,
+ * 也不复制棋盘定义/选项/显示数据:
  * <ul>
- *   <li>the serialized Yet Another Bingo game state (cards, objectives, team
- *       scores, timer, completed cards, ...), and</li>
- *   <li>the in-memory perk state of every player.</li>
+ *   <li>全局: 游戏状态、计时相关的 4 个字段</li>
+ *   <li>每支队伍: 两个分数、胜者、已完成卡片列表、当前卡 id</li>
+ *   <li>每张卡: ticks / 下一张卡 id, 以及每个格子的 7 个进度集合</li>
+ *   <li>每名玩家: 待选队列、已拥有/已使用词条、冷却、词条记忆</li>
  * </ul>
+ * 这些值要么是不可变对象 (TeamScore / TeamCompletedCard / Instant / UUID) 直接共享引用,
+ * 要么是小集合的浅拷贝, 所以一次快照是几百个微小对象, 30 秒一次的开销可以忽略。
  *
- * <p>When triggered, the live Bingo state is merged back to the snapshot taken
- * 30 minutes ago (or the start of the game) and the perk state is restored.
- * YABingo's own tick controllers then re-send the changed card tiles and
- * scoreboard to clients. No world/block snapshots are taken, so the overhead is
- * just a small JSON encode every 30 seconds.
- *
- * <p>The world, block entities and player positions/inventories are NOT rewound.
+ * <p>回溯时把这些字段直接写回**活对象**, 棋盘更新由 bingo 自己的
+ * `CardViewService.updateCard`(每 tick 比对缓存)自动推送给客户端。
+ * 世界方块、玩家位置/背包不回溯。
  */
 object RewindService {
 
@@ -48,41 +52,62 @@ object RewindService {
     private const val COUNTDOWN_TICKS = 20 * 10
     private const val MAX_SNAPSHOTS = 80
 
-    private val GSON = Gson()
-    private val PERK_LIST_TYPE = object : TypeToken<List<PerkEntryDto>>() {}.type
+    // ------------------------------------------------------------------
+    // snapshot model (只存进度, 不存棋盘定义)
+    // ------------------------------------------------------------------
 
-    /** YABingo's configured Json instance (handles its custom serializers). */
-    private val JSON: Json by lazy {
-        try {
-            Class.forName("me.jfenn.bingo.common.utils.JsonKt")
-                .getMethod("getJson")
-                .invoke(null) as Json
-        } catch (t: Throwable) {
-            RandomPerksMod.logger.warn("[Rewind] falling back to the default Json instance", t)
-            Json {
-                ignoreUnknownKeys = true
-                encodeDefaults = true
-            }
-        }
-    }
-
-    private data class BingoSave(val time: Long, val json: String)
-
-    private data class PerkSnap(val time: Long, val json: String)
-
-    private data class PendingRewind(val uuid: UUID, val perkId: String, val executeAtTick: Int)
-
-    private class PerkEntryDto(
-        var uuid: String = "",
-        var pendingOffers: List<List<String>> = emptyList(),
-        var owned: List<String> = emptyList(),
-        var used: List<String> = emptyList(),
-        var cooldowns: Map<String, Long> = emptyMap(),
-        var memory: Map<String, String> = emptyMap(),
+    private class Snapshot(
+        val time: Long,
+        val progress: ProgressSnapshot,
+        val perks: List<PerkSnapshot>,
     )
 
-    private val bingoSaves = mutableListOf<BingoSave>()
-    private val perkSnaps = mutableListOf<PerkSnap>()
+    private class ProgressSnapshot(
+        val gameState: GameState,
+        val endedAt: Instant?,
+        val timeOffline: Duration,
+        val timeAdjustment: Duration,
+        val isForfeit: Boolean,
+        val teams: Map<String, TeamSnapshot>,
+        val cards: Map<UUID, CardSnapshot>,
+    )
+
+    private class TeamSnapshot(
+        val cardId: UUID?,
+        val currentScore: TeamScore,
+        val persistentScore: TeamScore,
+        val winner: TeamWinner?,
+        val completedCards: List<TeamCompletedCard>,
+    )
+
+    private class CardSnapshot(
+        val ticks: Int,
+        val nextCardId: UUID?,
+        val objectives: Map<String, ObjectiveSnapshot>,
+    )
+
+    private class ObjectiveSnapshot(
+        val teamsSeen: Set<BingoTeamKey>,
+        val teamsAchieved: Map<BingoTeamKey, Instant>,
+        val teamsLost: Map<BingoTeamKey, Instant>,
+        val teamsOnceAchieved: Set<BingoTeamKey>,
+        val players: Map<UUID, BingoObjectiveCapture>,
+        val playersHolding: Map<UUID, BingoObjectiveCapture>,
+        val teamsProgress: Map<BingoTeamKey, Float>,
+    )
+
+    private class PerkSnapshot(
+        val uuid: UUID,
+        val pendingOffers: List<List<String>>,
+        val owned: List<String>,
+        val used: Set<String>,
+        val cooldowns: Map<String, Long>,
+        val memory: Map<String, String>,
+    )
+
+    private class PendingRewind(val uuid: UUID, val perkId: String, val executeAtTick: Int)
+
+    private val snapshots = ArrayDeque<Snapshot>()
     private val pendingReapply = mutableSetOf<UUID>()
 
     @Volatile
@@ -96,7 +121,6 @@ object RewindService {
 
     private var gameStartMillis = 0L
     private var lastSnapshotTick = 0
-    private var lastPruneTick = 0
     private var pending: PendingRewind? = null
 
     val isCapturing: Boolean get() = capturing
@@ -151,7 +175,6 @@ object RewindService {
         capturing = true
         gameStartMillis = System.currentTimeMillis()
         lastSnapshotTick = server.ticks
-        lastPruneTick = server.ticks
         takeSnapshot()
         RandomPerksMod.logger.info("[Rewind] started Bingo/perk snapshot capture")
     }
@@ -203,68 +226,77 @@ object RewindService {
             lastSnapshotTick = server.ticks
             takeSnapshot()
         }
-        if (server.ticks - lastPruneTick >= 20 * 30) {
-            lastPruneTick = server.ticks
-            prune(System.currentTimeMillis())
-        }
     }
 
     // ------------------------------------------------------------------
-    // snapshots
+    // capture
     // ------------------------------------------------------------------
 
     private fun takeSnapshot() {
+        val live = bingoState ?: return
         val now = System.currentTimeMillis()
-        captureBingo(now)
-        capturePerks(now)
-        trimSnapshots()
+        snapshots.addLast(Snapshot(now, captureProgress(live), capturePerks()))
+        prune(now)
     }
 
-    private fun captureBingo(now: Long) {
-        val state = bingoState ?: return
-        try {
-            val text = JSON.encodeToString(BingoState.serializer(), state)
-            bingoSaves.add(BingoSave(now, text))
-        } catch (t: Throwable) {
-            RandomPerksMod.logger.warn("[Rewind] failed to snapshot the Bingo state", t)
-        }
-    }
-
-    private fun capturePerks(now: Long) {
-        val entries = PerkStateManager.all().map { state ->
-            PerkEntryDto(
-                uuid = state.uuid.toString(),
-                pendingOffers = state.pendingOffers.map { it.toList() },
-                owned = state.ownedPerks.map { it.id },
-                used = state.usedPerks.toList(),
-                cooldowns = state.cooldowns.toMap(),
-                memory = state.memory.toMap(),
+    private fun captureProgress(live: BingoState) = ProgressSnapshot(
+        gameState = live.state,
+        endedAt = live.endedAt,
+        timeOffline = live.timeOffline,
+        timeAdjustment = live.timeAdjustment,
+        isForfeit = live.isForfeit,
+        teams = live.teams.values.associate { team ->
+            team.id to TeamSnapshot(
+                cardId = team.cardId,
+                currentScore = team.currentScore,
+                persistentScore = team.persistentScore,
+                winner = team.winner,
+                // TeamCompletedCard 是不可变 data class, 直接共享引用即可
+                completedCards = team.completedCards.toList(),
             )
-        }
-        perkSnaps.add(PerkSnap(now, GSON.toJson(entries)))
+        },
+        cards = live.cards.associate { card ->
+            card.id to CardSnapshot(
+                ticks = card.ticks,
+                nextCardId = card.nextCardId,
+                objectives = card.objectives.mapValues { (_, objective) ->
+                    ObjectiveSnapshot(
+                        teamsSeen = objective.teamsSeen.toSet(),
+                        teamsAchieved = objective.teamsAchieved.toMap(),
+                        teamsLost = objective.teamsLost.toMap(),
+                        teamsOnceAchieved = objective.teamsOnceAchieved.toSet(),
+                        players = objective.players.toMap(),
+                        playersHolding = objective.playersHolding.toMap(),
+                        teamsProgress = objective.teamsProgress.toMap(),
+                    )
+                },
+            )
+        },
+    )
+
+    private fun capturePerks(): List<PerkSnapshot> = PerkStateManager.all().map { state ->
+        PerkSnapshot(
+            uuid = state.uuid,
+            pendingOffers = state.pendingOffers.map { it.toList() },
+            owned = state.ownedPerks.map { it.id },
+            used = state.usedPerks.toSet(),
+            cooldowns = state.cooldowns.toMap(),
+            memory = state.memory.toMap(),
+        )
     }
 
     private fun prune(now: Long) {
         val cutoff = now - RETAIN_MILLIS
-        bingoSaves.removeAll { it.time < cutoff }
-        perkSnaps.removeAll { it.time < cutoff }
-        trimSnapshots()
-    }
-
-    private fun trimSnapshots() {
-        trim(bingoSaves, MAX_SNAPSHOTS)
-        trim(perkSnaps, MAX_SNAPSHOTS)
-    }
-
-    private fun <T> trim(list: MutableList<T>, max: Int) {
-        if (list.size > max) {
-            list.subList(0, list.size - max).clear()
+        while (snapshots.isNotEmpty() && snapshots.first().time < cutoff) {
+            snapshots.removeFirst()
+        }
+        while (snapshots.size > MAX_SNAPSHOTS) {
+            snapshots.removeFirst()
         }
     }
 
     private fun clearCaptureData() {
-        bingoSaves.clear()
-        perkSnaps.clear()
+        snapshots.clear()
     }
 
     // ------------------------------------------------------------------
@@ -279,11 +311,18 @@ object RewindService {
         val target = maxOf(gameStartMillis, System.currentTimeMillis() - LOOKBACK_MILLIS)
         val minutes = ((System.currentTimeMillis() - target) / 60_000L).toInt().coerceAtLeast(0)
 
+        val snap = pickSnapshot(target)
+        if (snap == null) {
+            broadcast(server, "【逆转时间】没有可用的历史记录。")
+            restoring = false
+            return
+        }
+
         broadcast(server, "【逆转时间】时间开始倒流……")
 
         try {
-            restoreBingo(target)
-            restorePerks(server, target, request.uuid, request.perkId)
+            restoreProgress(snap, System.currentTimeMillis() - snap.time)
+            restorePerks(server, snap, request.uuid, request.perkId)
             broadcast(server, "【逆转时间】本局进度与词条已回到 $minutes 分钟前。")
             RandomPerksMod.logger.info("[Rewind] rewound Bingo progress by {} minutes", minutes)
         } catch (t: Throwable) {
@@ -297,149 +336,56 @@ object RewindService {
         }
     }
 
-    private fun restoreBingo(target: Long) {
-        val live = bingoState ?: return
+    private fun pickSnapshot(target: Long): Snapshot? {
         val cutoff = target + SNAPSHOT_SLACK_MILLIS
-        val snap = bingoSaves.filter { it.time <= cutoff }.maxByOrNull { it.time }
-            ?: bingoSaves.minByOrNull { it.time }
-            ?: return
-
-        val old = try {
-            JSON.decodeFromString(BingoState.serializer(), snap.json)
-        } catch (t: Throwable) {
-            RandomPerksMod.logger.error("[Rewind] failed to decode the Bingo snapshot", t)
-            return
-        }
-
-        val rewindMillis = (System.currentTimeMillis() - snap.time).coerceAtLeast(0L)
-        mergeBingoState(live, old, rewindMillis)
+        return snapshots.lastOrNull { it.time <= cutoff } ?: snapshots.firstOrNull()
     }
 
-    private fun mergeBingoState(live: BingoState, old: BingoState, rewindMillis: Long) {
-        // Keep the current game id / start time; only rewind the game progress.
-        // The Bingo timer is derived from (updatedAt - startedAt) + timeAdjustment:
-        // subtract the rewind amount so the displayed/remaining time also moves back.
-        live.state = old.state
-        if (live.startedAt == null) {
-            live.startedAt = old.startedAt
-        }
-        live.updatedAt = java.time.Instant.now()
-        live.endedAt = old.endedAt
-        live.timeOffline = old.timeOffline
-        live.timeAdjustment = old.timeAdjustment.minusMillis(rewindMillis)
-        live.isForfeit = old.isForfeit
+    private fun restoreProgress(snap: Snapshot, rewindMillis: Long) {
+        val live = bingoState ?: return
+        val progress = snap.progress
 
-        // Teams: restore scores/cards/objective state; keep the current membership.
-        for ((key, oldTeam) in old.teams) {
-            val liveTeam = live.teams[key] ?: continue
-            // Keep the live team's map/card-view cache: CardViewService uses it
-            // to detect which tiles changed and to send the card update packets.
-            copyMutableFields(oldTeam, liveTeam, skip = setOf("players", "map", "cardId"))
-            if (live.cards.any { it.id == oldTeam.cardId }) {
-                liveTeam.cardId = oldTeam.cardId
-            }
+        live.state = progress.gameState
+        live.endedAt = progress.endedAt
+        live.timeOffline = progress.timeOffline
+        // 计时 = (updatedAt - startedAt) + timeAdjustment - timeOffline
+        // 把回溯掉的那段时间从 timeAdjustment 里减掉, 剩余时间才会跟着后退
+        live.timeAdjustment = progress.timeAdjustment.minusMillis(rewindMillis.coerceAtLeast(0L))
+        live.isForfeit = progress.isForfeit
+        live.updatedAt = Instant.now()
 
-            val liveCards = live.cards.associateBy { it.id }
-            val mapped = liveTeam.completedCards.map { completed ->
-                val liveCard = liveCards[completed.card.id]
-                if (liveCard != null) completed.copy(card = liveCard) else completed
-            }
-            liveTeam.completedCards.clear()
-            liveTeam.completedCards.addAll(mapped)
+        val liveCards = live.cards.associateBy { it.id }
+
+        // 队伍: 恢复分数/胜者/已完成卡片; 队伍成员与地图缓存保持当前值
+        for (team in live.teams.values) {
+            val saved = progress.teams[team.id] ?: continue
+            team.currentScore = saved.currentScore
+            team.persistentScore = saved.persistentScore
+            team.winner = saved.winner
+            saved.cardId?.let { if (it in liveCards) team.cardId = it }
+
+            team.completedCards.clear()
+            team.completedCards.addAll(saved.completedCards)
         }
 
-        // Cards: copy each objective's state into the live objective object, so
-        // transient fields like the resolved display/item icon stay intact.
-        for (liveCard in live.cards) {
-            val oldCard = old.cards.find { it.id == liveCard.id } ?: continue
-            liveCard.nextCardId = oldCard.nextCardId
-            liveCard.ticks = oldCard.ticks
+        // 卡片: 恢复重掷计数与每个格子的进度 (显示数据/图标保持当前值)
+        for (card in live.cards) {
+            val saved = progress.cards[card.id] ?: continue
+            card.ticks = saved.ticks
+            card.nextCardId = saved.nextCardId
 
-            for ((objectiveId, liveObjective) in liveCard.objectives) {
-                val oldObjective = oldCard.objectives[objectiveId] ?: continue
-                copyMutableFields(oldObjective, liveObjective)
+            for ((objectiveId, objective) in card.objectives) {
+                val objectiveSaved = saved.objectives[objectiveId] ?: continue
+                objective.teamsSeen = objectiveSaved.teamsSeen.toMutableSet()
+                objective.teamsAchieved = objectiveSaved.teamsAchieved.toMutableMap()
+                objective.teamsLost = objectiveSaved.teamsLost.toMutableMap()
+                objective.teamsOnceAchieved.clear()
+                objective.teamsOnceAchieved.addAll(objectiveSaved.teamsOnceAchieved)
+                objective.players = objectiveSaved.players.toMutableMap()
+                objective.playersHolding = objectiveSaved.playersHolding.toMutableMap()
+                objective.teamsProgress = objectiveSaved.teamsProgress.toMutableMap()
             }
         }
-    }
-
-    /**
-     * Copies every non-static, non-transient field from [src] to [dst].
-     * Final mutable collections are merged in place; other final fields are
-     * left alone. This lets us restore Kotlin data-class state without touching
-     * transient/resolved display data.
-     */
-    private fun copyMutableFields(src: Any, dst: Any, skip: Set<String> = emptySet()) {
-        var type: Class<*>? = src.javaClass
-        while (type != null && type != Any::class.java) {
-            for (field in type.declaredFields) {
-                if (Modifier.isStatic(field.modifiers) || Modifier.isTransient(field.modifiers)) continue
-                if (field.name in skip) continue
-                // kotlinx @Transient 的字段不写进快照, 反序列化后是默认值 (如 objective.display
-                // 会是 EMPTY)。若把它们覆盖回活对象, 棋盘格子的图标/装饰/点击行为会丢失。
-                if (isRuntimeOnly(type, field.name)) continue
-
-                try {
-                    field.isAccessible = true
-                    if (!Modifier.isFinal(field.modifiers)) {
-                        field.set(dst, copyValue(field.get(src)))
-                    } else {
-                        val srcValue = field.get(src) ?: continue
-                        val dstValue = field.get(dst) ?: continue
-                        when {
-                            srcValue is MutableMap<*, *> && dstValue is MutableMap<*, *> -> {
-                                @Suppress("UNCHECKED_CAST")
-                                (dstValue as MutableMap<Any?, Any?>).let { target ->
-                                    target.clear()
-                                    target.putAll(srcValue as Map<Any?, Any?>)
-                                }
-                            }
-                            srcValue is MutableCollection<*> && dstValue is MutableCollection<*> -> {
-                                @Suppress("UNCHECKED_CAST")
-                                (dstValue as MutableCollection<Any?>).let { target ->
-                                    target.clear()
-                                    target.addAll(srcValue as Collection<Any?>)
-                                }
-                            }
-                        }
-                    }
-                } catch (_: Throwable) {
-                    // ignore fields that cannot be copied
-                }
-            }
-            type = type.superclass
-        }
-    }
-
-    /**
-     * 该字段是否被 kotlinx.serialization 标记为 `@Transient`(只存在于内存、不写进快照)。
-     *
-     * Kotlin 把**属性**上的注解放在编译器生成的合成方法上, 字段本身没有这个注解,
-     * 所以不能直接用 `field.isAnnotationPresent`。属性 `display` → `getDisplay$annotations()`,
-     * 属性 `isInitialized` → `isInitialized$annotations()`。
-     */
-    private fun isRuntimeOnly(owner: Class<*>, fieldName: String): Boolean {
-        val capitalized = fieldName.replaceFirstChar { it.uppercaseChar() }
-        val candidates = arrayOf("$fieldName\$annotations", "get$capitalized\$annotations")
-        var type: Class<*>? = owner
-        while (type != null && type != Any::class.java) {
-            for (candidate in candidates) {
-                val method = try {
-                    type.getDeclaredMethod(candidate)
-                } catch (_: NoSuchMethodException) {
-                    null
-                } ?: continue
-                if (method.isAnnotationPresent(kotlinx.serialization.Transient::class.java)) return true
-            }
-            type = type.superclass
-        }
-        return false
-    }
-
-    private fun copyValue(value: Any?): Any? = when (value) {
-        is MutableMap<*, *> -> value.toMutableMap()
-        is MutableSet<*> -> value.toMutableSet()
-        is MutableList<*> -> value.toMutableList()
-        else -> value
     }
 
     // ------------------------------------------------------------------
@@ -448,41 +394,25 @@ object RewindService {
 
     private fun restorePerks(
         server: MinecraftServer,
-        target: Long,
+        snap: Snapshot,
         activatorUuid: UUID,
         perkId: String,
     ) {
-        val cutoff = target + SNAPSHOT_SLACK_MILLIS
-        val snap = perkSnaps.filter { it.time <= cutoff }.maxByOrNull { it.time }
-            ?: perkSnaps.minByOrNull { it.time }
-            ?: return
-
         BingoLifecycle.clearAllPerkState()
 
-        val entries: List<PerkEntryDto> = try {
-            GSON.fromJson(snap.json, PERK_LIST_TYPE) ?: emptyList()
-        } catch (t: Throwable) {
-            RandomPerksMod.logger.error("[Rewind] failed to parse the perk snapshot", t)
-            emptyList()
-        }
-
-        for (dto in entries) {
-            val state = try {
-                PerkStateManager.getOrCreate(UUID.fromString(dto.uuid))
-            } catch (t: Throwable) {
-                continue
-            }
+        for (entry in snap.perks) {
+            val state = PerkStateManager.getOrCreate(entry.uuid)
             state.pendingOffers.clear()
             state.ownedPerks.clear()
             state.usedPerks.clear()
             state.cooldowns.clear()
             state.memory.clear()
 
-            state.pendingOffers.addAll(dto.pendingOffers.map { it.toList() })
-            state.ownedPerks.addAll(dto.owned.mapNotNull { PerkRegistry.byId(it) })
-            state.usedPerks.addAll(dto.used)
-            state.cooldowns.putAll(dto.cooldowns)
-            state.memory.putAll(dto.memory)
+            state.pendingOffers.addAll(entry.pendingOffers.map { it.toList() })
+            state.ownedPerks.addAll(entry.owned.mapNotNull { PerkRegistry.byId(it) })
+            state.usedPerks.addAll(entry.used)
+            state.cooldowns.putAll(entry.cooldowns)
+            state.memory.putAll(entry.memory)
         }
 
         // The rewind perk itself is not undone: it stays owned and marked as used.
@@ -529,4 +459,3 @@ object RewindService {
         }
     }
 }
-
