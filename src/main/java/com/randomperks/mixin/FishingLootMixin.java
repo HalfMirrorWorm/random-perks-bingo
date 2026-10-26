@@ -13,18 +13,18 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
- * "渔者之幸" —— 钓鱼时额外有 10% 概率多钓一个鹦鹉螺壳。
+ * "渔者之幸" —— 钓鱼时额外有 50% 概率多钓一个鹦鹉螺壳。
  *
  * 拦的是 {@code FishingBobberEntity.use(ItemStack)} 里对钓鱼战利品表的 generateLoot 调用:
  * 它发生在掉落列表生成完、物品撒出去之前, 正好可以往列表里加一项。
  *
- * 幸运属性本身已经通过参数里的 {@code owner.getLuck()} 生效 (它提高宝藏类的权重),
+ * 钓饵 III / 海之眷顾 III 由 {@link FishingEnchantMixin} 在浮标创建时注入,
  * 这里只负责鹦鹉螺壳这额外的一层。
  */
 @Mixin(FishingBobberEntity.class)
 public class FishingLootMixin {
 
-    private static final float BONUS_NAUTILUS_CHANCE = 0.10f;
+    private static final float BONUS_NAUTILUS_CHANCE = 0.50f;
 
     @Redirect(
             method = "use",

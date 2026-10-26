@@ -366,7 +366,7 @@
   "random-perks-bingo.perk.harvest_dingdong_chicken.name": "Ding Dong Chicken",
   "random-perks-bingo.perk.harvest_dingdong_chicken.desc": "Gain 4 chicken spawn eggs; dye any chicken into the matching color-variant breed.",
   "random-perks-bingo.perk.harvest_lucky_fishing.name": "Fisher's Fortune",
-  "random-perks-bingo.perk.harvest_lucky_fishing.desc": "Luck +8; each catch has an extra 10% chance to include a nautilus shell.",
+  "random-perks-bingo.perk.harvest_lucky_fishing.desc": "Fishing always benefits from Lure III and Luck of the Sea III, even without an enchanted rod; each catch has an extra 50% chance to include a nautilus shell.",
   "random-perks-bingo.message.old_priest_failed": "No room to stand nearby, so the Old Priest could not spawn.",
   "random-perks-bingo.perk.summon_tnt_throw.name": "TNT Thrower",
   "random-perks-bingo.perk.summon_tnt_throw.desc": "Gain 4 TNT; TNT can be thrown to explode.",

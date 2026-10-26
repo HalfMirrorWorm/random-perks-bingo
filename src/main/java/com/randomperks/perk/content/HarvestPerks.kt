@@ -591,24 +591,14 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · **渔者之幸** —— 幸运 +8; 钓鱼时额外有 10% 概率多钓一个鹦鹉螺壳。
-     *  幸运本身就会提高宝藏类的权重 (5% → 约 21%), 鹦鹉螺壳是额外的一层。 */
+    /** 绿 · **渔者之幸** —— 钓鱼时默认拥有钓饵 III 与海之眷顾 III (不需要鱼竿附魔);
+     *  每次钓起额外有 50% 概率多钓一个鹦鹉螺壳。
+     *  附魔效果由 FishingEnchantMixin 在浮标创建时注入, 鹦鹉螺壳由 FishingLootMixin 追加。 */
     object LuckyFishing : PerkDefinition {
         override val id = "harvest_lucky_fishing"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.NAUTILUS_SHELL)
-
-        private val MOD_LUCK = Identifier.of("random-perks-bingo", "lucky_fishing_luck")
-
-        override fun onAcquire(ctx: PerkContext) = apply(ctx)
-        override fun onRespawn(ctx: PerkContext) = apply(ctx)
-
-        private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.LUCK, MOD_LUCK, 8.0)
-
-        override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.LUCK, MOD_LUCK)
     }
 
     /** 蓝 · 丰饶: **变群友** —— 你永久变成一只猪:

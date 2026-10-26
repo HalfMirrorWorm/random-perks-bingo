@@ -51,6 +51,7 @@
     "MorphDimensionsMixin",
     "MorphSoundMixin",
     "FishingLootMixin",
+    "FishingEnchantMixin",
     "BoneMealFlowerMixin",
     "TemperingAnvilBlockMixin",
     "TemperingAnvilUseMixin",
