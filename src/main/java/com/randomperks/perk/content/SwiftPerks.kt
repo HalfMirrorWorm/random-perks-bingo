@@ -78,8 +78,9 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.JUMP_STRENGTH, MOD_JUMP)
     }
 
-    /** 紫 · 风之步伐: 疾跑时移动速度额外 +20% —— 与原版疾跑加成同机制 (属性修饰符),
-     *  由 WindStrideMixin / WindStrideClientMixin 在疾跑状态切换时挂/摘 (无轮询, 即开即停) */
+    /** 紫 · 风之步伐: 疾跑速度比原版疾跑再快 20% (1.3 → 1.56 倍基础速度) ——
+     *  与原版疾跑加成同机制 (属性修饰符), 由 WindStrideMixin / WindStrideClientMixin
+     *  在疾跑状态切换时挂/摘 (无轮询, 即开即停) */
     object WindStride : PerkDefinition {
         override val id = "swift_wind_stride"
         override val rarity = PerkRarity.PURPLE

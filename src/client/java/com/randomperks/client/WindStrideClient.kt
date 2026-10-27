@@ -16,7 +16,7 @@ object WindStrideClient {
 
     // 必须与服务端 PerkBoostQuery 中的同名定义保持一致
     private val WIND_STRIDE_MOD = Identifier.of("random-perks-bingo", "wind_stride_sprint")
-    private const val WIND_STRIDE_BONUS = 0.2
+    private const val WIND_STRIDE_BONUS = 0.26
     private const val WIND_STRIDE_PERK = "swift_wind_stride"
 
     /** 疾跑状态变化时由 WindStrideClientMixin 调用 */

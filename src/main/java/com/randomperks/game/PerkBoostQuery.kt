@@ -43,10 +43,11 @@ object PerkBoostQuery {
     // ---- "风之步伐": 疾跑加成 (与原版疾跑修饰符同机制, 由 WindStrideMixin 在疾跑状态切换时调用) ----
 
     private val WIND_STRIDE_MOD = Identifier.of("random-perks-bingo", "wind_stride_sprint")
-    private const val WIND_STRIDE_BONUS = 0.2
+    private const val WIND_STRIDE_BONUS = 0.26
     private const val WIND_STRIDE_PERK = "swift_wind_stride"
 
-    /** 疾跑状态变化时: 持有词条 → 挂/摘 +20% 疾跑加成 (与原版 +30% 疾跑加成同桶相加 → 疾跑 1.5 倍) */
+    /** 疾跑状态变化时: 持有词条 → 挂/摘 +26% 疾跑加成
+     *  (与原版 +30% 疾跑加成同桶相加 → 疾跑 1.56 倍, 即比原版疾跑再快 20%) */
     fun updateWindStride(player: ServerPlayerEntity, sprinting: Boolean) {
         if (PerkStateManager.get(player.uuid)?.hasPerk(WIND_STRIDE_PERK) != true) return
         if (sprinting) applyWindStride(player) else clearWindStride(player)
