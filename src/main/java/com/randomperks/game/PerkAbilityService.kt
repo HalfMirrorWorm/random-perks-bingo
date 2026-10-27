@@ -29,6 +29,7 @@ object PerkAbilityService {
             clearDoubleJumpUsed(player)
             return
         }
+        if (player.isTouchingWater) return  // 水中不可用 (否则等于水中跳跃)
         if (player.isGliding) return      // 滑翔中不可用 (堵住"无限飞行"路径)
         if (player.getVehicle() != null) return  // 骑乘中不可用 (空格属于载具)
 

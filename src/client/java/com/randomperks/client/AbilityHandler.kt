@@ -68,8 +68,10 @@ object AbilityHandler {
 
             val hasPerk = ClientPerkNetworking.hasPerk(DOUBLE_JUMP_PERK)
             val airborne = !player.isOnGround && !player.isGliding && player.getVehicle() == null
+            // 二段跳额外要求不在水中 (否则等于"水中跳跃"; 冲刺不受此限制)
+            val canDoubleJump = airborne && !player.isTouchingWater
 
-            if (justPressed && airborne && !doubleJumpUsedThisAirTime && airTicks >= 2 && hasPerk) {
+            if (justPressed && canDoubleJump && !doubleJumpUsedThisAirTime && airTicks >= 2 && hasPerk) {
                 // 二段跳 (装备鞘翅时同样优先于滑翔)
                 doubleJumpUsedThisAirTime = true
                 glideSuppressedUntilRelease = true
@@ -119,7 +121,7 @@ object AbilityHandler {
 
             // 给原版 checkGliding 的让位开关 (下一 tick 生效):
             // 二段跳还没用 → 优先二段跳; 二段跳后仍按住 → 继续压住滑翔, 直到松手后的下一次按下
-            DoubleJumpGlideGate.suppress = hasPerk && airborne &&
+            DoubleJumpGlideGate.suppress = hasPerk && canDoubleJump &&
                 (!doubleJumpUsedThisAirTime || glideSuppressedUntilRelease)
         }
     }
