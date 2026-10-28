@@ -422,7 +422,7 @@ object HunterPerks {
         }
     }
 
-    /** 金 · 猎杀: 每击杀一名**敌方玩家** (非自己/非同队), 永久 +2 最大生命;
+    /** 紫 · 猎杀: 每击杀一名**敌方玩家** (非自己/非同队), 永久 +2 最大生命;
      *  通过本词条最多累计 +20 (10 颗心), 重生保留 */
     object Headhunter : PerkDefinition {
         override val id = "hunter_headhunter"
@@ -917,7 +917,7 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: **刺猬** —— 受到其他生物伤害时, 攻击者受到该次伤害 75% 的反弹
+    /** 金 · 猎杀: **刺猬** —— 受到其他生物伤害时, 攻击者受到该次伤害 75% 的反弹
      *  (反弹使用 THORNS 伤害类型, 不会与另一个刺猬无限递归) */
     object Hedgehog : PerkDefinition {
         override val id = "hunter_hedgehog"
