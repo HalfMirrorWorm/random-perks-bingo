@@ -93,27 +93,14 @@ object DelverPerks {
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.HASTE)
     }
 
-    /** 紫 · 矿脉嗅觉: 挖掘矿石时有概率额外掉落一份 (基础 8%; 每拥有一个其他深掘词条 +3%)
-     *  —— 以**掉落物**形态落在地上, 因此会参与"透视之眼"的 35% 消失惩罚等一切掉落物交互 */
+    /** 紫 · 矿脉嗅觉: 挖掘矿石时 18% 概率额外掉落一份, 每拥有一个其他深掘词条 +3%
+     *  —— 判定与掉落由 MiningDropMixin 在 Block.dropStacks 统一处理 (与收藏家合并概率,
+     *  命中时把整份掉落翻倍, 而不是额外重掷一次时运) */
     object VeinScent : PerkDefinition {
         override val id = "delver_vein_scent"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.RAW_IRON)
-
-        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: net.minecraft.block.BlockState) {
-            if (!isOreBlock(blockState)) return
-            // 联动"透视之眼"代价: 本 tick 该玩家的挖块掉落若被抑制, 额外份一并抑制
-            val suppressTick = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY]
-            if (suppressTick != null && suppressTick == (ctx.player.server?.ticks ?: -1).toString()) return
-            // 流派联动: 每拥有一个其他深掘词条, 概率 +3% (触发时实时计算, 无需缓存/事件)
-            val allies = (ctx.countArchetype(PerkArchetype.DELVER) - 1).coerceAtLeast(0)
-            val chance = 0.08f + 0.03f * allies
-            if (ctx.player.random.nextFloat() >= chance) return
-
-            val world = ctx.player.world as? ServerWorld ?: return
-            PerkEffects.spawnBlockDrops(ctx.player, world, pos, blockState)
-        }
     }
 
     /** 蓝 · 匠造: 未穿护甲时获得 +7 护甲值 (鞘翅不算护甲) */
@@ -214,8 +201,8 @@ object DelverPerks {
         }
     }
 
-    /** 紫 · 深掘: 破坏矿石或石头时 40% 概率额外生成一份该方块的掉落 (时运 II 风味),
-     *  但挖掘速度降低 50% (不影响攻速); 额外份为掉落物形态, 参与透视之眼惩罚等一切掉落物交互 */
+    /** 紫 · 深掘: 破坏矿石或石头时 40% 概率额外获得一份掉落, 但挖掘速度降低 50%。
+     *  概率判定与掉落由 MiningDropMixin 统一处理 (与矿脉嗅觉合并概率)。 */
     object Collector : PerkDefinition {
         override val id = "delver_collector"
         override val rarity = PerkRarity.PURPLE
@@ -223,7 +210,6 @@ object DelverPerks {
         override fun icon() = ItemStack(Items.DIAMOND)
 
         private val MOD_MINING = Identifier.of("random-perks-bingo", "collector_mining")
-        private const val EXTRA_DROP_CHANCE = 0.40f
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
@@ -235,18 +221,6 @@ object DelverPerks {
 
         override fun onRemove(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
-
-        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
-            // 只对矿石与石头生效
-            if (!isOreBlock(blockState) && !isStoneBlock(blockState)) return
-            // 联动"透视之眼"代价: 本 tick 该玩家的挖块掉落若被抑制, 额外份一并抑制 (与矿脉嗅觉同范式)
-            val suppressTick = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY]
-            if (suppressTick != null && suppressTick == (ctx.player.server?.ticks ?: -1).toString()) return
-            if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return
-
-            val world = ctx.player.world as? ServerWorld ?: return
-            PerkEffects.spawnBlockDrops(ctx.player, world, pos, blockState)
-        }
     }
 
     /** 矿石判定 (矿脉嗅觉/收藏家共用): 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */

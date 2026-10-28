@@ -101,11 +101,11 @@ object PerkBoostQuery {
         player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)?.removeModifier(WIND_STRIDE_MOD)
     }
 
-    // ---- "透视之眼"的代价: 35% 不掉落 (由 XrayDropSuppressMixin 在 Block.dropStacks 拦截) ----
+    // ---- "透视之眼"的代价: 35% 不掉落 (由 MiningDropMixin 在 Block.dropStacks 拦截) ----
 
     private const val XRAY_PERK = "delver_xray_vision"
 
-    /** 记录"该玩家本 tick 的挖块掉落被透视惩罚抑制"的 tick (供矿脉嗅觉等联动词条查询) */
+    /** 记录"该玩家本 tick 的挖块掉落被透视惩罚抑制"的 tick (保留给旧逻辑查询) */
     const val XRAY_SUPPRESS_TICK_KEY = "xray_suppress_tick"
 
     /** 用镐破坏方块时是否应抑制本次掉落生成 (持有词条 + 手持镐 + 35%) */
@@ -114,11 +114,61 @@ object PerkBoostQuery {
         if (!state.hasPerk(XRAY_PERK)) return false
         if (!tool.isIn(ItemTags.PICKAXES)) return false
         if (player.random.nextFloat() >= 0.35f) return false
-        // 抑制生效: 留下本 tick 的标记 —— "矿脉嗅觉"等额外掉落会据此一并抑制, 保证
-        // 额外份同样被 X-Ray 惩罚 (不生成式下唯一能让联动成立的方式)
         state.memory[XRAY_SUPPRESS_TICK_KEY] = (player.server?.ticks ?: 0).toString()
         return true
     }
+
+    // ---- "矿脉嗅觉" + "收藏家": 合并概率, 命中时整份掉落翻倍 (由 MiningDropMixin 调用) ----
+
+    private const val VEIN_SCENT_PERK = "delver_vein_scent"
+    private const val COLLECTOR_PERK = "delver_collector"
+
+    /** 矿脉嗅觉基础概率 */
+    private const val VEIN_SCENT_BASE = 0.18f
+
+    /** 每拥有一个其他深掘词条的概率加成 */
+    private const val VEIN_SCENT_PER_ALLY = 0.03f
+
+    /** 收藏家的额外掉落概率 */
+    private const val COLLECTOR_CHANCE = 0.40f
+
+    /**
+     * 本次挖掘"额外一份"的总概率 (0 = 不触发)。
+     *
+     * 多个词条的概率**合并为一个**判定: `1 - (1-p1)(1-p2)` —— 等价于"至少命中一个",
+     * 但只掷一次随机数、只结算一次时运, 命中时用同一份掉落结果生成两遍。
+     *
+     * 注意: 透视之眼的抑制在调用方**先**判定, 抑制时直接返回、不会走到这里,
+     * 所以"额外份也被透视惩罚"是天然成立的 (不需要再传 suppress 标记)。
+     */
+    fun miningExtraDropChance(player: PlayerEntity, blockState: net.minecraft.block.BlockState): Float {
+        val state = PerkStateManager.get(player.uuid) ?: return 0f
+        var chance = 0f
+
+        if (state.hasPerk(VEIN_SCENT_PERK) && isOreBlock(blockState)) {
+            val allies = state.ownedPerks.count {
+                it.archetype == com.randomperks.perk.PerkArchetype.DELVER
+            } - 1
+            val vein = VEIN_SCENT_BASE + VEIN_SCENT_PER_ALLY * allies.coerceAtLeast(0)
+            chance = combineChance(chance, vein)
+        }
+
+        if (state.hasPerk(COLLECTOR_PERK) && (isOreBlock(blockState) || isStoneBlock(blockState))) {
+            chance = combineChance(chance, COLLECTOR_CHANCE)
+        }
+
+        return chance.coerceIn(0f, 1f)
+    }
+
+    /** 两个独立概率"至少命中一个"的合并值 */
+    private fun combineChance(a: Float, b: Float): Float = 1f - (1f - a) * (1f - b)
+
+    /** "石头"判定 (与 DelverPerks.isStoneBlock 一致) */
+    private fun isStoneBlock(state: net.minecraft.block.BlockState): Boolean =
+        state.isIn(net.minecraft.registry.tag.BlockTags.BASE_STONE_OVERWORLD) ||
+            state.isIn(net.minecraft.registry.tag.BlockTags.BASE_STONE_NETHER) ||
+            state.isOf(net.minecraft.block.Blocks.COBBLESTONE) ||
+            state.isOf(net.minecraft.block.Blocks.COBBLED_DEEPSLATE)
 
     // "喵人斧"不走自定义秒杀逻辑 —— 它是一把**金斧 + 锋利 1145 + 1 点耐久**,
     // 靠荒谬的附魔等级本身打出致命伤害 (见 ArtisanPerks.NyaAxe)。

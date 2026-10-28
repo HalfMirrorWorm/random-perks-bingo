@@ -164,7 +164,7 @@
   "random-perks-bingo.perk.delver_haste.name": "Deep Focus",
   "random-perks-bingo.perk.delver_haste.desc": "Permanent Haste II.",
   "random-perks-bingo.perk.delver_vein_scent.name": "Vein Scent",
-  "random-perks-bingo.perk.delver_vein_scent.desc": "Mining ores has an 8% chance to drop an extra copy, +3% for each other Delver perk.",
+  "random-perks-bingo.perk.delver_vein_scent.desc": "Mining ores has an 18% chance to drop an extra copy, +3% for each other Delver perk.",
   "random-perks-bingo.perk.delver_xray_vision.name": "X-Ray Vision",
   "random-perks-bingo.perk.delver_xray_vision.desc": "Ores within 10 blocks glow; 35% of items you mine with a pickaxe vanish.",
   "random-perks-bingo.perk.delver_lucky_digger.name": "Lucky Digger",
