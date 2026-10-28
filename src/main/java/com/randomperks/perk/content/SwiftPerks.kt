@@ -207,9 +207,14 @@ object SwiftPerks {
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.FEATHER)
 
-        /** 旧实现是常驻 +30% 移速修饰符, 而且是 addPersistentModifier (会写进玩家 NBT)。
-         *  改成疾跑判定放行后不再需要它 —— 获得/重生/失去时都主动清一遍, 老存档里的残留
-         *  也能顺带抹掉。 */
+        /**
+         * 【兼容清理 · 可移除】旧实现给的是常驻 +30% 移速修饰符, 而且用 addPersistentModifier
+         * 写进了玩家 NBT。现版本改成"放行疾跑判定"后不再需要它, 这里保留清理只为抹掉**旧存档**
+         * 里残留的修饰符 (旧版客户端曾获得过该词条的玩家)。
+         *
+         * 何时可以删掉这三行 + [LEGACY_SPEED]: 确认没有玩家存档还带着旧版残留时
+         * (旧版已停止分发一段时间, 且没有玩家从旧版本升级上来)。
+         */
         private val LEGACY_SPEED = Identifier.of("random-perks-bingo", "omnimovement_speed")
 
         override fun onAcquire(ctx: PerkContext) = clearLegacy(ctx)
