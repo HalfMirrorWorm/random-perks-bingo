@@ -34,8 +34,8 @@ object DelverPerks {
 
     private val MOD_MINING = Identifier.of("random-perks-bingo", "delver_mining")
 
-    /** 蓝 · 矿工手腕: 挖掘速度 +15%; 挖**矿石**时总计 +40%
-     *  (矿石部分由 MinerWristMixin 在 PlayerEntity.getBlockBreakingSpeed 里补足到 1.40 倍) */
+    /** 蓝 · 矿工手腕: 挖掘速度 +15%; 挖**矿石**时再额外 ×1.25 (合计约 ×1.4375)
+     *  (矿石部分由 MinerWristMixin 在 PlayerEntity.getBlockBreakingSpeed 里乘算) */
     object Mining : PerkDefinition {
         override val id = "delver_mining"
         override val rarity = PerkRarity.BLUE

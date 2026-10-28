@@ -36,11 +36,8 @@ object PerkBoostQuery {
 
     private const val MINER_WRIST_PERK = "delver_mining"
 
-    /** 普通方块的总倍率 (与 DelverPerks 的 +0.15 属性一致) */
-    private const val MINER_WRIST_BASE_MULTIPLIER = 1.15f
-
-    /** 矿石的**总**倍率: +15% 属性已经乘过一遍, 这里补到 +40% (1.40 / 1.15) */
-    private const val MINER_WRIST_ORE_MULTIPLIER = 1.40f / MINER_WRIST_BASE_MULTIPLIER
+    /** 矿石的额外倍率: 在 +15% 属性之上再乘 1.25 (合计约 1.4375 倍) */
+    private const val MINER_WRIST_ORE_MULTIPLIER = 1.25f
 
     /** 不是矿石的方块返回 1.0; 持有"矿工手腕"且目标是矿石时返回额外倍率 */
     fun miningBreakSpeedMultiplier(
