@@ -333,7 +333,7 @@
   "random-perks-bingo.perk.swift_escape_plan.name": "Escape Plan",
   "random-perks-bingo.perk.swift_escape_plan.desc": "Taking damage from a living thing grants Speed II and Resistance I for 10 seconds.",
   "random-perks-bingo.perk.swift_dash.name": "Dash",
-  "random-perks-bingo.perk.swift_dash.desc": "Press sneak in mid-air to dash forward (once per airtime, 3s cooldown).",
+  "random-perks-bingo.perk.swift_dash.desc": "Press sneak in mid-air to dash forward, 3s cooldown.",
   "random-perks-bingo.perk.delver_soul_out.name": "Out of Body",
   "random-perks-bingo.perk.delver_soul_out.desc": "Stored: activate from the perk list to send your soul out for 60 seconds. Your body stays behind (it cannot move, attack or use items) and can still be hurt; your soul can fly freely and pass through blocks to scout. You snap back after 60s.",
   "random-perks-bingo.perk.hunter_satiation_strike.name": "Satiation Strike",
