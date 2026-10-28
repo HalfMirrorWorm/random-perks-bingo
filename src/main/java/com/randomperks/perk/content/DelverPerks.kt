@@ -34,7 +34,8 @@ object DelverPerks {
 
     private val MOD_MINING = Identifier.of("random-perks-bingo", "delver_mining")
 
-    /** 蓝 · 矿工手腕: 挖掘速度 +20% */
+    /** 蓝 · 矿工手腕: 挖掘速度 +15%; 挖**矿石**时再额外 ×1.25
+     *  (矿石部分由 MinerWristMixin 在 PlayerEntity.getBlockBreakingSpeed 里乘算) */
     object Mining : PerkDefinition {
         override val id = "delver_mining"
         override val rarity = PerkRarity.BLUE
@@ -44,7 +45,7 @@ object DelverPerks {
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING, 0.20, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+            PerkEffects.setAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING, 0.15, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
 
         override fun onRemove(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)

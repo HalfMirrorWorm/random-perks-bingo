@@ -56,7 +56,8 @@
     "TemperingAnvilBlockMixin",
     "TemperingAnvilUseMixin",
     "ForgingScreenHandlerAccessor",
-    "WorldBlockChangeMixin"
+    "WorldBlockChangeMixin",
+    "MinerWristMixin"
   ],
   "client": [
     "EntityGlowMixin",

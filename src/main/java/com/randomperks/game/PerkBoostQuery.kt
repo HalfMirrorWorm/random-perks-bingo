@@ -32,6 +32,38 @@ object PerkBoostQuery {
     fun hasFallBucket(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("swift_life_bucket") == true
 
+    // ---- "矿工手腕": 挖矿石时额外提速 (由 MinerWristMixin 在 PlayerEntity.getBlockBreakingSpeed 调用) ----
+
+    private const val MINER_WRIST_PERK = "delver_mining"
+    private const val MINER_WRIST_ORE_MULTIPLIER = 1.25f
+
+    /** 不是矿石的方块返回 1.0; 持有"矿工手腕"且目标是矿石时返回额外倍率 */
+    fun miningBreakSpeedMultiplier(
+        player: PlayerEntity,
+        state: net.minecraft.block.BlockState,
+    ): Float {
+        if (PerkStateManager.get(player.uuid)?.hasPerk(MINER_WRIST_PERK) != true) return 1.0f
+        return if (isOreBlock(state)) MINER_WRIST_ORE_MULTIPLIER else 1.0f
+    }
+
+    /** 矿石判定 (与 DelverPerks.isOreBlock 保持一致, 供 mixin 侧复用) */
+    private val ORE_TAGS = listOf(
+        net.minecraft.registry.tag.BlockTags.COAL_ORES,
+        net.minecraft.registry.tag.BlockTags.IRON_ORES,
+        net.minecraft.registry.tag.BlockTags.COPPER_ORES,
+        net.minecraft.registry.tag.BlockTags.GOLD_ORES,
+        net.minecraft.registry.tag.BlockTags.REDSTONE_ORES,
+        net.minecraft.registry.tag.BlockTags.LAPIS_ORES,
+        net.minecraft.registry.tag.BlockTags.DIAMOND_ORES,
+        net.minecraft.registry.tag.BlockTags.EMERALD_ORES,
+    )
+
+    fun isOreBlock(state: net.minecraft.block.BlockState): Boolean {
+        if (ORE_TAGS.any { state.isIn(it) }) return true
+        val path = net.minecraft.registry.Registries.BLOCK.getId(state.block).path
+        return path == "ancient_debris" || path.contains("ore")
+    }
+
     /** 玩家是否持有"哈基米" (对苦力怕等效于猫, 由 CatAuraMixin 调用) */
     fun hasCatAura(player: PlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_cat_aura") == true
