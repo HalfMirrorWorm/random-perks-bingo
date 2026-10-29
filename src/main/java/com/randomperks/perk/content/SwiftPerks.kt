@@ -12,6 +12,7 @@ import net.minecraft.component.type.FireworksComponent
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.util.Identifier
@@ -237,6 +238,22 @@ object SwiftPerks {
         override fun onRespawn(ctx: PerkContext) = PerkAbilityService.clearDashUsed(ctx.player)
     }
 
+    /** 蓝 · 疾风: **深海之息** —— 永久水下呼吸 */
+    object DeepBreath : PerkDefinition {
+        override val id = "swift_deep_breath"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.TURTLE_HELMET)
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+        private fun apply(ctx: PerkContext) =
+            PerkEffects.permanentEffect(ctx.player, StatusEffects.WATER_BREATHING, 0)
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeEffect(ctx.player, StatusEffects.WATER_BREATHING)
+    }
+
     /** 蓝 · 疾风: **逃跑计划** —— 受到生物伤害后, 自动获得速度 II 与抗性提升 I, 持续 10 秒。
      *  (触发逻辑在 PerkWorldEventService 的 ServerLivingEntityEvents.AFTER_DAMAGE) */
     object EscapePlan : PerkDefinition {
@@ -247,6 +264,7 @@ object SwiftPerks {
     }
 
     fun registerAll() {
+        com.randomperks.perk.PerkRegistry.register(DeepBreath)
         com.randomperks.perk.PerkRegistry.register(EscapePlan)
         com.randomperks.perk.PerkRegistry.register(Speed)
         com.randomperks.perk.PerkRegistry.register(FeatherFall)
