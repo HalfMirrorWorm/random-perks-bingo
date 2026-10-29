@@ -81,12 +81,16 @@ object PerkEffects {
         world: ServerWorld,
         pos: BlockPos,
         blockState: BlockState,
+        copies: Int = 1,
     ) {
+        // 只结算一次掉落表 (含时运/精准采集); copies > 1 时生成同一份结果的多个副本
         val drops = Block.getDroppedStacks(blockState, world, pos, null, player, player.mainHandStack)
         for (drop in drops) {
-            val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, drop.copy())
-            entity.setToDefaultPickupDelay()
-            world.spawnEntity(entity)
+            repeat(copies) {
+                val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, drop.copy())
+                entity.setToDefaultPickupDelay()
+                world.spawnEntity(entity)
+            }
         }
     }
 

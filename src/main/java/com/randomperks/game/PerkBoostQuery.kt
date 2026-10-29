@@ -115,22 +115,54 @@ object PerkBoostQuery {
     private const val XRAY_DECISION_KEY = "xray_decision"
     private const val XRAY_DECISION_RESULT_KEY = "xray_decision_result"
 
-    /** 每次玩家开始破坏方块时调用: 掷一次透视判定并记录 (tick + pos 作为键) */
-    fun rollXrayDecision(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos) {
+    private const val EXTRA_DROP_DECISION_KEY = "extra_drop_decision"
+    private const val EXTRA_DROP_RESULT_KEY = "extra_drop_result"
+
+    /**
+     * 每次玩家开始破坏方块时调用 (tryBreakBlock HEAD): 一次掷出本次破坏的所有随机判定,
+     * 以 (tick, pos) 为键记录下来。
+     *
+     * <p>必须在流程最开头完成, 因为 PlayerBlockBreakEvents.AFTER (領奖/连锁/3×3)
+     * 在原版生成掉落**之前**触发; 让掉落入口和所有 onBlockBreak 读同一份结果。
+     */
+    fun rollBreakDecisions(
+        player: ServerPlayerEntity,
+        pos: net.minecraft.util.math.BlockPos,
+        blockState: net.minecraft.block.BlockState,
+    ) {
         val state = PerkStateManager.get(player.uuid) ?: return
+        val key = decisionKey(player, pos)
+
         val suppress = state.hasPerk(XRAY_PERK) &&
             player.mainHandStack.isIn(ItemTags.PICKAXES) &&
             !player.isCreative &&
             player.random.nextFloat() < XRAY_SUPPRESS_CHANCE
-        state.memory[XRAY_DECISION_KEY] = decisionKey(player, pos)
+        state.memory[XRAY_DECISION_KEY] = key
         state.memory[XRAY_DECISION_RESULT_KEY] = if (suppress) "1" else "0"
+
+        val extraChance = if (player.isCreative) 0f else miningExtraDropChance(player, blockState)
+        val doubled = extraChance > 0f && player.random.nextFloat() < extraChance
+        state.memory[EXTRA_DROP_DECISION_KEY] = key
+        state.memory[EXTRA_DROP_RESULT_KEY] = if (doubled) "1" else "0"
     }
 
     /** 本次破坏 (指定方块) 的透视判定是否为"不掉落" */
-    fun isXraySuppressed(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos): Boolean {
+    fun isXraySuppressed(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos): Boolean =
+        decisionResult(player, pos, XRAY_DECISION_KEY, XRAY_DECISION_RESULT_KEY)
+
+    /** 本次破坏 (指定方块) 的额外掉落判定: 命中时整批掉落翻倍 (主方块 + 连锁/3×3 的额外方块) */
+    fun isExtraDropDoubled(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos): Boolean =
+        decisionResult(player, pos, EXTRA_DROP_DECISION_KEY, EXTRA_DROP_RESULT_KEY)
+
+    private fun decisionResult(
+        player: ServerPlayerEntity,
+        pos: net.minecraft.util.math.BlockPos,
+        keyName: String,
+        resultName: String,
+    ): Boolean {
         val state = PerkStateManager.get(player.uuid) ?: return false
-        return state.memory[XRAY_DECISION_KEY] == decisionKey(player, pos) &&
-            state.memory[XRAY_DECISION_RESULT_KEY] == "1"
+        return state.memory[keyName] == decisionKey(player, pos) &&
+            state.memory[resultName] == "1"
     }
 
     private fun decisionKey(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos): String =

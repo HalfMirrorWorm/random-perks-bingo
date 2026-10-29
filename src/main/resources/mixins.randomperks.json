@@ -59,7 +59,7 @@
     "WorldBlockChangeMixin",
     "MinerWristMixin",
     "OldMinerMixin",
-    "XrayDecisionMixin"
+    "BreakDecisionMixin"
   ],
   "client": [
     "EntityGlowMixin",

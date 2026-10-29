@@ -255,8 +255,8 @@ object DelverPerks {
      *  面朝向取玩家视线的主轴: 挖墙 → 竖直平面, 挖地面/天花板 → 水平平面。
      *
      *  支持主世界石头与下界石头 (下界岩/玄武岩/黑石)。
-     *  掉落与主方块**共同结算**: 透视之眼的 35% 判定只对主方块掷一次,
-     *  额外方块沿用结果, 且掉落统一生成在主方块的位置。 */
+     *  掉落与主方块**共同结算**: 透视之眼与额外掉落的判定都由 BreakDecisionMixin
+     *  在破坏流程开头掷一次, 3×3 整批共用; 命中额外掉落时整批翻倍。 */
     object Eighty : PerkDefinition {
         override val id = "delver_eighty"
         override val rarity = PerkRarity.BLUE
@@ -278,8 +278,10 @@ object DelverPerks {
                 else -> 2                                       // 面向 Z 轴 → XY 平面
             }
 
-            // 与主方块共同结算: 主方块本次被透视惩罚 → 额外方块也整批不掉落
+            // 与主方块共同结算: 本次破坏的透视/额外掉落判定由 BreakDecisionMixin 在流程开头掷好
             val suppressed = PerkBoostQuery.isXraySuppressed(player, pos)
+            val doubled = PerkBoostQuery.isExtraDropDoubled(player, pos)
+            val dropCopies = if (doubled) 2 else 1
 
             val broken = blockState.block
             for (a in -1..1) {
@@ -296,10 +298,11 @@ object DelverPerks {
 
                     // 只移除方块, 掉落统一按主方块的结算结果处理
                     if (!world.breakBlock(target, false, player)) continue
-                    if (!suppressed) {
-                        // 掉落在主方块位置生成 (自动含时运/精准采集)
-                        PerkEffects.spawnBlockDrops(player, world, pos, targetState)
-                        // 挖掘经验仍按每块结算
+                    // 创造模式不掉落 (与原版一致); 透视抑制时整批不掉落
+                    if (!suppressed && !player.isCreative) {
+                        // 掉落在主方块位置生成 (自动含时运/精准采集); 整批翻倍时按同一份结果生成两份
+                        PerkEffects.spawnBlockDrops(player, world, pos, targetState, dropCopies)
+                        // 挖掘经验仍按每块结算 (翻倍只翻物品)
                         targetState.onStacksDropped(world, target, tool, true)
                     }
                     if (!player.isCreative) tool.damage(1, player, EquipmentSlot.MAINHAND)
@@ -312,9 +315,10 @@ object DelverPerks {
      *  额外方块每块消耗 1 点耐久。
      *
      *  掉落与主矿石**共同结算**:
-     *  - 透视之眼的 35% 不掉落只对主矿石判定一次, 连锁块沿用这个结果 (整批掉 / 整批没);
+     *  - 透视之眼与额外掉落的判定都由 BreakDecisionMixin 在流程开头掷一次, 整条矿脉共用;
      *  - 连锁块的掉落统一生成在主矿石的位置, 和主矿石的掉落堆在一起;
-     *  - 连锁块不再走 Block.dropStacks, 避免每块单独掷透视概率、再触发其他联动。 */
+     *  - 连锁块不再走 Block.dropStacks, 避免每块单独掷骰、再触发其他联动;
+     *  - 命中额外掉落时整条矿脉一起翻倍; 创造模式不掉落。 */
     object ChainMining : PerkDefinition {
         override val id = "delver_chain_mining"
         override val rarity = PerkRarity.PURPLE
@@ -329,11 +333,13 @@ object DelverPerks {
             val tool = player.mainHandStack
             if (!tool.isIn(ItemTags.PICKAXES)) return          // 只认镐
             if (!isOreBlock(blockState)) return                // 只认矿石
+            if (!player.canHarvest(blockState)) return         // 挖了也不掉落的矿石不触发
             val world = player.world as? ServerWorld ?: return
 
-            // 主矿石的掉落已经由原版结算完毕: 若本次破坏的透视判定命中,
-            // 说明这次挖矿被判定为"不生成掉落", 连锁块沿用同一结果, 不再逐块掷 35%。
+            // 本次破坏的判定由 BreakDecisionMixin 在流程开头掷好, 整条矿脉共用
             val suppressed = PerkBoostQuery.isXraySuppressed(player, pos)
+            val doubled = PerkBoostQuery.isExtraDropDoubled(player, pos)
+            val dropCopies = if (doubled) 2 else 1
 
             val ore = blockState.block
             val visited = HashSet<BlockPos>()
@@ -356,10 +362,11 @@ object DelverPerks {
                             if (tool.isEmpty) return                                 // 挖断了就停
                             // 只移除方块, 不在这里生成掉落 —— 掉落统一在下面按主矿石的结算结果处理
                             if (!world.breakBlock(next, false, player)) continue
-                            if (!suppressed) {
+                            // 创造模式不掉落 (与原版一致); 透视抑制时整批不掉落
+                            if (!suppressed && !player.isCreative) {
                                 // 掉落在主矿石的位置生成 (自动含时运/精准采集), 与主矿石的掉落堆在一起
-                                PerkEffects.spawnBlockDrops(player, world, pos, chainState)
-                                // 挖矿经验仍按每块结算 (原版 dropStacks 被跳过, 这里补上)
+                                PerkEffects.spawnBlockDrops(player, world, pos, chainState, dropCopies)
+                                // 挖矿经验仍按每块结算 (翻倍只翻物品)
                                 chainState.onStacksDropped(world, next, tool, true)
                             }
                             if (!player.isCreative) tool.damage(1, player, EquipmentSlot.MAINHAND)
