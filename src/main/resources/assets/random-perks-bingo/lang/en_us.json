@@ -183,6 +183,8 @@
   "random-perks-bingo.perk.delver_chain_mining.name": "Chain Mining",
   "random-perks-bingo.perk.delver_chain_mining.desc": "Mining an ore with a pickaxe also breaks connected ores of the same type.",
 
+  "random-perks-bingo.perk.harvest_field_mender.name": "Field Mender",
+  "random-perks-bingo.perk.harvest_field_mender.desc": "Harvesting a mature crop repairs 1 durability on each equipped item.",
   "random-perks-bingo.perk.harvest_gardener.name": "Gardener",
   "random-perks-bingo.perk.harvest_gardener.desc": "Gain 16 bread and 16 wheat.",
   "random-perks-bingo.perk.harvest_lumberjack.name": "Lumberjack",

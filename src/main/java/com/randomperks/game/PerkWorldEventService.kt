@@ -52,13 +52,8 @@ object PerkWorldEventService {
         Items.POTATO,
     )
 
-    /** 是否是成熟作物 (小麦/胡萝卜/马铃薯/甜菜 + 下界疣) */
-    private fun isMatureCrop(state: BlockState): Boolean {
-        val block = state.block
-        if (block is CropBlock) return block.isMature(state)
-        if (block is NetherWartBlock) return state.get(NetherWartBlock.AGE) >= 3
-        return false
-    }
+    /** 是否是成熟作物 (小麦/胡萝卜/马铃薯/甜菜 + 下界疣) —— 与"田园修补"共用判定 */
+    private fun isMatureCrop(state: BlockState): Boolean = PerkBoostQuery.isMatureCrop(state)
 
     fun register() {
         // 击杀生物

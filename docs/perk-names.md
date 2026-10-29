@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **126** 条词条：绿 19 / 蓝 54 / 紫 31 / 金 18 / 红 0 / 神话 4。
+共 **127** 条词条：绿 19 / 蓝 54 / 紫 32 / 金 18 / 红 0 / 神话 4。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -65,6 +65,7 @@
 
 | id | 中文名 | 英文名 | 稀有度 |
 |---|---|---|---|
+| `harvest_field_mender` | 田园修补 | Field Mender | 紫 |
 | `harvest_gardener` | 园艺家 | Gardener | 蓝 |
 | `harvest_lumberjack` | 伐木工 | Lumberjack | 蓝 |
 | `harvest_herder` | 牧羊人 | Herder | 蓝 |

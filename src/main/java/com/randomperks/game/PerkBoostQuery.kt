@@ -168,6 +168,16 @@ object PerkBoostQuery {
     private fun decisionKey(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos): String =
         "${player.server?.ticks ?: 0}:${pos.asLong()}"
 
+    /** 是否是成熟作物 (小麦/胡萝卜/马铃薯/甜菜 + 下界疣) —— "拾穗"/"田园修补"共用 */
+    fun isMatureCrop(state: net.minecraft.block.BlockState): Boolean {
+        val block = state.block
+        if (block is net.minecraft.block.CropBlock) return block.isMature(state)
+        if (block is net.minecraft.block.NetherWartBlock) {
+            return state.get(net.minecraft.block.NetherWartBlock.AGE) >= 3
+        }
+        return false
+    }
+
     // ---- "老矿工": 挖掘等级 +1 (由 OldMinerMixin 在 PlayerEntity.canHarvest 拦截) ----
 
     /** 玩家是否持有"老矿工" */

@@ -5,6 +5,7 @@ import com.randomperks.game.BoneMealFlowerService
 import com.randomperks.game.ChickenDyeService
 import com.randomperks.game.FungalInfectionService
 import com.randomperks.game.KelpToBoneService
+import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PigMorphService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -30,6 +31,38 @@ import net.minecraft.util.Identifier
  * 丰饶 HARVEST —— 作物 / 树木 / 动物。
  */
 object HarvestPerks {
+
+    /** 紫 · 丰饶: **田园修补** —— 收获成熟作物时, 自动为全身装备 (护甲 4 件 + 主副手)
+     *  各修复 1 点耐久 (只修有损耗的物品, 不消耗经验/材料)。 */
+    object FieldMender : PerkDefinition {
+        override val id = "harvest_field_mender"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.WHEAT)
+
+        /** 修复范围: 护甲四件 + 主手 + 副手 */
+        private val EQUIPMENT_SLOTS = arrayOf(
+            EquipmentSlot.HEAD,
+            EquipmentSlot.CHEST,
+            EquipmentSlot.LEGS,
+            EquipmentSlot.FEET,
+            EquipmentSlot.MAINHAND,
+            EquipmentSlot.OFFHAND,
+        )
+
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
+            if (!PerkBoostQuery.isMatureCrop(blockState)) return
+
+            val player = ctx.player
+            for (slot in EQUIPMENT_SLOTS) {
+                val stack = player.getEquippedStack(slot)
+                if (stack.isEmpty || !stack.isDamageable) continue
+                val damage = stack.damage
+                if (damage <= 0) continue
+                stack.damage = (damage - 1).coerceAtLeast(0)
+            }
+        }
+    }
 
     /** 蓝 · 园艺家: 获得 16 面包 + 16 小麦 */
     object Gardener : PerkDefinition {
@@ -693,6 +726,7 @@ object HarvestPerks {
     }
 
     fun registerAll() {
+        PerkRegistry.register(FieldMender)
         PerkRegistry.register(Gardener)
         PerkRegistry.register(Lumberjack)
         PerkRegistry.register(Herder)
