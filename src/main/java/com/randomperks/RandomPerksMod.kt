@@ -3,6 +3,7 @@ package com.randomperks
 import com.randomperks.command.RandomPerksCommands
 import com.randomperks.config.PerkConfig
 import com.randomperks.game.ContainerOpenService
+import com.randomperks.game.AutoBridgeService
 import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.DragonTamerService
 import com.randomperks.game.FireballService
@@ -63,6 +64,9 @@ object RandomPerksMod : ModInitializer {
 
         // 驱动词条周期回调与重生重挂
         PerkTickService.register()
+
+        // "自动搭路": 手持圆石时在脚下自动铺路
+        AutoBridgeService.register()
 
         // "变群友"的持久变形状态 (自维护 + 广播给客户端)
         PigMorphService.register()

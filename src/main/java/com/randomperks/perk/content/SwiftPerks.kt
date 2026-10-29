@@ -238,6 +238,14 @@ object SwiftPerks {
         override fun onRespawn(ctx: PerkContext) = PerkAbilityService.clearDashUsed(ctx.player)
     }
 
+    /** 金 · 疾风: **自动搭路** —— 手持圆石时, 自动在脚下铺设圆石 (由 AutoBridgeService 每 tick 驱动) */
+    object AutoBridge : PerkDefinition {
+        override val id = "swift_auto_bridge"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.COBBLESTONE)
+    }
+
     /** 蓝 · 疾风: **深海之息** —— 永久水下呼吸 */
     object DeepBreath : PerkDefinition {
         override val id = "swift_deep_breath"
@@ -264,6 +272,7 @@ object SwiftPerks {
     }
 
     fun registerAll() {
+        com.randomperks.perk.PerkRegistry.register(AutoBridge)
         com.randomperks.perk.PerkRegistry.register(DeepBreath)
         com.randomperks.perk.PerkRegistry.register(EscapePlan)
         com.randomperks.perk.PerkRegistry.register(Speed)

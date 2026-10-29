@@ -333,6 +333,8 @@
   "random-perks-bingo.perk.hunter_pearl_gauntlet.desc": "你的每次攻击都会暴击; 但剑不再能横扫, 并获得挖掘疲劳 I。",
   "random-perks-bingo.perk.seeker_random_ground.name": "随机地基",
   "random-perks-bingo.perk.seeker_random_ground.desc": "把你脚下 3×3 的地面各替换成一块随机方块。",
+  "random-perks-bingo.perk.swift_auto_bridge.name": "自动搭路",
+  "random-perks-bingo.perk.swift_auto_bridge.desc": "手持圆石时, 自动在脚下铺设圆石搭路。",
   "random-perks-bingo.perk.swift_deep_breath.name": "深海之息",
   "random-perks-bingo.perk.swift_deep_breath.desc": "永久水下呼吸。",
   "random-perks-bingo.perk.swift_escape_plan.name": "逃跑计划",

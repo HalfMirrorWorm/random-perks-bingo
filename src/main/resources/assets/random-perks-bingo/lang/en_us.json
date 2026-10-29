@@ -333,6 +333,8 @@
   "random-perks-bingo.perk.hunter_pearl_gauntlet.desc": "Every attack crits; swords no longer sweep, and you permanently have Mining Fatigue I.",
   "random-perks-bingo.perk.seeker_random_ground.name": "Random Ground",
   "random-perks-bingo.perk.seeker_random_ground.desc": "Replaces each block in the 3x3 area under your feet with a random block.",
+  "random-perks-bingo.perk.swift_auto_bridge.name": "Auto Bridge",
+  "random-perks-bingo.perk.swift_auto_bridge.desc": "While holding cobblestone, automatically place cobblestone beneath you to bridge gaps.",
   "random-perks-bingo.perk.swift_deep_breath.name": "Deep Breath",
   "random-perks-bingo.perk.swift_deep_breath.desc": "Permanent water breathing.",
   "random-perks-bingo.perk.swift_escape_plan.name": "Escape Plan",
