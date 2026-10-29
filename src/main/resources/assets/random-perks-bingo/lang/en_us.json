@@ -170,7 +170,7 @@
   "random-perks-bingo.perk.delver_lucky_digger.name": "Lucky Digger",
   "random-perks-bingo.perk.delver_lucky_digger.desc": "Pickaxe mining can drop a random item, scaling with tier (wood 0.1% / stone 0.5% / iron 1% / diamond+ 10%).",
   "random-perks-bingo.perk.delver_collector.name": "Old Miner",
-  "random-perks-bingo.perk.delver_collector.desc": "40% extra drop from ores/stone; -50% mining speed; +1 mining tier (empty hand counts as a wooden pickaxe).",
+  "random-perks-bingo.perk.delver_collector.desc": "40% extra drop from ores/stone; +1 mining tier; -50% mining speed.",
   "random-perks-bingo.perk.delver_iron_skin.name": "Emperor's New Clothes",
   "random-perks-bingo.perk.delver_iron_skin.desc": "+7 armor while wearing no armor.",
   "random-perks-bingo.perk.delver_phoenix.name": "Phoenix",

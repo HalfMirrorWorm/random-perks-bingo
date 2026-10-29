@@ -202,7 +202,8 @@ object DelverPerks {
     }
 
     /** 紫 · 深掘: **老矿工** —— 破坏矿石或石头时 40% 概率额外获得一份掉落,
-     *  挖掘速度降低 50%, 但**挖掘等级 +1** (空手视为木镐; 由 OldMinerMixin 实现)。
+     *  挖掘等级 +1, 挖掘速度降低 50%。
+     *  等级提升由 OldMinerMixin 实现 (空手或任何非镐物品视为木镐);
      *  概率判定与掉落由 MiningDropMixin 统一处理 (与矿脉嗅觉合并概率)。 */
     object Collector : PerkDefinition {
         override val id = "delver_collector"
