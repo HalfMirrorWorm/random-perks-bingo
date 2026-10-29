@@ -380,11 +380,11 @@ object DelverPerks {
         }
     }
 
-    /** 蓝 · 深掘: **无忧的安眠** —— 在地狱 / 末地睡床时, 床的爆炸**范围翻倍、伤害 1.5 倍**
+    /** 绿 · 深掘: **无忧的安眠** —— 在地狱 / 末地睡床时, 床的爆炸**范围翻倍、伤害 1.5 倍**
      *  (由 BedBombMixin 接管 BedBlock.onUse 里的 createExplosion 调用)。 */
     object CarefreeSleep : PerkDefinition {
         override val id = "delver_carefree_sleep"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.RED_BED)
     }

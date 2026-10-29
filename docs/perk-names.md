@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **126** 条词条：绿 18 / 蓝 55 / 紫 31 / 金 18 / 红 0 / 神话 4。
+共 **126** 条词条：绿 19 / 蓝 54 / 紫 31 / 金 18 / 红 0 / 神话 4。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -58,7 +58,7 @@
 | `delver_onion_cut` | 切洋葱 | Cutting Onions | 绿 |
 | `delver_eighty` | 八十 | Eighty | 蓝 |
 | `delver_chain_mining` | 连锁挖矿 | Chain Mining | 紫 |
-| `delver_carefree_sleep` | 无忧的安眠 | Carefree Sleep | 蓝 |
+| `delver_carefree_sleep` | 无忧的安眠 | Carefree Sleep | 绿 |
 | `delver_soul_out` | 灵魂出窍 | Out of Body | 金 |
 
 ## 丰饶 HARVEST
