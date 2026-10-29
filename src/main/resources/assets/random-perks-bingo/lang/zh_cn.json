@@ -102,6 +102,7 @@
   "random-perks-bingo.message.swap_arrived": "「何易位」%s 传送到了你的位置。",
   "random-perks-bingo.message.soul_out_start": "灵魂出窍! 60 秒内可自由飞行与穿墙观察, 身体留在原地, 注意保护自己。",
   "random-perks-bingo.message.soul_out_end": "灵魂归位。",
+  "random-perks-bingo.message.soul_out_remaining": "灵魂出窍: 剩余 %s 秒",
   "random-perks-bingo.message.swap_doomsday_immune": "目标持有天启日, 免疫何易位。",
   "random-perks-bingo.message.swap_started": "何易位已启动: 10 秒后 %s 与 %s 交换位置。",
   "random-perks-bingo.message.swap_countdown_start": "你被 %s 的何易位锁定, 10 秒后你将被与 %s 交换位置。",

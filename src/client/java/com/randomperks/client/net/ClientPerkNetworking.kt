@@ -121,7 +121,16 @@ object ClientPerkNetworking {
         // "灵魂出窍": 开启/关闭灵魂相机 (身体留在原地)
         ClientPlayNetworking.registerGlobalReceiver(SoulOutS2C.ID) { payload, context ->
             context.client().execute {
-                if (payload.active) SoulCameraClient.start() else SoulCameraClient.stop()
+                if (payload.active) {
+                    SoulCameraClient.start()
+                    // 灵魂状态下"有界面时不能移动": 如果还停在词条列表, 自动关掉,
+                    // 否则 60 秒会白白流失 (与其他贮藏词条点击后立即进入使用流程一致)
+                    if (context.client().currentScreen is PerkListScreen) {
+                        context.client().setScreen(null)
+                    }
+                } else {
+                    SoulCameraClient.stop()
+                }
             }
         }
 

@@ -13,7 +13,7 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 
 /**
- * "灵魂出窍" (金 · 疾风 · 贮藏) 的服务端逻辑。
+ * "灵魂出窍" (金 · 深掘 · 贮藏) 的服务端逻辑。
  *
  * 参考 FreeCam / 灵魂出窍类 mod 的形态: **身体留在原地**, 灵魂 (视角) 飞出去。
  * - 服务端只记录开始/结束时间; 玩家的实体始终留在原地, 因此身体仍然会被攻击、
@@ -60,13 +60,21 @@ object SoulOutService {
         player.sendMessage(Text.translatable("random-perks-bingo.message.soul_out_start"), false)
     }
 
-    /** 每秒驱动一次: 时间到了就结束 (客户端相机随之归位) */
+    /** 每秒驱动一次: 时间到了就结束 (客户端相机随之归位), 否则在快捷栏上方显示剩余秒数 */
     fun tick(ctx: PerkContext) {
         val end = ctx.state.memory[KEY_END]?.toLongOrNull() ?: return
         val now = ctx.player.server?.ticks?.toLong() ?: return
         if (now >= end) {
             end(ctx.player, ctx.state)
+            return
         }
+
+        // 剩余秒数向上取整 (剩余 59.2 秒显示 60)
+        val seconds = (((end - now) + 19) / 20).toInt()
+        ctx.player.sendMessage(
+            Text.translatable("random-perks-bingo.message.soul_out_remaining", seconds),
+            true,
+        )
     }
 
     /** 玩家断线重连: 补回灵魂状态; 如果离线期间已经到期, 直接结束 */
