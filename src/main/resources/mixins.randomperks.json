@@ -58,7 +58,8 @@
     "ForgingScreenHandlerAccessor",
     "WorldBlockChangeMixin",
     "MinerWristMixin",
-    "OldMinerMixin"
+    "OldMinerMixin",
+    "XrayDecisionMixin"
   ],
   "client": [
     "EntityGlowMixin",

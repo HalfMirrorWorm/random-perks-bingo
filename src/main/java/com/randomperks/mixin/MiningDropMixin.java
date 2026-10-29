@@ -44,8 +44,8 @@ public class MiningDropMixin {
         if (!(entity instanceof ServerPlayerEntity player)) return;
         if (!(world instanceof ServerWorld serverWorld)) return;
 
-        // 透视之眼: 本次不掉落
-        if (PerkBoostQuery.INSTANCE.shouldSuppressXrayDrop(player, tool)) {
+        // 透视之眼: 读取 XrayDecisionMixin 在破坏流程开头掷出的判定
+        if (PerkBoostQuery.INSTANCE.isXraySuppressed(player, pos)) {
             ci.cancel();
             return;
         }

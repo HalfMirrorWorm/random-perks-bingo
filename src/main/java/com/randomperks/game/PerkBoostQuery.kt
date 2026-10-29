@@ -101,22 +101,40 @@ object PerkBoostQuery {
         player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)?.removeModifier(WIND_STRIDE_MOD)
     }
 
-    // ---- "透视之眼"的代价: 35% 不掉落 (由 MiningDropMixin 在 Block.dropStacks 拦截) ----
+    // ---- "透视之眼"的代价: 35% 不掉落 ----
+    //
+    // 关键: 判定必须在**破坏方块流程的最开始**掷一次并记下, 因为
+    // PlayerBlockBreakEvents.AFTER (领奖/连锁挖矿等) 在原版生成掉落**之前**触发。
+    // 若等到 Block.dropStacks 里才掷骰, onBlockBreak 里的词条读到的是上一次的结果。
+    // 所以由 XrayDecisionMixin 在 ServerPlayerInteractionManager.tryBreakBlock 的 HEAD
+    // 掷一次, 记下 (tick, pos) → 结果; 掉落入口和各个 onBlockBreak 都读同一份结果。
 
     private const val XRAY_PERK = "delver_xray_vision"
+    private const val XRAY_SUPPRESS_CHANCE = 0.35f
 
-    /** 记录"该玩家本 tick 的挖块掉落被透视惩罚抑制"的 tick (保留给旧逻辑查询) */
-    const val XRAY_SUPPRESS_TICK_KEY = "xray_suppress_tick"
+    private const val XRAY_DECISION_KEY = "xray_decision"
+    private const val XRAY_DECISION_RESULT_KEY = "xray_decision_result"
 
-    /** 用镐破坏方块时是否应抑制本次掉落生成 (持有词条 + 手持镐 + 35%) */
-    fun shouldSuppressXrayDrop(player: ServerPlayerEntity, tool: ItemStack): Boolean {
-        val state = PerkStateManager.get(player.uuid) ?: return false
-        if (!state.hasPerk(XRAY_PERK)) return false
-        if (!tool.isIn(ItemTags.PICKAXES)) return false
-        if (player.random.nextFloat() >= 0.35f) return false
-        state.memory[XRAY_SUPPRESS_TICK_KEY] = (player.server?.ticks ?: 0).toString()
-        return true
+    /** 每次玩家开始破坏方块时调用: 掷一次透视判定并记录 (tick + pos 作为键) */
+    fun rollXrayDecision(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos) {
+        val state = PerkStateManager.get(player.uuid) ?: return
+        val suppress = state.hasPerk(XRAY_PERK) &&
+            player.mainHandStack.isIn(ItemTags.PICKAXES) &&
+            !player.isCreative &&
+            player.random.nextFloat() < XRAY_SUPPRESS_CHANCE
+        state.memory[XRAY_DECISION_KEY] = decisionKey(player, pos)
+        state.memory[XRAY_DECISION_RESULT_KEY] = if (suppress) "1" else "0"
     }
+
+    /** 本次破坏 (指定方块) 的透视判定是否为"不掉落" */
+    fun isXraySuppressed(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos): Boolean {
+        val state = PerkStateManager.get(player.uuid) ?: return false
+        return state.memory[XRAY_DECISION_KEY] == decisionKey(player, pos) &&
+            state.memory[XRAY_DECISION_RESULT_KEY] == "1"
+    }
+
+    private fun decisionKey(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos): String =
+        "${player.server?.ticks ?: 0}:${pos.asLong()}"
 
     // ---- "老矿工": 挖掘等级 +1 (由 OldMinerMixin 在 PlayerEntity.canHarvest 拦截) ----
 

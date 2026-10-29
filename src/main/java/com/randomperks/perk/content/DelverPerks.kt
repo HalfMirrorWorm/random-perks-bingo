@@ -134,19 +134,19 @@ object DelverPerks {
     }
 
     /** 金 · 深掘: 10 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 35% 概率消失
-     *  (由 XrayDropSuppressMixin 在掉落生成处直接抑制 —— 不生成, 而非事后删除) */
+     *  (XrayDecisionMixin 在破坏流程开头掷判定, MiningDropMixin 在掉落生成处直接抑制 —— 不生成, 而非事后删除) */
     object XrayVision : PerkDefinition {
         override val id = "delver_xray_vision"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.ENDER_EYE)
-        // 透视渲染在客户端 (XrayRenderer); 掉落抑制在 XrayDropSuppressMixin
+        // 透视渲染在客户端 (XrayRenderer); 掉落抑制在 MiningDropMixin
     }
 
-    /** 蓝 · 深掘: 用镐子挖方块时, 按**方块所需的镐等级**概率掉落一件随机物品
-     *  (需求木/石/铁/钻石镐的方块分别为 0.1% / 0.5% / 1% / 10%); 奖品取自全部原版物品
+    /** 蓝 · 深掘: 使用镐挖掘方块时, 按**方块所需的挖掘等级**概率掉落一件随机物品
+     *  (需求木/石/铁/钻石镐的方块分别为 0.5% / 1% / 2% / 20%); 奖品取自全部原版物品
      *  (**含刷怪蛋**), 只排除纯指令方块/工具与"无组件即废品"的模板物品。
-     *  以掉落物形态落地 —— 与"矿脉嗅觉"同范式, 参与透视之眼的惩罚与老矿工的复制等一切掉落物交互。 */
+     *  以掉落物形态落地 —— 参与透视之眼的惩罚; 老矿工只复制方块本身的掉落, 不复制奖品。 */
     object LuckyDigger : PerkDefinition {
         override val id = "delver_lucky_digger"
         override val rarity = PerkRarity.BLUE
@@ -177,21 +177,21 @@ object DelverPerks {
 
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
             if (!ctx.player.mainHandStack.isIn(ItemTags.PICKAXES)) return   // 用镐子挖
+            if (!ctx.player.canHarvest(blockState)) return                   // 挖了也不掉落的方块不触发
 
             // 按"方块的需求镐等级"分档 (从高到低判; 1.21 没有"木镐"需求标签,
             // 以"掉落需要正确工具"兜底为木档 —— 石头/煤等)
             val chance = when {
-                blockState.isIn(BlockTags.NEEDS_DIAMOND_TOOL) -> 0.10f
-                blockState.isIn(BlockTags.NEEDS_IRON_TOOL) -> 0.01f
-                blockState.isIn(BlockTags.NEEDS_STONE_TOOL) -> 0.005f
-                blockState.isToolRequired -> 0.001f
+                blockState.isIn(BlockTags.NEEDS_DIAMOND_TOOL) -> 0.20f
+                blockState.isIn(BlockTags.NEEDS_IRON_TOOL) -> 0.02f
+                blockState.isIn(BlockTags.NEEDS_STONE_TOOL) -> 0.01f
+                blockState.isToolRequired -> 0.005f
                 else -> return   // 无需工具的方块 (土/木/沙等) 不触发
             }
             if (ctx.player.random.nextFloat() >= chance) return
 
-            // 联动"透视之眼"代价: 本 tick 该玩家的挖块掉落若被抑制, 奖品一并抑制 (与矿脉嗅觉同范式)
-            val suppressTick = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY]
-            if (suppressTick != null && suppressTick == (ctx.player.server?.ticks ?: -1).toString()) return
+            // 联动"透视之眼"代价: 本次破坏被判定为不掉落 → 奖品一并抑制
+            if (PerkBoostQuery.isXraySuppressed(ctx.player, pos)) return
 
             val world = ctx.player.world as? ServerWorld ?: return
             val prize = LOOT_POOL[ctx.player.random.nextInt(LOOT_POOL.size)]
@@ -278,9 +278,8 @@ object DelverPerks {
                 else -> 2                                       // 面向 Z 轴 → XY 平面
             }
 
-            // 与主方块共同结算: 主方块本 tick 被透视惩罚 → 额外方块也整批不掉落
-            val currentTick = (player.server?.ticks ?: 0).toString()
-            val suppressed = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY] == currentTick
+            // 与主方块共同结算: 主方块本次被透视惩罚 → 额外方块也整批不掉落
+            val suppressed = PerkBoostQuery.isXraySuppressed(player, pos)
 
             val broken = blockState.block
             for (a in -1..1) {
@@ -332,10 +331,9 @@ object DelverPerks {
             if (!isOreBlock(blockState)) return                // 只认矿石
             val world = player.world as? ServerWorld ?: return
 
-            // 主矿石的掉落已经由原版结算完毕: 若本 tick 的透视惩罚标记命中,
+            // 主矿石的掉落已经由原版结算完毕: 若本次破坏的透视判定命中,
             // 说明这次挖矿被判定为"不生成掉落", 连锁块沿用同一结果, 不再逐块掷 35%。
-            val currentTick = (player.server?.ticks ?: 0).toString()
-            val suppressed = ctx.state.memory[PerkBoostQuery.XRAY_SUPPRESS_TICK_KEY] == currentTick
+            val suppressed = PerkBoostQuery.isXraySuppressed(player, pos)
 
             val ore = blockState.block
             val visited = HashSet<BlockPos>()
