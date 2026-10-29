@@ -118,7 +118,13 @@ object PerkBoostQuery {
         return true
     }
 
-    // ---- "矿脉嗅觉" + "收藏家": 合并概率, 命中时整份掉落翻倍 (由 MiningDropMixin 调用) ----
+    // ---- "老矿工": 挖掘等级 +1 (由 OldMinerMixin 在 PlayerEntity.canHarvest 拦截) ----
+
+    /** 玩家是否持有"老矿工" */
+    fun hasOldMiner(player: PlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("delver_collector") == true
+
+    // ---- "矿脉嗅觉" + "老矿工": 合并概率, 命中时整份掉落翻倍 (由 MiningDropMixin 调用) ----
 
     private const val VEIN_SCENT_PERK = "delver_vein_scent"
     private const val COLLECTOR_PERK = "delver_collector"
@@ -129,7 +135,7 @@ object PerkBoostQuery {
     /** 每拥有一个其他深掘词条的概率加成 */
     private const val VEIN_SCENT_PER_ALLY = 0.03f
 
-    /** 收藏家的额外掉落概率 */
+    /** 老矿工的额外掉落概率 */
     private const val COLLECTOR_CHANCE = 0.40f
 
     /**

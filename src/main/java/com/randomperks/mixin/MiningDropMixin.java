@@ -23,7 +23,7 @@ import java.util.List;
  *
  * <ol>
  *   <li><b>透视之眼</b>: 35% 概率直接取消, 不生成任何掉落。</li>
- *   <li><b>矿脉嗅觉 / 收藏家</b>: 概率**合并后只掷一次骰**(1-(1-p1)(1-p2)),
+ *   <li><b>矿脉嗅觉 / 老矿工</b>: 概率**合并后只掷一次骰**(1-(1-p1)(1-p2)),
  *       命中时用**同一份**掉落结果生成两遍 —— 只结算一次时运, 但两份内容完全一致。
  *       生成两遍而不是把数量 ×2, 是为了不破坏"最大堆叠为 1"的物品。</li>
  * </ol>
@@ -50,7 +50,7 @@ public class MiningDropMixin {
             return;
         }
 
-        // 矿脉嗅觉 / 收藏家: 合并概率, 只掷一次
+        // 矿脉嗅觉 / 老矿工: 合并概率, 只掷一次
         float extraChance = PerkBoostQuery.INSTANCE.miningExtraDropChance(player, state);
         if (extraChance <= 0f) return;
         if (player.getRandom().nextFloat() >= extraChance) return;

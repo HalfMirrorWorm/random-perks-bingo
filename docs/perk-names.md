@@ -53,7 +53,7 @@
 | `delver_vein_scent` | 矿脉嗅觉 | Vein Scent | 紫 |
 | `delver_xray_vision` | 透视之眼 | X-Ray Vision | 金 |
 | `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 蓝 |
-| `delver_collector` | 收藏家 | Collector | 紫 |
+| `delver_collector` | 老矿工 | Old Miner | 紫 |
 | `delver_phoenix` | 不死鸟 | Phoenix | 紫 |
 | `delver_onion_cut` | 切洋葱 | Cutting Onions | 绿 |
 | `delver_eighty` | 八十 | Eighty | 蓝 |

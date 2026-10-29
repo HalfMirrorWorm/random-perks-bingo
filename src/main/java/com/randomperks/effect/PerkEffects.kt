@@ -75,7 +75,7 @@ object PerkEffects {
     }
 
     /** 生成一份"该方块的真实掉落"作为掉落物 (自动含时运/精准采集结果; 标准拾取延迟)。
-     *  供"矿脉嗅觉 / 收藏家 / 樵夫之手"等"额外掉落"类词条复用。 */
+     *  供"矿脉嗅觉 / 老矿工 / 樵夫之手"等"额外掉落"类词条复用。 */
     fun spawnBlockDrops(
         player: ServerPlayerEntity,
         world: ServerWorld,

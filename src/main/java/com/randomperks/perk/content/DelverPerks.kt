@@ -94,7 +94,7 @@ object DelverPerks {
     }
 
     /** 紫 · 矿脉嗅觉: 挖掘矿石时 18% 概率额外掉落一份, 每拥有一个其他深掘词条 +3%
-     *  —— 判定与掉落由 MiningDropMixin 在 Block.dropStacks 统一处理 (与收藏家合并概率,
+     *  —— 判定与掉落由 MiningDropMixin 在 Block.dropStacks 统一处理 (与老矿工合并概率,
      *  命中时把整份掉落翻倍, 而不是额外重掷一次时运) */
     object VeinScent : PerkDefinition {
         override val id = "delver_vein_scent"
@@ -146,7 +146,7 @@ object DelverPerks {
     /** 蓝 · 深掘: 用镐子挖方块时, 按**方块所需的镐等级**概率掉落一件随机物品
      *  (需求木/石/铁/钻石镐的方块分别为 0.1% / 0.5% / 1% / 10%); 奖品取自全部原版物品
      *  (**含刷怪蛋**), 只排除纯指令方块/工具与"无组件即废品"的模板物品。
-     *  以掉落物形态落地 —— 与"矿脉嗅觉"同范式, 参与透视之眼的惩罚与收藏家的复制等一切掉落物交互。 */
+     *  以掉落物形态落地 —— 与"矿脉嗅觉"同范式, 参与透视之眼的惩罚与老矿工的复制等一切掉落物交互。 */
     object LuckyDigger : PerkDefinition {
         override val id = "delver_lucky_digger"
         override val rarity = PerkRarity.BLUE
@@ -201,7 +201,8 @@ object DelverPerks {
         }
     }
 
-    /** 紫 · 深掘: 破坏矿石或石头时 40% 概率额外获得一份掉落, 但挖掘速度降低 50%。
+    /** 紫 · 深掘: **老矿工** —— 破坏矿石或石头时 40% 概率额外获得一份掉落,
+     *  挖掘速度降低 50%, 但**挖掘等级 +1** (空手视为木镐; 由 OldMinerMixin 实现)。
      *  概率判定与掉落由 MiningDropMixin 统一处理 (与矿脉嗅觉合并概率)。 */
     object Collector : PerkDefinition {
         override val id = "delver_collector"
@@ -223,7 +224,7 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
     }
 
-    /** 矿石判定 (矿脉嗅觉/收藏家共用): 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */
+    /** 矿石判定 (矿脉嗅觉/老矿工共用): 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */
     private val ORE_CHECK_TAGS = listOf(
         BlockTags.COAL_ORES,
         BlockTags.IRON_ORES,
