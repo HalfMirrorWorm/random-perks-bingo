@@ -144,7 +144,7 @@ object DelverPerks {
     }
 
     /** 蓝 · 深掘: 使用镐挖掘方块时, 按**方块所需的挖掘等级**概率掉落一件随机物品
-     *  (需求木/石/铁/钻石镐的方块分别为 0.5% / 1% / 2% / 20%); 奖品取自全部原版物品
+     *  (需求木/石/铁/钻石镐的方块分别为 1% / 2% / 5% / 30%); 奖品取自全部原版物品
      *  (**含刷怪蛋**), 只排除纯指令方块/工具与"无组件即废品"的模板物品。
      *  以掉落物形态落地 —— 参与透视之眼的惩罚; 老矿工只复制方块本身的掉落, 不复制奖品。 */
     object LuckyDigger : PerkDefinition {
@@ -182,10 +182,10 @@ object DelverPerks {
             // 按"方块的需求镐等级"分档 (从高到低判; 1.21 没有"木镐"需求标签,
             // 以"掉落需要正确工具"兜底为木档 —— 石头/煤等)
             val chance = when {
-                blockState.isIn(BlockTags.NEEDS_DIAMOND_TOOL) -> 0.20f
-                blockState.isIn(BlockTags.NEEDS_IRON_TOOL) -> 0.02f
-                blockState.isIn(BlockTags.NEEDS_STONE_TOOL) -> 0.01f
-                blockState.isToolRequired -> 0.005f
+                blockState.isIn(BlockTags.NEEDS_DIAMOND_TOOL) -> 0.30f
+                blockState.isIn(BlockTags.NEEDS_IRON_TOOL) -> 0.05f
+                blockState.isIn(BlockTags.NEEDS_STONE_TOOL) -> 0.02f
+                blockState.isToolRequired -> 0.01f
                 else -> return   // 无需工具的方块 (土/木/沙等) 不触发
             }
             if (ctx.player.random.nextFloat() >= chance) return
