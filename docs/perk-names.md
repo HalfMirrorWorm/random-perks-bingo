@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **133** 条词条：绿 19 / 蓝 58 / 紫 33 / 金 18 / 红 1 / 神话 4。
+共 **133** 条词条：绿 19 / 蓝 58 / 紫 33 / 金 18 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -118,6 +118,7 @@
 | `hunter_bounty_hunter` | 赏金猎人 | Bounty Hunter | 蓝 |
 | `hunter_hedgehog` | 刺猬 | Hedgehog | 金 |
 | `hunter_spider_weaving` | 盘丝大仙 | Web Spinner | 蓝 |
+| `mythic_doomsday` | 天启日 | Doomsday | 红 |
 
 ## 秘藏 SEEKER
 
@@ -181,14 +182,13 @@
 | `summon_loyal_guard` | 忠心护主 | Loyal Guardian | 金 |
 | `summon_insomnia` | 失眠 | Insomnia | 蓝 |
 | `hunter_easy_nuke` | 核电轻而易举 | Easy Nuke | 蓝 |
+| `mythic_hodgepodge` | 游戏BUG | Glitch | 红 |
 
 ## 神话 MYTHIC（全局唯一）
 
 | id | 中文名 | 英文名 | 稀有度 |
 |---|---|---|---|
 | `mythic_creative_flash` | 创造闪光 | Creative Flash | 神话 |
-| `mythic_doomsday` | 天启日 | Doomsday | 神话 |
-| `mythic_hodgepodge` | 游戏BUG | Glitch | 神话 |
 | `mythic_time_rewind` | 逆转时间 | Time Rewind | 神话 |
 
 ## 注意：id 与中文名不直译的词条

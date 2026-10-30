@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * "天启日" (神话 · 猎杀)。
+ * "天启日" (红 · 猎杀)。
  *
  * <p>新规则:
  * <ul>

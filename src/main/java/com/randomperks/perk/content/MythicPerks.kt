@@ -22,7 +22,10 @@ import net.minecraft.text.Text
 import java.util.UUID
 
 /**
- * 神话品质词条 (全局唯一: 同时只能被一名玩家拥有)。
+ * 神话 (全局唯一: 同时只能被一名玩家拥有) 与红色 (禁忌, 不唯一) 词条。
+ *
+ * 注: "天启日" / "游戏BUG" 的 id 仍带 `mythic_` 前缀 —— 是为了兼容旧存档与外部引用,
+ * 它们的稀有度已经改为红色。
  */
 object MythicPerks {
 
@@ -38,13 +41,13 @@ object MythicPerks {
         }
     }
 
-    /** 神话 · 猎杀 · 全局唯一: **天启日** —— 效果持续 20 分钟:
+    /** 红 · 猎杀: **天启日** —— 效果持续 20 分钟:
      *  - 期间被你击杀的前 4 名玩家强制掉落**背包位**物品 (无视 keepInventory);
      *  - 你被敌方玩家击杀时也会强制掉落背包位物品, 随后效果立即结束。
      *  (由 DoomsdayMixin 在 ServerPlayerEntity.onDeath 实现) */
     object Doomsday : PerkDefinition {
         override val id = "mythic_doomsday"
-        override val rarity = PerkRarity.MYTHIC
+        override val rarity = PerkRarity.RED
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.WITHER_ROSE)
 
@@ -53,12 +56,12 @@ object MythicPerks {
         }
     }
 
-    /** 神话 · 唤法 · 全局唯一: **游戏BUG** —— 获得时立即弹出玩家选择器, 选中一名玩家后,
+    /** 红 · 唤法: **游戏BUG** —— 获得时立即弹出玩家选择器, 选中一名玩家后,
      *  他背包里的**每一种物品各自随机变成另一种物品** (数量不变)
-     *  (神话词条不允许贮藏到 V 界面, 必须获得瞬间生效) */
+     *  (获得瞬间弹出选择器, 不进入 V 界面) */
     object Hodgepodge : PerkDefinition {
         override val id = "mythic_hodgepodge"
-        override val rarity = PerkRarity.MYTHIC
+        override val rarity = PerkRarity.RED
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.BUNDLE)
 
