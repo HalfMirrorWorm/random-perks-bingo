@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **132** 条词条：绿 25 / 蓝 53 / 紫 27 / 金 22 / 红 3 / 神话 2。
+共 **132** 条词条：绿 25 / 蓝 53 / 紫 27 / 金 20 / 红 5 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -55,7 +55,7 @@
 | `delver_night_vision` | 地下视野 | Underground Sight | 蓝 |
 | `delver_haste` | 深层专注 | Deep Focus | 紫 |
 | `delver_vein_scent` | 矿脉嗅觉 | Vein Scent | 紫 |
-| `delver_xray_vision` | 透视之眼 | X-Ray Vision | 金 |
+| `delver_xray_vision` | 透视之眼 | X-Ray Vision | 红 |
 | `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 蓝 |
 | `delver_collector` | 老矿工 | Old Miner | 紫 |
 | `delver_phoenix` | 不死鸟 | Phoenix | 紫 |
@@ -127,7 +127,7 @@
 | `seeker_supply_line` | 补给线 | Supply Line | 蓝 |
 | `seeker_ender_supply` | 末影补给 | Ender Supply | 紫 |
 | `seeker_pickpocket` | 顺手牵羊 | Pickpocket | 金 |
-| `seeker_life_vision` | 生命透视 | Life Vision | 金 |
+| `seeker_life_vision` | 生命透视 | Life Vision | 红 |
 | `seeker_ender_cache` | 末影仓库 | Ender Cache | 紫 |
 | `seeker_alchemist` | 药剂师 | Alchemist | 紫 |
 | `seeker_village_compass` | 回村的诱惑 | Homecoming | 蓝 |

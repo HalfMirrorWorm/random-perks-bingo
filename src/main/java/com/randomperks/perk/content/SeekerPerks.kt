@@ -212,10 +212,10 @@ object SeekerPerks {
         override fun onActivate(ctx: PerkContext) = StealService.handleRequest(ctx.player)
     }
 
-    /** 金 · 秘藏 · 质变: 永久透视 —— 高亮标记 32 格内的所有生物 (不含玩家) */
+    /** 红 · 秘藏 · 质变: 永久透视 —— 高亮标记 32 格内的所有生物 (不含玩家) */
     object LifeVision : PerkDefinition {
         override val id = "seeker_life_vision"
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.RED
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.SPIDER_EYE)
 
