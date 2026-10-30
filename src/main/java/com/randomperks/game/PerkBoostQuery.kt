@@ -245,6 +245,12 @@ object PerkBoostQuery {
     fun hasBigStomach(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_big_stomach") == true
 
+    // ---- "大背包": 玩家背包内的堆叠上限 ×4 (由 BigBackpackInventoryMixin / BigBackpackSlotMixin 调用) ----
+
+    /** 玩家是否持有"大背包" */
+    fun hasBigBackpack(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("artisan_big_backpack") == true
+
     // ---- "老玩家": 剑的攻击冷却始终蓄满 (由 OldSchoolCombatMixin 在 getAttackCooldownProgress 拦截) ----
 
     /** 玩家是否持有"老玩家" */

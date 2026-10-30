@@ -59,7 +59,9 @@
     "WorldBlockChangeMixin",
     "MinerWristMixin",
     "OldMinerMixin",
-    "BreakDecisionMixin"
+    "BreakDecisionMixin",
+    "BigBackpackInventoryMixin",
+    "BigBackpackSlotMixin"
   ],
   "client": [
     "EntityGlowMixin",

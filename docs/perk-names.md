@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **132** 条词条：绿 19 / 蓝 57 / 紫 33 / 金 19 / 红 0 / 神话 4。
+共 **133** 条词条：绿 19 / 蓝 58 / 紫 33 / 金 19 / 红 0 / 神话 4。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -41,6 +41,7 @@
 | `artisan_turtle_master` | 神龟护体 | Turtle Master | 绿 |
 | `artisan_trimmed_armor` | 纹饰护体 | Trimmed Armor | 紫 |
 | `artisan_portable_crafting` | 便携工作台 | Portable Crafting Table | 蓝 |
+| `artisan_big_backpack` | 大背包 | Big Backpack | 蓝 |
 | `delver_toughness` | 坚韧 | Toughness | 蓝 |
 | `delver_iron_skin` | 皇帝新衣 | Emperor's New Clothes | 蓝 |
 

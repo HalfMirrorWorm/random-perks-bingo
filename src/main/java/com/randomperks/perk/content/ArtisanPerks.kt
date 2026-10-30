@@ -552,6 +552,15 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.CRAFTING_TABLE)
     }
 
+    /** 蓝 · 匠造: **大背包** —— 背包内物品的堆叠上限 ×4 (64 → 256, 16 → 64; 不可堆叠物品保持 1)。
+     *  只作用于玩家自己的背包, 箱子等容器保持原版 (BigBackpackInventoryMixin / BigBackpackSlotMixin)。 */
+    object BigBackpack : PerkDefinition {
+        override val id = "artisan_big_backpack"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = ItemStack(Items.BUNDLE)
+    }
+
     fun registerAll() {
         PerkRegistry.register(Supply)
         PerkRegistry.register(Toolkit)
@@ -572,5 +581,6 @@ object ArtisanPerks {
         PerkRegistry.register(TurtleMaster)
         PerkRegistry.register(TrimmedArmor)
         PerkRegistry.register(PortableCrafting)
+        PerkRegistry.register(BigBackpack)
     }
 }
