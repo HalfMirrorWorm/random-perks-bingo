@@ -199,7 +199,7 @@
   "random-perks-bingo.perk.harvest_timber.name": "樵夫之手",
   "random-perks-bingo.perk.harvest_timber.desc": "砍未去皮的原木时，20% 概率额外掉落一根其他种类的去皮原木。",
   "random-perks-bingo.perk.harvest_tree_feller.name": "一键伐木",
-  "random-perks-bingo.perk.harvest_tree_feller.desc": "手持斧破坏原木时, 一键砍倒整棵相连的同种树 (最多 128 块, 每块额外消耗 1 点耐久)。",
+  "random-perks-bingo.perk.harvest_tree_feller.desc": "手持斧破坏原木时, 一键砍倒整棵相连的同种树。",
   "random-perks-bingo.perk.harvest_bounty.name": "丰收之息",
   "random-perks-bingo.perk.harvest_bounty.desc": "获得 32 根胡萝卜和一把时运 III 的锄头。",
   "random-perks-bingo.perk.harvest_bountiful_meal.name": "丰盛大餐",
