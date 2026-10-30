@@ -13,6 +13,7 @@ import com.randomperks.game.ModVersionService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.PigMorphService
+import com.randomperks.game.PortableCraftingService
 import com.randomperks.game.RewindService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
@@ -100,6 +101,9 @@ object RandomPerksMod : ModInitializer {
 
         // "磁力升级": 手持潜影盒 / 末影箱右键直接打开
         ContainerOpenService.register()
+
+        // "便携工作台": 手持工作台右键直接打开合成界面
+        PortableCraftingService.register()
 
         // "TNT 投手" 的右键抛射
         TntThrowService.register()
