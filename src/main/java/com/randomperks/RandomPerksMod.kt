@@ -20,6 +20,7 @@ import com.randomperks.game.PerkWorldEventService
 import com.randomperks.game.SavageMagicService
 import com.randomperks.game.SoulOutService
 import com.randomperks.game.SummonedHorseService
+import com.randomperks.game.SwapService
 import com.randomperks.game.TntThrowService
 import com.randomperks.game.VerminSwarmService
 import com.randomperks.lifecycle.BingoLifecycle
@@ -104,6 +105,9 @@ object RandomPerksMod : ModInitializer {
 
         // "便携工作台": 手持工作台右键直接打开合成界面
         PortableCraftingService.register()
+
+        // "何易位": 5 秒倒计时后传送
+        SwapService.register()
 
         // "TNT 投手" 的右键抛射
         TntThrowService.register()
