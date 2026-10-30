@@ -7,7 +7,7 @@ import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
 
 /**
- * "真菌感染" ——
+ * "苔藓侵蚀" ——
  * - 攻击**敌方玩家**时, 随机把他主背包里的 **2 件物品**变成繁茂洞穴物品;
  * - 另外, 持有者自己**每 1 分 45 秒**会有 1 格背包物品 (不含快捷栏) 变成繁茂洞穴物品。
  *

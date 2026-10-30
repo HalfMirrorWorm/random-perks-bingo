@@ -85,7 +85,7 @@
 | `harvest_beekeeper` | 采蜜人 | Beekeeper | 蓝 |
 | `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
 | `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 绿 |
-| `harvest_fungal_infection` | 真菌感染 | Fungal Infection | 金 |
+| `harvest_fungal_infection` | 苔藓侵蚀 | Moss Erosion | 金 |
 | `harvest_slow_chewing` | 细嚼慢咽 | Slow Chewing | 紫 |
 | `harvest_well_fed` | 饱食终日 | Well-Fed | 紫 |
 

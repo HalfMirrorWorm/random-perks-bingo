@@ -688,8 +688,8 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.POPPY)
     }
 
-    /** 金 · 丰饶: **真菌感染** —— 攻击敌方玩家时, 随机把他主背包里的 2 件物品
-     *  变成繁茂洞穴物品 (30 秒冷却; 同队不触发) */
+    /** 金 · 丰饶: **苔藓侵蚀** —— 攻击敌方玩家时, 随机把他主背包里的 2 件物品
+     *  变成繁茂洞穴物品 (5 秒冷却; 同队不触发) */
     object FungalInfection : PerkDefinition {
         override val id = FungalInfectionService.PERK_ID
         override val rarity = PerkRarity.GOLD

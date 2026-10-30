@@ -93,7 +93,7 @@ object PerkWorldEventService {
             player.addStatusEffect(StatusEffectInstance(StatusEffects.RESISTANCE, ESCAPE_PLAN_TICKS, 0))
         }
 
-        // 攻击敌方玩家 → "真菌感染": 随机转化对方 2 件物品
+        // 攻击敌方玩家 → "苔藓侵蚀": 随机转化对方 2 件物品
         ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
             if (damageTaken <= 0.0f) return@register
             val victim = entity as? ServerPlayerEntity ?: return@register
