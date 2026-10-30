@@ -13,7 +13,7 @@
 - **稀有度与抽取权重**：`green` 300 / `blue` 800 / `purple` 315 / `gold` 62 / `red` 20 / `mythic` 3
   （合计 1500：绿 20% / 蓝 53.3% / 紫 21% / 金 4.1% / 红 1.3% / 神话 0.2%）
 - 绿色品质（粗糙）比普通更低级，已加入抽取体系
-- 红色品质（禁忌）高于传说、低于神话，目前还没有词条使用
+- 红色品质（禁忌）高于传说、低于神话
 - 其他语言 key：`random-perks-bingo.rarity.<green|blue|purple|gold|red|mythic>`、
   `random-perks-bingo.message.*`（提示消息）、`random-perks-bingo.dimension.<overworld|nether|end>`、
   `random-perks-bingo.item.treasure_map`（藏宝图）
