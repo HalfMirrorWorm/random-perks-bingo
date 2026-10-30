@@ -30,6 +30,7 @@ object PermanentEffects {
         Entry(StatusEffects.RESISTANCE, "delver_toughness", 0),
         Entry(StatusEffects.HASTE, "delver_haste", 1),
         Entry(StatusEffects.JUMP_BOOST, "swift_jump", 0),
+        Entry(StatusEffects.DOLPHINS_GRACE, "swift_gura_shark", 0),
         Entry(StatusEffects.MINING_FATIGUE, "hunter_pearl_gauntlet", 0),
     )
 

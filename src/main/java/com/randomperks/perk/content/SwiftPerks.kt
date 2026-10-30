@@ -12,6 +12,7 @@ import net.minecraft.component.type.FireworksComponent
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -179,20 +180,48 @@ object SwiftPerks {
         // 效果由 FallBucketMixin 实现 (仅摔落伤害)
     }
 
-    /** 金 · 疾风: 获得一把**激流 I** 的三叉戟 —— 在水中或雨中按住右键即可朝准星方向高速冲出
-     *  (原版机制: 激流只在水中/雨中可用, 陆地或晴天只能当普通三叉戟近战) */
+    /** 红 · 疾风: **古拉鲨鱼** —— 获得一把**激流 I** 的三叉戟 —— 在水中或雨中按住右键即可朝准星
+     *  方向高速冲出; 并永久获得**海豚祝福**; 在水中/雨中每秒续一次**潮涌能量**
+     *  (自带水下呼吸 + 水下速掘).
+     *
+     *  潮涌能量故意**不做成永久效果**: 1.21.7 里它的加速与呼吸判定本身不看环境,
+     *  "只在水里生效"完全靠原版导管方块**只给站在水/雨中的玩家续期**来保证 ——
+     *  所以这里照抄原版: 每秒检查一次, 只有 `isTouchingWaterOrRain` 时才续 260 tick,
+     *  上岸约 13 秒后自然失效。 */
     object GuraShark : PerkDefinition {
         override val id = "swift_gura_shark"
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.RED
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.TRIDENT)
 
         private const val RIPTIDE_LEVEL = 1
 
+        /** 潮涌能量续期时长 (tick), 与原版导管方块一致 */
+        private const val CONDUIT_DURATION = 260
+
         override fun onAcquire(ctx: PerkContext) {
             val trident = ItemStack(Items.TRIDENT)
             PerkEffects.enchant(ctx.player, trident, Enchantments.RIPTIDE, RIPTIDE_LEVEL)
             PerkEffects.giveStack(ctx.player, trident)
+            applyDolphinsGrace(ctx)
+        }
+
+        override fun onRespawn(ctx: PerkContext) = applyDolphinsGrace(ctx)
+
+        /** 每 20 tick 驱动一次: 在水里/雨中续潮涌能量 (与原版导管方块同一节奏) */
+        override fun onTick(ctx: PerkContext) {
+            if (!ctx.player.isTouchingWaterOrRain) return
+            ctx.player.addStatusEffect(
+                StatusEffectInstance(StatusEffects.CONDUIT_POWER, CONDUIT_DURATION, 0, true, true)
+            )
+        }
+
+        private fun applyDolphinsGrace(ctx: PerkContext) =
+            PerkEffects.permanentEffect(ctx.player, StatusEffects.DOLPHINS_GRACE, 0)
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkEffects.removeEffect(ctx.player, StatusEffects.DOLPHINS_GRACE)
+            PerkEffects.removeEffect(ctx.player, StatusEffects.CONDUIT_POWER)
         }
     }
 
