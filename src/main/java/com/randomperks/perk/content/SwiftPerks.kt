@@ -59,10 +59,10 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.FALL_DAMAGE_MULTIPLIER, MOD_FALL)
     }
 
-    /** 蓝 · 弹簧腿: 跳跃高度提升到约 2 格 (原版默认约 1.25 格) */
+    /** 绿 · 弹簧腿: 跳跃高度提升到约 2 格 (原版默认约 1.25 格) */
     object Jump : PerkDefinition {
         override val id = "swift_jump"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.RABBIT_FOOT)
 

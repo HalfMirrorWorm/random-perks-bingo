@@ -6,6 +6,7 @@ import com.randomperks.game.ChickenDyeService
 import com.randomperks.game.FungalInfectionService
 import com.randomperks.game.KelpToBoneService
 import com.randomperks.game.PerkBoostQuery
+import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PigMorphService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -33,7 +34,7 @@ import net.minecraft.util.Identifier
 object HarvestPerks {
 
     /** 紫 · 丰饶: **田园修补** —— 收获成熟作物时, 自动为全身装备 (护甲 4 件 + 主副手)
-     *  各修复 1 点耐久 (只修有损耗的物品, 不消耗经验/材料)。 */
+     *  各修复 10 点耐久 (只修有损耗的物品, 不消耗经验/材料)。 */
     object FieldMender : PerkDefinition {
         override val id = "harvest_field_mender"
         override val rarity = PerkRarity.PURPLE
@@ -59,7 +60,7 @@ object HarvestPerks {
                 if (stack.isEmpty || !stack.isDamageable) continue
                 val damage = stack.damage
                 if (damage <= 0) continue
-                stack.damage = (damage - 1).coerceAtLeast(0)
+                stack.damage = (damage - 10).coerceAtLeast(0)
             }
         }
     }
@@ -259,10 +260,10 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.GOLDEN_CARROT)
     }
 
-    /** 蓝 · 唤法: 立即获得 4 个随机生物蛋 (互不相同) */
+    /** 绿 · 唤法: 立即获得 4 个随机生物蛋 (互不相同) */
     object Rancher : PerkDefinition {
         override val id = "summon_rancher"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.EGG)
 
@@ -507,13 +508,15 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.WHEAT_SEEDS)
     }
 
-    /** 蓝 · 唤法: **乐魂** —— 召唤一只**自带挽具、永久速度 I** 的快乐恶魂 (1.21.6+ 的飞行坐骑),
-     *  并获得 2 根拴绳 */
+    /** 蓝 · 唤法 · 贮藏: **乐魂** —— 在词条列表点击使用, 召唤一只**自带挽具、永久速度 I** 的快乐恶魂
+     *  (1.21.6+ 的飞行坐骑), 并获得 2 根拴绳 */
     object HappyGhast : PerkDefinition {
         override val id = "summon_happy_ghast"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.WHITE_HARNESS)
+
+        override val isOneTime = true
         /** 16 色挽具, 随机挑一个 */
         private val HARNESSES = listOf(
             Items.WHITE_HARNESS, Items.ORANGE_HARNESS, Items.MAGENTA_HARNESS, Items.LIGHT_BLUE_HARNESS,
@@ -525,7 +528,7 @@ object HarvestPerks {
         /** 赠送的拴绳数量 */
         private const val LEAD_COUNT = 2
 
-        override fun onAcquire(ctx: PerkContext) {
+        override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val world = player.world as? ServerWorld ?: return
 
@@ -555,18 +558,22 @@ object HarvestPerks {
             world.spawnEntity(ghast)
 
             PerkEffects.giveStack(player, ItemStack(Items.LEAD, LEAD_COUNT))
+
+            ctx.state.markUsed(id)
+            PerkGrantService.notifyPerkListChanged(player)
+            PerkGrantService.syncAbilities(player)
         }
     }
 
-    /** 紫 · 丰饶: **饱食终日** —— 每 2 分钟获得 7 秒的饱和效果 */
+    /** 金 · 丰饶: **饱食终日** —— 每 1 分 30 秒获得 7 秒的饱和效果 */
     object WellFed : PerkDefinition {
         override val id = "harvest_well_fed"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.GOLDEN_CARROT)
 
         /** 触发间隔 (秒); onTick 每秒触发一次 */
-        private const val INTERVAL_SECONDS = 2 * 60
+        private const val INTERVAL_SECONDS = 90
 
         /** 饱和效果持续时间: 7 秒 */
         private const val EFFECT_TICKS = 7 * 20
@@ -624,12 +631,12 @@ object HarvestPerks {
         }
     }
 
-    /** 绿 · **渔者之幸** —— 钓鱼时默认拥有钓饵 III 与海之眷顾 III (不需要鱼竿附魔);
+    /** 蓝 · **渔者之幸** —— 钓鱼时默认拥有钓饵 III 与海之眷顾 III (不需要鱼竿附魔);
      *  每次钓起额外有 50% 概率多钓一个鹦鹉螺壳。
      *  附魔效果由 FishingEnchantMixin 在浮标创建时注入, 鹦鹉螺壳由 FishingLootMixin 追加。 */
     object LuckyFishing : PerkDefinition {
         override val id = "harvest_lucky_fishing"
-        override val rarity = PerkRarity.GREEN
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.NAUTILUS_SHELL)
     }
@@ -716,7 +723,7 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 丰饶: **细嚼慢咽** —— 进食食物期间, 受到的伤害 -65%
+    /** 紫 · 丰饶: **细嚼慢咽** —— 进食食物期间, 受到的伤害 -75%
      *  (伤害修正在 LivingEntityDamageMixin) */
     object SlowChewing : PerkDefinition {
         override val id = "harvest_slow_chewing"

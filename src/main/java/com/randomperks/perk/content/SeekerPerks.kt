@@ -4,6 +4,7 @@ import com.randomperks.RandomPerksMod
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.LayFlatService
+import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.SavageMagicService
 import com.randomperks.game.StealService
@@ -307,7 +308,7 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 蓝 · 唤法: 获得时**直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼。
+    /** 蓝 · 唤法 · 贮藏: **流浪拴绳** —— 在词条列表点击使用, **直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼。
      *
      *  不再走原版刷新事件 —— WanderingTraderManager.trySpawn 有生物群系 / 白天 / 概率 / 计时器
      *  一堆限制, 经常刷不出来 ("先试原版、失败再兜底"的写法仍然会漏)。现在直接生成,
@@ -318,20 +319,21 @@ object SeekerPerks {
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.EMERALD)
 
-        private const val SPAWNED_KEY = "trader_spawned"
+        override val isOneTime = true
 
-        override fun onAcquire(ctx: PerkContext) {
-            if (ctx.state.memory[SPAWNED_KEY] == "1") return
-
+        override fun onActivate(ctx: PerkContext) {
             val world = ctx.player.world as? ServerWorld ?: return
-            if (spawnAt(world, ctx.player.blockPos)) {
-                ctx.state.memory[SPAWNED_KEY] = "1"
-            } else {
+            if (!spawnAt(world, ctx.player.blockPos)) {
                 ctx.player.sendMessage(
                     Text.translatable("random-perks-bingo.message.trader_failed"),
                     false,
                 )
+                return
             }
+
+            ctx.state.markUsed(id)
+            PerkGrantService.notifyPerkListChanged(ctx.player)
+            PerkGrantService.syncAbilities(ctx.player)
         }
 
         /** 商人 + 2 只羊驼; 玩家脚下站不住 (水里/卡墙) 时才在附近找一块 */
@@ -559,13 +561,16 @@ object SeekerPerks {
         override fun icon() = ItemStack(Items.HOPPER)
     }
 
-    /** 蓝 · 秘藏: **老牧师** —— 获得 16 个绿宝石, 并在脚下召唤一只**大师级牧师**村民,
-     *  但他的交易项会被随机标成 **缺货** 0~3 项 (交易项还在, 只是点不了)。 */
+    /** 蓝 · 秘藏 · 贮藏: **老牧师** —— 在词条列表点击使用, 获得 16 个绿宝石,
+     *  并在脚下召唤一只**大师级牧师**村民; 但他的交易项会被随机标成 **缺货** 0~3 项
+     *  (交易项还在, 只是点不了)。 */
     object OldPriest : PerkDefinition {
         override val id = "seeker_old_priest"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.EMERALD)
+
+        override val isOneTime = true
 
         /** 获得时赠送的绿宝石数量 */
         private const val EMERALD_REWARD = 16
@@ -573,7 +578,7 @@ object SeekerPerks {
         /** 最多随机缺货的交易项数量 */
         private const val MAX_DISABLED = 3
 
-        override fun onAcquire(ctx: PerkContext) {
+        override fun onActivate(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.EMERALD, EMERALD_REWARD))
 
             val world = ctx.player.world as? ServerWorld ?: return
@@ -583,6 +588,10 @@ object SeekerPerks {
                     false,
                 )
             }
+
+            ctx.state.markUsed(id)
+            PerkGrantService.notifyPerkListChanged(ctx.player)
+            PerkGrantService.syncAbilities(ctx.player)
         }
 
         private fun spawnAt(world: ServerWorld, center: BlockPos): Boolean {
@@ -700,10 +709,10 @@ object SeekerPerks {
         }
     }
 
-    /** 蓝 · 秘藏: **村庄英雄** —— 永久获得村庄英雄效果 */
+    /** 绿 · 秘藏: **村庄英雄** —— 永久获得村庄英雄效果 */
     object VillageHero : PerkDefinition {
         override val id = "seeker_village_hero"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.EMERALD)
 

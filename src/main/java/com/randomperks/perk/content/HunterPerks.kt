@@ -136,10 +136,10 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 灵魂收割: 击杀 10% 概率额外掉落**与该怪物对应**的战利品 (僵尸只掉僵尸会有的东西) */
+    /** 蓝 · 灵魂收割: 击杀 10% 概率额外掉落**与该怪物对应**的战利品 (僵尸只掉僵尸会有的东西) */
     object SoulHarvest : PerkDefinition {
         override val id = "hunter_soul_harvest"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.NETHER_STAR)
 
@@ -224,7 +224,7 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 猎杀: 未穿护甲时攻击力 +40% (高风险高收益; 鞘翅不算护甲) */
+    /** 蓝 · 猎杀: 未穿护甲时攻击力 +25% (高风险高收益; 鞘翅不算护甲) */
     object BareRage : PerkDefinition {
         override val id = "hunter_bare_rage"
         override val rarity = PerkRarity.BLUE
@@ -244,7 +244,7 @@ object HunterPerks {
             if (PerkEffects.hasNoArmor(ctx.player)) {
                 PerkEffects.setAttribute(
                     ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE,
-                    0.40, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+                    0.25, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
                 )
             } else {
                 PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
@@ -255,11 +255,11 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
     }
 
-    /** 紫 · 猎杀: 始终标记**距离最近**的敌方玩家 (每秒跟随切换) —— 持续显示其方位/坐标/距离并高亮轮廓;
+    /** 金 · 猎杀: 始终标记**距离最近**的敌方玩家 (每秒跟随切换) —— 持续显示其方位/坐标/距离并高亮轮廓;
      *  **目标 256 格以内**时移速 +50% */
     object MarkedPrey : PerkDefinition {
         override val id = "hunter_marked_prey"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.COMPASS)
 
@@ -387,28 +387,6 @@ object HunterPerks {
         }
     }
 
-    /** 紫 · 猎杀: 击杀生物时 50% 概率让它的**掉落表再滚一次** (= 额外掉落一份它自己的战利品),
-     *  但受到其他生物 2 倍伤害。掉落由生物自己结算 (与"剥皮专家/灵魂收割"同范式, 不扫地面物品) */
-    object GreedyHands : PerkDefinition {
-        override val id = "hunter_greedy_hands"
-        override val rarity = PerkRarity.PURPLE
-        override val archetype = PerkArchetype.HUNTER
-        override fun icon() = ItemStack(Items.GOLDEN_SWORD)
-
-        private const val EXTRA_DROP_CHANCE = 0.5f
-
-        override fun onKill(ctx: PerkContext, victim: LivingEntity) {
-            if (victim !is MobEntity) return                                    // 只有生物有掉落表 (玩家/盔甲架没有)
-            if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return      // 每次击杀掷一次, 不是每件物品
-            val world = ctx.player.world as? ServerWorld ?: return
-            if (!world.gameRules.getBoolean(GameRules.DO_MOB_LOOT)) return      // 跟随原版"生物掉落"游戏规则
-            val source = victim.recentDamageSource ?: return
-            // 让这只怪的掉落表再滚一次 —— 掉落物直接从它自己身上出来; 与原版死亡掉落同一套结算
-            (victim as MobLootInvoker).invokeDropLoot(world, source, true)
-        }
-        // "受到其他生物 2 倍伤害" 由 LivingEntityDamageMixin 实现
-    }
-
     /** 蓝 · 猎杀: 每击杀一只生物, 立即恢复 2 点饥饿值与 2 点饱和度 */
     object Predator : PerkDefinition {
         override val id = "hunter_predator"
@@ -478,10 +456,10 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_MAX_HEALTH)
     }
 
-    /** 蓝 · 唤法: 获得 16 个火焰弹 —— 手持右键即可像恶魂一样发射火球 (发射逻辑见 FireballService) */
+    /** 绿 · 唤法: 获得 16 个火焰弹 —— 手持右键即可像恶魂一样发射火球 (发射逻辑见 FireballService) */
     object Fireball : PerkDefinition {
         override val id = "summon_fireball"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.FIRE_CHARGE)
 
@@ -805,17 +783,30 @@ object HunterPerks {
         }
     }
 
-    /** 金 · 猎杀: **恶魔契约** —— 你造成的伤害翻倍, 但你受到的**任何**伤害也翻倍。
-     *  (两侧都由 LivingEntityDamageMixin 在 damage 的 amount 参数上结算) */
+    /** 金 · 猎杀: **恶魔契约** —— 你造成的伤害翻倍, 但你受到的**任何**伤害也翻倍;
+     *  击杀生物时 50% 概率让它的**掉落表再滚一次** (= 额外掉落一份它自己的战利品)。
+     *  (伤害两侧由 LivingEntityDamageMixin 结算; 掉落与原"贪婪之手"同范式, 由生物自己结算) */
     object DemonPact : PerkDefinition {
         override val id = "hunter_demon_pact"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.WITHER_SKELETON_SKULL)
+
+        private const val EXTRA_DROP_CHANCE = 0.5f
+
+        override fun onKill(ctx: PerkContext, victim: LivingEntity) {
+            if (victim !is MobEntity) return                                    // 只有生物有掉落表 (玩家/盔甲架没有)
+            if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return      // 每次击杀掷一次, 不是每件物品
+            val world = ctx.player.world as? ServerWorld ?: return
+            if (!world.gameRules.getBoolean(GameRules.DO_MOB_LOOT)) return      // 跟随原版"生物掉落"游戏规则
+            val source = victim.recentDamageSource ?: return
+            // 让这只怪的掉落表再滚一次 —— 掉落物直接从它自己身上出来; 与原版死亡掉落同一套结算
+            (victim as MobLootInvoker).invokeDropLoot(world, source, true)
+        }
     }
 
     /** 蓝 · 猎杀: **珠光护手** —— 你的每次攻击都会暴击 (伤害 ×1.5 + 暴击粒子);
-     *  代价是剑不再能横扫, 并且永久带着**挖掘疲劳 I**。
+     *  代价是剑不再能横扫。
      *  (暴击由 PearlGauntletMixin 把原版判定条件逐项 redirect 成恒真) */
     object PearlGauntlet : PerkDefinition {
         override val id = "hunter_pearl_gauntlet"
@@ -834,13 +825,10 @@ object HunterPerks {
                 ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP,
                 -1.0, EntityAttributeModifier.Operation.ADD_VALUE,
             )
-            // 挖掘疲劳 I (永久)
-            PerkEffects.permanentEffect(ctx.player, StatusEffects.MINING_FATIGUE, 0)
         }
 
         override fun onRemove(ctx: PerkContext) {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
-            PerkEffects.removeEffect(ctx.player, StatusEffects.MINING_FATIGUE)
         }
     }
 
@@ -861,11 +849,11 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 唤法: **TNT 投手** —— 获得 4 个 TNT; 手持 TNT 右键时改为抛射一枚点燃的 TNT
+    /** 绿 · 唤法: **TNT 投手** —— 获得 4 个 TNT; 手持 TNT 右键时改为抛射一枚点燃的 TNT
      *  (而非放置方块)。实现见 TntThrowService。 */
     object TntThrow : PerkDefinition {
         override val id = "summon_tnt_throw"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.TNT)
 
@@ -877,10 +865,10 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 猎杀: **军火补给** —— 一次性获得 1 个末地水晶、4 个 TNT、6 个烈焰弹和 8 个火药 */
+    /** 绿 · 猎杀: **军火补给** —— 一次性获得 1 个末地水晶、4 个 TNT、6 个烈焰弹和 8 个火药 */
     object Munitions : PerkDefinition {
         override val id = "hunter_munitions"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.END_CRYSTAL)
 
@@ -892,10 +880,10 @@ object HunterPerks {
         }
     }
 
-    /** 蓝 · 猎杀: **赏金猎人** —— 每击杀一种**此前没杀过**的敌对生物, 获得 3 个金锭 */
+    /** 绿 · 猎杀: **赏金猎人** —— 每击杀一种**此前没杀过**的敌对生物, 获得 3 个金锭 */
     object BountyHunter : PerkDefinition {
         override val id = "hunter_bounty_hunter"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.GOLD_INGOT)
 
@@ -942,7 +930,6 @@ object HunterPerks {
         PerkRegistry.register(SoulHarvest)
         PerkRegistry.register(BareRage)
         PerkRegistry.register(MarkedPrey)
-        PerkRegistry.register(GreedyHands)
         PerkRegistry.register(Predator)
         PerkRegistry.register(Headhunter)
         PerkRegistry.register(Fireball)

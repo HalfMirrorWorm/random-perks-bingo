@@ -39,15 +39,15 @@ import java.util.UUID
  */
 object ArtisanPerks {
 
-    /** 蓝 · 战地补给: 16 面包 + 水桶 */
+    /** 蓝 · 战地补给: 16 烤马铃薯 + 水桶 */
     object Supply : PerkDefinition {
         override val id = "artisan_supply"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.ARTISAN
-        override fun icon() = ItemStack(Items.BREAD)
+        override fun icon() = ItemStack(Items.BAKED_POTATO)
 
         override fun onAcquire(ctx: PerkContext) {
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.BREAD, 16))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.BAKED_POTATO, 16))
             PerkEffects.giveStack(ctx.player, ItemStack(Items.WATER_BUCKET))
         }
     }
@@ -239,11 +239,11 @@ object ArtisanPerks {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.CLOCK))
     }
 
-    /** 紫 · 匠造: 方块与实体交互距离 +4 格
-     *  (注: `ENTITY_INTERACTION_RANGE` 同时决定近战攻击有效距离 —— 3.0 → 7.0, 所以按紫档定位) */
+    /** 金 · 匠造: 方块与实体交互距离 +4 格
+     *  (注: `ENTITY_INTERACTION_RANGE` 同时决定近战攻击有效距离 —— 3.0 → 7.0) */
     object LongArms : PerkDefinition {
         override val id = "artisan_long_arms"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.ARMOR_STAND)
 

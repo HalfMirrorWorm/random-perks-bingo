@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **133** 条词条：绿 19 / 蓝 58 / 紫 33 / 金 18 / 红 3 / 神话 2。
+共 **132** 条词条：绿 25 / 蓝 53 / 紫 27 / 金 22 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -28,7 +28,7 @@
 | `artisan_enchanter` | 附魔学徒 | Apprentice Enchanter | 蓝 |
 | `artisan_quick_enchant` | 快速附魔 | Quick Enchant | 紫 |
 | `artisan_waypoint_clock` | 传送时钟 | Waypoint Clock | 金 |
-| `artisan_long_arms` | 手长 | Long Arms | 紫 |
+| `artisan_long_arms` | 手长 | Long Arms | 金 |
 | `artisan_fire_temper` | 火炼 | Smelting | 绿 |
 | `artisan_poisoner` | 绝命毒师 | Breaking Bad | 紫 |
 | `artisan_treasure_chest` | 百宝箱 | Treasure Chest | 紫 |
@@ -84,14 +84,14 @@
 | `harvest_saplings` | 植岷 | Saplings | 绿 |
 | `harvest_gleaning` | 拾穗 | Gleaning | 绿 |
 | `harvest_dingdong_chicken` | 叮咚鸡 | Ding Dong Chicken | 绿 |
-| `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 绿 |
+| `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 蓝 |
 | `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
 | `harvest_beekeeper` | 采蜜人 | Beekeeper | 蓝 |
 | `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
 | `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 绿 |
 | `harvest_fungal_infection` | 苔藓侵蚀 | Moss Erosion | 金 |
 | `harvest_slow_chewing` | 细嚼慢咽 | Slow Chewing | 紫 |
-| `harvest_well_fed` | 饱食终日 | Well-Fed | 紫 |
+| `harvest_well_fed` | 饱食终日 | Well-Fed | 金 |
 
 ## 猎杀 HUNTER
 
@@ -101,10 +101,9 @@
 | `hunter_vitality` | 强壮体魄 | Vitality | 蓝 |
 | `hunter_vampire` | 战地急救 | Field Medic | 蓝 |
 | `hunter_scavenger` | 剥皮专家 | Scavenger | 紫 |
-| `hunter_soul_harvest` | 灵魂收割 | Soul Harvest | 紫 |
+| `hunter_soul_harvest` | 灵魂收割 | Soul Harvest | 蓝 |
 | `hunter_bare_rage` | 玻璃小炮 | Glass Cannon | 蓝 |
-| `hunter_marked_prey` | 猎杀印记 | Hunter's Mark | 紫 |
-| `hunter_greedy_hands` | 贪婪之手 | Greedy Hands | 紫 |
+| `hunter_marked_prey` | 猎杀印记 | Hunter's Mark | 金 |
 | `hunter_predator` | 我饥饿 | Me Hungry | 蓝 |
 | `hunter_headhunter` | SMP玩家 | SMP Player | 紫 |
 | `hunter_veteran` | 老玩家 | Veteran | 金 |
@@ -114,8 +113,8 @@
 | `hunter_demon_pact` | 恶魔契约 | Demon Pact | 金 |
 | `hunter_pearl_gauntlet` | 珠光护手 | Pearl Gauntlet | 蓝 |
 | `hunter_satiation_strike` | 良子冲击 | Satiation Strike | 紫 |
-| `hunter_munitions` | 军火补给 | Munitions Supply | 蓝 |
-| `hunter_bounty_hunter` | 赏金猎人 | Bounty Hunter | 蓝 |
+| `hunter_munitions` | 军火补给 | Munitions Supply | 绿 |
+| `hunter_bounty_hunter` | 赏金猎人 | Bounty Hunter | 绿 |
 | `hunter_hedgehog` | 刺猬 | Hedgehog | 金 |
 | `hunter_spider_weaving` | 盘丝大仙 | Web Spinner | 蓝 |
 | `mythic_doomsday` | 天启日 | Doomsday | 红 |
@@ -138,7 +137,7 @@
 | `seeker_magnet_upgrade` | 磁力升级 | Magnet Upgrade | 绿 |
 | `seeker_old_priest` | 老牧师 | Old Priest | 蓝 |
 | `seeker_warm_archaeology` | 暖水考古 | Warm Water Archaeology | 蓝 |
-| `seeker_village_hero` | 村庄英雄 | Hero of the Village | 蓝 |
+| `seeker_village_hero` | 村庄英雄 | Hero of the Village | 绿 |
 | `seeker_savage_magic` | 野人魔了 | Savage Magic | 紫 |
 
 ## 迅捷 SWIFT
@@ -147,7 +146,7 @@
 |---|---|---|---|
 | `swift_speed` | 轻装疾行 | Light Feet | 蓝 |
 | `swift_feather_fall` | 柔软鞋底 | Soft Soles | 蓝 |
-| `swift_jump` | 弹簧腿 | Spring Legs | 蓝 |
+| `swift_jump` | 弹簧腿 | Spring Legs | 绿 |
 | `swift_wind_stride` | 风之步伐 | Wind Stride | 紫 |
 | `swift_tailwind` | 顺风而行 | Tailwind | 紫 |
 | `swift_double_jump` | 二段跳 | Double Jump | 紫 |
@@ -166,17 +165,17 @@
 |---|---|---|---|
 | `summon_dragon_tamer` | 驯龙高手 | Dragon Tamer | 金 |
 | `summon_pokemon` | 宝可梦 | Pokemon | 紫 |
-| `summon_fireball` | 烈焰喷射 | Ghast Fireball | 蓝 |
-| `summon_tnt_throw` | TNT 投手 | TNT Thrower | 蓝 |
+| `summon_fireball` | 烈焰喷射 | Ghast Fireball | 绿 |
+| `summon_tnt_throw` | TNT 投手 | TNT Thrower | 绿 |
 | `summon_horse` | 马来 | Horse, Come | 蓝 |
 | `summon_happy_ghast` | 乐魂 | Happy Ghast | 蓝 |
 | `summon_big_dog` | 大狗嚼 | Big Doggo | 蓝 |
 | `summon_wandering_trader` | 流浪拴绳 | Wandering Leash | 蓝 |
-| `summon_rancher` | 牧场主 | Rancher | 蓝 |
+| `summon_rancher` | 牧场主 | Rancher | 绿 |
 | `summon_call_lightning` | 引雷术 | Call Lightning | 蓝 |
 | `summon_big_snowball` | 打雪仗 | Snowball Fight | 绿 |
 | `summon_remote_transfer` | 远程传输 | Remote Transfer | 蓝 |
-| `summon_swap` | 何易位 | Swap | 紫 |
+| `summon_swap` | 何易位 | Swap | 金 |
 | `summon_boss_egg` | Boss盲盒 | Boss Blind Box | 紫 |
 | `summon_end_portal` | 结束吧 | End It | 金 |
 | `summon_loyal_guard` | 忠心护主 | Loyal Guardian | 金 |

@@ -7,7 +7,6 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -23,11 +22,10 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
  *
  * <ul>
  *   <li>"猎人直觉" —— **对怪物 (Monster)** 造成的伤害 +25%, 对玩家/其他目标不加成</li>
- *   <li>"贪婪之手" —— 受到**其他生物 (非玩家)** 的 2 倍伤害</li>
  *   <li>"Jockey" —— 骑在别人身上时, 受到来自**被骑者**的伤害 -75%</li>
  *   <li>"恶魔契约" —— 造成的伤害翻倍, 受到的**任何**伤害也翻倍</li>
  *   <li>"老玩家" —— 右键举剑格挡时, 受到的伤害减半</li>
- *   <li>"细嚼慢咽" —— 正在进食食物时, 受到的伤害 -65%</li>
+ *   <li>"细嚼慢咽" —— 正在进食食物时, 受到的伤害 -75%</li>
  * </ul>
  */
 @Mixin(LivingEntity.class)
@@ -62,13 +60,6 @@ public class LivingEntityDamageMixin {
 
         if (!((Object) this instanceof ServerPlayerEntity player)) return amount;
 
-        // "贪婪之手": 受到其他生物 (非玩家) 的 2 倍伤害
-        if (PerkBoostQuery.INSTANCE.hasFragileToMobs(player)
-                && attacker instanceof LivingEntity
-                && !(attacker instanceof PlayerEntity)) {
-            amount *= 2.0f;
-        }
-
         // "Jockey": 只有"被自己骑着的那个玩家"打过来才减伤
         if (PerkBoostQuery.INSTANCE.hasJockey(player)
                 && attacker instanceof ServerPlayerEntity
@@ -89,11 +80,11 @@ public class LivingEntityDamageMixin {
             amount *= 0.5f;
         }
 
-        // "细嚼慢咽": 正在进食 (使用带 FOOD 组件的物品) 时, 受到的伤害 -65%
+        // "细嚼慢咽": 正在进食 (使用带 FOOD 组件的物品) 时, 受到的伤害 -75%
         if (PerkBoostQuery.INSTANCE.hasSlowChewing(player)
                 && player.isUsingItem()
                 && player.getActiveItem().get(DataComponentTypes.FOOD) != null) {
-            amount *= 0.35f;
+            amount *= 0.25f;
         }
 
         return amount;

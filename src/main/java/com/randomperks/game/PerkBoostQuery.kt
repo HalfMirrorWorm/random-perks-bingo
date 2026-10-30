@@ -20,10 +20,6 @@ object PerkBoostQuery {
     fun hasHunterInstinct(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_strength") == true
 
-    /** 玩家是否持有"贪婪之手" (受到其他生物 2 倍伤害) */
-    fun hasFragileToMobs(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("hunter_greedy_hands") == true
-
     /** 玩家是否持有"小鸟胃" (进食恢复翻倍) */
     fun hasEatBoost(player: PlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_gourmet") == true

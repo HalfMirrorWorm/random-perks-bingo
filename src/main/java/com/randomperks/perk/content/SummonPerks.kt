@@ -233,11 +233,11 @@ object SummonPerks {
         }
     }
 
-    /** 紫 · 唤法: **何易位** —— 在 V 界面点击使用后选择一名玩家, **5 秒倒计时后**传送到他的位置
+    /** 金 · 唤法: **何易位** —— 在 V 界面点击使用后选择一名玩家, **5 秒倒计时后**传送到他的位置
      *  (可跨维度); 倒计时期间双方都能在动作栏看到剩余秒数, 被选中的人有 5 秒反应时间。 */
     object Swap : PerkDefinition {
         override val id = "summon_swap"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.ENDER_PEARL)
 
