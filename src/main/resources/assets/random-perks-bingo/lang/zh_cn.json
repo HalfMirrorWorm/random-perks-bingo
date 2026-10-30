@@ -160,6 +160,8 @@
   "random-perks-bingo.perk.delver_mining.desc": "挖掘速度 +15%; 挖矿石时额外 +25%。",
   "random-perks-bingo.perk.delver_gluttonous_snake.name": "贪吃蛇",
   "random-perks-bingo.perk.delver_gluttonous_snake.desc": "挖掘速度 -20%; 每挖掘一个矿石 +1% 挖掘速度, 最多 +120%。",
+  "random-perks-bingo.perk.delver_unforgettable.name": "永生难忘",
+  "random-perks-bingo.perk.delver_unforgettable.desc": "获得一把不可破坏的金镐。",
   "random-perks-bingo.perk.delver_night_vision.name": "地下视野",
   "random-perks-bingo.perk.delver_night_vision.desc": "永久夜视。",
   "random-perks-bingo.perk.delver_toughness.name": "坚韧",

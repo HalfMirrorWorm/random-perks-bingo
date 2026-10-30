@@ -11,6 +11,7 @@ import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
@@ -24,6 +25,7 @@ import net.minecraft.registry.tag.BlockTags
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
+import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
 import kotlin.math.abs
 
@@ -91,6 +93,22 @@ object DelverPerks {
 
         override fun onRemove(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_SPEED)
+    }
+
+    /** 蓝 · 深掘: **永生难忘** —— 获得一把**不可破坏的金镐**。
+     *  只在获得词条时发一次, 死亡掉落/烧毁后不补发 (与千锤百炼、喵人斧一致)。 */
+    object Unforgettable : PerkDefinition {
+        override val id = "delver_unforgettable"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.GOLDEN_PICKAXE)
+
+        override fun onAcquire(ctx: PerkContext) {
+            val pickaxe = ItemStack(Items.GOLDEN_PICKAXE)
+            // 1.21.7 的 unbreakable 是无值组件 (Unit), 设置后耐久不再消耗
+            pickaxe.set(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+            PerkEffects.giveStack(ctx.player, pickaxe)
+        }
     }
 
     /** 蓝 · 地下视野: 永久夜视 */
@@ -483,6 +501,7 @@ object DelverPerks {
     fun registerAll() {
         PerkRegistry.register(Mining)
         PerkRegistry.register(GluttonousSnake)
+        PerkRegistry.register(Unforgettable)
         PerkRegistry.register(NightVision)
         PerkRegistry.register(Toughness)
         PerkRegistry.register(Haste)
