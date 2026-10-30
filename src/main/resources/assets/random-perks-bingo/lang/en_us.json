@@ -197,7 +197,7 @@
   "random-perks-bingo.perk.harvest_herder.name": "Herder",
   "random-perks-bingo.perk.harvest_herder.desc": "Gain shears and 32 wool.",
   "random-perks-bingo.perk.harvest_timber.name": "Timber!",
-  "random-perks-bingo.perk.harvest_timber.desc": "Chopping an un-stripped log has a 10% chance to drop a stripped log of another wood type.",
+  "random-perks-bingo.perk.harvest_timber.desc": "Chopping an un-stripped log has a 20% chance to drop a stripped log of another wood type.",
   "random-perks-bingo.perk.harvest_tree_feller.name": "One-Click Felling",
   "random-perks-bingo.perk.harvest_tree_feller.desc": "Breaking a log with an axe fells the entire connected tree of the same wood type (up to 128 logs, 1 extra durability each).",
   "random-perks-bingo.perk.harvest_bounty.name": "Bounty",

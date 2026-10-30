@@ -119,7 +119,7 @@ object HarvestPerks {
         }
     }
 
-    /** 绿 · 樵夫之手: 砍**未去皮**的原木时, 10% 概率额外掉落一根**其他种类**的去皮原木
+    /** 绿 · 樵夫之手: 砍**未去皮**的原木时, 20% 概率额外掉落一根**其他种类**的去皮原木
      *  (掉落在原方块位置, 不进背包)。去皮原木自身不再触发。 */
     object Timber : PerkDefinition {
         override val id = "harvest_timber"
@@ -127,7 +127,7 @@ object HarvestPerks {
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.OAK_LOG)
 
-        private const val CHANCE = 0.10f
+        private const val CHANCE = 0.20f
 
         /** 可掉落的去皮原木 (含下界菌柄) */
         private val STRIPPED_LOGS = listOf(
