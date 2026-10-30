@@ -190,8 +190,8 @@
 
   "random-perks-bingo.perk.harvest_field_mender.name": "田园修补",
   "random-perks-bingo.perk.harvest_field_mender.desc": "收获成熟作物时, 全身装备各修复 10 点耐久。",
-  "random-perks-bingo.perk.harvest_gardener.name": "园艺家",
-  "random-perks-bingo.perk.harvest_gardener.desc": "获得 16 个面包和 16 个小麦。",
+  "random-perks-bingo.perk.harvest_gardener.name": "作物丰收",
+  "random-perks-bingo.perk.harvest_gardener.desc": "随机获得某种主要作物和对应的 1 组种子。",
   "random-perks-bingo.perk.harvest_lumberjack.name": "伐木工",
   "random-perks-bingo.perk.harvest_lumberjack.desc": "获得一把效率 III 的石斧。",
   "random-perks-bingo.perk.harvest_herder.name": "牧羊人",

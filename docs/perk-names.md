@@ -70,7 +70,7 @@
 | id | 中文名 | 英文名 | 稀有度 |
 |---|---|---|---|
 | `harvest_field_mender` | 田园修补 | Field Mender | 紫 |
-| `harvest_gardener` | 园艺家 | Gardener | 蓝 |
+| `harvest_gardener` | 作物丰收 | Bumper Crop | 蓝 |
 | `harvest_lumberjack` | 伐木工 | Lumberjack | 蓝 |
 | `harvest_herder` | 牧羊人 | Herder | 蓝 |
 | `harvest_timber` | 樵夫之手 | Timber! | 绿 |

@@ -21,6 +21,7 @@ import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
@@ -65,16 +66,29 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 园艺家: 获得 16 面包 + 16 小麦 */
+    /** 蓝 · 丰饶: **作物丰收** —— 随机获得一种主要作物 + 对应的一整组种子:
+     *  8 干草块 + 64 小麦种子 / 8 西瓜块 + 64 西瓜种子 / 16 南瓜 + 64 南瓜种子 / 64 甜菜根 + 64 甜菜根种子 */
     object Gardener : PerkDefinition {
         override val id = "harvest_gardener"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.WHEAT)
 
+        private const val SEED_COUNT = 64
+
+        private data class CropSet(val crop: Item, val cropCount: Int, val seeds: Item)
+
+        private val CROP_SETS = listOf(
+            CropSet(Items.HAY_BLOCK, 8, Items.WHEAT_SEEDS),
+            CropSet(Items.MELON, 8, Items.MELON_SEEDS),
+            CropSet(Items.PUMPKIN, 16, Items.PUMPKIN_SEEDS),
+            CropSet(Items.BEETROOT, 64, Items.BEETROOT_SEEDS),
+        )
+
         override fun onAcquire(ctx: PerkContext) {
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.BREAD, 16))
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.WHEAT, 16))
+            val set = CROP_SETS[ctx.player.random.nextInt(CROP_SETS.size)]
+            PerkEffects.giveStack(ctx.player, ItemStack(set.crop, set.cropCount))
+            PerkEffects.giveStack(ctx.player, ItemStack(set.seeds, SEED_COUNT))
         }
     }
 
