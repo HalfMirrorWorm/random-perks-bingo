@@ -51,6 +51,48 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
     }
 
+    /** 紫 · 深掘: **贪吃蛇** —— 基础挖掘速度 -20%; 每挖掉一个矿石 +1%,
+     *  加成最多 +120% (即 120 个矿石封顶, 最终挖掘速度 ×2.0)。
+     *  计数存在词条 memory 里, 重生保留, 对局结束清空。 */
+    object GluttonousSnake : PerkDefinition {
+        override val id = "delver_gluttonous_snake"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.RAW_GOLD)
+
+        private val MOD_SPEED = Identifier.of("random-perks-bingo", "gluttonous_snake_speed")
+        private const val KEY_STACKS = "gluttonous_snake_stacks"
+        private const val BASE_PENALTY = -0.20
+        private const val PER_ORE = 0.01
+        private const val MAX_STACKS = 120
+
+        override fun onAcquire(ctx: PerkContext) = apply(ctx)
+        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+
+        override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
+            if (ctx.player.isCreative) return
+            if (!PerkBoostQuery.isOreBlock(blockState)) return
+
+            val stacks = stacks(ctx)
+            if (stacks >= MAX_STACKS) return
+            ctx.state.memory[KEY_STACKS] = (stacks + 1).toString()
+            apply(ctx)
+        }
+
+        private fun apply(ctx: PerkContext) {
+            PerkEffects.setAttribute(
+                ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_SPEED,
+                BASE_PENALTY + PER_ORE * stacks(ctx), EntityAttributeModifier.Operation.ADD_VALUE,
+            )
+        }
+
+        private fun stacks(ctx: PerkContext): Int =
+            (ctx.state.memory[KEY_STACKS]?.toIntOrNull() ?: 0).coerceIn(0, MAX_STACKS)
+
+        override fun onRemove(ctx: PerkContext) =
+            PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_SPEED)
+    }
+
     /** 蓝 · 地下视野: 永久夜视 */
     object NightVision : PerkDefinition {
         override val id = "delver_night_vision"
@@ -440,6 +482,7 @@ object DelverPerks {
 
     fun registerAll() {
         PerkRegistry.register(Mining)
+        PerkRegistry.register(GluttonousSnake)
         PerkRegistry.register(NightVision)
         PerkRegistry.register(Toughness)
         PerkRegistry.register(Haste)

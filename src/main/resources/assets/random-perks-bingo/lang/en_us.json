@@ -158,6 +158,8 @@
 
   "random-perks-bingo.perk.delver_mining.name": "Miner's Wrist",
   "random-perks-bingo.perk.delver_mining.desc": "+15% mining speed; +25% more when mining ores.",
+  "random-perks-bingo.perk.delver_gluttonous_snake.name": "Gluttonous Snake",
+  "random-perks-bingo.perk.delver_gluttonous_snake.desc": "-20% mining speed; each ore mined grants +1% mining speed, up to +120%.",
   "random-perks-bingo.perk.delver_night_vision.name": "Underground Sight",
   "random-perks-bingo.perk.delver_night_vision.desc": "Permanent night vision.",
   "random-perks-bingo.perk.delver_toughness.name": "Toughness",
