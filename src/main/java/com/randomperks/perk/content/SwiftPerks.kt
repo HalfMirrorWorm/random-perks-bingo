@@ -180,7 +180,7 @@ object SwiftPerks {
         // 效果由 FallBucketMixin 实现 (仅摔落伤害)
     }
 
-    /** 红 · 疾风: **古拉鲨鱼** —— 获得一把**激流 I** 的三叉戟 —— 在水中或雨中按住右键即可朝准星
+    /** 红 · 疾风: **古拉鲨鱼** —— 获得一把**激流 II** 的三叉戟 —— 在水中或雨中按住右键即可朝准星
      *  方向高速冲出; 并永久获得**海豚祝福**; 在水中/雨中每秒续一次**潮涌能量**
      *  (自带水下呼吸 + 水下速掘).
      *
@@ -194,7 +194,7 @@ object SwiftPerks {
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.TRIDENT)
 
-        private const val RIPTIDE_LEVEL = 1
+        private const val RIPTIDE_LEVEL = 2
 
         /** 潮涌能量续期时长 (tick), 与原版导管方块一致 */
         private const val CONDUIT_DURATION = 260
