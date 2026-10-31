@@ -61,7 +61,8 @@
     "OldMinerMixin",
     "BreakDecisionMixin",
     "BigBackpackInventoryMixin",
-    "BigBackpackSlotMixin"
+    "BigBackpackSlotMixin",
+    "VillageHeroTradeMixin"
   ],
   "client": [
     "EntityGlowMixin",

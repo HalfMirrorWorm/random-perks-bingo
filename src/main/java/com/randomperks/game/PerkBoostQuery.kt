@@ -24,6 +24,12 @@ object PerkBoostQuery {
     fun hasEatBoost(player: PlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_gourmet") == true
 
+    // ---- "村庄英雄": 交易不会让村民缺货 (由 VillageHeroTradeMixin 调用) ----
+
+    /** 玩家是否持有"村庄英雄" */
+    fun hasVillageHero(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("seeker_village_hero") == true
+
     /** 玩家是否持有"救生桶" (摔落伤害时副手水桶当图腾) */
     fun hasFallBucket(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("swift_life_bucket") == true

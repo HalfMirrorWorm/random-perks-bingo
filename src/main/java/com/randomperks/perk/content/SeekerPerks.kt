@@ -714,7 +714,8 @@ object SeekerPerks {
         }
     }
 
-    /** 绿 · 秘藏: **村庄英雄** —— 永久获得村庄英雄效果 */
+    /** 绿 · 秘藏: **村庄英雄** —— 永久获得村庄英雄效果; 并且你的交易不会让村民缺货
+     *  (由 VillageHeroTradeMixin 在每次交易结算后清零 uses) */
     object VillageHero : PerkDefinition {
         override val id = "seeker_village_hero"
         override val rarity = PerkRarity.GREEN
