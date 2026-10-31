@@ -62,6 +62,7 @@
     "BreakDecisionMixin",
     "BigBackpackInventoryMixin",
     "BigBackpackSlotMixin",
+    "BigBackpackPlayerInventoryMixin",
     "VillageHeroTradeMixin"
   ],
   "client": [
