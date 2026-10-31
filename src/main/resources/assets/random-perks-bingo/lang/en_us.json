@@ -353,7 +353,7 @@
   "random-perks-bingo.perk.hunter_satiation_strike.name": "Satiation Strike",
   "random-perks-bingo.perk.hunter_satiation_strike.desc": "While your hunger bar is full, you deal 50% more damage but get hungry faster.",
   "random-perks-bingo.perk.summon_pokemon.name": "Pokemon",
-  "random-perks-bingo.perk.summon_pokemon.desc": "Gain 4 eggs; when your thrown egg hits a non-boss mob, it turns into its spawn egg.",
+  "random-perks-bingo.perk.summon_pokemon.desc": "Gain 16 eggs; when your thrown egg hits a non-boss mob, it turns into its spawn egg.",
   "random-perks-bingo.perk.seeker_lay_flat.name": "Lay Flat",
   "random-perks-bingo.perk.seeker_lay_flat.desc": "Blindness + Slowness IV for 5 minutes; then gain Nature's/Explorer's Compass, or a stone axe if you die.",
   "random-perks-bingo.message.lay_flat_missing_mod": "Nature's Compass / Explorer's Compass is not installed; this reward was skipped.",

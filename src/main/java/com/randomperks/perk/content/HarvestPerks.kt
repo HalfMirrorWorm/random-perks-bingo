@@ -476,7 +476,7 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.EGG)
 
         /** 获得时附赠的鸡蛋数量 */
-        private const val STARTING_EGGS = 4
+        private const val STARTING_EGGS = 16
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.EGG, STARTING_EGGS))
