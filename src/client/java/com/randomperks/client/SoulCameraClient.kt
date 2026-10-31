@@ -80,21 +80,29 @@ object SoulCameraClient {
         val down = options.sneakKey.isPressed
         val fast = options.sprintKey.isPressed
 
+        // 与 Freecam 一致: W/S 只按水平朝向 (yaw) 飞, 升降交给空格/Shift;
+        // 俯仰只影响视角, 这样低头看地面时按 W 不会往地里钻。
+        val speed = if (fast) SPEED_FAST else SPEED_NORMAL
         var move = Vec3d.ZERO
-        val look = lookVector()
-        if (forward) move = move.add(look)
-        if (backward) move = move.subtract(look)
-        if (left) move = move.subtract(rightVector())
-        if (right) move = move.add(rightVector())
-        if (up) move = move.add(0.0, 1.0, 0.0)
-        if (down) move = move.add(0.0, -1.0, 0.0)
+
+        var horizontal = Vec3d.ZERO
+        val forwardVec = Vec3d.fromPolar(0.0f, yaw)
+        if (forward) horizontal = horizontal.add(forwardVec)
+        if (backward) horizontal = horizontal.subtract(forwardVec)
+        if (left) horizontal = horizontal.subtract(rightVector())
+        if (right) horizontal = horizontal.add(rightVector())
+        if (horizontal.lengthSquared() > 1.0E-6) {
+            move = move.add(horizontal.normalize().multiply(speed * dt))
+        }
+
+        var vertical = 0.0
+        if (up) vertical += 1.0
+        if (down) vertical -= 1.0
+        if (vertical != 0.0) move = move.add(0.0, vertical * speed * dt, 0.0)
 
         if (move.lengthSquared() < 1.0E-6) return
-        val speed = if (fast) SPEED_FAST else SPEED_NORMAL
-        pos = pos.add(move.normalize().multiply(speed * dt))
+        pos = pos.add(move)
     }
-
-    private fun lookVector(): Vec3d = Vec3d.fromPolar(pitch, yaw)
 
     private fun rightVector(): Vec3d = Vec3d.fromPolar(0.0f, yaw + 90.0f)
 }
