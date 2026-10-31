@@ -95,11 +95,11 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_SPEED)
     }
 
-    /** 蓝 · 深掘: **永生难忘** —— 获得一把**不可破坏的金镐**。
+    /** 紫 · 深掘: **永生难忘** —— 获得一把**不可破坏的金镐**。
      *  只在获得词条时发一次, 死亡掉落/烧毁后不补发 (与千锤百炼、喵人斧一致)。 */
     object Unforgettable : PerkDefinition {
         override val id = "delver_unforgettable"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.GOLDEN_PICKAXE)
 
@@ -153,12 +153,12 @@ object DelverPerks {
         override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.HASTE)
     }
 
-    /** 紫 · 矿脉嗅觉: 挖掘矿石时 18% 概率额外掉落一份, 每拥有一个其他深掘词条 +3%
+    /** 蓝 · 矿脉嗅觉: 挖掘矿石时 18% 概率额外掉落一份, 每拥有一个其他深掘词条 +3%
      *  —— 判定与掉落由 MiningDropMixin 在 Block.dropStacks 统一处理 (与老矿工合并概率,
      *  命中时把整份掉落翻倍, 而不是额外重掷一次时运) */
     object VeinScent : PerkDefinition {
         override val id = "delver_vein_scent"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.RAW_IRON)
     }
@@ -193,11 +193,11 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
     }
 
-    /** 红 · 深掘: 10 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 35% 概率消失
+    /** 金 · 深掘: 10 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 35% 概率消失
      *  (XrayDecisionMixin 在破坏流程开头掷判定, MiningDropMixin 在掉落生成处直接抑制 —— 不生成, 而非事后删除) */
     object XrayVision : PerkDefinition {
         override val id = "delver_xray_vision"
-        override val rarity = PerkRarity.RED
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.ENDER_EYE)
         // 透视渲染在客户端 (XrayRenderer); 掉落抑制在 MiningDropMixin
@@ -458,11 +458,11 @@ object DelverPerks {
         override fun icon() = ItemStack(Items.CRYING_OBSIDIAN)
     }
 
-    /** 紫 · 深掘: **不死鸟** —— 免疫火焰伤害; 处于岩浆中时每秒恢复 2 点生命。
+    /** 金 · 深掘: **不死鸟** —— 免疫火焰伤害; 处于岩浆中时每秒恢复 2 点生命。
      *  免疫由 PhoenixMixin 在 LivingEntity.damage 的 HEAD 拦截 (仅 IS_FIRE 类伤害)。 */
     object Phoenix : PerkDefinition {
         override val id = "delver_phoenix"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.MAGMA_BLOCK)
 

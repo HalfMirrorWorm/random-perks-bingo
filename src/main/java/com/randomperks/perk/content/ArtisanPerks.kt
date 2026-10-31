@@ -226,11 +226,11 @@ object ArtisanPerks {
         }
     }
 
-    /** 金 · 匠造: 手持时钟右键 —— 传送到**上次死亡地点** (5 分钟冷却, 跨维度也可)。
+    /** 蓝 · 匠造: 手持时钟右键 —— 传送到**上次死亡地点** (5 分钟冷却, 跨维度也可)。
      *  死亡地点由 WaypointService 在 AFTER_DEATH 自动记录 (只记录持词条者, 再死一次覆盖旧点)。 */
     object WaypointClock : PerkDefinition {
         override val id = "artisan_waypoint_clock"
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.CLOCK)
 
@@ -527,18 +527,18 @@ object ArtisanPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_HEALTH)
     }
 
-    /** 紫 · 匠造: **不痛不痒** —— 最终伤害在 2~5 点时改为只受 1 点 (由 SmallDamageGuardMixin 实现) */
+    /** 金 · 匠造: **不痛不痒** —— 最终伤害在 2~5 点时改为只受 1 点 (由 SmallDamageGuardMixin 实现) */
     object BarelyAScratch : PerkDefinition {
         override val id = "artisan_barely_a_scratch"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.SHIELD)
     }
 
-    /** 金 · 匠造: **复活甲** —— 受到致命伤害时自动触发一次不死图腾效果 (冷却 20 分钟) */
+    /** 紫 · 匠造: **复活甲** —— 受到致命伤害时自动触发一次不死图腾效果 (**整局一次**, 无冷却) */
     object ReviveArmor : PerkDefinition {
         override val id = ReviveArmorService.PERK_ID
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.TOTEM_OF_UNDYING)
     }

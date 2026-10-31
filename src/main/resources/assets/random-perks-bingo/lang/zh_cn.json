@@ -285,7 +285,7 @@
   "random-perks-bingo.perk.artisan_midas_touch.name": "点石成金",
   "random-perks-bingo.perk.artisan_midas_touch.desc": "右键镶金黑石, 把它变成金块。",
   "random-perks-bingo.perk.artisan_revive_armor.name": "复活甲",
-  "random-perks-bingo.perk.artisan_revive_armor.desc": "受到致命伤害时，自动触发一次不死图腾效果（冷却 20 分钟）。",
+  "random-perks-bingo.perk.artisan_revive_armor.desc": "受到致命伤害时，自动触发一次不死图腾效果（整局一次）。",
   "random-perks-bingo.perk.artisan_barely_a_scratch.name": "不痛不痒",
   "random-perks-bingo.perk.artisan_barely_a_scratch.desc": "受到 5 点及以下的伤害时，改为只受到 1 点伤害。",
   "random-perks-bingo.perk.artisan_turtle_master.name": "神龟护体",

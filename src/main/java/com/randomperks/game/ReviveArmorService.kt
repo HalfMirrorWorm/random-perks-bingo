@@ -16,7 +16,7 @@ import net.minecraft.util.Hand
  *
  * 玩家受到**致命伤害**时, 自动复刻一次不死图腾的结算 (不消耗任何物品):
  * 生命设为 1, 清空负面效果并给予生命恢复 II / 伤害吸收 II / 抗火, 播放图腾音效与粒子。
- * 冷却 20 分钟, 冷却期间再受致命伤害就正常死亡。
+ * **整局只能触发一次** (没有冷却), 触发过后再受致命伤害就正常死亡。
  *
  * 触发点在原版 {@code LivingEntity.tryUseDeathProtector} 的 HEAD (见 ReviveArmorMixin) ——
  * 原版只有在生命值归零后才会调用那个方法, 所以天然满足"致命伤害"的条件。
@@ -25,8 +25,8 @@ object ReviveArmorService {
 
     const val PERK_ID = "artisan_revive_armor"
 
-    /** 冷却: 20 分钟 */
-    private const val COOLDOWN_TICKS = 20L * 60L * 20L
+    /** "已触发"标记 (存在 state.memory 里, 对局结束随词条状态一起清空) */
+    private const val USED_KEY = "revive_armor_used"
 
     /**
      * 尝试为玩家触发一次复活甲。
@@ -44,10 +44,9 @@ object ReviveArmorService {
         if (hasTotemInHand(player, Hand.MAIN_HAND) || hasTotemInHand(player, Hand.OFF_HAND)) return false
 
         val state = PerkStateManager.get(player.uuid) ?: return false
-        val now = player.server?.ticks?.toLong() ?: return false
-        if (now < (state.cooldowns[PERK_ID] ?: 0L)) return false
+        if (state.memory[USED_KEY] == "1") return false
 
-        state.cooldowns[PERK_ID] = now + COOLDOWN_TICKS
+        state.memory[USED_KEY] = "1"
 
         // 复刻原版 tryUseDeathProtector 的结算 (不消耗物品)
         player.setHealth(1.0f)

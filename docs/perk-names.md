@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **132** 条词条：绿 25 / 蓝 53 / 紫 27 / 金 20 / 红 5 / 神话 2。
+共 **132** 条词条：绿 25 / 蓝 54 / 紫 26 / 金 22 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -27,7 +27,7 @@
 | `artisan_builder` | 建筑师 | Builder | 绿 |
 | `artisan_enchanter` | 附魔学徒 | Apprentice Enchanter | 蓝 |
 | `artisan_quick_enchant` | 快速附魔 | Quick Enchant | 紫 |
-| `artisan_waypoint_clock` | 传送时钟 | Waypoint Clock | 金 |
+| `artisan_waypoint_clock` | 传送时钟 | Waypoint Clock | 蓝 |
 | `artisan_long_arms` | 手长 | Long Arms | 金 |
 | `artisan_fire_temper` | 火炼 | Smelting | 绿 |
 | `artisan_poisoner` | 绝命毒师 | Breaking Bad | 紫 |
@@ -36,8 +36,8 @@
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
 | `artisan_nya_axe` | 喵人斧 | Nya Axe | 金 |
 | `artisan_midas_touch` | 点石成金 | Midas Touch | 蓝 |
-| `artisan_revive_armor` | 复活甲 | Revive Armor | 金 |
-| `artisan_barely_a_scratch` | 不痛不痒 | Barely a Scratch | 紫 |
+| `artisan_revive_armor` | 复活甲 | Revive Armor | 紫 |
+| `artisan_barely_a_scratch` | 不痛不痒 | Barely a Scratch | 金 |
 | `artisan_turtle_master` | 神龟护体 | Turtle Master | 绿 |
 | `artisan_trimmed_armor` | 纹饰护体 | Trimmed Armor | 紫 |
 | `artisan_portable_crafting` | 便携工作台 | Portable Crafting Table | 蓝 |
@@ -51,14 +51,14 @@
 |---|---|---|---|
 | `delver_mining` | 矿工手腕 | Miner's Wrist | 蓝 |
 | `delver_gluttonous_snake` | 贪吃蛇 | Gluttonous Snake | 紫 |
-| `delver_unforgettable` | 永生难忘 | Unforgettable | 蓝 |
+| `delver_unforgettable` | 永生难忘 | Unforgettable | 紫 |
 | `delver_night_vision` | 地下视野 | Underground Sight | 蓝 |
 | `delver_haste` | 深层专注 | Deep Focus | 紫 |
-| `delver_vein_scent` | 矿脉嗅觉 | Vein Scent | 紫 |
-| `delver_xray_vision` | 透视之眼 | X-Ray Vision | 红 |
+| `delver_vein_scent` | 矿脉嗅觉 | Vein Scent | 蓝 |
+| `delver_xray_vision` | 透视之眼 | X-Ray Vision | 金 |
 | `delver_lucky_digger` | 幸运矿工 | Lucky Digger | 蓝 |
 | `delver_collector` | 老矿工 | Old Miner | 紫 |
-| `delver_phoenix` | 不死鸟 | Phoenix | 紫 |
+| `delver_phoenix` | 不死鸟 | Phoenix | 金 |
 | `delver_onion_cut` | 切洋葱 | Cutting Onions | 绿 |
 | `delver_eighty` | 八十 | Eighty | 蓝 |
 | `delver_chain_mining` | 连锁挖矿 | Chain Mining | 紫 |
@@ -127,7 +127,7 @@
 | `seeker_supply_line` | 补给线 | Supply Line | 蓝 |
 | `seeker_ender_supply` | 末影补给 | Ender Supply | 紫 |
 | `seeker_pickpocket` | 顺手牵羊 | Pickpocket | 金 |
-| `seeker_life_vision` | 生命透视 | Life Vision | 红 |
+| `seeker_life_vision` | 生命透视 | Life Vision | 金 |
 | `seeker_ender_cache` | 末影仓库 | Ender Cache | 紫 |
 | `seeker_alchemist` | 药剂师 | Alchemist | 紫 |
 | `seeker_village_compass` | 回村的诱惑 | Homecoming | 蓝 |
