@@ -15,6 +15,9 @@ object SoulCameraClient {
     private const val SPEED_NORMAL = 10.0
     private const val SPEED_FAST = 22.0
 
+    /** 与原版 Entity.changeLookDirection 一致的鼠标系数 */
+    private const val LOOK_SCALE = 0.15f
+
     @JvmField
     var active: Boolean = false
 
@@ -45,10 +48,13 @@ object SoulCameraClient {
         active = false
     }
 
-    /** 鼠标视角 (拦截原版 changeLookDirection 后调用) */
+    /** 鼠标视角 (拦截原版 changeLookDirection 后调用)。
+     *
+     *  ⚠ 这里拿到的 deltaX/deltaY 和原版 `Entity.changeLookDirection` **完全相同**,
+     *  而原版会在内部再乘 0.15 才加到视角上 —— 漏掉这个系数灵敏度会变成 6.7 倍。 */
     fun rotate(deltaX: Double, deltaY: Double) {
-        yaw += deltaX.toFloat()
-        pitch = (pitch + deltaY.toFloat()).coerceIn(-90.0f, 90.0f)
+        yaw += deltaX.toFloat() * LOOK_SCALE
+        pitch = (pitch + deltaY.toFloat() * LOOK_SCALE).coerceIn(-90.0f, 90.0f)
     }
 
     /** 每帧由相机 mixin 调用: 处理移动键 */
