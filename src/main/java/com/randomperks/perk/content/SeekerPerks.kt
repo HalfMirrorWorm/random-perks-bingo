@@ -308,7 +308,8 @@ object SeekerPerks {
         private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
     }
 
-    /** 蓝 · 唤法 · 贮藏: **流浪拴绳** —— 在词条列表点击使用, **直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼。
+    /** 蓝 · 唤法 · 贮藏: **流浪拴绳** —— 在词条列表点击使用, **直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼,
+     *  并附赠 5 个绿宝石。
      *
      *  不再走原版刷新事件 —— WanderingTraderManager.trySpawn 有生物群系 / 白天 / 概率 / 计时器
      *  一堆限制, 经常刷不出来 ("先试原版、失败再兜底"的写法仍然会漏)。现在直接生成,
@@ -321,6 +322,9 @@ object SeekerPerks {
 
         override val isOneTime = true
 
+        /** 召唤成功时附赠的绿宝石数量 */
+        private const val EMERALD_REWARD = 5
+
         override fun onActivate(ctx: PerkContext) {
             val world = ctx.player.world as? ServerWorld ?: return
             if (!spawnAt(world, ctx.player.blockPos)) {
@@ -331,6 +335,7 @@ object SeekerPerks {
                 return
             }
 
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.EMERALD, EMERALD_REWARD))
             ctx.state.markUsed(id)
             PerkGrantService.notifyPerkListChanged(ctx.player)
             PerkGrantService.syncAbilities(ctx.player)
