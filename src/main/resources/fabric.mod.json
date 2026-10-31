@@ -24,6 +24,10 @@
     {
       "config": "mixins.randomperks.json",
       "environment": "*"
+    },
+    {
+      "config": "mixins.randomperks.compass.json",
+      "environment": "client"
     }
   ],
   "depends": {

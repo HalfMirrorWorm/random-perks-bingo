@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.randomperks.mixin.compass",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "com.randomperks.mixin.compass.CompassMixinPlugin",
+  "client": [
+    "NaturesCompassSearchMixin",
+    "ExplorersCompassSearchMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
