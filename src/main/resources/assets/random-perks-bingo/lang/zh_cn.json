@@ -46,7 +46,6 @@
   "random-perks-bingo.steal.hint": "点击一格物品偷走 (只能偷一次)",
   "random-perks-bingo.catalog.all": "全部",
   "random-perks-bingo.catalog.progress": "已收集 %s / %s",
-  "random-perks-bingo.catalog.search": "搜索词条 (中文 / 拼音 / 首字母)",
   "random-perks-bingo.list.pending": "待选机会: %s 次",
   "random-perks-bingo.list.empty": "还没有获得任何词条。",
   "random-perks-bingo.list.no_team": "无团队",
