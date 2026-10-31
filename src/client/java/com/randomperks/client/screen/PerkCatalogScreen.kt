@@ -4,6 +4,7 @@ import com.randomperks.network.PerkOptionData
 import com.randomperks.perk.PerkArchetype
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.Text
 
 /**
@@ -24,7 +25,9 @@ class PerkCatalogScreen(
         const val ROW_GAP = 4
         const val TABS_TOP = 42
         const val TAB_HEIGHT = 14
-        const val LIST_TOP = 64
+        const val SEARCH_TOP = 60
+        const val SEARCH_HEIGHT = 14
+        const val LIST_TOP = 80
         const val LIST_BOTTOM_MARGIN = 22
         const val MAX_WIDTH = 480
 
@@ -42,6 +45,9 @@ class PerkCatalogScreen(
     private val sortState = PerkSortState()
     private var sortBoxes: List<Pair<PerkSortMode, IntArray>> = emptyList()
 
+    /** 搜索框: 支持中文、英文/ID 子串, 以及全拼 (tanchishe) / 首字母 (tcs) */
+    private lateinit var searchField: TextFieldWidget
+
     private var scrollOffset = 0
     private var maxScroll = 0
     private var hovered = -1
@@ -58,15 +64,35 @@ class PerkCatalogScreen(
         listLeft = (width - listWidth) / 2
         cardWidth = (listWidth - COL_GAP * (COLUMNS - 1)) / COLUMNS
         scrollOffset = 0
+
+        searchField = TextFieldWidget(
+            textRenderer, listLeft, SEARCH_TOP, listWidth, SEARCH_HEIGHT,
+            Text.translatable("random-perks-bingo.catalog.search"),
+        )
+        searchField.setMaxLength(32)
+        searchField.setPlaceholder(Text.translatable("random-perks-bingo.catalog.search"))
+        addDrawableChild(searchField)
     }
 
     private fun filtered(): List<PerkOptionData> {
-        val list = if (selectedArchetype == null) {
+        val query = if (::searchField.isInitialized) searchField.text.trim().lowercase() else ""
+        var list = if (selectedArchetype == null) {
             allPerks
         } else {
             allPerks.filter { ScreenStyle.archetype(it.archetypeOrdinal) == selectedArchetype }
         }
+        if (query.isNotEmpty()) {
+            list = list.filter { matchesSearch(it, query) }
+        }
         return sortState.sort(list)
+    }
+
+    /** 中文/当前语言名称、ID、全拼、首字母都能命中 */
+    private fun matchesSearch(perk: PerkOptionData, query: String): Boolean {
+        val name = Text.translatable("random-perks-bingo.perk.${perk.id}.name").string.lowercase()
+        if (name.contains(query)) return true
+        if (perk.id.lowercase().contains(query)) return true
+        return PinyinIndex.matches(perk.id, query)
     }
 
     private fun tabWidth() = listWidth / tabs.size

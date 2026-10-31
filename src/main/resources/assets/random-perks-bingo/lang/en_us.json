@@ -46,6 +46,7 @@
   "random-perks-bingo.steal.hint": "Click an item to steal it (only once)",
   "random-perks-bingo.catalog.all": "All",
   "random-perks-bingo.catalog.progress": "Collected %s / %s",
+  "random-perks-bingo.catalog.search": "Search perks (Chinese / pinyin / initials)",
   "random-perks-bingo.list.pending": "Pending choices: %s",
   "random-perks-bingo.list.empty": "No perks acquired yet.",
   "random-perks-bingo.list.no_team": "No Team",
