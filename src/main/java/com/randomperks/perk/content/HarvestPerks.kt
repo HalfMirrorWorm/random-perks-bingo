@@ -655,14 +655,14 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.NAUTILUS_SHELL)
     }
 
-    /** 蓝 · 丰饶: **变群友** —— 你永久变成一只猪:
+    /** 紫 · 丰饶: **变群友** —— 你永久变成一只猪:
      *   - 视角高度与碰撞箱变成猪的 (0.9 格高, 可以站进 1 格高的空间);
      *   - 模型真的渲染成猪, 但头部保留你自己的皮肤;
      *   - 每 30 秒获得 1 根金胡萝卜。
      *  (渲染与视角伪装由客户端 PigMorphRenderer / MorphEyeHeightMixin 完成, 实体本身不变) */
     object PigMorph : PerkDefinition {
         override val id = "harvest_pig_morph"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.PIG_SPAWN_EGG)
 

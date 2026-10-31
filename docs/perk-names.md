@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **132** 条词条：绿 25 / 蓝 54 / 紫 26 / 金 22 / 红 3 / 神话 2。
+共 **132** 条词条：绿 25 / 蓝 53 / 紫 27 / 金 22 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -85,7 +85,7 @@
 | `harvest_gleaning` | 拾穗 | Gleaning | 绿 |
 | `harvest_dingdong_chicken` | 叮咚鸡 | Ding Dong Chicken | 绿 |
 | `harvest_lucky_fishing` | 渔者之幸 | Fisher's Fortune | 蓝 |
-| `harvest_pig_morph` | 变群友 | Groupmate | 蓝 |
+| `harvest_pig_morph` | 变群友 | Groupmate | 紫 |
 | `harvest_beekeeper` | 采蜜人 | Beekeeper | 蓝 |
 | `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
 | `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 绿 |
