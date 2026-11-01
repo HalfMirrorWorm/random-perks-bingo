@@ -701,7 +701,8 @@ object SeekerPerks {
     }
 
     /** 紫 · 秘藏: **野人魔了** —— 获得 10 个绿宝石;
-     *  手持职业方块右键傻子村民, 消耗方块把他变成该职业的大师级村民 */
+     *  手持职业方块右键傻子村民, 消耗方块把他变成该职业的大师级村民;
+     *  手持谜之炖菜右键任意成年村民, 把它变成傻子村民 (见 [SavageMagicService]) */
     object SavageMagic : PerkDefinition {
         override val id = SavageMagicService.PERK_ID
         override val rarity = PerkRarity.PURPLE
