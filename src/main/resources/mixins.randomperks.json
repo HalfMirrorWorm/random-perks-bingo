@@ -70,6 +70,7 @@
     "EntityGlowMixin",
     "WindStrideClientMixin",
     "GuraSharkSprintClientMixin",
+    "PortableOpenClientMixin",
     "DoubleJumpGlideMixin",
     "MorphRendererMixin",
     "MorphEyeHeightMixin",
