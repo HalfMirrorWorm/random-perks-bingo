@@ -12,7 +12,10 @@ import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
 import com.randomperks.client.screen.StealScreen
 import com.randomperks.client.screen.TargetPickScreen
+import com.randomperks.client.screen.LastGameRecapScreen
 import com.randomperks.client.screen.WeatherSelectScreen
+import com.randomperks.recap.RecapData
+import com.randomperks.network.RecapOpenS2C
 import com.randomperks.game.ClientPerkFlags
 import com.randomperks.network.GlowMarkS2C
 import com.randomperks.network.ItemSelectC2S
@@ -128,6 +131,17 @@ object ClientPerkNetworking {
                 } else {
                     SoulCameraClient.stop()
                 }
+            }
+        }
+
+        // 上局回顾: 大厅菜单里的按钮触发, 服务端把整包数据发过来
+        ClientPlayNetworking.registerGlobalReceiver(RecapOpenS2C.ID) { payload, context ->
+            val data = runCatching {
+                kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                    .decodeFromString(RecapData.serializer(), payload.json)
+            }.getOrNull() ?: RecapData()
+            context.client().execute {
+                context.client().setScreen(LastGameRecapScreen(data))
             }
         }
 

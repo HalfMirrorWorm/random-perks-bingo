@@ -426,5 +426,17 @@
   "random-perks-bingo.message.weather_clear": "The weather is now clear for 10 minutes.",
   "random-perks-bingo.message.weather_rain": "It is now raining for 10 minutes.",
   "random-perks-bingo.message.weather_thunder": "A thunderstorm has started for 10 minutes.",
-  "random-perks-bingo.message.weather_broadcast": "%s changed the weather."
+  "random-perks-bingo.message.weather_broadcast": "%s changed the weather.",
+  "random-perks-bingo.recap.title": "Last Game Recap",
+  "random-perks-bingo.recap.tab.picks": "Perk Picks",
+  "random-perks-bingo.recap.tab.rank": "First Captures",
+  "random-perks-bingo.recap.tab.timeline": "Capture Timeline",
+  "random-perks-bingo.recap.empty": "No finished game yet",
+  "random-perks-bingo.recap.empty.picks": "Nobody picked a perk this game.",
+  "random-perks-bingo.recap.empty.captures": "No captures recorded this game.",
+  "random-perks-bingo.recap.hint": "ESC to close",
+  "random-perks-bingo.recap.hint.scroll": "Scroll to page (%s/%s) · ESC to close",
+  "random-perks-bingo.recap.player_header": "%s · %s",
+  "random-perks-bingo.recap.rank_row": "%s. %s (%s) · first capture %s · %s cell(s)",
+  "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s"
 }

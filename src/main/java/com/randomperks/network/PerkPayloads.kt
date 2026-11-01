@@ -677,3 +677,18 @@ class WeatherPickC2S(val weather: Int) : CustomPayload {
 
     override fun getId() = ID
 }
+/** S2C: 上局回顾数据 (整包 JSON, 由 RecapService 生成) */
+class RecapOpenS2C(val json: String) : CustomPayload {
+    companion object {
+        /** JSON 上限: 一局最多几百条事件, 留足余量 */
+        private const val MAX_JSON_LENGTH = 1 shl 20
+
+        val ID = CustomPayload.Id<RecapOpenS2C>(Identifier.of("random-perks-bingo", "recap_open"))
+        val CODEC: PacketCodec<RegistryByteBuf, RecapOpenS2C> = PacketCodec.of(
+            { value, buf -> buf.writeString(value.json, MAX_JSON_LENGTH) },
+            { buf -> RecapOpenS2C(buf.readString(MAX_JSON_LENGTH)) },
+        )
+    }
+
+    override fun getId() = ID
+}

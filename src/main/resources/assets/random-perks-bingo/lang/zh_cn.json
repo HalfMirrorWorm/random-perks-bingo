@@ -426,5 +426,17 @@
   "random-perks-bingo.message.weather_clear": "天气已变为晴朗, 持续 10 分钟。",
   "random-perks-bingo.message.weather_rain": "天气已变为下雨, 持续 10 分钟。",
   "random-perks-bingo.message.weather_thunder": "天气已变为雷雨, 持续 10 分钟。",
-  "random-perks-bingo.message.weather_broadcast": "%s 改变了天气。"
+  "random-perks-bingo.message.weather_broadcast": "%s 改变了天气。",
+  "random-perks-bingo.recap.title": "上局回顾",
+  "random-perks-bingo.recap.tab.picks": "词条选取",
+  "random-perks-bingo.recap.tab.rank": "首次完成排名",
+  "random-perks-bingo.recap.tab.timeline": "完成时间线",
+  "random-perks-bingo.recap.empty": "还没有已结束的对局",
+  "random-perks-bingo.recap.empty.picks": "本局没有人选择词条。",
+  "random-perks-bingo.recap.empty.captures": "本局还没有完成记录。",
+  "random-perks-bingo.recap.hint": "ESC 关闭",
+  "random-perks-bingo.recap.hint.scroll": "滚轮翻页 (%s/%s) · ESC 关闭",
+  "random-perks-bingo.recap.player_header": "%s · %s",
+  "random-perks-bingo.recap.rank_row": "%s. %s (%s) · 首次完成 %s · 共 %s 格",
+  "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s"
 }

@@ -77,6 +77,7 @@ object PerkOfferService {
         state.consumeOffer()
         state.ownedPerks.add(perk)
         com.randomperks.stats.PerkStatsService.recordPicked(perk.id)
+        com.randomperks.recap.RecapService.recordPerkPick(player, perk.id)
         perk.onAcquire(PerkContext(player, state))
         // 词条列表已变化: 触发"同流派联动"类词条的即时重算
         PerkGrantService.notifyPerkListChanged(player)

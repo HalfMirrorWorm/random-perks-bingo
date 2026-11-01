@@ -46,6 +46,9 @@ object RandomPerksMod : ModInitializer {
         // 词条选取率统计 (/randomperks stats)
         com.randomperks.stats.PerkStatsService.register()
 
+        // 「上局回顾」: 记录上局的词条选取与完成顺序, 大厅菜单里查看
+        com.randomperks.recap.RecapService.register()
+
         // 词条注册
         PerkContent.registerAll()
 

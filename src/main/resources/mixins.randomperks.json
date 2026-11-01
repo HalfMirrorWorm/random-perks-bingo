@@ -64,7 +64,9 @@
     "BigBackpackInventoryMixin",
     "BigBackpackSlotMixin",
     "BigBackpackPlayerInventoryMixin",
-    "VillageHeroTradeMixin"
+    "VillageHeroTradeMixin",
+    "BingoMenuButtonMixin",
+    "BingoMenuPageMixin"
   ],
   "client": [
     "EntityGlowMixin",

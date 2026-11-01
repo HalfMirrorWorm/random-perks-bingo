@@ -34,6 +34,16 @@ object RandomPerksHooks {
         PerkGrantService.onTeamScored(memberUuids, objectiveId)
     }
 
+    /** 「上局回顾」: 某队拿下一个格子 (时间线用) */
+    fun onObjectiveCaptured(
+        teamId: String,
+        playerUuid: UUID?,
+        playerName: String?,
+        objectiveName: String,
+    ) {
+        com.randomperks.recap.RecapService.recordCapture(teamId, playerUuid, playerName, objectiveName)
+    }
+
     /** 每个队伍上一次已知的连线数 (用于按差值补发, 支持一次捕获完成多条连线) */
     private val lastLineCounts = mutableMapOf<String, Int>()
 

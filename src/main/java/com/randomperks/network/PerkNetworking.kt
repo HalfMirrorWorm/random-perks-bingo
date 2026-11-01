@@ -55,6 +55,7 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(SoulOutS2C.ID, SoulOutS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(WeatherSelectS2C.ID, WeatherSelectS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(RecapOpenS2C.ID, RecapOpenS2C.CODEC)
         PayloadTypeRegistry.playC2S().register(WeatherPickC2S.ID, WeatherPickC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
@@ -211,6 +212,13 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, PerkAbilitySyncS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkAbilitySyncS2C(perkIds)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send ability sync: {}", it.toString()) }
+    }
+
+    /** 下发上局回顾 (JSON 串, 由 RecapService 序列化) */
+    fun sendRecap(player: ServerPlayerEntity, json: String) {
+        if (!ServerPlayNetworking.canSend(player, RecapOpenS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, RecapOpenS2C(json)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send recap: {}", it.toString()) }
     }
 
     /** 下发天气选择器 (词条「世界一直下雨」) */

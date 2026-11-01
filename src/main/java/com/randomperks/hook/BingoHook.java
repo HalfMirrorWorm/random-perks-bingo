@@ -45,6 +45,23 @@ public final class BingoHook {
                 objective.getId()
         );
 
+        // 「上局回顾」: 记录这次拿下格子的时间线 (拿不到显示名就退回 id)
+        String objectiveName = objective.getId();
+        try {
+            var display = objective.getDisplay();
+            if (display != null && display.getName() != null) {
+                objectiveName = display.getName().getValue().getString();
+            }
+        } catch (Throwable ignored) {
+            // 显示名解析失败不影响回顾的主流程
+        }
+        RandomPerksHooks.INSTANCE.onObjectiveCaptured(
+                team.getId(),
+                scoredPlayer != null ? scoredPlayer.getUuid() : null,
+                scoredPlayer != null ? scoredPlayer.getName() : null,
+                objectiveName
+        );
+
         // 完成格子后按"当前连线总数"补发连线奖励。
         // bingo 自己的 sendLineCaptured 只在游戏目标为 Lines 时调用, 所以这里自己比较总数,
         // 一次捕获同时完成多条连线时会按差值发多次。
