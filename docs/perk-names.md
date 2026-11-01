@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **132** 条词条：绿 26 / 蓝 54 / 紫 26 / 金 21 / 红 3 / 神话 2。
+共 **133** 条词条：绿 26 / 蓝 55 / 紫 26 / 金 21 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -55,6 +55,7 @@
 | `delver_gluttonous_snake` | 贪吃蛇 | Gluttonous Snake | 紫 |
 | `delver_unforgettable` | 永生难忘 | Unforgettable | 紫 |
 | `delver_night_vision` | 地下视野 | Underground Sight | 蓝 |
+| `delver_cave_phantom` | 矿洞幽灵 | Cave Phantom | 蓝 |
 | `delver_haste` | 深层专注 | Deep Focus | 紫 |
 | `delver_vein_scent` | 矿脉嗅觉 | Vein Scent | 蓝 |
 | `delver_xray_vision` | 透视之眼 | X-Ray Vision | 金 |

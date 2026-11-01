@@ -16,6 +16,7 @@ import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -23,10 +24,13 @@ import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.BlockTags
 import net.minecraft.registry.tag.ItemTags
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Identifier
 import net.minecraft.util.Unit
 import net.minecraft.util.math.BlockPos
+import net.minecraft.world.LightType
+import net.minecraft.world.World
 import kotlin.math.abs
 
 /**
@@ -89,6 +93,45 @@ object DelverPerks {
 
         override fun onRemove(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_SPEED)
+    }
+
+    /** 蓝 · 深掘: **矿洞幽灵** —— 身处矿洞时隐身。
+     *
+     *  "在矿洞"沿用原版洞穴环境音效的判定 (`BiomeEffectSoundPlayer` 每 tick 看玩家位置的
+     *  **天空光**: 有天空光就衰减、为 0 才累积 mood 播 `ambient.cave`), 这里直接取
+     *  `getLightLevel(LightType.SKY, 脚下)` == 0 —— 即**头顶看不到天空**。
+     *
+     *  每秒续一次 2 秒的隐身 (留 1 秒容错), 走出矿洞后最多 2 秒自然失效;
+     *  不用 removeEffect 主动摘, 免得把玩家自己喝的隐身药水一起清掉。
+     *
+     *  只算主世界: 下界/末地本来就没有天空光, 套同一判定等于永久隐身。 */
+    object CavePhantom : PerkDefinition {
+        override val id = "delver_cave_phantom"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.ECHO_SHARD)
+
+        /** 隐身续期时长 (tick): onTick 每秒一次, 40 tick 足够覆盖到下个周期 */
+        private const val INVISIBILITY_TICKS = 40
+
+        override fun onTick(ctx: PerkContext) {
+            val player = ctx.player
+            if (!isInCave(player)) return
+            // 不能带粒子 —— 隐身粒子会直接暴露位置
+            player.addStatusEffect(
+                StatusEffectInstance(
+                    StatusEffects.INVISIBILITY, INVISIBILITY_TICKS, 0,
+                    false, false, true,
+                )
+            )
+        }
+
+        /** 是否在矿洞里: 主世界 + 脚下的天空光为 0 */
+        private fun isInCave(player: ServerPlayerEntity): Boolean {
+            val world = player.world
+            if (world.registryKey != World.OVERWORLD) return false
+            return world.getLightLevel(LightType.SKY, player.blockPos) == 0
+        }
     }
 
     /** 紫 · 深掘: **永生难忘** —— 获得一把**不可破坏的金镐**。
@@ -499,6 +542,7 @@ object DelverPerks {
         PerkRegistry.register(GluttonousSnake)
         PerkRegistry.register(Unforgettable)
         PerkRegistry.register(NightVision)
+        PerkRegistry.register(CavePhantom)
         PerkRegistry.register(Toughness)
         PerkRegistry.register(Haste)
         PerkRegistry.register(VeinScent)
