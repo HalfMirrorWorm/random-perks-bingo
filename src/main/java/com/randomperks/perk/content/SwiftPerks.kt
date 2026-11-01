@@ -259,6 +259,16 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, LEGACY_SPEED)
     }
 
+    /** 蓝 · 疾风: **冰！** —— 你可以**食用糖**, 吃完获得 15 秒速度 I。
+     *  糖本身没有食物组件, 由 EdibleSugarMixin 在 ItemStack 的消耗相关方法上按玩家放行,
+     *  非持有者完全不受影响。 */
+    object EdibleSugar : PerkDefinition {
+        override val id = "swift_edible_sugar"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.SUGAR)
+    }
+
     /** 金 · 疾风: **冲刺** —— 在空中按下潜行键, 朝视线水平方向冲刺一次 (每次腾空限一次, 冷却 3 秒)。
      *  由客户端 AbilityHandler 检测按键, 服务端 PerkAbilityService.handleDash 验证并施加冲量。 */
     object Dash : PerkDefinition {
@@ -320,6 +330,7 @@ object SwiftPerks {
         com.randomperks.perk.PerkRegistry.register(LifeBucket)
         com.randomperks.perk.PerkRegistry.register(GuraShark)
         com.randomperks.perk.PerkRegistry.register(Omnimovement)
+        com.randomperks.perk.PerkRegistry.register(EdibleSugar)
         com.randomperks.perk.PerkRegistry.register(Dash)
     }
 }

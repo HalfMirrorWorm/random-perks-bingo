@@ -22,6 +22,7 @@
     "LivingEntityJumpVelocityInvoker",
     "WindStrideMixin",
     "GuraSharkSprintMixin",
+    "EdibleSugarMixin",
     "PlayerLandingMixin",
     "PlayerInventoryEquipMixin",
     "NightVisionControllerMixin",

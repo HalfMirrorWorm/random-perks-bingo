@@ -467,4 +467,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"古拉鲨鱼" (由 GuraSharkSprintMixin 拦截 setSprinting) */
     fun hasGuraShark(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("swift_gura_shark") == true
+
+    // ---- "冰！" (蓝): 可以食用糖 ----
+
+    /** 玩家是否持有"冰！" (由 EdibleSugarMixin 在 ItemStack 的消耗相关方法上放行) */
+    fun hasEdibleSugar(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("swift_edible_sugar") == true
 }

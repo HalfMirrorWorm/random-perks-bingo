@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **131** 条词条：绿 26 / 蓝 53 / 紫 26 / 金 21 / 红 3 / 神话 2。
+共 **132** 条词条：绿 26 / 蓝 54 / 紫 26 / 金 21 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -155,6 +155,7 @@
 | `swift_life_bucket` | 落地，水 | MLG Water | 绿 |
 | `swift_gura_shark` | 古拉鲨鱼 | Gura Shark | 红 |
 | `swift_omnimovement` | 全向移动 | Omnimovement | 蓝 |
+| `swift_edible_sugar` | 冰！ | Ice! | 蓝 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_deep_breath` | 深海之息 | Deep Breath | 蓝 |
 | `swift_auto_bridge` | 自动搭路 | Auto Bridge | 金 |
