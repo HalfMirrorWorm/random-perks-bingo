@@ -7,7 +7,9 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.entity.Entity
+import net.minecraft.entity.EntityType
 import net.minecraft.entity.Flutterer
+import net.minecraft.entity.decoration.ArmorStandEntity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.ai.RangedAttackMob
@@ -26,6 +28,7 @@ import net.minecraft.entity.passive.StriderEntity
 import net.minecraft.entity.projectile.FireballEntity
 import net.minecraft.entity.projectile.SmallFireballEntity
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
@@ -41,10 +44,11 @@ import kotlin.math.sin
  *
  * - 右键任意生物 → `startRiding(mob, true)` 骑上去 (玩家与 Boss 除外);
  * - 骑乘时读取骑手的 [net.minecraft.util.PlayerInput] 手动驱动坐骑 (AI 暂时停用);
- * - 右键 → 让坐骑朝视线方向的目标使用能力:
- *     - 恶魂/烈焰人 → 发射火球;
- *     - 实现 [RangedAttackMob] 的生物 → 使用它自己的远程攻击 (骷髅射箭、女巫丢药水、雪傀儡丢雪球、羊驼吐口水等);
- *     - 其他生物 → 目标在近战范围内时使用普通近战攻击。
+ * - 右键 → 让坐骑使用能力 (不需要视野里有生物):
+ *     - 恶魂/烈焰人 → 朝准星方向发射火球;
+ *     - 实现 [RangedAttackMob] 的生物 → 有目标时瞄准目标, 没有目标时朝准星方向使用它自己的远程攻击
+ *       (骷髅射箭、女巫丢药水、雪傀儡丢雪球、羊驼吐口水等);
+ *     - 其他生物 → 目标在近战范围内时使用普通近战攻击 (近战必须有目标, 否则放行给原版)。
  *
  * 骑乘状态按骑手 UUID 记录; 下马/死亡/词条被清掉/掉线时恢复坐骑原本的 AI 状态。
  */
@@ -166,30 +170,31 @@ object DragonTamerService {
         val now = player.server?.ticks?.toLong() ?: return false
         if (now < (state.cooldowns[PERK_ID] ?: 0L)) return false
 
-        val target = findTarget(player, mob) ?: return false
+        // 不再要求"视野里必须有生物": 有目标就瞄准目标, 没有目标就朝准星方向
+        val target = findTarget(player, mob)
+        val aim = target?.let { it.pos.add(0.0, it.height * 0.5, 0.0) }
+            ?: player.eyePos.add(player.getRotationVec(1.0f).multiply(TARGET_RANGE))
 
         val used = when {
             mob is GhastEntity -> {
-                val dir = target.pos.add(0.0, target.height * 0.5, 0.0)
-                    .subtract(mob.pos.add(0.0, mob.height * 0.5, 0.0))
-                val fireball = FireballEntity(world, mob, dir, 1)
-                fireball.refreshPositionAndAngles(mob.x, mob.y + mob.height * 0.5, mob.z, mob.yaw, mob.pitch)
+                val origin = mob.pos.add(0.0, mob.height * 0.5, 0.0)
+                val fireball = FireballEntity(world, mob, aim.subtract(origin), 1)
+                fireball.refreshPositionAndAngles(mob.x, origin.y, mob.z, mob.yaw, mob.pitch)
                 world.spawnEntity(fireball)
                 true
             }
             mob is BlazeEntity -> {
-                val dir = target.pos.add(0.0, target.height * 0.5, 0.0)
-                    .subtract(mob.pos.add(0.0, mob.height * 0.5, 0.0))
-                val fireball = SmallFireballEntity(world, mob, dir)
-                fireball.refreshPositionAndAngles(mob.x, mob.y + mob.height * 0.5, mob.z, mob.yaw, mob.pitch)
+                val origin = mob.pos.add(0.0, mob.height * 0.5, 0.0)
+                val fireball = SmallFireballEntity(world, mob, aim.subtract(origin))
+                fireball.refreshPositionAndAngles(mob.x, origin.y, mob.z, mob.yaw, mob.pitch)
                 world.spawnEntity(fireball)
                 true
             }
             mob is RangedAttackMob -> {
-                mob.shootAt(target, 1.0f)
+                shootRanged(mob, world, target, aim)
                 true
             }
-            mob.squaredDistanceTo(target) <= MELEE_RANGE * MELEE_RANGE -> {
+            target != null && mob.squaredDistanceTo(target) <= MELEE_RANGE * MELEE_RANGE -> {
                 mob.tryAttack(world, target)
             }
             else -> false
@@ -259,6 +264,20 @@ object DragonTamerService {
         mob.setYaw(rider.yaw)
         mob.setHeadYaw(rider.yaw)
         mob.setBodyYaw(rider.yaw)
+    }
+
+    /**
+     * 让远程生物开火: 有目标就打目标; 没有目标就朝准星方向打一个**虚拟目标**。
+     *
+     * <p>[RangedAttackMob.shootAt] 只接受 LivingEntity, 所以用一个不加入世界的
+     * 盔甲架当"靶子"放在准星方向上, 让它自己的射击逻辑算出同样的弹道。
+     */
+    private fun shootRanged(shooter: RangedAttackMob, world: ServerWorld, target: LivingEntity?, aim: Vec3d) {
+        val shotTarget = target ?: ArmorStandEntity(EntityType.ARMOR_STAND, world).apply {
+            refreshPositionAndAngles(aim.x, aim.y, aim.z, 0f, 0f)
+        }
+        shooter.shootAt(shotTarget, 1.0f)
+        if (target == null) shotTarget.discard()
     }
 
     /** 视线锥内、最近的合法目标 (不含骑手与坐骑; 需要无方块遮挡) */
