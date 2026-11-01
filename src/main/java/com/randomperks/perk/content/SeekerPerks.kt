@@ -174,14 +174,14 @@ object SeekerPerks {
         }
     }
 
-    /** 紫 · 末影补给: 立即获得 1 枚末影珍珠, 之后每 5 分钟再获得 1 枚 */
+    /** 紫 · 末影补给: 立即获得 1 枚末影珍珠, 之后每 3 分钟再获得 1 枚 */
     object EnderSupply : PerkDefinition {
         override val id = "seeker_ender_supply"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SEEKER
         override fun icon() = ItemStack(Items.ENDER_PEARL)
 
-        private const val COOLDOWN_TICKS = 5 * 60 * 20
+        private const val COOLDOWN_TICKS = 3 * 60 * 20
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.ENDER_PEARL))
