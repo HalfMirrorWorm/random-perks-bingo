@@ -277,8 +277,6 @@
   "random-perks-bingo.perk.summon_call_lightning.desc": "选任意一名玩家, 在他的位置召唤一次闪电; 附近有引雷针时会被引导过去。",
   "random-perks-bingo.perk.summon_dragon_tamer.name": "驯龙高手",
   "random-perks-bingo.perk.summon_dragon_tamer.desc": "右键任意生物即可骑乘 (玩家与 Boss 除外); 骑乘时用 WASD 控制移动, 右键让坐骑使用它的能力, 潜行下马。",
-  "random-perks-bingo.message.dragon_tamer_hint": "★ 驯龙高手: 右键生物骑乘; 骑乘时右键使用坐骑能力, 潜行下马。",
-  "random-perks-bingo.message.dragon_tamer_mounted": "你骑上了 %s —— 用 WASD 控制它, 右键使用能力, 潜行下马。",
   "random-perks-bingo.message.end_portal_announce": "「结束吧」%s 在 %s (%s, %s, %s) 生成了一格末地传送门！",
   "random-perks-bingo.perk.artisan_nya_axe.name": "喵人斧",
   "random-perks-bingo.perk.artisan_nya_axe.desc": "获得一把昂贵的秒人斧，但永久获得虚弱 I。",

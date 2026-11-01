@@ -41,13 +41,6 @@ object SummonPerks {
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.DRAGON_HEAD)
 
-        override fun onAcquire(ctx: PerkContext) {
-            ctx.player.sendMessage(
-                Text.translatable("random-perks-bingo.message.dragon_tamer_hint"),
-                false,
-            )
-        }
-
         /** 对局结束/词条被清掉时别把人留在坐骑上 */
         override fun onRemove(ctx: PerkContext) {
             if (ctx.player.hasVehicle()) ctx.player.stopRiding()

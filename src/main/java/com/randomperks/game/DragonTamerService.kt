@@ -29,7 +29,6 @@ import net.minecraft.entity.projectile.FireballEntity
 import net.minecraft.entity.projectile.SmallFireballEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.HitResult
@@ -150,11 +149,6 @@ object DragonTamerService {
             mob.navigation.stop()
         }
         mob.setTarget(null)
-
-        rider.sendMessage(
-            Text.translatable("random-perks-bingo.message.dragon_tamer_mounted", mob.name),
-            false,
-        )
         return true
     }
 
