@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **131** 条词条：绿 25 / 蓝 53 / 紫 27 / 金 21 / 红 3 / 神话 2。
+共 **131** 条词条：绿 26 / 蓝 53 / 紫 26 / 金 21 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -9,6 +9,8 @@
 ## 命名规则
 
 - **词条 id**：`<流派>_<英文短名>`（如 `hunter_soul_harvest`）；神话单独使用 `mythic_` 前缀
+- 少数词条后来换了流派，但 id 沿用旧前缀以免旧存档对不上（如 `seeker_ender_supply` 现属疾风）；
+  分组与联动一律以代码里的 `archetype` 字段为准
 - **语言 key**：`random-perks-bingo.perk.<id>.name` / `.desc`（中英各一份）
 - **稀有度与抽取权重**：`green` 300 / `blue` 800 / `purple` 315 / `gold` 62 / `red` 20 / `mythic` 3
   （合计 1500：绿 20% / 蓝 53.3% / 紫 21% / 金 4.1% / 红 1.3% / 神话 0.2%）
@@ -35,11 +37,11 @@
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 绿 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
 | `artisan_nya_axe` | 喵人斧 | Nya Axe | 金 |
-| `artisan_midas_touch` | 点石成金 | Midas Touch | 蓝 |
+| `artisan_midas_touch` | 点石成金 | Midas Touch | 绿 |
 | `artisan_revive_armor` | 复活甲 | Revive Armor | 紫 |
 | `artisan_barely_a_scratch` | 不痛不痒 | Barely a Scratch | 金 |
 | `artisan_turtle_master` | 神龟护体 | Turtle Master | 绿 |
-| `artisan_trimmed_armor` | 纹饰护体 | Trimmed Armor | 紫 |
+| `artisan_trimmed_armor` | 纹饰护体 | Trimmed Armor | 蓝 |
 | `artisan_portable_crafting` | 便携工作台 | Portable Crafting Table | 蓝 |
 | `artisan_big_backpack` | 大背包 | Big Backpack | 蓝 |
 | `delver_toughness` | 坚韧 | Toughness | 蓝 |
@@ -124,7 +126,6 @@
 |---|---|---|---|
 | `seeker_scout` | 观鸟 | Birdwatcher | 蓝 |
 | `seeker_supply_line` | 补给线 | Supply Line | 蓝 |
-| `seeker_ender_supply` | 末影补给 | Ender Supply | 紫 |
 | `seeker_pickpocket` | 顺手牵羊 | Pickpocket | 金 |
 | `seeker_life_vision` | 生命透视 | Life Vision | 金 |
 | `seeker_ender_cache` | 末影仓库 | Ender Cache | 紫 |
@@ -144,6 +145,7 @@
 | id | 中文名 | 英文名 | 稀有度 |
 |---|---|---|---|
 | `swift_speed` | 轻装疾行 | Light Feet | 蓝 |
+| `seeker_ender_supply` | 末影补给 | Ender Supply | 紫 |
 | `swift_feather_fall` | 柔软鞋底 | Soft Soles | 蓝 |
 | `swift_jump` | 弹簧腿 | Spring Legs | 绿 |
 | `swift_wind_stride` | 风之步伐 | Wind Stride | 紫 |

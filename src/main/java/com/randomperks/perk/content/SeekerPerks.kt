@@ -174,11 +174,12 @@ object SeekerPerks {
         }
     }
 
-    /** 紫 · 末影补给: 立即获得 1 枚末影珍珠, 之后每 3 分钟再获得 1 枚 */
+    /** 紫 · **疾风**: 末影补给 —— 立即获得 1 枚末影珍珠, 之后每 3 分钟再获得 1 枚。
+     *  流派归疾风 (id 沿用 `seeker_` 前缀不改, 以免旧存档对不上), 因此会算进"顺风而行"的疾风联动。 */
     object EnderSupply : PerkDefinition {
         override val id = "seeker_ender_supply"
         override val rarity = PerkRarity.PURPLE
-        override val archetype = PerkArchetype.SEEKER
+        override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.ENDER_PEARL)
 
         private const val COOLDOWN_TICKS = 3 * 60 * 20

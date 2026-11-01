@@ -452,10 +452,10 @@ object ArtisanPerks {
             PerkEffects.removeEffect(ctx.player, StatusEffects.WEAKNESS)
     }
 
-    /** 蓝 · 匠造: **点石成金** —— 右键镶金黑石, 把它变成金块 (交互见 MidasTouchService) */
+    /** 绿 · 匠造: **点石成金** —— 右键镶金黑石, 把它变成金块 (交互见 MidasTouchService) */
     object MidasTouch : PerkDefinition {
         override val id = MidasTouchService.PERK_ID
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.GOLD_BLOCK)
     }
@@ -480,10 +480,10 @@ object ArtisanPerks {
         }
     }
 
-    /** 紫 · 匠造: **纹饰护体** —— 每穿戴一件带盔甲纹饰的装备, 生命上限 +5 (最多 4 件) */
+    /** 蓝 · 匠造: **纹饰护体** —— 每穿戴一件带盔甲纹饰的装备, 生命上限 +5 (最多 4 件) */
     object TrimmedArmor : PerkDefinition {
         override val id = "artisan_trimmed_armor"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE)
 
