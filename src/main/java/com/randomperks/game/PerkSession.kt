@@ -25,4 +25,14 @@ object PerkSession {
     fun reset() {
         currentRoundEnabled = null
     }
+
+    /**
+     * 服务器重启后恢复本局开关 (见 [com.randomperks.state.PerkStatePersistence])。
+     *
+     * 不恢复的话, 重启后 [currentRoundEnabled] 是 null, [isEnabled] 会退回读配置 ——
+     * 中途改过配置的话, 这一局的有效性就变了。
+     */
+    fun restoreRound(enabled: Boolean) {
+        currentRoundEnabled = enabled
+    }
 }

@@ -228,6 +228,9 @@ object RewindService {
 
     val isCapturing: Boolean get() = capturing
 
+    /** 当前 Bingo 状态 (BingoEvents.INIT 时反射拿到); 供持久化层判断"存档里是否还有一局在打" */
+    fun currentBingoState(): BingoState? = bingoState
+
     fun register() {
         BingoEvents.INIT.register { api -> captureBingoState(api) }
 

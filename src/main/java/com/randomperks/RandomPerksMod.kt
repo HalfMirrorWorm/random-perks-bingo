@@ -63,6 +63,10 @@ object RandomPerksMod : ModInitializer {
         // 「逆转时间」: 记录本局快照, 在需要时在线回退
         RewindService.register()
 
+        // 对局进行中服务器被关闭时, 词条状态跨重启保留。
+        // ★ 必须排在 RewindService 之后: 它先拿到 BingoState, 本类靠它判断对局是否还在进行
+        com.randomperks.state.PerkStatePersistence.register()
+
         // 驱动词条周期回调与重生重挂
         PerkTickService.register()
 
