@@ -7,6 +7,8 @@ import com.randomperks.game.PerkSession
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.state.PerkStateManager
+import com.randomperks.stats.PerkStatsService
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.suggestion.SuggestionProvider
@@ -25,6 +27,9 @@ import net.minecraft.text.Text
  * - simulate   模拟"本队完成一个格子"的完整触发链路
  */
 object RandomPerksCommands {
+
+    /** 默认展示多少条统计 */
+    private const val DEFAULT_STATS_LIMIT = 20
 
     fun register() {
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
@@ -110,6 +115,25 @@ object RandomPerksCommands {
                         )
                     )
                     .then(
+                        literal("stats")
+                            .executes { ctx -> printStats(ctx, DEFAULT_STATS_LIMIT) }
+                            .then(
+                                literal("reset").executes { ctx ->
+                                    PerkStatsService.reset()
+                                    ctx.source.sendFeedback({
+                                        Text.literal("[RandomPerks] 词条选取率统计已清空。")
+                                    }, false)
+                                    1
+                                }
+                            )
+                            .then(
+                                argument("count", IntegerArgumentType.integer(1, 100))
+                                    .executes { ctx ->
+                                        printStats(ctx, IntegerArgumentType.getInteger(ctx, "count"))
+                                    }
+                            )
+                    )
+                    .then(
                         literal("perk")
                             .then(
                                 literal("list").executes { ctx ->
@@ -156,6 +180,42 @@ object RandomPerksCommands {
                     )
             )
         }
+    }
+
+    /**
+     * 打印词条选取率: 按 选中/抽到 降序, 只列被抽到过的词条。
+     * 名称走 translatable, 玩家看到的是自己的语言; 服务端控制台看到的是 key。
+     */
+    private fun printStats(ctx: CommandContext<ServerCommandSource>, limit: Int): Int {
+        val entries = PerkStatsService.entries()
+        if (entries.isEmpty()) {
+            ctx.source.sendFeedback({ Text.literal("[RandomPerks] 还没有统计数据。") }, false)
+            return 0
+        }
+
+        ctx.source.sendFeedback({
+            Text.literal(
+                "[RandomPerks] 词条选取率 (累计抽到 ${PerkStatsService.totalOffered()} 次, " +
+                    "选中 ${PerkStatsService.totalPicked()} 次) —— 前 ${minOf(limit, entries.size)} 项:"
+            )
+        }, false)
+
+        entries.take(limit).forEachIndexed { index, entry ->
+            val perk = PerkRegistry.byId(entry.id)
+            val rarity = perk?.let {
+                Text.translatable("random-perks-bingo.rarity.${it.rarity.name.lowercase()}")
+            } ?: Text.literal("?")
+            val rate = String.format(java.util.Locale.ROOT, "%.1f%%", entry.rate * 100f)
+
+            ctx.source.sendFeedback({
+                Text.literal("  ${index + 1}. ")
+                    .append(Text.translatable("random-perks-bingo.perk.${entry.id}.name"))
+                    .append(Text.literal(" (${entry.id}) · "))
+                    .append(rarity)
+                    .append(Text.literal(" · 抽到 ${entry.offered} / 选中 ${entry.picked} · $rate"))
+            }, false)
+        }
+        return entries.size
     }
 
     private fun grantSelf(ctx: CommandContext<ServerCommandSource>, count: Int): Int {

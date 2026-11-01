@@ -88,6 +88,7 @@ object PerkGrantService {
                 if (offer.isEmpty()) break
 
                 state.pendingOffers.add(offer)
+                com.randomperks.stats.PerkStatsService.recordOffered(offer)
                 added++
             }
 
@@ -111,7 +112,10 @@ object PerkGrantService {
                 state,
                 extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
             ).map { it.id }
-            if (offer.isNotEmpty()) state.pendingOffers.add(offer)
+            if (offer.isNotEmpty()) {
+                state.pendingOffers.add(offer)
+                com.randomperks.stats.PerkStatsService.recordOffered(offer)
+            }
         }
         notifyChoicesAvailable(player, state.pendingChoices)
     }

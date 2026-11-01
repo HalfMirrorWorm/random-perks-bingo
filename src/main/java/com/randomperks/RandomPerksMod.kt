@@ -43,6 +43,9 @@ object RandomPerksMod : ModInitializer {
         // 加载配置 (词条系统总开关)
         PerkConfig.load()
 
+        // 词条选取率统计 (/randomperks stats)
+        com.randomperks.stats.PerkStatsService.register()
+
         // 词条注册
         PerkContent.registerAll()
 

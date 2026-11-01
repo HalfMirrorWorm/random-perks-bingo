@@ -76,6 +76,7 @@ object PerkOfferService {
 
         state.consumeOffer()
         state.ownedPerks.add(perk)
+        com.randomperks.stats.PerkStatsService.recordPicked(perk.id)
         perk.onAcquire(PerkContext(player, state))
         // 词条列表已变化: 触发"同流派联动"类词条的即时重算
         PerkGrantService.notifyPerkListChanged(player)
@@ -193,6 +194,8 @@ object PerkOfferService {
         if (replacement != null) {
             offer[index] = replacement.id
             state.pendingOffers[0] = offer
+            // 补位的词条也是玩家实际看到的候选, 计入统计
+            com.randomperks.stats.PerkStatsService.recordOffered(listOf(replacement.id))
         }
         return true
     }
