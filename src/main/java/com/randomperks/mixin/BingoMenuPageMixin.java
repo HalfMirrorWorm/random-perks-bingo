@@ -1,5 +1,6 @@
 package com.randomperks.mixin;
 
+import com.randomperks.menu.BingoMenuBridge;
 import com.randomperks.recap.RecapService;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;

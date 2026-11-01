@@ -1,5 +1,6 @@
 package com.randomperks.mixin;
 
+import com.randomperks.menu.BingoMenuBridge;
 import me.jfenn.bingo.common.menu.MenuComponent;
 import me.jfenn.bingo.common.menu.Property;
 import me.jfenn.bingo.platform.IDisplayEntity;
