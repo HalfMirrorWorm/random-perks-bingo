@@ -116,20 +116,39 @@ object RandomPerksCommands {
                     )
                     .then(
                         literal("stats")
-                            .executes { ctx -> printStats(ctx, DEFAULT_STATS_LIMIT) }
+                            .executes { ctx -> printStats(ctx, DEFAULT_STATS_LIMIT, ascending = false) }
                             .then(
                                 literal("reset").executes { ctx ->
                                     PerkStatsService.reset()
                                     ctx.source.sendFeedback({
-                                        Text.literal("[RandomPerks] 词条选取率统计已清空。")
+                                        Text.literal("[RandomPerks] 词条选取率统计已清空, 从现在重新累计。")
                                     }, false)
                                     1
                                 }
                             )
                             .then(
+                                // 最不受欢迎: 只统计样本足够的词条, 用来找"名不副实"的档位
+                                literal("low")
+                                    .executes { ctx -> printStats(ctx, DEFAULT_STATS_LIMIT, ascending = true) }
+                                    .then(
+                                        argument("count", IntegerArgumentType.integer(1, 100))
+                                            .executes { ctx ->
+                                                printStats(
+                                                    ctx,
+                                                    IntegerArgumentType.getInteger(ctx, "count"),
+                                                    ascending = true,
+                                                )
+                                            }
+                                    )
+                            )
+                            .then(
                                 argument("count", IntegerArgumentType.integer(1, 100))
                                     .executes { ctx ->
-                                        printStats(ctx, IntegerArgumentType.getInteger(ctx, "count"))
+                                        printStats(
+                                            ctx,
+                                            IntegerArgumentType.getInteger(ctx, "count"),
+                                            ascending = false,
+                                        )
                                     }
                             )
                     )
@@ -183,40 +202,106 @@ object RandomPerksCommands {
     }
 
     /**
-     * 打印词条选取率: 按 选中/抽到 降序, 只列被抽到过的词条。
-     * 名称走 translatable, 玩家看到的是自己的语言; 服务端控制台看到的是 key。
+     * 打印词条选取率报告。
+     *
+     * 只看"选得多不多"没法判断平衡 —— 同一组候选里的词条稀有度不同, 基准线本来就不一样。
+     * 所以报告给三样东西:
+     * 1. 各稀有度的整体选取率 (该档 picked/offered), 作为基准;
+     * 2. 每个词条相对**自己稀有度基准**的差值 (pt) —— 负得越多, 说明同档位里越不受欢迎;
+     * 3. 样本量标记: 抽到次数不足 [PerkStatsService.MIN_SAMPLES] 的用 `*` 标出。
+     *
+     * @param ascending true = 最不受欢迎 (只统计样本足够的词条); false = 最受欢迎
      */
-    private fun printStats(ctx: CommandContext<ServerCommandSource>, limit: Int): Int {
-        val entries = PerkStatsService.entries()
-        if (entries.isEmpty()) {
+    private fun printStats(ctx: CommandContext<ServerCommandSource>, limit: Int, ascending: Boolean): Int {
+        val all = PerkStatsService.entries()
+        if (all.isEmpty()) {
             ctx.source.sendFeedback({ Text.literal("[RandomPerks] 还没有统计数据。") }, false)
+            return 0
+        }
+
+        val summaries = PerkStatsService.raritySummaries()
+        val rarityRates = summaries.associate { it.rarity to it.rate }
+
+        // 概要
+        val sinceText = PerkStatsService.since()?.let { "数据自 $it · " } ?: ""
+        ctx.source.sendFeedback({
+            Text.literal(
+                "[RandomPerks] 词条选取率 · $sinceText" +
+                    "累计抽到 ${PerkStatsService.totalOffered()} / 选中 ${PerkStatsService.totalPicked()}"
+            )
+        }, false)
+
+        // 稀有度基准 (加权: 该档整体的 picked/offered)
+        if (summaries.isNotEmpty()) {
+            ctx.source.sendFeedback({
+                val line = Text.literal("[RandomPerks] 稀有度基准: ")
+                summaries.forEachIndexed { index, summary ->
+                    if (index > 0) line.append(Text.literal(" · "))
+                    line.append(Text.translatable("random-perks-bingo.rarity.${summary.rarity.name.lowercase()}"))
+                    line.append(Text.literal(" ${percent(summary.rate)} (n=${summary.offered})"))
+                }
+                line
+            }, false)
+        }
+
+        val ranked = if (ascending) {
+            // 最不受欢迎只统计样本足够的, 否则 1/1=100% 这种会天天霸榜
+            all.filter { it.sufficient }.sortedBy { it.rate }
+        } else {
+            // 样本足够的排前面, 低样本的沉到末尾 (仍会带 * 标出来)
+            all.sortedWith(
+                compareByDescending<PerkStatsService.Entry> { it.sufficient }
+                    .thenByDescending { it.rate }
+                    .thenByDescending { it.offered }
+            )
+        }
+        if (ranked.isEmpty()) {
+            ctx.source.sendFeedback({
+                Text.literal("[RandomPerks] 还没有样本足够 (抽到 >= ${PerkStatsService.MIN_SAMPLES} 次) 的词条。")
+            }, false)
             return 0
         }
 
         ctx.source.sendFeedback({
             Text.literal(
-                "[RandomPerks] 词条选取率 (累计抽到 ${PerkStatsService.totalOffered()} 次, " +
-                    "选中 ${PerkStatsService.totalPicked()} 次) —— 前 ${minOf(limit, entries.size)} 项:"
+                "[RandomPerks] " + (if (ascending) "最不受欢迎" else "最受欢迎") +
+                    " —— 前 ${minOf(limit, ranked.size)} 项 (相对同稀有度基准):"
             )
         }, false)
 
-        entries.take(limit).forEachIndexed { index, entry ->
-            val perk = PerkRegistry.byId(entry.id)
-            val rarity = perk?.let {
-                Text.translatable("random-perks-bingo.rarity.${it.rarity.name.lowercase()}")
+        ranked.take(limit).forEachIndexed { index, entry ->
+            val base = entry.rarity?.let { rarityRates[it] }
+            val delta = base?.let { entry.rate - it }
+            val deltaText = if (delta == null) "" else String.format(java.util.Locale.ROOT, " (%+.1fpt)", delta * 100f)
+            val sampleMark = if (entry.sufficient) "" else " *"
+            val rarityText = entry.rarity?.let {
+                Text.translatable("random-perks-bingo.rarity.${it.name.lowercase()}")
             } ?: Text.literal("?")
-            val rate = String.format(java.util.Locale.ROOT, "%.1f%%", entry.rate * 100f)
 
             ctx.source.sendFeedback({
                 Text.literal("  ${index + 1}. ")
                     .append(Text.translatable("random-perks-bingo.perk.${entry.id}.name"))
-                    .append(Text.literal(" (${entry.id}) · "))
-                    .append(rarity)
-                    .append(Text.literal(" · 抽到 ${entry.offered} / 选中 ${entry.picked} · $rate"))
+                    .append(Text.literal(" (${entry.id} · "))
+                    .append(rarityText)
+                    .append(
+                        Text.literal(
+                            ") · 抽到 ${entry.offered} / 选中 ${entry.picked} · " +
+                                percent(entry.rate) + deltaText + sampleMark
+                        )
+                    )
             }, false)
         }
-        return entries.size
+
+        if (!ascending) {
+            ctx.source.sendFeedback({
+                Text.literal("  * = 样本不足 (抽到 < ${PerkStatsService.MIN_SAMPLES} 次), 仅供参考")
+            }, false)
+        }
+        return ranked.size
     }
+
+    private fun percent(value: Float): String =
+        String.format(java.util.Locale.ROOT, "%.1f%%", value * 100f)
 
     private fun grantSelf(ctx: CommandContext<ServerCommandSource>, count: Int): Int {
         val player = ctx.source.player ?: return 0
