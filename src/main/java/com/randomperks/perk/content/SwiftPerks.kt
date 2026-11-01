@@ -187,7 +187,11 @@ object SwiftPerks {
      *  潮涌能量故意**不做成永久效果**: 1.21.7 里它的加速与呼吸判定本身不看环境,
      *  "只在水里生效"完全靠原版导管方块**只给站在水/雨中的玩家续期**来保证 ——
      *  所以这里照抄原版: 每秒检查一次, 只有 `isTouchingWaterOrRain` 时才续 260 tick,
-     *  上岸约 13 秒后自然失效。 */
+     *  上岸约 13 秒后自然失效。
+     *
+     *  代价: **陆地上无法疾跑** (GuraSharkSprintMixin 在 setSprinting 的 HEAD 拦截,
+     *  客户端另有 GuraSharkSprintClientMixin 清理上岸后残留的疾跑标记;
+     *  水里/雨中不受限制, 创意飞行也不拦)。 */
     object GuraShark : PerkDefinition {
         override val id = "swift_gura_shark"
         override val rarity = PerkRarity.RED

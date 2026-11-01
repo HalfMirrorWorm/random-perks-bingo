@@ -461,4 +461,10 @@ object PerkBoostQuery {
     /** 玩家是否持有"盘丝大仙" */
     fun hasSpiderWeaving(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_spider_weaving") == true
+
+    // ---- "古拉鲨鱼" (红): 陆地上无法疾跑 ----
+
+    /** 玩家是否持有"古拉鲨鱼" (由 GuraSharkSprintMixin 拦截 setSprinting) */
+    fun hasGuraShark(player: ServerPlayerEntity): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("swift_gura_shark") == true
 }
