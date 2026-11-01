@@ -341,12 +341,6 @@ object PerkBoostQuery {
     fun hasHomingBow(player: ServerPlayerEntity): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_homing_bow") == true
 
-    // ---- "Jockey" (金): 可骑乘其他玩家 (由 JockeyService / PerkWorldEventService 调用) ----
-
-    /** 玩家是否持有"Jockey" */
-    fun hasJockey(player: ServerPlayerEntity): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("hunter_jockey") == true
-
     // ---- "驯龙高手" (金 · 唤法): 可骑乘其他生物并控制它们使用能力 ----
 
     /** 玩家是否持有"驯龙高手" */

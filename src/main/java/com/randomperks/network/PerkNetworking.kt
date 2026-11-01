@@ -1,7 +1,6 @@
 package com.randomperks.network
 
 import com.randomperks.RandomPerksMod
-import com.randomperks.game.JockeyService
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkOfferService
@@ -51,9 +50,6 @@ object PerkNetworking {
         PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(EquipmentPickC2S.ID, EquipmentPickC2S.CODEC)
         PayloadTypeRegistry.playC2S().register(DualTargetPickC2S.ID, DualTargetPickC2S.CODEC)
-        PayloadTypeRegistry.playS2C().register(JockeyControlS2C.ID, JockeyControlS2C.CODEC)
-        PayloadTypeRegistry.playC2S().register(JockeyControlC2S.ID, JockeyControlC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(JockeyBreakFreeC2S.ID, JockeyBreakFreeC2S.CODEC)
         PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(SoulOutS2C.ID, SoulOutS2C.CODEC)
@@ -169,23 +165,6 @@ object PerkNetworking {
             }
         }
 
-        ServerPlayNetworking.registerGlobalReceiver(JockeyControlC2S.ID) { payload, context ->
-            val player = context.player()
-            val input = payload.input
-            val yaw = payload.yaw
-            val pitch = payload.pitch
-            context.server().execute {
-                JockeyService.handleControl(player, input, yaw, pitch)
-            }
-        }
-
-        ServerPlayNetworking.registerGlobalReceiver(JockeyBreakFreeC2S.ID) { _, context ->
-            val player = context.player()
-            context.server().execute {
-                JockeyService.handleBreakFree(player)
-            }
-        }
-
     }
 
     /** 通知玩家当前待选机会数 (客户端未安装本 mod 时静默跳过) */
@@ -285,13 +264,6 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, MorphS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, payload) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send morph: {}", it.toString()) }
-    }
-
-    /** 把骑乘者的输入下发给被骑的玩家 ("Jockey") */
-    fun sendJockeyControl(player: ServerPlayerEntity, payload: JockeyControlS2C) {
-        if (!ServerPlayNetworking.canSend(player, JockeyControlS2C.ID)) return
-        runCatching { ServerPlayNetworking.send(player, payload) }
-            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send jockey control: {}", it.toString()) }
     }
 
     /** 通知客户端播放"水桶演出" ("落地，水"救命的图腾式动画) */

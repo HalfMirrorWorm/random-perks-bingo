@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **132** 条词条：绿 25 / 蓝 53 / 紫 27 / 金 22 / 红 3 / 神话 2。
+共 **131** 条词条：绿 25 / 蓝 53 / 紫 27 / 金 21 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -109,7 +109,6 @@
 | `hunter_veteran` | 老玩家 | Veteran | 金 |
 | `hunter_roly_poly` | 不倒翁 | Roly-Poly | 绿 |
 | `hunter_homing_bow` | 这不是挂？ | Is This a Hack? | 紫 |
-| `hunter_jockey` | Jockey | Jockey | 金 |
 | `hunter_demon_pact` | 恶魔契约 | Demon Pact | 金 |
 | `hunter_pearl_gauntlet` | 珠光护手 | Pearl Gauntlet | 蓝 |
 | `hunter_satiation_strike` | 良子冲击 | Satiation Strike | 紫 |

@@ -161,11 +161,6 @@ object PerkWorldEventService {
                 if (dyed != ActionResult.PASS) return@register dyed
             }
 
-            // "Jockey": 右键玩家 → 骑到他身上 (失败则交还原版处理)
-            if (entity is ServerPlayerEntity && PerkBoostQuery.hasJockey(player)) {
-                if (JockeyService.mount(player, entity)) return@register ActionResult.SUCCESS
-            }
-
             if (entity !is AbstractHorseEntity) return@register ActionResult.PASS
             val owner = entity.ownerReference ?: return@register ActionResult.PASS
             if (owner.uuid != player.uuid) return@register ActionResult.PASS

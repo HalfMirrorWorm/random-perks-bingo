@@ -22,7 +22,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
  *
  * <ul>
  *   <li>"猎人直觉" —— **对怪物 (Monster)** 造成的伤害 +25%, 对玩家/其他目标不加成</li>
- *   <li>"Jockey" —— 骑在别人身上时, 受到来自**被骑者**的伤害 -75%</li>
  *   <li>"恶魔契约" —— 造成的伤害翻倍, 受到的**任何**伤害也翻倍</li>
  *   <li>"老玩家" —— 右键举剑格挡时, 受到的伤害减半</li>
  *   <li>"细嚼慢咽" —— 正在进食食物时, 受到的伤害 -75%</li>
@@ -59,13 +58,6 @@ public class LivingEntityDamageMixin {
         }
 
         if (!((Object) this instanceof ServerPlayerEntity player)) return amount;
-
-        // "Jockey": 只有"被自己骑着的那个玩家"打过来才减伤
-        if (PerkBoostQuery.INSTANCE.hasJockey(player)
-                && attacker instanceof ServerPlayerEntity
-                && player.getVehicle() == attacker) {
-            amount *= 0.25f;
-        }
 
         // "恶魔契约": 受到任何伤害翻倍 (含摔落/岩浆等环境伤害)
         if (PerkBoostQuery.INSTANCE.hasDemonPact(player)) {

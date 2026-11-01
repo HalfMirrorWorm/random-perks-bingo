@@ -2,7 +2,6 @@ package com.randomperks.client.net
 
 import com.randomperks.client.BigSnowballState
 import com.randomperks.client.GlowMarkState
-import com.randomperks.client.JockeyClientState
 import com.randomperks.client.SoulCameraClient
 import com.randomperks.game.ModVersionService
 import com.randomperks.game.MorphState
@@ -35,9 +34,6 @@ import com.randomperks.network.DualTargetPickC2S
 import com.randomperks.network.DualTargetsS2C
 import com.randomperks.network.EquipmentPickC2S
 import com.randomperks.network.EquipmentPickOpenS2C
-import com.randomperks.network.JockeyBreakFreeC2S
-import com.randomperks.network.JockeyControlC2S
-import com.randomperks.network.JockeyControlS2C
 import com.randomperks.network.MorphS2C
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.network.StealOpenS2C
@@ -47,10 +43,8 @@ import com.randomperks.network.StealTargetsS2C
 import com.randomperks.network.SoulOutS2C
 import com.randomperks.network.WaterBucketTotemS2C
 import net.minecraft.client.MinecraftClient
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
@@ -243,40 +237,6 @@ object ClientPerkNetworking {
             }
         }
 
-        // "Jockey": 被骑者收到骑乘者的输入, 交给 JockeyInputMixin / JockeyCameraMixin 生效
-        ClientPlayNetworking.registerGlobalReceiver(JockeyControlS2C.ID) { payload, context ->
-            context.client().execute {
-                JockeyClientState.accept(payload.input, payload.yaw, payload.pitch)
-            }
-        }
-
-        // "Jockey": 骑乘者每 tick 上报自己的输入 (只有骑在别的玩家身上时才发)
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val player = client.player ?: return@register
-            if (player.vehicle !is PlayerEntity) return@register
-            if (!ClientPlayNetworking.canSend(JockeyControlC2S.ID)) return@register
-
-            ClientPlayNetworking.send(
-                JockeyControlC2S(player.input.playerInput, player.yaw, player.pitch),
-            )
-        }
-
-        // "Jockey": 被骑者按 WASD 任意键累计 30 次 → 请求挣脱。
-        // 读的是**原始按键绑定**: 被骑者的 playerInput 已经被 JockeyInputMixin
-        // 覆盖成骑乘者的了, 从 input 里读不到他自己的 WASD。
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val options = client.options
-            val brokeFree = JockeyClientState.noteMovementKeys(
-                options.forwardKey.isPressed,
-                options.backKey.isPressed,
-                options.leftKey.isPressed,
-                options.rightKey.isPressed,
-            )
-            if (!brokeFree) return@register
-            if (!ClientPlayNetworking.canSend(JockeyBreakFreeC2S.ID)) return@register
-            ClientPlayNetworking.send(JockeyBreakFreeC2S())
-        }
-
         // 断线时清理客户端状态 —— 否则"灵魂出窍"的相机可能卡在离体状态
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
             reset()
@@ -385,7 +345,6 @@ object ClientPerkNetworking {
         pendingChoices = 0
         currentOptions = null
         SoulCameraClient.stop()
-        JockeyClientState.clear()
         MorphState.clear()
         BigSnowballState.clear()
     }
