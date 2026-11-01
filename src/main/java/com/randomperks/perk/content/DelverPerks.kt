@@ -53,8 +53,7 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
     }
 
-    /** 紫 · 深掘: **贪吃蛇** —— 基础挖掘速度 -20%; 每挖掉一个矿石 +1%,
-     *  加成最多 +120% (即 120 个矿石封顶, 最终挖掘速度 ×2.0)。
+    /** 紫 · 深掘: **贪吃蛇** —— 基础挖掘速度 -20%; 每挖掉一个矿石 +1%, **没有上限**。
      *  计数存在词条 memory 里, 重生保留, 对局结束清空。 */
     object GluttonousSnake : PerkDefinition {
         override val id = "delver_gluttonous_snake"
@@ -66,7 +65,6 @@ object DelverPerks {
         private const val KEY_STACKS = "gluttonous_snake_stacks"
         private const val BASE_PENALTY = -0.20
         private const val PER_ORE = 0.01
-        private const val MAX_STACKS = 120
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
@@ -75,9 +73,7 @@ object DelverPerks {
             if (ctx.player.isCreative) return
             if (!PerkBoostQuery.isOreBlock(blockState)) return
 
-            val stacks = stacks(ctx)
-            if (stacks >= MAX_STACKS) return
-            ctx.state.memory[KEY_STACKS] = (stacks + 1).toString()
+            ctx.state.memory[KEY_STACKS] = (stacks(ctx) + 1).toString()
             apply(ctx)
         }
 
@@ -89,7 +85,7 @@ object DelverPerks {
         }
 
         private fun stacks(ctx: PerkContext): Int =
-            (ctx.state.memory[KEY_STACKS]?.toIntOrNull() ?: 0).coerceIn(0, MAX_STACKS)
+            (ctx.state.memory[KEY_STACKS]?.toIntOrNull() ?: 0).coerceAtLeast(0)
 
         override fun onRemove(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_SPEED)
