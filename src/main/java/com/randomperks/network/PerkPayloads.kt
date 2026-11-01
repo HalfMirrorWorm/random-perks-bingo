@@ -651,3 +651,29 @@ class PerkCatalogS2C(
 
     override fun getId() = ID
 }
+
+/** S2C: 打开天气选择器 (词条「世界一直下雨」) */
+class WeatherSelectS2C : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<WeatherSelectS2C>(Identifier.of("random-perks-bingo", "weather_select"))
+        val CODEC: PacketCodec<RegistryByteBuf, WeatherSelectS2C> = PacketCodec.of(
+            { _, _ -> },
+            { _ -> WeatherSelectS2C() },
+        )
+    }
+
+    override fun getId() = ID
+}
+
+/** C2S: 玩家选定的天气 (0 晴 / 1 雨 / 2 雷雨) */
+class WeatherPickC2S(val weather: Int) : CustomPayload {
+    companion object {
+        val ID = CustomPayload.Id<WeatherPickC2S>(Identifier.of("random-perks-bingo", "weather_pick"))
+        val CODEC: PacketCodec<RegistryByteBuf, WeatherPickC2S> = PacketCodec.of(
+            { value, buf -> buf.writeVarInt(value.weather) },
+            { buf -> WeatherPickC2S(buf.readVarInt()) },
+        )
+    }
+
+    override fun getId() = ID
+}

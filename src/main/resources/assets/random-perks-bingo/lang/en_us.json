@@ -415,5 +415,16 @@
   "random-perks-bingo.menu.perks.disabled": "[RandomPerks] Perk system disabled — applies next round",
   "random-perks-bingo.menu.perks.conflict.inventory": "[RandomPerks] Perk mode conflicts with Inventory mode — Inventory mode has been disabled",
   "random-perks-bingo.menu.perks.conflict.perk": "[RandomPerks] Inventory mode conflicts with Perk mode — the perk system has been disabled (applies next round)",
-  "random-perks-bingo.menu.perks.conflict.tooltip": "Incompatible with Inventory mode: enabling perks turns Inventory mode off"
+  "random-perks-bingo.menu.perks.conflict.tooltip": "Incompatible with Inventory mode: enabling perks turns Inventory mode off",
+  "random-perks-bingo.perk.harvest_always_rain.name": "Always Raining",
+  "random-perks-bingo.perk.harvest_always_rain.desc": "Activate from the perk list to pick the weather (clear / rain / thunderstorm) for the Overworld, lasting 10 minutes.",
+  "random-perks-bingo.screen.weather": "Choose the Weather",
+  "random-perks-bingo.screen.weather.hint": "The Overworld will keep this weather for 10 minutes.",
+  "random-perks-bingo.screen.weather.clear": "Clear",
+  "random-perks-bingo.screen.weather.rain": "Rain",
+  "random-perks-bingo.screen.weather.thunder": "Thunderstorm",
+  "random-perks-bingo.message.weather_clear": "The weather is now clear for 10 minutes.",
+  "random-perks-bingo.message.weather_rain": "It is now raining for 10 minutes.",
+  "random-perks-bingo.message.weather_thunder": "A thunderstorm has started for 10 minutes.",
+  "random-perks-bingo.message.weather_broadcast": "%s changed the weather."
 }

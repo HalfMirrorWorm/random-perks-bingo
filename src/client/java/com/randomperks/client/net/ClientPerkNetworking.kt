@@ -12,6 +12,7 @@ import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
 import com.randomperks.client.screen.StealScreen
 import com.randomperks.client.screen.TargetPickScreen
+import com.randomperks.client.screen.WeatherSelectScreen
 import com.randomperks.game.ClientPerkFlags
 import com.randomperks.network.GlowMarkS2C
 import com.randomperks.network.ItemSelectC2S
@@ -42,6 +43,8 @@ import com.randomperks.network.StealTargetPickC2S
 import com.randomperks.network.StealTargetsS2C
 import com.randomperks.network.SoulOutS2C
 import com.randomperks.network.WaterBucketTotemS2C
+import com.randomperks.network.WeatherPickC2S
+import com.randomperks.network.WeatherSelectS2C
 import net.minecraft.client.MinecraftClient
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -125,6 +128,15 @@ object ClientPerkNetworking {
                 } else {
                     SoulCameraClient.stop()
                 }
+            }
+        }
+
+        // "世界一直下雨": 服务端下发后弹出天气选择器, 选完回传
+        ClientPlayNetworking.registerGlobalReceiver(WeatherSelectS2C.ID) { _, context ->
+            context.client().execute {
+                context.client().setScreen(
+                    WeatherSelectScreen { weather -> ClientPlayNetworking.send(WeatherPickC2S(weather)) },
+                )
             }
         }
 

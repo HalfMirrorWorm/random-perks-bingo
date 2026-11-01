@@ -8,6 +8,7 @@ import com.randomperks.game.KelpToBoneService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PigMorphService
+import com.randomperks.game.WeatherService
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -611,6 +612,19 @@ object HarvestPerks {
         }
     }
 
+    /** 绿 · 丰饶 · 贮藏: **世界一直下雨** —— 在词条列表点击使用, 自选天气 (晴 / 雨 / 雷雨),
+     *  主世界持续 10 分钟。流程见 [WeatherService]。 */
+    object AlwaysRain : PerkDefinition {
+        override val id = WeatherService.PERK_ID
+        override val rarity = PerkRarity.GREEN
+        override val archetype = PerkArchetype.HARVEST
+        override fun icon() = ItemStack(Items.LIGHTNING_ROD)
+
+        override val isOneTime = true
+
+        override fun onActivate(ctx: PerkContext) = WeatherService.handleRequest(ctx.player)
+    }
+
     /** 蓝 · 丰饶: **采蜜人** —— 破坏蜂巢 / 蜂箱时, 额外掉落 2 个蜜脾和 8 瓶蜂蜜。 */
     object Beekeeper : PerkDefinition {
         override val id = "harvest_beekeeper"
@@ -771,6 +785,7 @@ object HarvestPerks {
         PerkRegistry.register(PigMorph)
         PerkRegistry.register(WellFed)
         PerkRegistry.register(Beekeeper)
+        PerkRegistry.register(AlwaysRain)
         PerkRegistry.register(KelpToBone)
         PerkRegistry.register(BoneMealFlowers)
         PerkRegistry.register(FungalInfection)

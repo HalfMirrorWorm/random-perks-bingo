@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **133** 条词条：绿 26 / 蓝 55 / 紫 26 / 金 21 / 红 3 / 神话 2。
+共 **134** 条词条：绿 27 / 蓝 55 / 紫 26 / 金 21 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -95,6 +95,7 @@
 | `harvest_fungal_infection` | 苔藓侵蚀 | Moss Erosion | 金 |
 | `harvest_slow_chewing` | 细嚼慢咽 | Slow Chewing | 紫 |
 | `harvest_well_fed` | 饱食终日 | Well-Fed | 金 |
+| `harvest_always_rain` | 世界一直下雨 | Always Raining | 绿 |
 
 ## 猎杀 HUNTER
 

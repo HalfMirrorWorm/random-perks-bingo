@@ -5,6 +5,7 @@ import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkOfferService
 import com.randomperks.game.StealService
+import com.randomperks.game.WeatherService
 import com.randomperks.perk.content.ArtisanPerks
 import com.randomperks.perk.content.HunterPerks
 import com.randomperks.perk.content.MythicPerks
@@ -53,6 +54,8 @@ object PerkNetworking {
         PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
         PayloadTypeRegistry.playS2C().register(SoulOutS2C.ID, SoulOutS2C.CODEC)
+        PayloadTypeRegistry.playS2C().register(WeatherSelectS2C.ID, WeatherSelectS2C.CODEC)
+        PayloadTypeRegistry.playC2S().register(WeatherPickC2S.ID, WeatherPickC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -101,6 +104,14 @@ object PerkNetworking {
             val player = context.player()
             context.server().execute {
                 PerkAbilityService.handleDash(player)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(WeatherPickC2S.ID) { payload, context ->
+            val player = context.player()
+            val weather = payload.weather
+            context.server().execute {
+                WeatherService.handlePick(player, weather)
             }
         }
 
@@ -200,6 +211,13 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, PerkAbilitySyncS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkAbilitySyncS2C(perkIds)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send ability sync: {}", it.toString()) }
+    }
+
+    /** 下发天气选择器 (词条「世界一直下雨」) */
+    fun sendWeatherSelect(player: ServerPlayerEntity) {
+        if (!ServerPlayNetworking.canSend(player, WeatherSelectS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, WeatherSelectS2C()) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send weather select: {}", it.toString()) }
     }
 
     /** 下发偷窃目标信息与背包内容 */
