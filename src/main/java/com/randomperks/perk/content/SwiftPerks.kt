@@ -267,7 +267,9 @@ object SwiftPerks {
         override fun onRespawn(ctx: PerkContext) = PerkAbilityService.clearDashUsed(ctx.player)
     }
 
-    /** 金 · 疾风: **自动搭路** —— 手持圆石时, 自动在脚下铺设圆石 (由 AutoBridgeService 每 tick 驱动) */
+    /** 金 · 疾风: **自动搭路** —— 手持圆石时, 自动在脚下铺设圆石。
+     *  放置由客户端 AutoBridgeClient 走原版 `interactBlock` 完成 (本地先预测 + 服务端权威校验),
+     *  服务端每 tick 直接 setBlockState 会让客户端先预测下落再被纠正, 出现位置回弹。 */
     object AutoBridge : PerkDefinition {
         override val id = "swift_auto_bridge"
         override val rarity = PerkRarity.GOLD

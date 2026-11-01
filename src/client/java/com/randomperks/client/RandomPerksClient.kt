@@ -21,6 +21,8 @@ object RandomPerksClient : ClientModInitializer {
         logger.info("[RandomPerks] client initializing")
 
         ClientPerkNetworking.registerClient()
+        // "自动搭路": 必须在客户端预测放置, 否则会先预测下落再被服务端纠正 (位置回弹)
+        AutoBridgeClient.register()
         Keybinds.register()
         AbilityHandler.register()
         YaclPerkButton.register()
