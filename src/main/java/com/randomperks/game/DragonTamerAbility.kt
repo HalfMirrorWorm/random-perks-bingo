@@ -236,7 +236,7 @@ object DragonTamerAbility {
         for (entity in cone(player, mob, 4.5, 0.25)) {
             if (entity.damage(world, source, amount)) {
                 entity.takeKnockback(0.7, mob.x - entity.x, mob.z - entity.z)
-                entity.velocityModified = true
+                entity.velocityDirty = true
             }
         }
     }
@@ -405,7 +405,7 @@ object DragonTamerAbility {
         for (entity in cone(player, mob, 3.6, 0.4)) {
             if (entity.damage(world, source, amount)) {
                 entity.takeKnockback(1.8, mob.x - entity.x, mob.z - entity.z)
-                entity.velocityModified = true
+                entity.velocityDirty = true
             }
         }
         return GOAT
@@ -443,7 +443,7 @@ object DragonTamerAbility {
             entity.damage(world, source, amount)
             if (ignite) entity.setOnFireFor(4.0f)
             entity.takeKnockback(0.45, mob.x - entity.x, mob.z - entity.z)
-            entity.velocityModified = true
+            entity.velocityDirty = true
         }
         val sound = if (ignite) SoundEvents.ENTITY_MAGMA_CUBE_SQUISH else SoundEvents.ENTITY_SLIME_ATTACK
         mob.playSound(sound, 1.0f, 1.0f)

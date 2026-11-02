@@ -9,14 +9,15 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
 import net.minecraft.block.BlockState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.RenderPipelines
+import net.minecraft.client.render.LayeringTransform
+import net.minecraft.client.render.OutputTarget
 import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.RenderPhase
+import net.minecraft.client.render.RenderSetup
 import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.BlockTags
 import net.minecraft.util.math.BlockPos
-import java.util.OptionalDouble
 
 /**
  * "透视之眼"词条的客户端渲染:
@@ -74,14 +75,13 @@ object XrayRenderer {
         .withDepthWrite(false)
         .build()
 
-    /** 与 RenderLayer.getLines() 相同的层参数, 使用上面的穿墙管线 */
+    /** 与 RenderLayers.lines() 相同的层参数, 使用上面的穿墙管线。线宽已进 LINES 管线。 */
     private val XRAY_LINES: RenderLayer = RenderLayer.of(
-        "randomperks_xray_ore_lines", 1536, XRAY_LINE_PIPELINE,
-        RenderLayer.MultiPhaseParameters.builder()
-            .lineWidth(RenderPhase.LineWidth(OptionalDouble.empty()))
-            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
-            .target(RenderPhase.ITEM_ENTITY_TARGET)
-            .build(false),
+        "randomperks_xray_ore_lines",
+        RenderSetup.builder(XRAY_LINE_PIPELINE)
+            .layeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+            .outputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+            .build(),
     )
 
     /** 一次扫描的结果: 矿石种类 → 该组可见轮廓段 */
@@ -186,10 +186,10 @@ object XrayRenderer {
         val immediate = context.consumers() as? VertexConsumerProvider.Immediate ?: return
         val buffer = immediate.getBuffer(XRAY_LINES)
 
-        val camera = context.gameRenderer().camera
-        val camX = camera.pos.x
-        val camY = camera.pos.y
-        val camZ = camera.pos.z
+        val cameraPos = context.gameRenderer().camera.cameraPos
+        val camX = cameraPos.x
+        val camY = cameraPos.y
+        val camZ = cameraPos.z
         val radius2 = (RADIUS * RADIUS).toDouble()
 
         for ((kind, segments) in outlineSegments) {

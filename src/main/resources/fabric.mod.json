@@ -32,11 +32,11 @@
   ],
   "depends": {
     "fabricloader": ">=0.16.9",
-    "minecraft": ">=1.21.9 <1.21.11",
+    "minecraft": ">=1.21.11 <26.1",
     "java": ">=21",
     "fabric-api": "*",
     "fabric-language-kotlin": ">=1.13.7+kotlin.2.2.21",
-    "yet-another-minecraft-bingo": ">=2.9.6 <2.10"
+    "yet-another-minecraft-bingo": ">=2.9.7 <2.10"
   },
   "contact": {
     "homepage": "https://github.com/HalfMirrorWorm/random-perks-bingo",

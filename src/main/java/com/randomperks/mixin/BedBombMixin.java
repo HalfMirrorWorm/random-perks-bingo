@@ -14,6 +14,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.explosion.ExplosionBehavior;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -44,8 +45,9 @@ public class BedBombMixin {
     @Inject(method = "onUse", at = @At("HEAD"))
     private void randomperks$markBedBomb(BlockState state, World world, BlockPos pos, PlayerEntity player,
                                          BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
+        // 1.21.11 删了 DimensionType.bedWorks()，原版改为读 BED_RULE_GAMEPLAY.explodes()
         boolean apply = !world.isClient()
-                && !world.getDimension().bedWorks()          // 只有"床会爆炸"的维度
+                && world.getEnvironmentAttributes().getAttributeValue(EnvironmentAttributes.BED_RULE_GAMEPLAY, pos).explodes()
                 && player instanceof ServerPlayerEntity serverPlayer
                 && PerkBoostQuery.INSTANCE.hasCarefreeSleep(serverPlayer);
         BedBombContext.setActive(apply);

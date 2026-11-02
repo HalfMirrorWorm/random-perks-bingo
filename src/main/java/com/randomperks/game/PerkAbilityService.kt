@@ -45,7 +45,7 @@ object PerkAbilityService {
         val impulse = (player as LivingEntityJumpVelocityInvoker).invokeGetJumpVelocity()
         val velocity = player.velocity
         player.velocity = Vec3d(velocity.x, impulse.toDouble(), velocity.z)
-        player.velocityModified = true
+        player.velocityDirty = true
 
         // 反馈 = 脚下"炸开一小股气流"的观感:
         // 音效 = 风弹爆发 (1.21 的 entity.wind_charge.wind_burst), 比烟花音更轻更贴"空中助推";
@@ -109,7 +109,7 @@ object PerkAbilityService {
         val dir = if (length < 1.0E-4) Vec3d.fromPolar(0.0f, player.yaw) else horizontal.multiply(1.0 / length)
 
         player.velocity = Vec3d(dir.x * DASH_SPEED, player.velocity.y, dir.z * DASH_SPEED)
-        player.velocityModified = true
+        player.velocityDirty = true
 
         player.playSoundToPlayer(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.8f, 1.4f)
         (player.entityWorld as? ServerWorld)?.spawnParticles(

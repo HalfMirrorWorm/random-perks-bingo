@@ -2,7 +2,7 @@ package com.randomperks.client.render;
 
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -185,7 +185,7 @@ public class PigMorphRenderer extends PlayerEntityRenderer<AbstractClientPlayerE
                     this.pigModel,
                     pigState,
                     matrices,
-                    RenderLayer.getEntityCutoutNoCull(PIG_TEXTURE),
+                    RenderLayers.entityCutoutNoCull(PIG_TEXTURE),
                     state.light,
                     OverlayTexture.DEFAULT_UV,
                     state.outlineColor,
@@ -204,7 +204,7 @@ public class PigMorphRenderer extends PlayerEntityRenderer<AbstractClientPlayerE
                     queue.submitModelPart(
                             this.pigHead,
                             matrices,
-                            RenderLayer.getEntityCutoutNoCull(PIG_TEXTURE),
+                            RenderLayers.entityCutoutNoCull(PIG_TEXTURE),
                             state.light,
                             OverlayTexture.DEFAULT_UV,
                             null);
@@ -239,7 +239,7 @@ public class PigMorphRenderer extends PlayerEntityRenderer<AbstractClientPlayerE
             queue.submitModelPart(
                     head,
                     matrices,
-                    RenderLayer.getEntityTranslucent(skin.body().texturePath()),
+                    RenderLayers.entityTranslucent(skin.body().texturePath()),
                     state.light,
                     OverlayTexture.DEFAULT_UV,
                     null,

@@ -35,7 +35,7 @@ object RandomPerksCommands {
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             dispatcher.register(
                 literal("randomperks")
-                    .requires { it.hasPermissionLevel(2) }
+                    .requires { it.permissions.hasPermission(net.minecraft.command.permission.Permission.Level(net.minecraft.command.permission.PermissionLevel.GAMEMASTERS)) }
                     .then(
                         literal("status").executes { ctx ->
                             val states = PerkStateManager.all()

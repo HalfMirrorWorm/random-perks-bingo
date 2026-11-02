@@ -32,7 +32,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.world.GameRules
+import net.minecraft.world.rule.GameRules
 import net.minecraft.world.World
 
 /**
@@ -775,7 +775,7 @@ object HunterPerks {
             if (victim !is MobEntity) return                                    // 只有生物有掉落表 (玩家/盔甲架没有)
             if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return      // 每次击杀掷一次, 不是每件物品
             val world = ctx.player.entityWorld as? ServerWorld ?: return
-            if (!world.gameRules.getBoolean(GameRules.DO_MOB_LOOT)) return      // 跟随原版"生物掉落"游戏规则
+            if (!world.gameRules.getValue(GameRules.DO_MOB_LOOT)) return      // 跟随原版"生物掉落"游戏规则
             val source = victim.recentDamageSource ?: return
             // 让这只怪的掉落表再滚一次 —— 掉落物直接从它自己身上出来; 与原版死亡掉落同一套结算
             (victim as MobLootInvoker).invokeDropLoot(world, source, true)

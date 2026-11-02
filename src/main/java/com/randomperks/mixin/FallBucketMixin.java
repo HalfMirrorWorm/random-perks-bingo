@@ -1,6 +1,7 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
+import com.randomperks.game.PlayerSoundsKt;
 import com.randomperks.network.PerkNetworking;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -49,7 +50,7 @@ public class FallBucketMixin {
         player.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 800, 0, true, true));
 
         // 音效 + 水桶版"图腾演出"
-        player.playSoundToPlayer(SoundEvents.ITEM_TOTEM_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
+        PlayerSoundsKt.playSoundToPlayer(player, SoundEvents.ITEM_TOTEM_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
         PerkNetworking.INSTANCE.sendWaterBucketTotem(player);
 
         cir.setReturnValue(true);  // 已救命: 不走原版图腾/死亡流程

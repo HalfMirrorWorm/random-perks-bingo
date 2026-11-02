@@ -664,7 +664,7 @@ object SeekerPerks {
                 val pool = factories.toMutableList()
                 repeat(minOf(2, pool.size)) {
                     val factory = pool.removeAt(villager.random.nextInt(pool.size))
-                    factory.create(villager, villager.random)?.let { offers.add(it) }
+                    factory.create(world, villager, villager.random)?.let { offers.add(it) }
                 }
             }
             return offers

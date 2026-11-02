@@ -81,6 +81,6 @@ public class BigSnowballMixin {
         // 击飞: 水平推开 + 一点上抛
         living.takeKnockback(KNOCKBACK, self.getX() - living.getX(), self.getZ() - living.getZ());
         living.addVelocity(0.0, LAUNCH, 0.0);
-        living.velocityModified = true;
+        living.velocityDirty = true;
     }
 }
