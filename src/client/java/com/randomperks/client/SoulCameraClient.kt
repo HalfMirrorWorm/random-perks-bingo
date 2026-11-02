@@ -63,7 +63,7 @@ object SoulCameraClient {
         val now = System.nanoTime()
 
         // 打开界面时不动 (避免在聊天栏里打字时灵魂乱飞)
-        if (client.gui.screen() != null) {
+        if (client.screen != null) {
             lastFrameNanos = now
             return
         }

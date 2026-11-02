@@ -116,7 +116,7 @@ object HarvestPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.SHEARS))
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.WOOL.white(), 32))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.WHITE_WOOL, 32))
         }
     }
 
@@ -332,7 +332,7 @@ object HarvestPerks {
             val player = ctx.player
             val world = player.level() as? ServerLevel ?: return
 
-            val horse = net.minecraft.world.entity.animal.equine.Horse(net.minecraft.world.entity.EntityTypes.HORSE, world)
+            val horse = net.minecraft.world.entity.animal.equine.Horse(net.minecraft.world.entity.EntityType.HORSE, world)
             // 位置 + 朝向都跟随玩家 (原版生成走 refreshPositionAndAngles)
             horse.snapTo(player.x, player.y, player.z, player.yRot, player.xRot)
             horse.setOwner(player)
@@ -442,7 +442,7 @@ object HarvestPerks {
 
             repeat(DOG_COUNT) { index ->
                 val wolf = net.minecraft.world.entity.animal.wolf.Wolf(
-                    net.minecraft.world.entity.EntityTypes.WOLF, world,
+                    net.minecraft.world.entity.EntityType.WOLF, world,
                 )
                 // 两只狗分列玩家左右, 朝向与玩家一致
                 val offset = if (index == 0) -1.0 else 1.0
@@ -529,11 +529,16 @@ object HarvestPerks {
         override val id = "summon_happy_ghast"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SUMMON
-        override fun icon() = ItemStack(Items.HARNESS.white())
+        override fun icon() = ItemStack(Items.WHITE_HARNESS)
 
         override val isOneTime = true
         /** 16 色挽具, 随机挑一个 */
-        private val HARNESSES = Items.HARNESS.asList()
+        private val HARNESSES = listOf(
+            Items.WHITE_HARNESS, Items.ORANGE_HARNESS, Items.MAGENTA_HARNESS, Items.LIGHT_BLUE_HARNESS,
+            Items.YELLOW_HARNESS, Items.LIME_HARNESS, Items.PINK_HARNESS, Items.GRAY_HARNESS,
+            Items.LIGHT_GRAY_HARNESS, Items.CYAN_HARNESS, Items.PURPLE_HARNESS, Items.BLUE_HARNESS,
+            Items.BROWN_HARNESS, Items.GREEN_HARNESS, Items.RED_HARNESS, Items.BLACK_HARNESS,
+        )
 
         /** 赠送的拴绳数量 */
         private const val LEAD_COUNT = 2
@@ -543,7 +548,7 @@ object HarvestPerks {
             val world = player.level() as? ServerLevel ?: return
 
             val ghast = net.minecraft.world.entity.animal.happyghast.HappyGhast(
-                net.minecraft.world.entity.EntityTypes.HAPPY_GHAST, world,
+                net.minecraft.world.entity.EntityType.HAPPY_GHAST, world,
             )
             // 恶魂体积大, 生成在头顶两格避免卡进方块
             ghast.snapTo(
@@ -613,7 +618,7 @@ object HarvestPerks {
         override val id = WeatherService.PERK_ID
         override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
-        override fun icon() = ItemStack(Items.LIGHTNING_ROD.weathering().unaffected())
+        override fun icon() = ItemStack(Items.LIGHTNING_ROD)
 
         override val isOneTime = true
 

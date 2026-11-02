@@ -152,7 +152,7 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
         try {
             float baseScale = state.scale;
             matrices.scale(baseScale, baseScale, baseScale);
-            matrices.rotateDegrees(Axis.YP, 180.0f - state.bodyRot);
+            matrices.mulPose(Axis.YP.rotationDegrees(180.0f - state.bodyRot));
             matrices.scale(-1.0f, -1.0f, 1.0f);
             matrices.translate(0.0, -1.501, 0.0);
 
@@ -174,7 +174,8 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
                     RenderTypes.entityCutout(PIG_TEXTURE),
                     state.lightCoords,
                     OverlayTexture.NO_OVERLAY,
-                    state.outlineColor);
+                    state.outlineColor,
+                    null);
 
             if (skin != null) {
                 try {
@@ -220,7 +221,10 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
                     state.lightCoords,
                     OverlayTexture.NO_OVERLAY,
                     null,
+                    false,
+                    false,
                     -1,
+                    null,
                     state.outlineColor);
 
             this.armorState.headEquipment = state.headEquipment;

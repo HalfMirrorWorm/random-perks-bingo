@@ -29,7 +29,7 @@ public class BigBackpackPlayerInventoryMixin {
     private static final String PERK_ID = "artisan_big_backpack";
 
     @Redirect(
-            method = "placeItemBackInInventory(Lnet/minecraft/world/item/ItemStack;ZLnet/minecraft/util/Prediction;)V",
+            method = "placeItemBackInInventory(Lnet/minecraft/world/item/ItemStack;Z)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getMaxStackSize()I")
     )
     private int randomperks$bigBackpackOfferMax(ItemStack stack) {

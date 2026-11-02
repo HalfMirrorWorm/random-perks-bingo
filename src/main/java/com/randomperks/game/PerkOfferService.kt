@@ -155,7 +155,7 @@ object PerkOfferService {
                 team?.displayName?.string ?: "",
                 teamNameKey,
                 teamNameArg,
-                team?.color?.orElse(null)?.rgb() ?: 0xFFFFFF,
+                team?.color?.color ?: 0xFFFFFF,
             )
         }
 

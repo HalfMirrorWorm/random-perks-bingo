@@ -18,7 +18,6 @@ import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
@@ -91,7 +90,7 @@ object HunterPerks {
         override val id = "hunter_vampire"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HUNTER
-        override fun icon() = ItemStack(Items.DYE.red())
+        override fun icon() = ItemStack(Items.RED_DYE)
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             ctx.player.heal(2f)
@@ -173,54 +172,54 @@ object HunterPerks {
          * 依据: 1.21.7 的 `data/minecraft/loot_table/entities/` 下各实体的战利品表。
          */
         private fun prizesFor(victim: LivingEntity): List<ItemStack> = when (victim.type) {
-            EntityTypes.ZOMBIE, EntityTypes.HUSK, EntityTypes.ZOMBIE_VILLAGER -> listOf(
+            EntityType.ZOMBIE, EntityType.HUSK, EntityType.ZOMBIE_VILLAGER -> listOf(
                 ItemStack(Items.IRON_INGOT, 3), ItemStack(Items.ROTTEN_FLESH, 16),
             )
-            EntityTypes.DROWNED -> listOf(
+            EntityType.DROWNED -> listOf(
                 ItemStack(Items.COPPER_INGOT, 4), ItemStack(Items.ROTTEN_FLESH, 16),
             )
-            EntityTypes.SKELETON, EntityTypes.STRAY, EntityTypes.BOGGED -> listOf(
+            EntityType.SKELETON, EntityType.STRAY, EntityType.BOGGED -> listOf(
                 ItemStack(Items.BONE, 8), ItemStack(Items.ARROW, 16),
             )
-            EntityTypes.CREEPER -> listOf(
+            EntityType.CREEPER -> listOf(
                 ItemStack(Items.GUNPOWDER, 8), ItemStack(Items.MUSIC_DISC_CAT),
             )
-            EntityTypes.SPIDER, EntityTypes.CAVE_SPIDER -> listOf(
+            EntityType.SPIDER, EntityType.CAVE_SPIDER -> listOf(
                 ItemStack(Items.STRING, 8), ItemStack(Items.SPIDER_EYE, 2),
             )
-            EntityTypes.ENDERMAN -> listOf(ItemStack(Items.ENDER_PEARL, 4))
-            EntityTypes.BLAZE -> listOf(ItemStack(Items.BLAZE_ROD, 4))
-            EntityTypes.GHAST -> listOf(
+            EntityType.ENDERMAN -> listOf(ItemStack(Items.ENDER_PEARL, 4))
+            EntityType.BLAZE -> listOf(ItemStack(Items.BLAZE_ROD, 4))
+            EntityType.GHAST -> listOf(
                 ItemStack(Items.GHAST_TEAR, 2), ItemStack(Items.GUNPOWDER, 8),
             )
-            EntityTypes.WITHER_SKELETON -> listOf(
+            EntityType.WITHER_SKELETON -> listOf(
                 ItemStack(Items.WITHER_SKELETON_SKULL), ItemStack(Items.COAL, 8),
             )
-            EntityTypes.ZOMBIFIED_PIGLIN -> listOf(
+            EntityType.ZOMBIFIED_PIGLIN -> listOf(
                 ItemStack(Items.GOLD_INGOT, 4), ItemStack(Items.GOLD_NUGGET, 16),
             )
-            EntityTypes.PIGLIN -> listOf(ItemStack(Items.GOLD_INGOT, 4))
-            EntityTypes.MAGMA_CUBE -> listOf(
+            EntityType.PIGLIN -> listOf(ItemStack(Items.GOLD_INGOT, 4))
+            EntityType.MAGMA_CUBE -> listOf(
                 ItemStack(Items.MAGMA_CREAM, 4), ItemStack(Items.OCHRE_FROGLIGHT),
             )
-            EntityTypes.SLIME -> listOf(ItemStack(Items.SLIME_BALL, 8))
-            EntityTypes.PHANTOM -> listOf(ItemStack(Items.PHANTOM_MEMBRANE, 4))
-            EntityTypes.GUARDIAN -> listOf(
+            EntityType.SLIME -> listOf(ItemStack(Items.SLIME_BALL, 8))
+            EntityType.PHANTOM -> listOf(ItemStack(Items.PHANTOM_MEMBRANE, 4))
+            EntityType.GUARDIAN -> listOf(
                 ItemStack(Items.PRISMARINE_CRYSTALS, 4), ItemStack(Items.COD, 4),
             )
-            EntityTypes.ELDER_GUARDIAN -> listOf(
+            EntityType.ELDER_GUARDIAN -> listOf(
                 ItemStack(Items.WET_SPONGE), ItemStack(Items.PRISMARINE_CRYSTALS, 4),
             )
-            EntityTypes.SHULKER -> listOf(ItemStack(Items.SHULKER_SHELL, 2))
-            EntityTypes.WITCH -> listOf(
+            EntityType.SHULKER -> listOf(ItemStack(Items.SHULKER_SHELL, 2))
+            EntityType.WITCH -> listOf(
                 ItemStack(Items.GLOWSTONE_DUST, 8), ItemStack(Items.REDSTONE, 8),
             )
-            EntityTypes.PILLAGER -> listOf(ItemStack(Items.OMINOUS_BOTTLE, 2))
-            EntityTypes.VINDICATOR -> listOf(ItemStack(Items.EMERALD, 4))
-            EntityTypes.EVOKER -> listOf(
+            EntityType.PILLAGER -> listOf(ItemStack(Items.OMINOUS_BOTTLE, 2))
+            EntityType.VINDICATOR -> listOf(ItemStack(Items.EMERALD, 4))
+            EntityType.EVOKER -> listOf(
                 ItemStack(Items.TOTEM_OF_UNDYING), ItemStack(Items.EMERALD, 4),
             )
-            EntityTypes.RAVAGER -> listOf(ItemStack(Items.SADDLE))
+            EntityType.RAVAGER -> listOf(ItemStack(Items.SADDLE))
             else -> emptyList()
         }
     }
@@ -475,7 +474,7 @@ object HunterPerks {
         override val id = "summon_call_lightning"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SUMMON
-        override fun icon() = ItemStack(Items.LIGHTNING_ROD.weathering().unaffected())
+        override fun icon() = ItemStack(Items.LIGHTNING_ROD)
 
         override val isOneTime = true
 
@@ -516,7 +515,7 @@ object HunterPerks {
             val world = target.level() as? ServerLevel ?: return false
 
             val rod = findNearbyLightningRod(world, target.blockPosition(), 16)
-            val lightning = net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT
+            val lightning = net.minecraft.world.entity.EntityType.LIGHTNING_BOLT
                 .create(world, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED) ?: return false
 
             if (rod != null) {
@@ -527,6 +526,18 @@ object HunterPerks {
             world.addFreshEntity(lightning)
             return true
         }
+
+
+        private val LIGHTNING_RODS = setOf(
+            net.minecraft.world.level.block.Blocks.LIGHTNING_ROD,
+            net.minecraft.world.level.block.Blocks.EXPOSED_LIGHTNING_ROD,
+            net.minecraft.world.level.block.Blocks.WEATHERED_LIGHTNING_ROD,
+            net.minecraft.world.level.block.Blocks.OXIDIZED_LIGHTNING_ROD,
+            net.minecraft.world.level.block.Blocks.WAXED_LIGHTNING_ROD,
+            net.minecraft.world.level.block.Blocks.WAXED_EXPOSED_LIGHTNING_ROD,
+            net.minecraft.world.level.block.Blocks.WAXED_WEATHERED_LIGHTNING_ROD,
+            net.minecraft.world.level.block.Blocks.WAXED_OXIDIZED_LIGHTNING_ROD,
+        )
 
         /** 在半径内寻找最近的引雷针 (找不到返回 null) */
         private fun findNearbyLightningRod(
@@ -541,7 +552,7 @@ object HunterPerks {
                 for (dy in -radius..radius) {
                     for (dz in -radius..radius) {
                         val pos = center.offset(dx, dy, dz)
-                        if (world.getBlockState(pos).block !in net.minecraft.world.level.block.Blocks.LIGHTNING_ROD.asList()) continue
+                        if (world.getBlockState(pos).block !in LIGHTNING_RODS) continue
                         val dist = dx * dx + dy * dy + dz * dz
                         if (dist < bestDist) {
                             bestDist = dist
@@ -665,7 +676,7 @@ object HunterPerks {
             val headPos = target.blockPosition().above(2)
             val pos = if (world.getBlockState(headPos).isAir) headPos else target.blockPosition()
 
-            val creeper = net.minecraft.world.entity.EntityTypes.CREEPER
+            val creeper = net.minecraft.world.entity.EntityType.CREEPER
                 .create(world, net.minecraft.world.entity.EntitySpawnReason.EVENT) ?: return false
             creeper.snapTo(
                 pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,

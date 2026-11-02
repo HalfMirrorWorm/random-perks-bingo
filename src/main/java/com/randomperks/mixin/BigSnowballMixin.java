@@ -79,8 +79,8 @@ public class BigSnowballMixin {
         }
 
         // 击飞: 水平推开 + 一点上抛
-        living.knockback(KNOCKBACK, self.getX() - living.getX(), self.getZ() - living.getZ(), living.damageSources().generic(), 0.0f);
+        living.knockback(KNOCKBACK, self.getX() - living.getX(), self.getZ() - living.getZ());
         living.push(0.0, LAUNCH, 0.0);
-        living.syncVelocity = true;
+        living.hurtMarked = true;
     }
 }

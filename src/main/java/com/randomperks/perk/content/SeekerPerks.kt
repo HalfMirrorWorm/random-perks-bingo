@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.Block
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.effect.MobEffectInstance
@@ -353,7 +352,7 @@ object SeekerPerks {
         private fun spawnAt(world: ServerLevel, center: BlockPos): Boolean {
             val pos = if (standable(world, center)) center else nearbyStandable(world, center) ?: center
 
-            val trader = net.minecraft.world.entity.EntityTypes.WANDERING_TRADER
+            val trader = net.minecraft.world.entity.EntityType.WANDERING_TRADER
                 .create(world, net.minecraft.world.entity.EntitySpawnReason.EVENT) ?: return false
             trader.snapTo(
                 pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
@@ -366,7 +365,7 @@ object SeekerPerks {
             trader.setHomeTo(pos, 16)
 
             repeat(2) { index ->
-                val llama = net.minecraft.world.entity.EntityTypes.TRADER_LLAMA
+                val llama = net.minecraft.world.entity.EntityType.TRADER_LLAMA
                     .create(world, net.minecraft.world.entity.EntitySpawnReason.EVENT) ?: return@repeat
                 llama.snapTo(
                     pos.x + 0.5 + if (index == 0) -1.2 else 1.2, pos.y.toDouble(), pos.z + 0.5,
@@ -608,7 +607,7 @@ object SeekerPerks {
         }
 
         private fun spawnAt(world: ServerLevel, player: ServerPlayer): Boolean {
-            val villager = EntityTypes.VILLAGER.create(world, EntitySpawnReason.EVENT) ?: return false
+            val villager = EntityType.VILLAGER.create(world, EntitySpawnReason.EVENT) ?: return false
 
             val registryManager = world.registryAccess()
             val type = registryManager.lookupOrThrow(Registries.VILLAGER_TYPE)
@@ -678,7 +677,7 @@ object SeekerPerks {
                     .create(LootContextParamSets.VILLAGER_TRADE),
             ).create(tradeSet.randomSequence())
             val count = tradeSet.calculateNumberOfTrades(context)
-            val pool = ArrayList<Holder<VillagerTrade>>(tradeSet.trades().toList())
+            val pool = ArrayList<Holder<VillagerTrade>>(tradeSet.trades.toList())
             var added = 0
             while (added < count && pool.isNotEmpty()) {
                 val index = context.random.nextInt(pool.size)

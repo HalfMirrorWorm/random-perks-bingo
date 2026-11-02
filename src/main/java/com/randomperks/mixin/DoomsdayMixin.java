@@ -7,7 +7,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.util.Prediction;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.scores.PlayerTeam;
 import org.spongepowered.asm.mixin.Mixin;
@@ -77,7 +76,7 @@ public class DoomsdayMixin {
                 continue;
             }
 
-            player.drop(stack, true, Prediction.SERVER_ONLY);
+            player.drop(stack, true);
             inventory.setItem(slot, ItemStack.EMPTY);
         }
     }

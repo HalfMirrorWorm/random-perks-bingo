@@ -45,7 +45,7 @@ object AbilityHandler {
     fun register() {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val player = client.player
-            if (player == null || client.gui.screen() != null) {
+            if (player == null || client.screen != null) {
                 jumpHeldLastTick = false
                 sneakHeldLastTick = false
                 DoubleJumpGlideGate.suppress = false

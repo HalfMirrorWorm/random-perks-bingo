@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ProjectileUtil.class)
 public class BigSnowballHitboxMixin {
 
-    /** 原版雪球边长 (EntityTypes.SNOWBALL 的尺寸) */
+    /** 原版雪球边长 (EntityType.SNOWBALL 的尺寸) */
     private static final float SNOWBALL_SIZE = 0.25f;
 
     /** 渲染放大倍数 (与 BigSnowballRendererMixin.SCALE 保持一致) */

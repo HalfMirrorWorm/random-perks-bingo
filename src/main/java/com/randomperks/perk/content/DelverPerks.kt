@@ -325,12 +325,8 @@ object DelverPerks {
     }
 
     /** 矿石判定 (矿脉嗅觉/老矿工共用): 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */
-    private val ORE_CHECK_TAGS = listOf(
-        BlockTags.ORES,
-    )
-
     private fun isOreBlock(state: BlockState): Boolean {
-        if (ORE_CHECK_TAGS.any { state.`is`(it) }) return true
+        // 这条线没有合并的 BlockTags.ORES, 原版矿石 id 都带 ore, 远古残骸单独点名。
         val path = BuiltInRegistries.BLOCK.getKey(state.block).path
         return path == "ancient_debris" || path.contains("ore")
     }
@@ -478,7 +474,7 @@ object DelverPerks {
         override val id = "delver_carefree_sleep"
         override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.DELVER
-        override fun icon() = ItemStack(Items.BED.red())
+        override fun icon() = ItemStack(Items.RED_BED)
     }
 
     /** 绿 · 深掘: **切洋葱** —— 手持镐右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换

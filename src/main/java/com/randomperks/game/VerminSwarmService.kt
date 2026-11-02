@@ -2,7 +2,6 @@ package com.randomperks.game
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.level.ServerLevel
@@ -67,7 +66,7 @@ object VerminSwarmService {
         val world = player.level() as? ServerLevel ?: return
         val pos = findSpawnPos(world, player.blockPosition()) ?: return
 
-        val vermin = EntityTypes.SILVERFISH.create(world, EntitySpawnReason.EVENT) ?: return
+        val vermin = EntityType.SILVERFISH.create(world, EntitySpawnReason.EVENT) ?: return
         vermin.snapTo(
             pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
             world.random.nextFloat() * 360f, 0f,

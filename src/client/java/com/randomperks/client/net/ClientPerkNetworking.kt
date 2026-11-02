@@ -93,19 +93,19 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(PerkOfferS2C.ID) { payload, context ->
             context.client().execute {
                 currentOptions = payload.options
-                context.client().gui.setScreen(PerkChoiceScreen(payload.options))
+                context.client().setScreen(PerkChoiceScreen(payload.options))
             }
         }
 
         ClientPlayNetworking.registerGlobalReceiver(PerkListS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().gui.setScreen(PerkListScreen(payload.pendingCount, payload.players))
+                context.client().setScreen(PerkListScreen(payload.pendingCount, payload.players))
             }
         }
 
         ClientPlayNetworking.registerGlobalReceiver(PerkCatalogS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().gui.setScreen(PerkCatalogScreen(payload.ownedIds.toSet(), payload.allPerks))
+                context.client().setScreen(PerkCatalogScreen(payload.ownedIds.toSet(), payload.allPerks))
             }
         }
 
@@ -124,8 +124,8 @@ object ClientPerkNetworking {
                     SoulCameraClient.start()
                     // 灵魂状态下"有界面时不能移动": 如果还停在词条列表, 自动关掉,
                     // 否则 60 秒会白白流失 (与其他贮藏词条点击后立即进入使用流程一致)
-                    if (context.client().gui.screen() is PerkListScreen) {
-                        context.client().gui.setScreen(null)
+                    if (context.client().screen is PerkListScreen) {
+                        context.client().setScreen(null)
                     }
                 } else {
                     SoulCameraClient.stop()
@@ -140,14 +140,14 @@ object ClientPerkNetworking {
                     .decodeFromString(RecapData.serializer(), payload.json)
             }.getOrNull() ?: RecapData()
             context.client().execute {
-                context.client().gui.setScreen(LastGameRecapScreen(data))
+                context.client().setScreen(LastGameRecapScreen(data))
             }
         }
 
         // "世界一直下雨": 服务端下发后弹出天气选择器, 选完回传
         ClientPlayNetworking.registerGlobalReceiver(WeatherSelectS2C.ID) { _, context ->
             context.client().execute {
-                context.client().gui.setScreen(
+                context.client().setScreen(
                     WeatherSelectScreen { weather -> ClientPlayNetworking.send(WeatherPickC2S(weather)) },
                 )
             }
@@ -155,7 +155,7 @@ object ClientPerkNetworking {
 
         ClientPlayNetworking.registerGlobalReceiver(StealTargetsS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().gui.setScreen(
+                context.client().setScreen(
                     TargetPickScreen(
                         "random-perks-bingo.screen.steal_target",
                         "random-perks-bingo.steal_target.hint",
@@ -177,7 +177,7 @@ object ClientPerkNetworking {
                     "swap" -> "random-perks-bingo.screen.swap_target" to "random-perks-bingo.swap_target.hint"
                     else -> "random-perks-bingo.screen.lightning_target" to "random-perks-bingo.lightning_target.hint"
                 }
-                context.client().gui.setScreen(
+                context.client().setScreen(
                     TargetPickScreen(titleKey, hintKey, payload.targets) { uuid ->
                         pickActionTarget(payload.purpose, uuid)
                     },
@@ -191,7 +191,7 @@ object ClientPerkNetworking {
                 val (titleKey, hintKey) = when (payload.purpose) {
                     else -> "random-perks-bingo.screen.quick_enchant" to "random-perks-bingo.quick_enchant.hint"
                 }
-                context.client().gui.setScreen(
+                context.client().setScreen(
                     EquipmentPickScreen(titleKey, hintKey) { key ->
                         ClientPlayNetworking.send(EquipmentPickC2S(payload.purpose, key))
                     },
@@ -208,14 +208,14 @@ object ClientPerkNetworking {
 
         ClientPlayNetworking.registerGlobalReceiver(StealOpenS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().gui.setScreen(StealScreen(payload.targetName, payload.items))
+                context.client().setScreen(StealScreen(payload.targetName, payload.items))
             }
         }
 
         // "远程传输": 打开自己的多格物品选择器
         ClientPlayNetworking.registerGlobalReceiver(ItemSelectOpenS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().gui.setScreen(
+                context.client().setScreen(
                     ItemSelectScreen(payload.items, payload.count) { slots ->
                         sendItemSelect(payload.purpose, slots)
                     },
@@ -232,7 +232,7 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(WaterBucketTotemS2C.ID) { _, context ->
             context.client().execute {
                 // "落地，水"救命的演出: 与图腾一致的上浮旋转动画, 物品换成水桶
-                context.client().player?.displayItemActivation(ItemStack(Items.WATER_BUCKET))
+                context.client().gameRenderer.displayItemActivation(ItemStack(Items.WATER_BUCKET))
             }
         }
 
@@ -353,13 +353,13 @@ object ClientPerkNetworking {
             if (first == null) "random-perks-bingo.swap_first.hint"
             else "random-perks-bingo.swap_second.hint"
 
-        client.gui.setScreen(
+        client.setScreen(
             TargetPickScreen(titleKey, hintKey, remaining, closeOnPick = false) { uuid ->
                 if (first == null) {
                     // 选中第一个 → 直接换成第二个选择器
                     openDualTargetPicker(client, purpose, targets, uuid)
                 } else {
-                    client.gui.setScreen(null)
+                    client.setScreen(null)
                     ClientPlayNetworking.send(DualTargetPickC2S(purpose, first, uuid))
                 }
             },

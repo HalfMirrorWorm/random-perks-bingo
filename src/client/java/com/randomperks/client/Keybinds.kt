@@ -34,7 +34,7 @@ object Keybinds {
         openChoices = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "key.random-perks-bingo.open_choices",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 KEY_X,
                 CATEGORY,
             )
@@ -43,7 +43,7 @@ object Keybinds {
         openPerkList = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "key.random-perks-bingo.open_perk_list",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 KEY_V,
                 CATEGORY,
             )
@@ -52,7 +52,7 @@ object Keybinds {
         openCatalog = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "key.random-perks-bingo.open_catalog",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 KEY_K,
                 CATEGORY,
             )
@@ -60,17 +60,17 @@ object Keybinds {
 
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             while (openChoices.consumeClick()) {
-                if (client.gui.screen() == null && ClientPerkNetworking.pendingChoices > 0) {
+                if (client.screen == null && ClientPerkNetworking.pendingChoices > 0) {
                     ClientPerkNetworking.requestOffer()
                 }
             }
             while (openPerkList.consumeClick()) {
-                if (client.gui.screen() == null) {
+                if (client.screen == null) {
                     ClientPerkNetworking.requestPerkList()
                 }
             }
             while (openCatalog.consumeClick()) {
-                if (client.gui.screen() == null) {
+                if (client.screen == null) {
                     ClientPerkNetworking.requestCatalog()
                 }
             }

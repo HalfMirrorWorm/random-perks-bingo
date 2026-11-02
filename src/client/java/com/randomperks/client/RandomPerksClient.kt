@@ -49,7 +49,7 @@ object RandomPerksClient : ClientModInitializer {
                 PerkOptionData("harvest_timber", PerkRarity.PURPLE.ordinal, PerkArchetype.HARVEST.ordinal, ItemStack(Items.OAK_LOG)),
                 PerkOptionData("harvest_gardener", PerkRarity.BLUE.ordinal, PerkArchetype.HARVEST.ordinal, ItemStack(Items.WHEAT)),
                 PerkOptionData("hunter_soul_harvest", PerkRarity.GOLD.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.NETHER_STAR)),
-                PerkOptionData("hunter_vampire", PerkRarity.BLUE.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.DYE.red())),
+                PerkOptionData("hunter_vampire", PerkRarity.BLUE.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.RED_DYE)),
                 PerkOptionData("hunter_strength", PerkRarity.BLUE.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.IRON_SWORD)),
                 PerkOptionData("seeker_scout", PerkRarity.BLUE.ordinal, PerkArchetype.SEEKER.ordinal, ItemStack(Items.SPYGLASS)),
                 PerkOptionData("seeker_ender_supply", PerkRarity.PURPLE.ordinal, PerkArchetype.SEEKER.ordinal, ItemStack(Items.ENDER_PEARL)),
@@ -61,18 +61,18 @@ object RandomPerksClient : ClientModInitializer {
                 tick++
                 when (tick) {
                     100 -> {
-                        client.gui.setScreen(PerkChoiceScreen(choiceOptions))
+                        client.setScreen(PerkChoiceScreen(choiceOptions))
                         logger.info("[RandomPerks] UI self-test: perk choice screen opened")
                     }
                     160 -> {
                         // 注意: 1.21.7 的 grab 只有 3 个参数 (自动生成文件名)
                         net.minecraft.client.Screenshot.grab(
                             client.gameDirectory,
-                            client.gameRenderer.mainRenderTarget(),
+                            client.mainRenderTarget,
                         ) { text -> logger.info("[RandomPerks] screenshot(choice): {}", text.string) }
                     }
                     220 -> {
-                        client.gui.setScreen(
+                        client.setScreen(
                             PerkListScreen(
                                 3,
                                 listOf(
@@ -89,22 +89,22 @@ object RandomPerksClient : ClientModInitializer {
                     280 -> {
                         net.minecraft.client.Screenshot.grab(
                             client.gameDirectory,
-                            client.gameRenderer.mainRenderTarget(),
+                            client.mainRenderTarget,
                         ) { text -> logger.info("[RandomPerks] screenshot(list): {}", text.string) }
                     }
                     340 -> {
                         val owned = listPerks.take(6).map { it.id }.toSet()
-                        client.gui.setScreen(PerkCatalogScreen(owned, listPerks))
+                        client.setScreen(PerkCatalogScreen(owned, listPerks))
                         logger.info("[RandomPerks] UI self-test: perk catalog screen opened")
                     }
                     400 -> {
                         net.minecraft.client.Screenshot.grab(
                             client.gameDirectory,
-                            client.gameRenderer.mainRenderTarget(),
+                            client.mainRenderTarget,
                         ) { text -> logger.info("[RandomPerks] screenshot(catalog): {}", text.string) }
                     }
                     460 -> {
-                        client.gui.setScreen(null)
+                        client.setScreen(null)
                         logger.info("[RandomPerks] UI self-test: PASSED (all screens rendered without crash)")
                     }
                 }

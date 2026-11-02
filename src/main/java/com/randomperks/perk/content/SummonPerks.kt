@@ -16,7 +16,6 @@ import com.randomperks.perk.PerkRegistry
 import com.randomperks.state.PerkStateManager
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -318,7 +317,7 @@ object SummonPerks {
 
             var spawned = 0
             for (index in 0 until PHANTOM_COUNT) {
-                val phantom = EntityTypes.PHANTOM.create(world, EntitySpawnReason.COMMAND) ?: continue
+                val phantom = EntityType.PHANTOM.create(world, EntitySpawnReason.COMMAND) ?: continue
 
                 // 在目标周围 4-8 格、上方 3-7 格找一个空气位置
                 var placed = false
