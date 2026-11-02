@@ -76,6 +76,7 @@
     "DoubleJumpGlideMixin",
     "MorphRendererMixin",
     "MorphEyeHeightMixin",
+    "MorphSpawnMixin",
     "RendererContextMixin",
     "BigSnowballRendererMixin",
     "BigSnowballRenderStateMixin",

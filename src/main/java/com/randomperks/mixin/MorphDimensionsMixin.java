@@ -16,7 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *   PlayerEntity **自己重写了** {@code getBaseDimensions}, 而且是直接查
  *   POSE_DIMENSIONS 表、不调用 super —— 挂在父类上对玩家完全不生效。
  *
- * 高于 0.9 的姿势不覆盖睡姿 / 死亡姿势, 免得躺下或倒地时也被压成猪的高度。
+ * 睡姿 / 死亡姿势不覆盖, 免得躺下或倒地时也被压成猪的高度。
+ * 复活后的高度不在这里处理: 客户端会新建玩家实体, 缓存的眼睛高度停在玩家默认值,
+ * 由 MorphSpawnMixin 在实体加入世界时重算。
  *
  * 碰撞箱属于"服务端权威 + 客户端预测"的东西, 所以 [MorphState] 两端各记一份;
  * 状态变化时由调用方主动 {@code calculateDimensions()} 刷新已缓存的 boundingBox。

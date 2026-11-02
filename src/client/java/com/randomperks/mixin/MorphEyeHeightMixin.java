@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * 和 main 源集的 MorphDimensionsMixin (碰撞箱) 用的是同一组常量, 只是分工不同:
  * 眼睛高度纯粹是客户端表现 (改这里不会顺带压扁碰撞箱), 碰撞箱则两端都要一致。
- * 相机高度就是从 {@code getStandingEyeHeight()} → {@code getEyeHeight(pose)} 来的,
- * 所以只改这里就够了。
+ * 相机实际读的是 {@code standingEyeHeight}, 那份缓存在 {@code calculateDimensions()}
+ * 时从碰撞箱的 eyeHeight 写上, 不经过这个方法。复活后的重算在 MorphSpawnMixin。
  *
  * 注: 目标方法在 Entity 上是 final, 但 @Inject 是往方法体里插字节码, 与 final 无关。
  */
