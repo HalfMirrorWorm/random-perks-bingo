@@ -1,14 +1,17 @@
 package com.randomperks.client
 
+import com.randomperks.game.AutoBridgePlan
 import com.randomperks.game.ClientPerkFlags
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
+import net.minecraft.client.network.ClientPlayerInteractionManager
 import net.minecraft.client.world.ClientWorld
 import net.minecraft.item.Items
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 
@@ -29,14 +32,20 @@ import net.minecraft.util.math.Vec3d
  * 服务端收到同一个包后按原版规则权威放置 (距离校验 / 领地保护 / 创造不消耗 / 扣物品),
  * 万一服务端拒绝, 原版的 sequenced 机制会把本地方块回滚成服务端的真实状态。
  *
- * <h3>目标格算法 (取自 Meteor Scaffold)</h3>
- * 用 `position + velocity + (0, -0.75, 0)` 取脚下那一格: 减 0.75 是为了让
- * "刚踏空、已经在下落一点点"的那一 tick 仍然落回**原来那一层**, 铺出来的路与站立高度齐平
- * (直接用 `blockPos.down()` 会低一格, 走出一步就掉一层)。
+ * <h3>什么时候会突然停</h3>
+ * 只在"中心已经走到空气上"才铺, 能铺的窗口只有碰撞箱还搭在上一格上的那 0.3 格。
+ * 疾跑、速度词条或斜着过角时, 一 tick 就跨过这 0.3 格, 人先掉下去。
+ * 掉了不到一格后 `blockPos.y` 会减 1, 若再把目标夹到 `blockPos.y - 1`, 铺的是更低的一层,
+ * 那一格和原来的路不共面, [findClickTarget] 找不到点击面, 之后每一跳都失败, 看起来就是突然不搭了。
+ * 所以在 tick 开头按速度提前铺下一格 (人还踩在旧路上), 斜向时先补共面的中间格。
+ * 见 [AutoBridgePlan]。
  */
 object AutoBridgeClient {
 
     private const val PERK_ID = "swift_auto_bridge"
+
+    /** 起跳初速度约 0.42。低于此的向上速度 (碰撞挤出、击退残余) 仍然铺路。 */
+    private const val JUMP_VELOCITY = 0.2
 
     fun register() {
         // START_CLIENT_TICK: 早于本 tick 的实体物理, 放下的方块当场就能参与碰撞
@@ -51,27 +60,31 @@ object AutoBridgeClient {
         if (!ClientPerkFlags.has(PERK_ID)) return
         if (player.isSpectator || player.abilities.flying) return
         if (player.isGliding || player.getVehicle() != null) return
-        if (player.isTouchingWater || player.isInLava || player.isSwimming) return
-        if (player.velocity.y > 0.0) return          // 起跳上升阶段不铺
+        if (player.isInLava || player.isSwimming) return
+        if (player.velocity.y > JUMP_VELOCITY) return
         if (!player.mainHandStack.isOf(Items.COBBLESTONE)) return
 
-        // 脚下已经有东西踩着 (含半砖/台阶) 就不用铺, 免得站在半砖上白扣圆石
-        val support = player.blockPos.down()
-        if (!world.getBlockState(support).isReplaceable) return
+        val velocity = player.velocity
+        val targets = AutoBridgePlan.targets(player.x, player.y, player.z, velocity.x, velocity.z)
+        for (placePos in targets) {
+            if (!player.mainHandStack.isOf(Items.COBBLESTONE)) return
+            tryPlace(world, player, interaction, placePos)
+        }
+    }
 
-        // 目标格: 脚下那一层 (减 0.75 让刚踏空的 tick 仍落在原来那一层)
-        val target = BlockPos.ofFloored(
-            player.x,
-            player.y + player.velocity.y - 0.75,
-            player.z,
-        )
-        // 不允许铺到玩家自己所在的高度或更高
-        val maxY = player.blockPos.y - 1
-        val placePos = if (target.y > maxY) BlockPos(target.x, maxY, target.z) else target
-
+    /**
+     * 原版放置要求目标格可替换, 且玩家碰撞箱不能和它相交 (相交会被服务端拒绝并回滚)。
+     * 成功后本地世界已经有这块方块, 同一 tick 里后面的格子可以点它的面。
+     */
+    private fun tryPlace(
+        world: ClientWorld,
+        player: ClientPlayerEntity,
+        interaction: ClientPlayerInteractionManager,
+        placePos: BlockPos,
+    ) {
         val state = world.getBlockState(placePos)
         if (!state.isReplaceable) return
-        if (!state.fluidState.isEmpty) return
+        if (player.boundingBox.intersects(Box(placePos))) return
 
         val hit = findClickTarget(world, placePos, player) ?: return
         interaction.interactBlock(player, Hand.MAIN_HAND, hit)
@@ -93,7 +106,7 @@ object AutoBridgeClient {
         val order = ArrayList<Direction>(6)
         order.add(behind)
         order.add(Direction.DOWN)
-        for (dir in Direction.values()) {
+        for (dir in Direction.entries) {
             if (dir != behind && dir != Direction.DOWN) order.add(dir)
         }
 
