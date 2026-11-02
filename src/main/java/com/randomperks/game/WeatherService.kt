@@ -43,7 +43,7 @@ object WeatherService {
         if (!state.hasPerk(PERK_ID)) return
         if (state.isUsed(PERK_ID)) return
 
-        val server = player.server ?: return
+        val server = player.entityWorld.server ?: return
         val world = server.getWorld(World.OVERWORLD) ?: return
 
         when (weather) {

@@ -59,7 +59,7 @@ object FungalInfectionService {
         if (team != null && victim.scoreboardTeam?.name == team) return
 
         val state = PerkStateManager.get(attacker.uuid) ?: return
-        val now = attacker.server?.ticks?.toLong() ?: return
+        val now = attacker.entityWorld.server?.ticks?.toLong() ?: return
         if (now < (state.cooldowns[PERK_ID] ?: 0L)) return
 
         if (infect(victim)) {

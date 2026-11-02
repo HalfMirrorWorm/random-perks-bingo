@@ -17,13 +17,13 @@ object PlayerHeadRenderer {
         if (uuid == null) return false
         val entry = MinecraftClient.getInstance().networkHandler?.getPlayerListEntry(uuid)
             ?: return false
-        return drawEntry(context, entry.skinTextures.texture(), x, y)
+        return drawEntry(context, entry.skinTextures.body().texturePath(), x, y)
     }
 
     fun drawByName(context: DrawContext, name: String, x: Int, y: Int): Boolean {
         val handler = MinecraftClient.getInstance().networkHandler ?: return false
         val entry = handler.playerList.firstOrNull { it.profile.name == name } ?: return false
-        return drawEntry(context, entry.skinTextures.texture(), x, y)
+        return drawEntry(context, entry.skinTextures.body().texturePath(), x, y)
     }
 
     private fun drawEntry(context: DrawContext, texture: net.minecraft.util.Identifier, x: Int, y: Int): Boolean {

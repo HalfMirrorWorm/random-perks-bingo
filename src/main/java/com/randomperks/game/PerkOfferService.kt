@@ -104,7 +104,7 @@ object PerkOfferService {
                 rarityName,
                 Text.translatable("random-perks-bingo.perk.${perk.id}.name"),
             )
-            player.server?.playerManager?.playerList?.forEach { it.sendMessage(announce, false) }
+            player.entityWorld.server?.playerManager?.playerList?.forEach { it.sendMessage(announce, false) }
         }
 
         PerkNetworking.sendNotify(player, state.pendingChoices)
@@ -117,7 +117,7 @@ object PerkOfferService {
 
     /** 玩家请求查看词条列表 —— 下发**所有在线玩家**的, 客户端用 tab 页切换 */
     fun handleListRequest(player: ServerPlayerEntity) {
-        val server = player.server ?: return
+        val server = player.entityWorld.server ?: return
         val state = PerkStateManager.getOrCreate(player.uuid)
 
         val players = server.playerManager.playerList.map { other ->

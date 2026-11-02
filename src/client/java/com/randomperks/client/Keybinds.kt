@@ -5,11 +5,13 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
+import net.minecraft.util.Identifier
 import org.lwjgl.glfw.GLFW
 
 object Keybinds {
 
-    private const val CATEGORY = "category.random-perks-bingo"
+    /** 1.21.9 起按键分类是 Identifier, 语言键是 key.category.<命名空间>.<路径>。 */
+    private val CATEGORY = KeyBinding.Category.create(Identifier.of("random-perks-bingo", "main"))
 
     lateinit var openChoices: KeyBinding
         private set

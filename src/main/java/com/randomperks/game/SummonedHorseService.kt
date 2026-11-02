@@ -40,14 +40,14 @@ object SummonedHorseService {
                 val owner = horse.owner as? ServerPlayerEntity ?: continue
                 if (!owner.isAlive) continue
 
-                val sameWorld = horse.world === owner.world
+                val sameWorld = horse.entityWorld === owner.entityWorld
                 if (sameWorld && horse.squaredDistanceTo(owner) <= TELEPORT_DISTANCE_SQ) continue
 
                 // 落在主人身边 1 格内的随机位置, 避免和主人卡在同一个方块
                 val dx = (owner.random.nextDouble() - 0.5) * 2.0
                 val dz = (owner.random.nextDouble() - 0.5) * 2.0
                 horse.teleport(
-                    owner.world,
+                    owner.entityWorld,
                     owner.x + dx, owner.y, owner.z + dz,
                     emptySet(), horse.yaw, horse.pitch, true,
                 )

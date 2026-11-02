@@ -57,12 +57,12 @@ object ChickenDyeService {
             else -> ChickenVariants.TEMPERATE
         }
 
-        val registry = player.server?.registryManager?.getOrThrow(RegistryKeys.CHICKEN_VARIANT)
+        val registry = player.entityWorld.server?.registryManager?.getOrThrow(RegistryKeys.CHICKEN_VARIANT)
             ?: return ActionResult.PASS
         target.variant = registry.getOrThrow(variantKey)
 
         if (!player.abilities.creativeMode) stack.decrement(1)
-        player.world.playSound(
+        player.entityWorld.playSound(
             null, target.x, target.y, target.z,
             SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS, 1.0f, 1.0f,
         )

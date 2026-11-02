@@ -89,7 +89,7 @@ object MythicPerks {
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
-            val registry = target.server?.registryManager?.getOrThrow(RegistryKeys.ITEM) ?: return
+            val registry = target.entityWorld.server?.registryManager?.getOrThrow(RegistryKeys.ITEM) ?: return
 
             var changed = 0
             val main = target.inventory.mainStacks
@@ -127,7 +127,7 @@ object MythicPerks {
 
         /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+            player.entityWorld.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
     /** 神话 · 秘藏 · 全局唯一: **逆转时间** —— 获得时立即触发,

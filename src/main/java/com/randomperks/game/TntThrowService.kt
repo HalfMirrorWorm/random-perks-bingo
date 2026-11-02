@@ -49,7 +49,7 @@ object TntThrowService {
         PerkBoostQuery.hasTntThrow(player) && player.getStackInHand(Hand.MAIN_HAND).isOf(Items.TNT)
 
     private fun throwTnt(player: ServerPlayerEntity) {
-        val world = player.world as? ServerWorld ?: return
+        val world = player.entityWorld as? ServerWorld ?: return
 
         // 消耗一个 TNT (创造模式不消耗)
         if (!player.isCreative) {

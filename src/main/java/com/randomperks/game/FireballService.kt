@@ -36,7 +36,7 @@ object FireballService {
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk(PERK_ID)) return false
 
-        val world = player.world as? ServerWorld ?: return false
+        val world = player.entityWorld as? ServerWorld ?: return false
         val direction = player.rotationVector
 
         val fireball = FireballEntity(world, player, direction.multiply(1.0), 1)

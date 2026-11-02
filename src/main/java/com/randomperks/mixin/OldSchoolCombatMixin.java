@@ -28,7 +28,7 @@ public class OldSchoolCombatMixin {
         PlayerEntity self = (PlayerEntity) (Object) this;
         if (!self.getMainHandStack().isIn(ItemTags.SWORDS)) return;
 
-        if (self.getWorld().isClient()) {
+        if (self.getEntityWorld().isClient()) {
             if (ClientPerkFlags.has(VETERAN_PERK)) cir.setReturnValue(1.0F);
             return;
         }

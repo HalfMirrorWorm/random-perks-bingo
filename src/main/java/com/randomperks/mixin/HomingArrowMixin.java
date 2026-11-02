@@ -95,7 +95,7 @@ public abstract class HomingArrowMixin {
     private void randomperks$homeToTarget(CallbackInfo ci) {
         PersistentProjectileEntity self = (PersistentProjectileEntity) (Object) this;
         if (!(self instanceof ArrowEntity)) return;
-        if (!(self.getWorld() instanceof ServerWorld world)) return;
+        if (!(self.getEntityWorld() instanceof ServerWorld world)) return;
 
         Entity owner = self.getOwner();
         if (!(owner instanceof ServerPlayerEntity shooter)
@@ -122,7 +122,7 @@ public abstract class HomingArrowMixin {
         }
 
         LivingEntity target = LOCKED_TARGETS.get(self);
-        if (target == null || !target.isAlive() || target.isRemoved() || target.getWorld() != world) {
+        if (target == null || !target.isAlive() || target.isRemoved() || target.getEntityWorld() != world) {
             stopTracking(self);
             return;
         }
@@ -133,9 +133,9 @@ public abstract class HomingArrowMixin {
         // 所有目标统一满转向 + 贴近直接判中 (平滑偏转会导致绕圈, 见 TURN_RATE 注释)
         double turnRate = TURN_RATE;
 
-        Vec3d aim = target.getPos()
+        Vec3d aim = target.getEntityPos()
                 .add(0.0, target.getHeight() * 0.5, 0.0)
-                .subtract(self.getPos());
+                .subtract(self.getEntityPos());
         double aimLength = aim.length();
         if (aimLength < 1.0E-4) return;
 
@@ -156,7 +156,7 @@ public abstract class HomingArrowMixin {
 
         // ★ 命中结算 (noClip 的箭原版不做实体碰撞, 原因见类注释):
         //   沿本 tick 的位移线段 [当前位置, 当前位置 + 速度] 对锁定目标做射线检测。
-        Vec3d from = self.getPos();
+        Vec3d from = self.getEntityPos();
         Vec3d to = from.add(self.getVelocity());
         Box hitBox = target.getBoundingBox().expand(HIT_BOX_MARGIN);
         Optional<Vec3d> hitPos = hitBox.raycast(from, to);
@@ -182,7 +182,7 @@ public abstract class HomingArrowMixin {
     @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
     private void randomperks$syncClientNoClip(TrackedData<?> data, CallbackInfo ci) {
         PersistentProjectileEntity self = (PersistentProjectileEntity) (Object) this;
-        if (!self.getWorld().isClient) return;
+        if (!self.getEntityWorld().isClient()) return;
         ((Entity) (Object) self).noClip = self.isNoClip();
     }
 
@@ -211,7 +211,7 @@ public abstract class HomingArrowMixin {
         LivingEntity best = null;
         double bestDot = MIN_AIM_DOT;
         for (LivingEntity candidate : candidates) {
-            Vec3d aim = candidate.getPos()
+            Vec3d aim = candidate.getEntityPos()
                     .add(0.0, candidate.getHeight() * 0.5, 0.0)
                     .subtract(eye);
             double length = aim.length();

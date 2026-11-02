@@ -55,7 +55,7 @@ object PortableCraftingService {
                 { syncId, playerInventory, owner ->
                     PortableCraftingScreenHandler(
                         syncId, playerInventory,
-                        ScreenHandlerContext.create(owner.world, owner.blockPos),
+                        ScreenHandlerContext.create(owner.entityWorld, owner.blockPos),
                     )
                 },
                 Text.translatable("container.crafting"),

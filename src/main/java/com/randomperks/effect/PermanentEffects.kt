@@ -40,7 +40,7 @@ object PermanentEffects {
         }
         if (affected.isEmpty()) return
 
-        player.server?.execute {
+        player.entityWorld.server?.execute {
             for (entry in affected) applyIfOwned(player, entry)
         }
     }

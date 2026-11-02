@@ -76,7 +76,7 @@ public class OldSchoolBlockMixin {
      * (客户端标志由 PerkAbilitySyncS2C 同步; 服务端还会再校验一次。)
      */
     private static boolean hasVeteran(PlayerEntity user) {
-        if (user.getWorld().isClient()) {
+        if (user.getEntityWorld().isClient()) {
             return ClientPerkFlags.has("hunter_veteran");
         }
         return user instanceof ServerPlayerEntity player

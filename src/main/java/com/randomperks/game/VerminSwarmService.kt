@@ -54,7 +54,7 @@ object VerminSwarmService {
 
     /** 让 [target] 被蠹虫缠上 (重复施加会重置持续时间与计时) */
     fun start(target: ServerPlayerEntity) {
-        val server = target.server ?: return
+        val server = target.entityWorld.server ?: return
         val now = server.ticks.toLong()
         active[target.uuid] = Swarm(now + DURATION_TICKS, now)
     }
@@ -63,7 +63,7 @@ object VerminSwarmService {
     fun clear() = active.clear()
 
     private fun spawnVermin(player: ServerPlayerEntity) {
-        val world = player.world as? ServerWorld ?: return
+        val world = player.entityWorld as? ServerWorld ?: return
         val pos = findSpawnPos(world, player.blockPos) ?: return
 
         val vermin = EntityType.SILVERFISH.create(world, SpawnReason.EVENT) ?: return

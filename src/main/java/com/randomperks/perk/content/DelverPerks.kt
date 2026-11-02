@@ -128,7 +128,7 @@ object DelverPerks {
 
         /** 是否在矿洞里: 主世界 + 脚下的天空光为 0 */
         private fun isInCave(player: ServerPlayerEntity): Boolean {
-            val world = player.world
+            val world = player.entityWorld
             if (world.registryKey != World.OVERWORLD) return false
             return world.getLightLevel(LightType.SKY, player.blockPos) == 0
         }
@@ -292,7 +292,7 @@ object DelverPerks {
             // 联动"透视之眼"代价: 本次破坏被判定为不掉落 → 奖品一并抑制
             if (PerkBoostQuery.isXraySuppressed(ctx.player, pos)) return
 
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.entityWorld as? ServerWorld ?: return
             val prize = LOOT_POOL[ctx.player.random.nextInt(LOOT_POOL.size)]
             val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, ItemStack(prize))
             entity.setToDefaultPickupDelay()
@@ -367,7 +367,7 @@ object DelverPerks {
             val tool = player.mainHandStack
             if (!tool.isIn(ItemTags.PICKAXES)) return          // 只认镐
             if (!isStoneBlock(blockState)) return              // 只认石头类方块
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
 
             val look = player.rotationVector
             val ax = abs(look.x); val ay = abs(look.y); val az = abs(look.z)
@@ -433,7 +433,7 @@ object DelverPerks {
             if (!tool.isIn(ItemTags.PICKAXES)) return          // 只认镐
             if (!isOreBlock(blockState)) return                // 只认矿石
             if (!player.canHarvest(blockState)) return         // 挖了也不掉落的矿石不触发
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
 
             // 本次破坏的判定由 BreakDecisionMixin 在流程开头掷好, 整条矿脉共用
             val suppressed = PerkBoostQuery.isXraySuppressed(player, pos)

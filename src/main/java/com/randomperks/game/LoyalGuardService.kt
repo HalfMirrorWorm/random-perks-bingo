@@ -34,7 +34,7 @@ object LoyalGuardService {
         if (source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY)) return false
 
         val pet = findPet(player) ?: return false
-        val world = pet.world as? ServerWorld ?: return false
+        val world = pet.entityWorld as? ServerWorld ?: return false
 
         // 宠物承受 2 倍伤害; 玩家本次伤害由调用方取消
         pet.damage(world, source, amount * 2.0f)
@@ -43,7 +43,7 @@ object LoyalGuardService {
 
     /** 最近的、属于该玩家的存活宠物 */
     private fun findPet(player: ServerPlayerEntity): TameableEntity? =
-        player.world.getEntitiesByClass(
+        player.entityWorld.getEntitiesByClass(
             TameableEntity::class.java,
             player.boundingBox.expand(PET_RANGE),
         ) { pet ->

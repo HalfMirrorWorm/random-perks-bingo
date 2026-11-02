@@ -3,20 +3,22 @@ package com.randomperks.client.render;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.feature.ArmorFeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.EntityModelLayers;
+import net.minecraft.client.render.entity.model.EquipmentModelData;
 import net.minecraft.client.render.entity.model.PigEntityModel;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.render.entity.state.PigEntityRenderState;
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
-import net.minecraft.client.util.SkinTextures;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.SkinTextures;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
@@ -28,7 +30,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>★ 这个类**必须继承 {@link PlayerEntityRenderer}**, 不能直接继承 EntityRenderer:
  * 原版 {@code HeldItemRenderer} 在第一人称渲染手时会把
- * {@code EntityRenderDispatcher.getRenderer(player)} 强制转型成 {@code PlayerEntityRenderer}
+ * {@code EntityRenderManager.getRenderer(player)} 强制转型成 {@code PlayerEntityRenderer}
  * —— 返回一个不是它的子类的渲染器会直接 ClassCastException 把客户端打崩
  * (0.0.9 的崩溃就是这么来的)。
  *
@@ -40,7 +42,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>尺寸/视角的伪装在 MorphDimensionsMixin (碰撞箱) 与 MorphEyeHeightMixin (眼睛高度)。
  */
-public class PigMorphRenderer extends PlayerEntityRenderer {
+public class PigMorphRenderer extends PlayerEntityRenderer<AbstractClientPlayerEntity> {
 
     /** 原版猪的默认 (温带) 纹理 */
     private static final Identifier PIG_TEXTURE =
@@ -87,10 +89,15 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
         // 头盔渲染器的"上下文模型"指向**我们自己的** headModel, 而不是原版玩家渲染器的那个。
         // 这样 renderArmor 内部 copyStateTo(armorModel) 时抄到的是我们已经对齐到猪头的姿势,
         // 头盔才会跟着猪头走。
+        // 1.21.9 起护甲模型按槽位收进 EquipmentModelData, 不再分 INNER/OUTER 两层。
+        EquipmentModelData<BipedEntityModel<PlayerEntityRenderState>> armorModels =
+                EquipmentModelData.mapToEntityModel(
+                        EntityModelLayers.PLAYER_EQUIPMENT,
+                        context.getEntityModels(),
+                        BipedEntityModel::new);
         this.armorRenderer = new ArmorFeatureRenderer<>(
                 new HeadFeatureContext(this.headModel),
-                new BipedEntityModel<>(context.getPart(EntityModelLayers.PLAYER_INNER_ARMOR)),
-                new BipedEntityModel<>(context.getPart(EntityModelLayers.PLAYER_OUTER_ARMOR)),
+                armorModels,
                 context.getEquipmentRenderer());
 
         // 只画头盔: 其余三个槽位保持空, renderArmor 遇到空槽会直接返回
@@ -122,13 +129,13 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
 
     @Override
     public void render(PlayerEntityRenderState state, MatrixStack matrices,
-                       VertexConsumerProvider vertexConsumers, int light) {
+                       OrderedRenderCommandQueue queue, CameraRenderState camera) {
         // 这个渲染器只会被 MorphRendererMixin 交给"变猪中"的玩家
         // (它按 UUID 判断), 所以这里直接按猪渲染即可 —— 不要再依赖 render state 的实体 id,
         // 客户端重生会复用本地玩家的实体 id, 与服务端的新 id 对不上。
         boolean renderedAsPig = false;
         try {
-            renderAsPig(state, matrices, vertexConsumers, light);
+            renderAsPig(state, matrices, queue);
             renderedAsPig = true;
         } catch (Throwable t) {
             // 纯外观问题不该拖垮整个客户端 —— 失败就退回原版玩家模型
@@ -136,19 +143,19 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
                 warnedRenderFailure = true;
                 LOGGER.error("[RandomPerks] pig morph: render failed, falling back to player model", t);
             }
-            super.render(state, matrices, vertexConsumers, light);
+            super.render(state, matrices, queue, camera);
         }
 
         // 名牌: 原版是 EntityRenderer.render 在模型画完后顺手画的, 而我们绕过了它
         // (super.render 会把整个玩家模型也画出来), 所以这里单独补一次。
         // 此时 matrices 已经回到"实体原点", 和原版画名牌时的坐标系一致。
         if (renderedAsPig && state.displayName != null) {
-            super.renderLabelIfPresent(state, state.displayName, matrices, vertexConsumers, light);
+            super.renderLabelIfPresent(state, matrices, queue, camera);
         }
     }
 
     private void renderAsPig(PlayerEntityRenderState state, MatrixStack matrices,
-                             VertexConsumerProvider vertexConsumers, int light) {
+                             OrderedRenderCommandQueue queue) {
         SkinTextures skin = state.skinTextures;
 
         matrices.push();
@@ -170,17 +177,23 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
             pigState.limbSwingAmplitude = state.limbSwingAmplitude;
             pigState.baby = false;
 
-            VertexConsumer pigBuffer =
-                    vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(PIG_TEXTURE));
-
-            // 猪身: 要换头时把猪头藏起来, 免得和玩家头穿模
+            // 猪身: 要换头时把猪头藏起来, 免得和玩家头穿模。
+            // 1.21.9 起模型不再直接吃 VertexConsumer, 提交进本帧的命令队列。
             this.pigHead.visible = skin == null;
             this.pigModel.setAngles(pigState);
-            this.pigModel.render(matrices, pigBuffer, light, OverlayTexture.DEFAULT_UV);
+            queue.submitModel(
+                    this.pigModel,
+                    pigState,
+                    matrices,
+                    RenderLayer.getEntityCutoutNoCull(PIG_TEXTURE),
+                    state.light,
+                    OverlayTexture.DEFAULT_UV,
+                    state.outlineColor,
+                    null);
 
             if (skin != null) {
                 try {
-                    renderPlayerHead(state, matrices, vertexConsumers, light, skin);
+                    renderPlayerHead(state, matrices, queue, skin);
                 } catch (Throwable t) {
                     // 头画崩了就退回猪头, 至少还是只完整的猪
                     if (!warnedHeadFailure) {
@@ -188,7 +201,13 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
                         LOGGER.error("[RandomPerks] pig morph: player-head render failed, falling back to pig head", t);
                     }
                     this.pigHead.visible = true;
-                    this.pigHead.render(matrices, pigBuffer, light, OverlayTexture.DEFAULT_UV);
+                    queue.submitModelPart(
+                            this.pigHead,
+                            matrices,
+                            RenderLayer.getEntityCutoutNoCull(PIG_TEXTURE),
+                            state.light,
+                            OverlayTexture.DEFAULT_UV,
+                            null);
                 }
             }
 
@@ -199,18 +218,16 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
     }
 
     private void renderPlayerHead(PlayerEntityRenderState state, MatrixStack matrices,
-                                  VertexConsumerProvider vertexConsumers, int light, SkinTextures skin) {
+                                  OrderedRenderCommandQueue queue, SkinTextures skin) {
         ModelPart head = this.headModel.head;
 
         // 套用**猪头**的轴心与朝向 —— 直接渲染的话玩家头会停在玩家模型的高度上。
-        head.copyTransform(this.pigHead);
+        head.setTransform(this.pigHead.getTransform());
         head.pitch = state.pitch * 0.017453292f;
         head.yaw = state.relativeHeadYaw * 0.017453292f;
 
         // 帽子层 (皮肤的第二层, 比如帽子/头发) 是 head 的**子部件**:
-        // head.render 会自动带着它一起渲染, 所以不要再单独 render 一次 ——
-        // 否则同一个头发层会被画两遍, 其中一遍还叠加了 head 的完整变换,
-        // 看起来就是"头发从头模型上分离出去、偏移了一小段"。
+        // 提交 head 会自动带着它一起渲染, 所以不要再单独提交一次。
         this.headModel.hat.visible = state.hatVisible;
 
         matrices.push();
@@ -219,16 +236,24 @@ public class PigMorphRenderer extends PlayerEntityRenderer {
             // 平移 4 模型单位 (= 0.25 格) 让两者的中心重合。
             matrices.translate(0.0f, 0.25f, 0.0f);
 
-            VertexConsumer headBuffer =
-                    vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(skin.texture()));
-            // 同时渲染 head 的 cuboids 和它的子部件 hat
-            head.render(matrices, headBuffer, light, OverlayTexture.DEFAULT_UV);
+            queue.submitModelPart(
+                    head,
+                    matrices,
+                    RenderLayer.getEntityTranslucent(skin.body().texturePath()),
+                    state.light,
+                    OverlayTexture.DEFAULT_UV,
+                    null,
+                    false,
+                    false,
+                    -1,
+                    null,
+                    state.outlineColor);
 
             // 头盔: 交给原版 ArmorFeatureRenderer。它的上下文模型就是上面这个 headModel,
             // 所以头盔会自动跟着猪头的位置和朝向。armorState 里只有头盔槽有东西。
             this.armorState.equippedHeadStack = state.equippedHeadStack;
             if (!state.equippedHeadStack.isEmpty()) {
-                this.armorRenderer.render(matrices, vertexConsumers, light, this.armorState, 0.0f, 0.0f);
+                this.armorRenderer.render(matrices, queue, state.light, this.armorState, 0.0f, 0.0f);
             }
         } finally {
             matrices.pop();

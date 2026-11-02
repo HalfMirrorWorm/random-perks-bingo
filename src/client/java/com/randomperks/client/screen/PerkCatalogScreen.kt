@@ -207,7 +207,10 @@ class PerkCatalogScreen(
     private fun dim(color: Int): Int =
         (color and 0xFF000000.toInt()) or ((color and 0x00FEFEFE.toInt()) shr 1)
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(click: net.minecraft.client.gui.Click, doubled: Boolean): Boolean {
+        val mouseX = click.x()
+        val mouseY = click.y()
+        val button = click.button()
         // 排序切换
         for ((mode, box) in sortBoxes) {
             if (mouseX in box[0].toDouble()..(box[0] + box[2]).toDouble() &&
@@ -223,7 +226,7 @@ class PerkCatalogScreen(
             scrollOffset = 0
             return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(click, doubled)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {

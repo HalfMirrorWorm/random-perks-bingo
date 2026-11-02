@@ -39,7 +39,7 @@ object SoulOutService {
         if (state.isUsed(PERK_ID)) return
         if (isActive(player)) return
 
-        val server = player.server ?: return
+        val server = player.entityWorld.server ?: return
         val now = server.ticks.toLong()
 
         state.memory[KEY_END] = (now + DURATION_TICKS).toString()
@@ -52,7 +52,7 @@ object SoulOutService {
             0.9f,
             0.8f,
         )
-        (player.world as? ServerWorld)?.spawnParticles(
+        (player.entityWorld as? ServerWorld)?.spawnParticles(
             ParticleTypes.SOUL,
             player.x, player.y + 0.9, player.z,
             24, 0.35, 0.6, 0.35, 0.02,
@@ -63,7 +63,7 @@ object SoulOutService {
     /** 每秒驱动一次: 时间到了就结束 (客户端相机随之归位), 否则在快捷栏上方显示剩余秒数 */
     fun tick(ctx: PerkContext) {
         val end = ctx.state.memory[KEY_END]?.toLongOrNull() ?: return
-        val now = ctx.player.server?.ticks?.toLong() ?: return
+        val now = ctx.player.entityWorld.server?.ticks?.toLong() ?: return
         if (now >= end) {
             end(ctx.player, ctx.state)
             return
@@ -106,7 +106,7 @@ object SoulOutService {
     private fun isActive(player: ServerPlayerEntity): Boolean {
         val state = PerkStateManager.get(player.uuid) ?: return false
         val end = state.memory[KEY_END]?.toLongOrNull() ?: return false
-        val now = player.server?.ticks?.toLong() ?: return false
+        val now = player.entityWorld.server?.ticks?.toLong() ?: return false
         return now < end
     }
 
@@ -121,7 +121,7 @@ object SoulOutService {
             0.7f,
             1.25f,
         )
-        (player.world as? ServerWorld)?.spawnParticles(
+        (player.entityWorld as? ServerWorld)?.spawnParticles(
             ParticleTypes.SOUL,
             player.x, player.y + 0.9, player.z,
             16, 0.3, 0.5, 0.3, 0.02,

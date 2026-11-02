@@ -98,7 +98,7 @@ object DragonTamerAbility {
 
     /** 返回冷却刻数; null 表示这次点击没有使出招 */
     fun use(player: ServerPlayerEntity, mob: MobEntity, target: LivingEntity?, aim: Vec3d): Long? {
-        val world = player.world
+        val world = player.entityWorld
         return when (mob) {
             is HappyGhastEntity -> gust(player, mob)
             is GhastEntity -> ghast(player, world, mob, target, aim)
@@ -136,14 +136,14 @@ object DragonTamerAbility {
     }
 
     private fun gust(player: ServerPlayerEntity, mob: HappyGhastEntity): Long {
-        val world = player.world
+        val world = player.entityWorld
         val look = player.getRotationVec(1.0f)
-        val origin = mob.pos.add(0.0, mob.height * 0.45, 0.0).add(look.multiply(2.2))
+        val origin = mob.entityPos.add(0.0, mob.height * 0.45, 0.0).add(look.multiply(2.2))
         world.spawnParticles(ParticleTypes.GUST, origin.x, origin.y, origin.z, 1, 0.2, 0.15, 0.2, 0.0)
         world.spawnParticles(ParticleTypes.SMALL_GUST, origin.x, origin.y, origin.z, 10, 0.7, 0.35, 0.7, 0.04)
         mob.playSound(SoundEvents.ENTITY_BREEZE_WIND_BURST.value(), 0.85f, 1.25f)
         for (entity in cone(player, mob, 5.5, 0.35)) {
-            val away = entity.pos.subtract(mob.pos)
+            val away = entity.entityPos.subtract(mob.entityPos)
             val flat = Vec3d(away.x, 0.0, away.z)
             val push = if (flat.lengthSquared() < 1.0e-4) horizontalLook(player.yaw) else flat.normalize()
             entity.addVelocity(push.multiply(0.9).add(0.0, 0.42, 0.0))
@@ -160,7 +160,7 @@ object DragonTamerAbility {
     ): Long {
         val look = player.getRotationVec(1.0f)
         val origin = Vec3d(mob.x + look.x * 4.0, mob.getBodyY(0.5) + 0.5, mob.z + look.z * 4.0)
-        val to = if (target != null) target.pos.add(0.0, target.height * 0.5, 0.0) else aim
+        val to = if (target != null) target.entityPos.add(0.0, target.height * 0.5, 0.0) else aim
         val velocity = direction(player, to.subtract(origin))
         val fireball = FireballEntity(world, mob, velocity, mob.fireballStrength)
         fireball.setPosition(origin)
@@ -170,7 +170,7 @@ object DragonTamerAbility {
     }
 
     private fun blaze(player: ServerPlayerEntity, world: ServerWorld, mob: BlazeEntity, aim: Vec3d): Long {
-        val origin = mob.pos.add(0.0, mob.height * 0.5, 0.0)
+        val origin = mob.entityPos.add(0.0, mob.height * 0.5, 0.0)
         val dir = direction(player, aim.subtract(origin))
         val side = perpendicular(dir)
         for (i in -1..1) {
@@ -196,7 +196,7 @@ object DragonTamerAbility {
         val look = player.getRotationVec(1.0f)
         val eye = player.eyePos
         val aimed = if (target != null) {
-            target.pos.add(0.0, target.height * 0.5, 0.0)
+            target.entityPos.add(0.0, target.height * 0.5, 0.0)
         } else {
             val end = eye.add(look.multiply(12.0))
             val hit = world.raycast(
@@ -229,7 +229,7 @@ object DragonTamerAbility {
 
     /** 近距离放不出安全爆炸时, 只打前方的敌人, 不破坏方块 */
     private fun coneBlast(player: ServerPlayerEntity, world: ServerWorld, mob: MobEntity, amount: Float) {
-        val front = mob.pos.add(horizontalLook(player.yaw).multiply(2.4)).add(0.0, mob.height * 0.5, 0.0)
+        val front = mob.entityPos.add(horizontalLook(player.yaw).multiply(2.4)).add(0.0, mob.height * 0.5, 0.0)
         world.spawnParticles(ParticleTypes.EXPLOSION, front.x, front.y, front.z, 1, 0.15, 0.15, 0.15, 0.0)
         mob.playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 0.9f, 1.1f)
         val source = mob.damageSources.mobAttack(player)
@@ -243,10 +243,10 @@ object DragonTamerAbility {
 
     private fun blastClear(player: ServerPlayerEntity, mob: MobEntity, point: Vec3d, radius: Double): Boolean {
         val radiusSq = radius * radius
-        if (point.squaredDistanceTo(player.pos) < radiusSq) return false
-        if (point.squaredDistanceTo(mob.pos) < radiusSq) return false
+        if (point.squaredDistanceTo(player.entityPos) < radiusSq) return false
+        if (point.squaredDistanceTo(mob.entityPos) < radiusSq) return false
         val box = Box.of(point, radius * 2.0 + 1.0, radius * 2.0 + 1.0, radius * 2.0 + 1.0)
-        for (entity in player.world.getEntitiesByClass(LivingEntity::class.java, box) { it.isAlive }) {
+        for (entity in player.entityWorld.getEntitiesByClass(LivingEntity::class.java, box) { it.isAlive }) {
             if (!DragonTamerService.isAlly(player, entity)) continue
             if (entity.squaredDistanceTo(point) < radiusSq) return false
         }
@@ -257,7 +257,7 @@ object DragonTamerAbility {
         val look = player.getRotationVec(1.0f)
         val charge = BreezeWindChargeEntity(mob, world)
         charge.setPosition(mob.x + look.x * 2.4, mob.chargeY, mob.z + look.z * 2.4)
-        val delta = aim.subtract(charge.pos)
+        val delta = aim.subtract(charge.entityPos)
         ProjectileEntity.spawnWithVelocity(
             charge, world, ItemStack.EMPTY, delta.x, delta.y, delta.z, 0.7f, 1.0f,
         )
@@ -289,7 +289,7 @@ object DragonTamerAbility {
         stand.setInvulnerable(true)
         stand.isSilent = true
         world.spawnEntity(stand)
-        val now = player.server?.ticks?.toLong() ?: 0L
+        val now = player.entityWorld.server?.ticks?.toLong() ?: 0L
         DragonTamerService.trackAimMarker(stand, now + 80L)
         return stand
     }
@@ -397,7 +397,7 @@ object DragonTamerAbility {
     }
 
     private fun goat(player: ServerPlayerEntity, world: ServerWorld, mob: GoatEntity): Long {
-        val front = mob.pos.add(horizontalLook(player.yaw).multiply(1.6)).add(0.0, mob.height * 0.55, 0.0)
+        val front = mob.entityPos.add(horizontalLook(player.yaw).multiply(1.6)).add(0.0, mob.height * 0.55, 0.0)
         world.spawnParticles(ParticleTypes.EXPLOSION, front.x, front.y, front.z, 1, 0.1, 0.1, 0.1, 0.0)
         mob.playSound(SoundEvents.ENTITY_GOAT_RAM_IMPACT, 1.0f, 1.0f)
         val amount = (mob.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE)?.value ?: 6.0).toFloat().coerceAtLeast(5f)
@@ -423,7 +423,7 @@ object DragonTamerAbility {
     private fun frog(player: ServerPlayerEntity, world: ServerWorld, mob: FrogEntity, target: LivingEntity?): Long? {
         if (target == null || mob.squaredDistanceTo(target) > 64.0) return null
         target.damage(world, mob.damageSources.mobAttack(player), 3.0f)
-        val pull = mob.pos.add(0.0, mob.height * 0.4, 0.0).subtract(target.pos)
+        val pull = mob.entityPos.add(0.0, mob.height * 0.4, 0.0).subtract(target.entityPos)
         val length = pull.length().coerceAtLeast(0.001)
         target.addVelocity(pull.x / length * 0.7, 0.35, pull.z / length * 0.7)
         mob.playSound(SoundEvents.ENTITY_FROG_TONGUE, 1.0f, 1.0f)
@@ -456,21 +456,21 @@ object DragonTamerAbility {
     }
 
     private fun blink(player: ServerPlayerEntity, mob: EndermanEntity, target: LivingEntity?): Long? {
-        val now = player.server?.ticks?.toLong() ?: return null
-        val from = mob.pos
+        val now = player.entityWorld.server?.ticks?.toLong() ?: return null
+        val from = mob.entityPos
         val look = player.getRotationVec(1.0f)
         var arrived = false
         if (target != null) {
-            val back = player.pos.subtract(target.pos)
+            val back = player.entityPos.subtract(target.entityPos)
             val flat = Vec3d(back.x, 0.0, back.z)
             val offset = if (flat.lengthSquared() < 1.0e-4) horizontalLook(player.yaw).multiply(-1.5) else flat.normalize().multiply(1.5)
-            val dest = target.pos.add(offset)
+            val dest = target.entityPos.add(offset)
             arrived = mob.teleport(dest.x, dest.y, dest.z, true)
         }
         if (!arrived) {
             val eye = player.eyePos
             val end = eye.add(look.multiply(32.0))
-            val hit = player.world.raycast(
+            val hit = player.entityWorld.raycast(
                 RaycastContext(eye, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, player),
             )
             if (hit.type != HitResult.Type.BLOCK) return null
@@ -500,7 +500,7 @@ object DragonTamerAbility {
             mob.shootAt(target, 1.0f)
             return WITCH
         }
-        val to = if (target != null) target.pos.add(0.0, target.height * 0.5, 0.0) else aim
+        val to = if (target != null) target.entityPos.add(0.0, target.height * 0.5, 0.0) else aim
         val stack = PotionContentsComponent.createStack(Items.SPLASH_POTION, Potions.HARMING)
         val delta = direction(player, to.subtract(mob.eyePos))
         ProjectileEntity.spawnWithVelocity(
@@ -556,7 +556,7 @@ object DragonTamerAbility {
         if (damage <= 0.0) return null
         if (mob.squaredDistanceTo(target) > reach * reach) return null
         mob.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, target.eyePos)
-        val hit = mob.tryAttack(player.world, target)
+        val hit = mob.tryAttack(player.entityWorld, target)
         // 铁傀儡进了攻击动作就会挥臂, 打空也吃冷却, 免得连点把方块放出去
         if (!hit && mob !is IronGolemEntity) return null
         mob.swingHand(Hand.MAIN_HAND)
@@ -570,9 +570,9 @@ object DragonTamerAbility {
         val forward = horizontalLook(player.yaw)
         val box = mob.boundingBox.expand(range, range, range)
         val found = ArrayList<LivingEntity>()
-        for (entity in player.world.getEntitiesByClass(LivingEntity::class.java, box) { it.isAlive && !it.isSpectator }) {
+        for (entity in player.entityWorld.getEntitiesByClass(LivingEntity::class.java, box) { it.isAlive && !it.isSpectator }) {
             if (DragonTamerService.isAlly(player, entity)) continue
-            val delta = entity.pos.subtract(mob.pos)
+            val delta = entity.entityPos.subtract(mob.entityPos)
             if (delta.length() > range) continue
             val flat = Vec3d(delta.x, 0.0, delta.z)
             if (flat.lengthSquared() > 0.09 && flat.normalize().dotProduct(forward) < minDot) continue

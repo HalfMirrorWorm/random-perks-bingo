@@ -219,7 +219,7 @@ object SummonPerks {
         /** 候选: 与自己在同一支原版队伍里的其他在线玩家 (无队伍时没有候选) */
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> {
             val myTeam = player.scoreboardTeam?.name ?: return emptyList()
-            return player.server?.playerManager?.playerList?.filter {
+            return player.entityWorld.server?.playerManager?.playerList?.filter {
                 it.uuid != player.uuid &&
                     !it.isSpectator &&
                     it.scoreboardTeam?.name == myTeam
@@ -241,7 +241,7 @@ object SummonPerks {
 
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
-            val candidates = player.server?.playerManager?.playerList
+            val candidates = player.entityWorld.server?.playerManager?.playerList
                 ?.filter { it.isAlive && !it.isSpectator && it.uuid != player.uuid }
                 ?.map { PlayerTargetEntry(it.uuid, it.name.string) }
                 ?: emptyList()
@@ -264,7 +264,7 @@ object SummonPerks {
             if (!state.hasPerk(id)) return
             if (state.isUsed(id)) return
 
-            val target = player.server?.playerManager?.getPlayer(uuid) ?: return
+            val target = player.entityWorld.server?.playerManager?.getPlayer(uuid) ?: return
             if (target === player || !target.isAlive || target.isRemoved || target.isSpectator) return
 
             if (!SwapService.startCountdown(player, target)) {
@@ -313,7 +313,7 @@ object SummonPerks {
             if (state.isUsed(id)) return
 
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
-            val world = target.world as? ServerWorld ?: return
+            val world = target.entityWorld as? ServerWorld ?: return
 
             var spawned = 0
             for (index in 0 until PHANTOM_COUNT) {
@@ -364,7 +364,7 @@ object SummonPerks {
         }
 
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+            player.entityWorld.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
     /** 紫 · 唤法: **Boss盲盒** —— 随机获得一个 Boss 刷怪蛋 */
@@ -404,7 +404,7 @@ object SummonPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
 
             // 头顶 (脚上方 2 格) 开始向上找第一个空气方块, 最多找 8 格
             val base = player.blockPos.up(2)
@@ -429,7 +429,7 @@ object SummonPerks {
                 pos.y,
                 pos.z,
             )
-            player.server?.playerManager?.playerList?.forEach { it.sendMessage(message, false) }
+            player.entityWorld.server?.playerManager?.playerList?.forEach { it.sendMessage(message, false) }
         }
     }
 

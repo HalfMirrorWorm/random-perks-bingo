@@ -109,12 +109,12 @@ object ArtisanPerks {
             grant(ctx)
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.entityWorld.server?.ticks?.toLong() ?: 0L
 
         /** 随机一本**满级**附魔书: 从整个附魔注册表里抽 (宝藏附魔也在其中), 一律按该附魔的
          *  {@code max_level} 发放。诅咒不算"满级或宝藏", 排除掉。 */
         private fun grant(ctx: PerkContext) {
-            val registry = ctx.player.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
+            val registry = ctx.player.entityWorld.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
 
             val candidates = registry.entrySet
                 .map { registry.getEntry(it.value) }
@@ -175,7 +175,7 @@ object ArtisanPerks {
             val stack = stackAt(player, key) ?: return
             if (stack.isEmpty) return
 
-            val registry = player.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
+            val registry = player.entityWorld.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
 
             // 已有附魔既不能重复给, 也不能给和它互斥的 —— 原版的互斥组只允许留一个
             // (比如"锋利"和"亡灵杀手"), 硬塞进去会得到一个原版不可能出现的组合。
@@ -348,7 +348,7 @@ object ArtisanPerks {
 
         /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+            player.entityWorld.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
     /** 紫 · 匠造: **百宝箱** —— 随机开出 **1~5 件**盔甲或工具 (材质上限钻石, 白板不附魔) */

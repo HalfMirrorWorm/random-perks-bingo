@@ -4,9 +4,10 @@ import com.randomperks.client.render.PigMorphRenderer;
 import com.randomperks.game.MorphState;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.util.SkinTextures;
+import net.minecraft.client.render.entity.EntityRenderManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerSkinType;
+import net.minecraft.entity.player.SkinTextures;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * 而且 {@link PigMorphRenderer} 是 PlayerEntityRenderer 的子类, 只能接玩家实体
  * (它的 updateRenderState 会强转 AbstractClientPlayerEntity)。
  */
-@Mixin(EntityRenderDispatcher.class)
+@Mixin(EntityRenderManager.class)
 public class MorphRendererMixin {
 
     // 必须写完整描述符: getRenderer 有两个重载 (收实体 / 收渲染状态), 只写方法名会同时匹配,
@@ -34,8 +35,8 @@ public class MorphRendererMixin {
         if (!(entity instanceof AbstractClientPlayerEntity player)) return;
         if (!MorphState.isMorphed(player.getUuid())) return;
 
-        SkinTextures skin = player.getSkinTextures();
-        boolean slim = skin != null && skin.model() == SkinTextures.Model.SLIM;
+        SkinTextures skin = player.getSkin();
+        boolean slim = skin != null && skin.model() == PlayerSkinType.SLIM;
 
         PigMorphRenderer renderer = PigMorphRenderer.get(slim);
         if (renderer != null) {

@@ -2,6 +2,10 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         maven {
+            name = 'Modmuss'
+            url = 'https://maven.modmuss50.me/'
+        }
+        maven {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }

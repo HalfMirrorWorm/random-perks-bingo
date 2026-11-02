@@ -385,7 +385,10 @@ class PerkListScreen(
         )
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(click: net.minecraft.client.gui.Click, doubled: Boolean): Boolean {
+        val mouseX = click.x()
+        val mouseY = click.y()
+        val button = click.button()
         // 排序切换
         for ((mode, box) in sortBoxes) {
             if (mouseX in box[0].toDouble()..(box[0] + box[2]).toDouble() &&
@@ -445,7 +448,7 @@ class PerkListScreen(
                 }
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(click, doubled)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {

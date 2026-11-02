@@ -149,7 +149,7 @@ object HarvestPerks {
 
             if (ctx.player.random.nextFloat() >= CHANCE) return
 
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.entityWorld as? ServerWorld ?: return
             // 排除"被砍这一种"的去皮版本 (oak_log → stripped_oak_log), 剩下的里随机挑一种
             val ownStripped = net.minecraft.registry.Registries.ITEM.get(
                 net.minecraft.util.Identifier.of(choppedId.namespace, "stripped_" + choppedId.path),
@@ -182,7 +182,7 @@ object HarvestPerks {
             val tool = player.mainHandStack
             if (!tool.isIn(ItemTags.AXES)) return
             if (!blockState.isIn(BlockTags.LOGS)) return
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
 
             val logBlock = blockState.block
             val visited = HashSet<BlockPos>()
@@ -311,7 +311,7 @@ object HarvestPerks {
             val player = ctx.player
             if (!player.isTouchingWater) return
 
-            val now = player.server?.ticks?.toLong() ?: return
+            val now = player.entityWorld.server?.ticks?.toLong() ?: return
             if (now < (ctx.state.cooldowns[id] ?: 0L)) return
             ctx.state.cooldowns[id] = now + FISH_INTERVAL_TICKS
             PerkEffects.giveStack(player, ItemStack(FISHES[player.random.nextInt(FISHES.size)]))
@@ -330,7 +330,7 @@ object HarvestPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
 
             val horse = net.minecraft.entity.passive.HorseEntity(net.minecraft.entity.EntityType.HORSE, world)
             // 位置 + 朝向都跟随玩家 (原版生成走 refreshPositionAndAngles)
@@ -405,7 +405,7 @@ object HarvestPerks {
 
         override fun onKill(ctx: PerkContext, victim: net.minecraft.entity.LivingEntity) {
             if (victim !is net.minecraft.entity.passive.CatEntity) return
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.entityWorld as? ServerWorld ?: return
             victim.dropStack(world, ItemStack(Items.STRING, 3))
 
             // 额外掉落 1 件猫的礼物 (幻翼膜高概率)
@@ -438,7 +438,7 @@ object HarvestPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
 
             repeat(DOG_COUNT) { index ->
                 val wolf = net.minecraft.entity.passive.WolfEntity(
@@ -545,7 +545,7 @@ object HarvestPerks {
 
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
 
             val ghast = net.minecraft.entity.passive.HappyGhastEntity(
                 net.minecraft.entity.EntityType.HAPPY_GHAST, world,
@@ -637,7 +637,7 @@ object HarvestPerks {
 
         override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
             if (!blockState.isIn(net.minecraft.registry.tag.BlockTags.BEEHIVES)) return
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.entityWorld as? ServerWorld ?: return
 
             net.minecraft.block.Block.dropStack(world, pos, ItemStack(Items.HONEYCOMB, HONEYCOMB_COUNT))
             net.minecraft.block.Block.dropStack(world, pos, ItemStack(Items.HONEY_BOTTLE, HONEY_BOTTLE_COUNT))

@@ -107,7 +107,7 @@ object SeekerPerks {
 
         /** 生成原版沉船式藏宝图: 指向最近"埋藏的宝藏"(沙滩下的宝箱), 红叉标记; 找不到时返回 null */
         private fun createTreasureMap(player: ServerPlayerEntity): ItemStack? {
-            val world = player.world as? ServerWorld ?: return null
+            val world = player.entityWorld as? ServerWorld ?: return null
 
             val pos = runCatching {
                 val structureRegistry = world.registryManager.getOrThrow(RegistryKeys.STRUCTURE)
@@ -165,7 +165,7 @@ object SeekerPerks {
             grant(ctx)
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.entityWorld.server?.ticks?.toLong() ?: 0L
 
         private fun grant(ctx: PerkContext) {
             val (item, count) = pool[ctx.player.random.nextInt(pool.size)]
@@ -196,7 +196,7 @@ object SeekerPerks {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.ENDER_PEARL))
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.entityWorld.server?.ticks?.toLong() ?: 0L
     }
 
     /** 金 · 秘藏 · 质变: **获得时立即**打开一名随机敌方玩家的背包, 偷走其中一格自选物品 (一次性) */
@@ -226,7 +226,7 @@ object SeekerPerks {
 
         override fun onTick(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
             val creatures = world.getEntitiesByClass(
                 LivingEntity::class.java,
                 player.boundingBox.expand(RANGE),
@@ -262,7 +262,7 @@ object SeekerPerks {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.ENDER_CHEST))
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.entityWorld.server?.ticks?.toLong() ?: 0L
     }
 
     /** 紫 · 秘藏: 立即获得 1 瓶随机药水, 之后每 2 分钟再获得 1 瓶 */
@@ -305,7 +305,7 @@ object SeekerPerks {
             PerkEffects.giveStack(ctx.player, PotionContentsComponent.createStack(Items.POTION, potion))
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.entityWorld.server?.ticks?.toLong() ?: 0L
     }
 
     /** 蓝 · 唤法 · 贮藏: **流浪拴绳** —— 在词条列表点击使用, **直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼,
@@ -326,7 +326,7 @@ object SeekerPerks {
         private const val EMERALD_REWARD = 5
 
         override fun onActivate(ctx: PerkContext) {
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.entityWorld as? ServerWorld ?: return
             if (!spawnAt(world, ctx.player.blockPos)) {
                 ctx.player.sendMessage(
                     Text.translatable("random-perks-bingo.message.trader_failed"),
@@ -394,7 +394,7 @@ object SeekerPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
 
             val villagePos = runCatching {
                 world.locateStructure(net.minecraft.registry.tag.StructureTags.VILLAGE, player.blockPos, 100, false)
@@ -502,7 +502,7 @@ object SeekerPerks {
 
         /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+            player.entityWorld.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
     }
 
     /** 蓝 · 秘藏: **随机地基** —— 获得瞬间, 把脚下 3×3 的地面各替换成一块随机方块 */
@@ -517,7 +517,7 @@ object SeekerPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.entityWorld as? ServerWorld ?: return
             val registry = world.registryManager.getOrThrow(RegistryKeys.BLOCK)
             val center = player.blockPos.down()
 
@@ -586,7 +586,7 @@ object SeekerPerks {
         override fun onActivate(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.EMERALD, EMERALD_REWARD))
 
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.entityWorld as? ServerWorld ?: return
             if (!spawnAt(world, ctx.player)) {
                 ctx.player.sendMessage(
                     Text.translatable("random-perks-bingo.message.old_priest_failed"),

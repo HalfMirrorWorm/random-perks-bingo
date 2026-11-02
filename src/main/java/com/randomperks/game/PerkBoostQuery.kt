@@ -168,7 +168,7 @@ object PerkBoostQuery {
     }
 
     private fun decisionKey(player: ServerPlayerEntity, pos: net.minecraft.util.math.BlockPos): String =
-        "${player.server?.ticks ?: 0}:${pos.asLong()}"
+        "${player.entityWorld.server?.ticks ?: 0}:${pos.asLong()}"
 
     /** 是否是成熟作物 (小麦/胡萝卜/马铃薯/甜菜 + 下界疣) —— "拾穗"/"田园修补"共用 */
     fun isMatureCrop(state: net.minecraft.block.BlockState): Boolean {
@@ -298,7 +298,7 @@ object PerkBoostQuery {
     /** 获得词条时开始计时 */
     fun beginDoomsday(player: ServerPlayerEntity) {
         val state = PerkStateManager.get(player.uuid) ?: return
-        val now = player.server?.ticks?.toLong() ?: return
+        val now = player.entityWorld.server?.ticks?.toLong() ?: return
         state.memory[DOOMSDAY_END_TICK_KEY] = (now + DOOMSDAY_DURATION_TICKS).toString()
     }
 
@@ -312,7 +312,7 @@ object PerkBoostQuery {
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk("mythic_doomsday")) return false
         val endTick = state.memory[DOOMSDAY_END_TICK_KEY]?.toLongOrNull() ?: return false
-        val now = player.server?.ticks?.toLong() ?: return false
+        val now = player.entityWorld.server?.ticks?.toLong() ?: return false
         return now < endTick
     }
 

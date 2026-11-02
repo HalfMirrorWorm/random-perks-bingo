@@ -56,7 +56,7 @@ object PerkAbilityService {
             0.7f,
             1.3f,
         )
-        (player.world as? ServerWorld)?.spawnParticles(
+        (player.entityWorld as? ServerWorld)?.spawnParticles(
             ParticleTypes.CLOUD,
             player.x, player.y + 0.05, player.z,
             10, 0.25, 0.05, 0.25, 0.01,
@@ -96,7 +96,7 @@ object PerkAbilityService {
         if (!state.hasPerk(DASH_PERK_ID)) return
         if (state.memory[DASH_USED_KEY] == "1") return   // 每段离地只允许一次
 
-        val now = player.server?.ticks?.toLong() ?: 0L
+        val now = player.entityWorld.server?.ticks?.toLong() ?: 0L
         if (now < (state.cooldowns[DASH_PERK_ID] ?: 0L)) return   // 3 秒冷却
 
         state.memory[DASH_USED_KEY] = "1"
@@ -112,7 +112,7 @@ object PerkAbilityService {
         player.velocityModified = true
 
         player.playSoundToPlayer(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.8f, 1.4f)
-        (player.world as? ServerWorld)?.spawnParticles(
+        (player.entityWorld as? ServerWorld)?.spawnParticles(
             ParticleTypes.CLOUD,
             player.x, player.y + 0.4, player.z,
             8, 0.25, 0.15, 0.25, 0.02,

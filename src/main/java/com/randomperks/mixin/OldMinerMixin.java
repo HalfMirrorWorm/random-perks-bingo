@@ -38,7 +38,7 @@ public class OldMinerMixin {
         if (cir.getReturnValue()) return;
 
         PlayerEntity self = (PlayerEntity) (Object) this;
-        if (self.getWorld().isClient()) {
+        if (self.getEntityWorld().isClient()) {
             if (!ClientPerkFlags.has(PERK_ID)) return;
         } else {
             if (!PerkBoostQuery.INSTANCE.hasOldMiner(self)) return;

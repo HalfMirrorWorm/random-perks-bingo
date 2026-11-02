@@ -28,7 +28,7 @@ object WaypointService {
             if (entity !is ServerPlayerEntity) return@register
             val state = PerkStateManager.get(entity.uuid) ?: return@register
             if (!state.hasPerk(PERK_ID)) return@register
-            val worldId = entity.world.registryKey.value.toString()
+            val worldId = entity.entityWorld.registryKey.value.toString()
             state.memory[DEATH_POINT_KEY] = "$worldId|${entity.x}|${entity.y}|${entity.z}"
         }
 
@@ -45,7 +45,7 @@ object WaypointService {
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk(PERK_ID)) return false
 
-        val server = player.server ?: return false
+        val server = player.entityWorld.server ?: return false
         val now = server.ticks.toLong()
 
         val point = state.memory[DEATH_POINT_KEY]

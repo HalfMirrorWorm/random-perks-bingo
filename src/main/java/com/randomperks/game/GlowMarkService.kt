@@ -14,7 +14,7 @@ object GlowMarkService {
 
     /** 玩家的同队在线玩家 (含自己); 无队伍时仅自己 */
     fun teamViewers(player: ServerPlayerEntity): List<ServerPlayerEntity> {
-        val server = player.server ?: return listOf(player)
+        val server = player.entityWorld.server ?: return listOf(player)
         val team = player.scoreboardTeam?.name ?: return listOf(player)
         return server.playerManager.playerList.filter {
             it.uuid == player.uuid || it.scoreboardTeam?.name == team

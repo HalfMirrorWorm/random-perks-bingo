@@ -83,13 +83,16 @@ class TargetPickScreen(
         super.render(context, mouseX, mouseY, delta)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(click: net.minecraft.client.gui.Click, doubled: Boolean): Boolean {
+        val mouseX = click.x()
+        val mouseY = click.y()
+        val button = click.button()
         if (button == 0 && hovered >= 0) {
             onPick(targets[hovered].uuid)
             if (closeOnPick) close()
             return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(click, doubled)
     }
 
     override fun mouseScrolled(

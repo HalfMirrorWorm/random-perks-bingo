@@ -44,7 +44,7 @@ public class DoomsdayMixin {
         ServerPlayerEntity killer = source.getAttacker() instanceof ServerPlayerEntity player
                 && player != self ? player : null;
         boolean enemyKill = killer != null && !isSameTeam(self, killer);
-        boolean keepInventory = self.getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY);
+        boolean keepInventory = self.getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY);
 
         // 自己持有天启日: 只有被敌方玩家击杀才掉落, 且这次死亡结束效果
         if (PerkBoostQuery.INSTANCE.hasDoomsdayEffect(self)) {

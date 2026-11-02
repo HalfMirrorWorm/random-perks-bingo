@@ -77,11 +77,11 @@ object PigMorphService {
 
         if (changed) {
             MorphState.setMorphed(player.uuid, wanted)
-            broadcast(player.server, MorphS2C(player.uuid, wanted))
+            broadcast(player.entityWorld.server, MorphS2C(player.uuid, wanted))
 
             // 变形的那一瞬间"哼"一声
             if (wanted) {
-                player.world.playSound(
+                player.entityWorld.playSound(
                     null,
                     player.x, player.y, player.z,
                     SoundEvents.ENTITY_PIG_AMBIENT,
@@ -99,7 +99,7 @@ object PigMorphService {
 
     /** 把"每位在线玩家是否是猪"完整发给某个客户端 (加入服务器时用) */
     private fun syncTo(player: ServerPlayerEntity) {
-        val server = player.server ?: return
+        val server = player.entityWorld.server ?: return
         for (other in server.playerManager.playerList) {
             PerkNetworking.sendMorph(player, MorphS2C(other.uuid, MorphState.isMorphed(other.uuid)))
         }

@@ -36,7 +36,7 @@ public class PokemonEggMixin {
     @Inject(method = "onEntityHit", at = @At("TAIL"))
     private void randomperks$capture(EntityHitResult result, CallbackInfo ci) {
         EggEntity self = (EggEntity) (Object) this;
-        if (!(self.getWorld() instanceof ServerWorld world)) return;
+        if (!(self.getEntityWorld() instanceof ServerWorld world)) return;
 
         Entity owner = self.getOwner();
         if (!(owner instanceof ServerPlayerEntity player)) return;

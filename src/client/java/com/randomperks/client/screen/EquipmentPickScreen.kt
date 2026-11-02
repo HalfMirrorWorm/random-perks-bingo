@@ -114,7 +114,10 @@ class EquipmentPickScreen(
         hoveredStack?.let { context.drawItemTooltip(textRenderer, it, mouseX, mouseY) }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(click: net.minecraft.client.gui.Click, doubled: Boolean): Boolean {
+        val mouseX = click.x()
+        val mouseY = click.y()
+        val button = click.button()
         if (button == 0 && hovered >= 0) {
             val key = cells[hovered].key
             if (key != null) {
@@ -123,7 +126,7 @@ class EquipmentPickScreen(
                 return true
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(click, doubled)
     }
 
     override fun shouldPause(): Boolean = false

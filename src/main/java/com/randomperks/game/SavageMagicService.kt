@@ -81,7 +81,7 @@ object SavageMagicService {
         }
 
         val professionKey = BLOCK_TO_PROFESSION[stack.item] ?: return ActionResult.PASS
-        val world = player.world as? ServerWorld ?: return ActionResult.PASS
+        val world = player.entityWorld as? ServerWorld ?: return ActionResult.PASS
 
         val profession = Registries.VILLAGER_PROFESSION.getOrThrow(professionKey)
 
@@ -113,7 +113,7 @@ object SavageMagicService {
 
     /** 给村民喂谜之炖菜: 变成傻子村民, 清空交易与经验 */
     private fun makeNitwit(player: ServerPlayerEntity, villager: VillagerEntity, stack: ItemStack) {
-        val world = player.world as? ServerWorld ?: return
+        val world = player.entityWorld as? ServerWorld ?: return
         val nitwit = Registries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NITWIT)
 
         villager.setVillagerData(villager.villagerData.withProfession(nitwit).withLevel(1))

@@ -113,13 +113,16 @@ class PerkChoiceScreen(
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(click: net.minecraft.client.gui.Click, doubled: Boolean): Boolean {
+        val mouseX = click.x()
+        val mouseY = click.y()
+        val button = click.button()
         if (button == 0 && hovered in options.indices) {
             ClientPerkNetworking.pick(hovered)
             close()
             return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(click, doubled)
     }
 
     override fun shouldPause(): Boolean = false

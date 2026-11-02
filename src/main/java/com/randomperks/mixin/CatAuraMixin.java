@@ -53,7 +53,7 @@ public abstract class CatAuraMixin {
         if (!(this.mob instanceof CreeperEntity)) return;
         if (this.classToFleeFrom != CatEntity.class) return;
 
-        PlayerEntity nearest = this.mob.getWorld().getClosestPlayer(this.mob, this.fleeDistance);
+        PlayerEntity nearest = this.mob.getEntityWorld().getClosestPlayer(this.mob, this.fleeDistance);
         if (nearest == null || !nearest.isAlive()) return;
         if (PerkBoostQuery.INSTANCE.hasCatAura(nearest)) {
             this.targetEntity = nearest;

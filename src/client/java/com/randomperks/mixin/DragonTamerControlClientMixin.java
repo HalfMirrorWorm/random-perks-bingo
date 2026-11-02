@@ -23,7 +23,7 @@ public abstract class DragonTamerControlClientMixin {
     @Inject(method = "getControllingPassenger", at = @At("HEAD"), cancellable = true)
     private void randomperks$localRiderControls(CallbackInfoReturnable<LivingEntity> cir) {
         MobEntity self = (MobEntity) (Object) this;
-        if (!self.getWorld().isClient()) return;
+        if (!self.getEntityWorld().isClient()) return;
         if (!(self.getFirstPassenger() instanceof ClientPlayerEntity rider)) return;
         if (rider != MinecraftClient.getInstance().player) return;
         if (!ClientPerkFlags.has(DragonTamerService.PERK_ID)) return;

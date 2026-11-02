@@ -146,7 +146,7 @@ object DragonTamerService {
         // 没鞍的马 / 猪 / 炽足兽不允许骑乘 —— 交还原版交互 (喂食/开背包等)
         if (usesVanillaControl(mob) && !mob.hasSaddleEquipped()) return false
 
-        if (!rider.startRiding(mob, true)) return false
+        if (!rider.startRiding(mob, true, true)) return false
 
         // 马/猪/炽足兽, 以及套了挽具的快乐恶魂这类"玩家就是控制者"的生物,
         // 原版已经用跳跃键上升, 不要再关掉 AI 跟它抢方向。
@@ -174,12 +174,12 @@ object DragonTamerService {
         val mob = player.vehicle as? MobEntity ?: return false
 
         val state = PerkStateManager.get(player.uuid) ?: return false
-        val now = player.server?.ticks?.toLong() ?: return false
+        val now = player.entityWorld.server?.ticks?.toLong() ?: return false
         if (now < (state.cooldowns[PERK_ID] ?: 0L)) return false
 
         // 不再要求"视野里必须有生物": 有目标就瞄准目标, 没有目标就朝准星方向
         val target = findTarget(player, mob)
-        val aim = target?.let { it.pos.add(0.0, it.height * 0.5, 0.0) }
+        val aim = target?.let { it.entityPos.add(0.0, it.height * 0.5, 0.0) }
             ?: player.eyePos.add(player.getRotationVec(1.0f).multiply(TARGET_RANGE))
 
         val cooldown = DragonTamerAbility.use(player, mob, target, aim) ?: return false
@@ -245,10 +245,10 @@ object DragonTamerService {
      */
     fun shouldIgnoreStaleVehicleMove(player: ServerPlayerEntity, packetPos: Vec3d): Boolean {
         val ride = active[player.uuid] ?: return false
-        val now = player.server?.ticks?.toLong() ?: return false
+        val now = player.entityWorld.server?.ticks?.toLong() ?: return false
         if (now > ride.repositionUntilTick) return false
         if (player.vehicle !== ride.mob) return false
-        val fromMob = packetPos.squaredDistanceTo(ride.mob.pos)
+        val fromMob = packetPos.squaredDistanceTo(ride.mob.entityPos)
         val origin = ride.repositionFrom
         // 4 格以上是旧坐标; 短距离瞬移则看包是否还更靠近瞬移前的位置
         val stale = fromMob > 16.0 ||
@@ -285,7 +285,7 @@ object DragonTamerService {
 
     /** 视线锥内、最近的合法目标 (不含骑手、队友和坐骑; 需要无方块遮挡) */
     private fun findTarget(player: ServerPlayerEntity, mob: MobEntity): LivingEntity? {
-        val world = player.world
+        val world = player.entityWorld
         val eye = player.eyePos
         val look = player.getRotationVec(1.0f)
 
@@ -300,7 +300,7 @@ object DragonTamerService {
             if (entity is ArmorStandEntity) continue
             if (isAlly(player, entity)) continue
 
-            val center = entity.pos.add(0.0, entity.height * 0.5, 0.0)
+            val center = entity.entityPos.add(0.0, entity.height * 0.5, 0.0)
             val delta = center.subtract(eye)
             val distance = delta.length()
             if (distance < 1.0E-4 || distance > TARGET_RANGE) continue

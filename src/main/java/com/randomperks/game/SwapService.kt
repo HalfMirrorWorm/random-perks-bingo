@@ -115,7 +115,7 @@ object SwapService {
         caster.stopRiding()
 
         caster.teleport(
-            target.world,
+            target.entityWorld,
             target.x, target.y, target.z,
             emptySet(),
             caster.yaw,

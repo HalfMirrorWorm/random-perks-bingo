@@ -96,7 +96,7 @@ object PerkEffects {
 
     /** 给物品附魔 (自动把 RegistryKey 解析为 RegistryEntry; 附魔在 1.21+ 是数据驱动注册表) */
     fun enchant(player: ServerPlayerEntity, stack: ItemStack, key: RegistryKey<Enchantment>, level: Int) {
-        val registry = player.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
+        val registry = player.entityWorld.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
         val entry = registry.getEntry(key.value).orElse(null) ?: return
         stack.addEnchantment(entry, level)
     }

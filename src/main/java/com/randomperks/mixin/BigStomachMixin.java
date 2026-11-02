@@ -30,7 +30,7 @@ public class BigStomachMixin {
     private void randomperks$alwaysEat(LivingEntity user, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (stack.get(DataComponentTypes.FOOD) == null) return;
 
-        if (user.getWorld().isClient()) {
+        if (user.getEntityWorld().isClient()) {
             if (ClientPerkFlags.has(BIG_STOMACH_PERK)) cir.setReturnValue(true);
             return;
         }

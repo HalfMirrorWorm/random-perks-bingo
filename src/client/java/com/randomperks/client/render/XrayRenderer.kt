@@ -4,8 +4,8 @@ import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
 import com.randomperks.client.net.ClientPerkNetworking
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
 import net.minecraft.block.BlockState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.RenderPipelines
@@ -103,7 +103,8 @@ object XrayRenderer {
         // 自定义管线注册进全局表 (与原版管线同等待遇: 资源重载后仍可被正确重建)
         RenderPipelines.register(XRAY_LINE_PIPELINE)
         ClientTickEvents.END_CLIENT_TICK.register { client -> tick(client) }
-        WorldRenderEvents.AFTER_TRANSLUCENT.register { context -> render(context) }
+        // 1.21.9 起没有 AFTER_TRANSLUCENT。END_MAIN 仍带 consumers, 线在世界画完之后提交。
+        WorldRenderEvents.END_MAIN.register { context -> render(context) }
     }
 
     /** 每秒扫描一次: 按种类收集矿石 → 计算并缓存各组可见轮廓段 */
@@ -185,7 +186,7 @@ object XrayRenderer {
         val immediate = context.consumers() as? VertexConsumerProvider.Immediate ?: return
         val buffer = immediate.getBuffer(XRAY_LINES)
 
-        val camera = context.camera()
+        val camera = context.gameRenderer().camera
         val camX = camera.pos.x
         val camY = camera.pos.y
         val camZ = camera.pos.z

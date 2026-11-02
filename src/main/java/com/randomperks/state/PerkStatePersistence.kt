@@ -97,7 +97,7 @@ object PerkStatePersistence {
         ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             val player = handler.player
             if (pendingApply.remove(player.uuid)) {
-                player.server?.execute { applyPerks(player) }
+                player.entityWorld.server?.execute { applyPerks(player) }
             }
         }
     }

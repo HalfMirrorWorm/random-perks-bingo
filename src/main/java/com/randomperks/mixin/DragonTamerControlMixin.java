@@ -25,7 +25,7 @@ public abstract class DragonTamerControlMixin {
     @Inject(method = "getControllingPassenger", at = @At("HEAD"), cancellable = true)
     private void randomperks$serverRiderControls(CallbackInfoReturnable<LivingEntity> cir) {
         MobEntity self = (MobEntity) (Object) this;
-        if (self.getWorld().isClient()) return;
+        if (self.getEntityWorld().isClient()) return;
         if (!(self.getFirstPassenger() instanceof ServerPlayerEntity rider)) return;
         if (!DragonTamerService.INSTANCE.isManuallySteered(self)) return;
         if (DragonTamerService.INSTANCE.isManualRide(rider, self)) {

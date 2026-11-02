@@ -39,7 +39,7 @@ public class GuraSharkSprintMixin {
         if (player.getAbilities().flying) return;
 
         boolean hasPerk;
-        if (player.getWorld().isClient()) {
+        if (player.getEntityWorld().isClient()) {
             hasPerk = ClientPerkFlags.has(PERK_ID);
         } else {
             hasPerk = player instanceof ServerPlayerEntity serverPlayer

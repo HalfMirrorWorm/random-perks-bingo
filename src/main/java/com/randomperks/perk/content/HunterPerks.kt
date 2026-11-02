@@ -131,7 +131,7 @@ object HunterPerks {
             // 幻翼 / 潜影贝 / 疣猪兽 / 末影龙 都只实现 Monster 接口而不继承它, 用类判定会把这批全漏掉
             if (victim !is Monster) return
             if (ctx.player.random.nextFloat() >= 0.30f) return
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.entityWorld as? ServerWorld ?: return
             victim.dropStack(world, ItemStack(rollLoot(ctx.player.random)))
         }
     }
@@ -150,7 +150,7 @@ object HunterPerks {
             if (victim !is Monster) return
             if (ctx.player.random.nextFloat() >= CHANCE) return
 
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.entityWorld as? ServerWorld ?: return
             val prizes = prizesFor(victim)
             if (prizes.isNotEmpty()) {
                 // 有专属条目: 直接以掉落物形态落在怪物死亡位置
@@ -291,13 +291,13 @@ object HunterPerks {
             ctx.state.memory[TARGET_KEY] = target.uuid.toString()
 
             // 跨维度: 两个世界的坐标硬算出来的距离/方位没有意义 → 只提示目标在哪个维度, 不给加速
-            if (target.world !== player.world) {
+            if (target.entityWorld !== player.entityWorld) {
                 PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
                 player.sendMessage(
                     Text.translatable(
                         "random-perks-bingo.message.prey_tracker_dimension",
                         target.name,
-                        dimensionName(target.world),
+                        dimensionName(target.entityWorld),
                     ),
                     true,
                 )
@@ -309,7 +309,7 @@ object HunterPerks {
 
             // **在目标 256 格以内就常驻 +50% 移速**
             // (旧逻辑是"这一秒比上一秒更近才加速", 走动/绕圈时会反复开关, 手感很差)
-            val dist = player.pos.distanceTo(target.pos).toInt()
+            val dist = player.entityPos.distanceTo(target.entityPos).toInt()
             if (dist <= SPEED_RADIUS) {
                 PerkEffects.setAttribute(
                     player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
@@ -327,7 +327,7 @@ object HunterPerks {
                     dist,
                     target.blockPos.x,
                     target.blockPos.z,
-                    directionHint(player.pos.x, player.pos.z, target.pos.x, target.pos.z),
+                    directionHint(player.entityPos.x, player.entityPos.z, target.entityPos.x, target.entityPos.z),
                 ),
                 true,
             )
@@ -337,7 +337,7 @@ object HunterPerks {
          *  距离只在同维度内可比 (跨维度坐标无意义) → 同维度有敌人时取其中最近的;
          *  同维度一个敌人都没有时, 才退化为其他维度中的一名。 */
         private fun nearestEnemy(player: ServerPlayerEntity): ServerPlayerEntity? {
-            val server = player.server ?: return null
+            val server = player.entityWorld.server ?: return null
             val myTeam = player.scoreboardTeam?.name
             val enemies = server.playerManager.playerList.filter { other ->
                 !other.isSpectator &&
@@ -345,8 +345,8 @@ object HunterPerks {
                     (myTeam == null || other.scoreboardTeam?.name != myTeam)
             }
             if (enemies.isEmpty()) return null
-            return enemies.filter { it.world === player.world }
-                .minByOrNull { it.pos.squaredDistanceTo(player.pos) }
+            return enemies.filter { it.entityWorld === player.entityWorld }
+                .minByOrNull { it.entityPos.squaredDistanceTo(player.entityPos) }
                 ?: enemies.first()
         }
 
@@ -508,11 +508,11 @@ object HunterPerks {
         /** 候选: **所有在线玩家** —— 不限队伍、不限维度, 也包括自己 (跨维度劈雷对目标依然有效,
          *  只是施法者看不到, 所以不排除); 旁观者除外 */
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+            player.entityWorld.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
 
         /** 在目标位置劈一次闪电 (16 格内的引雷针会把闪电引过去); @return 是否成功生成 */
         private fun strike(target: ServerPlayerEntity): Boolean {
-            val world = target.world as? ServerWorld ?: return false
+            val world = target.entityWorld as? ServerWorld ?: return false
 
             val rod = findNearbyLightningRod(world, target.blockPos, 16)
             val lightning = net.minecraft.entity.EntityType.LIGHTNING_BOLT
@@ -647,7 +647,7 @@ object HunterPerks {
 
         /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
         private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+            player.entityWorld.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
 
         /** 在目标**头顶**生成一只**发光**的闪电苦力怕, 并直接让它仇恨目标。
          *
@@ -658,7 +658,7 @@ object HunterPerks {
          *
          *  头顶位置 (脚下往上 2 格) 被挡住时退回脚下生成, 免得苦力怕卡在方块里憋死。 */
         private fun spawnChargedCreeper(target: ServerPlayerEntity): Boolean {
-            val world = target.world as? ServerWorld ?: return false
+            val world = target.entityWorld as? ServerWorld ?: return false
             val random = world.random
 
             val headPos = target.blockPos.up(2)
@@ -720,12 +720,12 @@ object HunterPerks {
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.BOW))
             // 先给一组, 之后每 2 分钟由 onTick 续
-            ctx.player.server?.let { ctx.state.memory[TICK_KEY] = it.ticks.toString() }
+            ctx.player.entityWorld.server?.let { ctx.state.memory[TICK_KEY] = it.ticks.toString() }
             giveArrows(ctx)
         }
 
         override fun onTick(ctx: PerkContext) {
-            val now = ctx.player.server?.ticks ?: return
+            val now = ctx.player.entityWorld.server?.ticks ?: return
             val last = ctx.state.memory[TICK_KEY]?.toLongOrNull()
             if (last == null) {
                 ctx.state.memory[TICK_KEY] = now.toString()
@@ -774,7 +774,7 @@ object HunterPerks {
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             if (victim !is MobEntity) return                                    // 只有生物有掉落表 (玩家/盔甲架没有)
             if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return      // 每次击杀掷一次, 不是每件物品
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.entityWorld as? ServerWorld ?: return
             if (!world.gameRules.getBoolean(GameRules.DO_MOB_LOOT)) return      // 跟随原版"生物掉落"游戏规则
             val source = victim.recentDamageSource ?: return
             // 让这只怪的掉落表再滚一次 —— 掉落物直接从它自己身上出来; 与原版死亡掉落同一套结算

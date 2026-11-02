@@ -70,7 +70,7 @@ public class BigSnowballMixin {
         if (!(hit instanceof LivingEntity living)) return;
 
         // 只在服务端结算伤害 (onEntityHit 在两端都会跑, 客户端那次只负责粒子/音效)
-        if (!(self.getWorld() instanceof ServerWorld serverWorld)) return;
+        if (!(self.getEntityWorld() instanceof ServerWorld serverWorld)) return;
 
         // 原版对烈焰人本来就打 3 点, 这里只补差额, 免得叠加成 6 点
         float amount = hit instanceof BlazeEntity ? 0.0f : DAMAGE;

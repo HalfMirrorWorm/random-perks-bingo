@@ -31,7 +31,7 @@ public interface BigBackpackInventoryMixin {
 
         PlayerEntity owner = playerInventory.player;
         boolean hasPerk;
-        if (owner.getWorld().isClient()) {
+        if (owner.getEntityWorld().isClient()) {
             hasPerk = ClientPerkFlags.has("artisan_big_backpack");
         } else {
             hasPerk = owner instanceof ServerPlayerEntity serverPlayer

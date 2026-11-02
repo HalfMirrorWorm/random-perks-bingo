@@ -30,7 +30,7 @@ object TemperingAnvilService {
 
     /** 物品是否带有"一次性铁砧"标记 */
     fun isMarked(stack: ItemStack): Boolean =
-        stack.get(DataComponentTypes.CUSTOM_DATA)?.contains(MARKER_KEY) == true
+        stack.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt()?.contains(MARKER_KEY) == true
 
     /** 记录已放置的一次性铁砧 */
     fun markPlaced(world: ServerWorld, pos: BlockPos) {

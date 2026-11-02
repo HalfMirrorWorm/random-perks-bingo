@@ -157,7 +157,7 @@ object WarmArchaeologyService {
         pos: BlockPos,
         tool: ItemStack,
     ) {
-        val lookup = player.server?.reloadableRegistries
+        val lookup = player.entityWorld.server?.reloadableRegistries
         if (lookup == null) {
             RandomPerksMod.logger.warn("[RandomPerks] coral loot: reloadableRegistries unavailable")
             return dropFallback(player, world, pos)

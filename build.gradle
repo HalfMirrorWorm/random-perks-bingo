@@ -15,6 +15,10 @@ repositories {
     mavenCentral()
 
     maven {
+        name = 'Modmuss'
+        url = 'https://maven.modmuss50.me/'
+    }
+    maven {
         name = 'Fabric'
         url = 'https://maven.fabricmc.net/'
     }
@@ -42,9 +46,13 @@ dependencies {
     // ---- Yet Another Bingo ----
     // 编译期依赖主 jar: 提供 mixin 目标类 (ScoreUpdateService 等) 与内部类型
     // 注意: 绝不能 include / shadow 进本 mod 的 jar (会导致 mod id 重复崩溃)
-    modCompileOnly "maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}"
+    modCompileOnly("maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}") {
+        artifact { name = 'bingo' }
+    }
     // 开发环境运行时加载真正的 bingo (Loom 会自动 remap 到 dev 环境)
-    modLocalRuntime "maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}"
+    modLocalRuntime("maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}") {
+        artifact { name = 'bingo' }
+    }
     // 公开 API (BingoEvents 等)
     modCompileOnly "me.jfenn.bingo:api:${project.bingo_api_version}"
 

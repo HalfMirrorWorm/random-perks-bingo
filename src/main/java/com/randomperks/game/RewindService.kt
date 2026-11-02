@@ -242,7 +242,7 @@ object RewindService {
         ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             val uuid = handler.player.uuid
             if (pendingReapply.remove(uuid)) {
-                handler.player.server?.execute {
+                handler.player.entityWorld.server?.execute {
                     val state = PerkStateManager.get(uuid) ?: return@execute
                     applyPerks(handler.player, state)
                 }
@@ -448,7 +448,7 @@ object RewindService {
             try {
                 val view = NbtWriteView.create(ErrorReporter.EMPTY, server.registryManager)
                 player.writeData(view)
-                PlayerSnapshot(player.uuid, player.world.registryKey, view.nbt)
+                PlayerSnapshot(player.uuid, player.entityWorld.registryKey, view.nbt)
             } catch (t: Throwable) {
                 RandomPerksMod.logger.warn("[Rewind] failed to snapshot player {}", player.name.string, t)
                 null
@@ -482,7 +482,7 @@ object RewindService {
                     entity.writeData(view)
                     view.nbt
                 } catch (t: Throwable) {
-                    RandomPerksMod.logger.warn("[Rewind] failed to snapshot entity {} at {}", entity.uuid, entity.pos, t)
+                    RandomPerksMod.logger.warn("[Rewind] failed to snapshot entity {} at {}", entity.uuid, entity.entityPos, t)
                     continue
                 }
                 result.add(EntitySnapshot(world.registryKey, entity.uuid, entity.type, nbt))
@@ -669,7 +669,7 @@ object RewindService {
                 }
                 player.readData(NbtReadView.create(ErrorReporter.EMPTY, server.registryManager, saved.nbt))
 
-                val world = server.getWorld(saved.dimension) ?: player.world
+                val world = server.getWorld(saved.dimension) ?: player.entityWorld
                 player.stopRiding()
                 player.teleport(world, player.x, player.y, player.z, emptySet(), player.yaw, player.pitch, false)
                 player.markHealthDirty()

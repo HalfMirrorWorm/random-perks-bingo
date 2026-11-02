@@ -55,7 +55,7 @@ object CreativeFlashService {
 
     /** 给玩家 1.5 秒创造模式 (神话词条效果) */
     fun flash(player: ServerPlayerEntity) {
-        val server = player.server ?: return
+        val server = player.entityWorld.server ?: return
         val original = player.interactionManager.gameMode
         if (original == GameMode.CREATIVE) return
 

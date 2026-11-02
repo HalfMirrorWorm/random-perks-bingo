@@ -25,7 +25,7 @@ object MagnetService {
             for (player in server.playerManager.playerList) {
                 if (!PerkBoostQuery.hasMagnetUpgrade(player)) continue
 
-                val items = player.world.getEntitiesByClass(
+                val items = player.entityWorld.getEntitiesByClass(
                     ItemEntity::class.java,
                     player.boundingBox.expand(RANGE),
                 ) { it.isAlive && !it.cannotPickup() && it.squaredDistanceTo(player) <= RANGE * RANGE }

@@ -80,7 +80,7 @@ public class EdibleSugarMixin {
 
     @Unique
     private static boolean randomperks$hasPerk(PlayerEntity player) {
-        if (player.getWorld().isClient()) {
+        if (player.getEntityWorld().isClient()) {
             return ClientPerkFlags.has(PERK_ID);
         }
         return player instanceof ServerPlayerEntity serverPlayer

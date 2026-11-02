@@ -36,7 +36,7 @@ public abstract class VillageHeroTradeMixin {
     @Inject(method = "onTakeItem", at = @At("TAIL"))
     private void randomperks$keepTradeStock(PlayerEntity player, ItemStack stack, CallbackInfo ci) {
         boolean hasPerk;
-        if (player.getWorld().isClient()) {
+        if (player.getEntityWorld().isClient()) {
             hasPerk = ClientPerkFlags.has("seeker_village_hero");
         } else {
             hasPerk = player instanceof ServerPlayerEntity serverPlayer

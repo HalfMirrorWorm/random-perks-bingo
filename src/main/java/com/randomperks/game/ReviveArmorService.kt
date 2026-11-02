@@ -54,7 +54,7 @@ object ReviveArmorService {
             ItemStack(Items.TOTEM_OF_UNDYING),
             player,
         )
-        player.world.sendEntityStatus(player, EntityStatuses.USE_TOTEM_OF_UNDYING)
+        player.entityWorld.sendEntityStatus(player, EntityStatuses.USE_TOTEM_OF_UNDYING)
         return true
     }
 

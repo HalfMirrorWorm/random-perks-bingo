@@ -125,7 +125,7 @@ object PerkWorldEventService {
             if (source.isOf(DamageTypes.THORNS)) return@register
             val attacker = source.attacker as? LivingEntity ?: return@register
             if (attacker === player) return@register
-            val attackerWorld = attacker.world as? ServerWorld ?: return@register
+            val attackerWorld = attacker.entityWorld as? ServerWorld ?: return@register
 
             attacker.damage(
                 attackerWorld,

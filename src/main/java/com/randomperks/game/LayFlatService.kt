@@ -87,7 +87,7 @@ object LayFlatService {
 
     /** 获得词条时调用: 上 debuff 并开始计时 */
     fun start(player: ServerPlayerEntity) {
-        val server = player.server ?: return
+        val server = player.entityWorld.server ?: return
         active[player.uuid] = server.ticks.toLong() + DURATION_TICKS
 
         player.addStatusEffect(StatusEffectInstance(StatusEffects.BLINDNESS, DURATION_TICKS, 0))
@@ -103,7 +103,7 @@ object LayFlatService {
     /** 发奖励 —— 两个罗盘来自外部 mod, 没装就提示并跳过 (不崩) */
     private fun grantCompasses(player: ServerPlayerEntity) {
         val registry: Registry<Item> =
-            player.server?.registryManager?.getOrThrow(RegistryKeys.ITEM) ?: return
+            player.entityWorld.server?.registryManager?.getOrThrow(RegistryKeys.ITEM) ?: return
 
         val natures = registry.getEntry(NATURES_COMPASS).orElse(null)?.value()
         val explorers = registry.getEntry(EXPLORERS_COMPASS).orElse(null)?.value()
