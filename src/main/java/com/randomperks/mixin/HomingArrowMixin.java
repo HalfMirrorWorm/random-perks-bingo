@@ -146,9 +146,9 @@ public abstract class HomingArrowMixin {
 
         self.setDeltaMovement(blended.scale(speed / blendedLength));
 
-        // setDeltaMovement 只改速度, 不置 syncVelocity。服务端靠这个标志给追踪者发速度包。
+        // setDeltaMovement 只改速度, 不置 hurtMarked。服务端靠这个标志给追踪者发速度包。
         // 漏掉的话箭在服务端拐弯, 客户端仍按初速画, 看起来追踪几乎不起作用。
-        self.syncVelocity = true;
+        self.hurtMarked = true;
 
         // ★ 命中结算 (noClip 的箭原版不做实体碰撞, 原因见类注释):
         //   沿本 tick 的位移线段 [当前位置, 当前位置 + 速度] 对锁定目标做射线检测。

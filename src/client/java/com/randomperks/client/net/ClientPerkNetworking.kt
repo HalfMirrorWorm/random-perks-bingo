@@ -232,7 +232,7 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(WaterBucketTotemS2C.ID) { _, context ->
             context.client().execute {
                 // "落地，水"救命的演出: 与图腾一致的上浮旋转动画, 物品换成水桶
-                context.client().player?.displayItemActivation(ItemStack(Items.WATER_BUCKET))
+                context.client().gameRenderer.displayItemActivation(ItemStack(Items.WATER_BUCKET))
             }
         }
 

@@ -34,7 +34,7 @@ object Keybinds {
         openChoices = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "key.random-perks-bingo.open_choices",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 KEY_X,
                 CATEGORY,
             )
@@ -43,7 +43,7 @@ object Keybinds {
         openPerkList = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "key.random-perks-bingo.open_perk_list",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 KEY_V,
                 CATEGORY,
             )
@@ -52,7 +52,7 @@ object Keybinds {
         openCatalog = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "key.random-perks-bingo.open_catalog",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 KEY_K,
                 CATEGORY,
             )

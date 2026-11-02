@@ -678,7 +678,7 @@ object SeekerPerks {
                     .create(LootContextParamSets.VILLAGER_TRADE),
             ).create(tradeSet.randomSequence())
             val count = tradeSet.calculateNumberOfTrades(context)
-            val pool = ArrayList<Holder<VillagerTrade>>(tradeSet.trades().toList())
+            val pool = ArrayList<Holder<VillagerTrade>>(tradeSet.trades.toList())
             var added = 0
             while (added < count && pool.isNotEmpty()) {
                 val index = context.random.nextInt(pool.size)

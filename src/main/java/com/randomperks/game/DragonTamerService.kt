@@ -27,7 +27,6 @@ import net.minecraft.network.protocol.game.ClientboundMoveVehiclePacket
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.InteractionHand
-import net.minecraft.world.item.component.SwingAnimation
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.ClipContext
@@ -184,7 +183,7 @@ object DragonTamerService {
 
         val cooldown = DragonTamerAbility.use(player, mob, target, aim) ?: return false
         state.cooldowns[PERK_ID] = now + cooldown
-        player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true)
+        player.swing(InteractionHand.MAIN_HAND, true)
         return true
     }
 

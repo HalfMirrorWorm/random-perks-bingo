@@ -325,12 +325,8 @@ object DelverPerks {
     }
 
     /** 矿石判定 (矿脉嗅觉/老矿工共用): 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */
-    private val ORE_CHECK_TAGS = listOf(
-        BlockTags.ORES,
-    )
-
     private fun isOreBlock(state: BlockState): Boolean {
-        if (ORE_CHECK_TAGS.any { state.`is`(it) }) return true
+        // 这条线没有合并的 BlockTags.ORES, 原版矿石 id 都带 ore, 远古残骸单独点名。
         val path = BuiltInRegistries.BLOCK.getKey(state.block).path
         return path == "ancient_debris" || path.contains("ore")
     }

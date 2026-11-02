@@ -51,12 +51,8 @@ object PerkBoostQuery {
     }
 
     /** 矿石判定 (与 DelverPerks.isOreBlock 保持一致, 供 mixin 侧复用) */
-    private val ORE_TAGS = listOf(
-        net.minecraft.tags.BlockTags.ORES,
-    )
-
     fun isOreBlock(state: net.minecraft.world.level.block.state.BlockState): Boolean {
-        if (ORE_TAGS.any { state.`is`(it) }) return true
+        // 这条线没有合并的 BlockTags.ORES, 原版矿石 id 都带 ore, 远古残骸单独点名。
         val path = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.block).path
         return path == "ancient_debris" || path.contains("ore")
     }

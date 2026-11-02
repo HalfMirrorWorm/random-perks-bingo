@@ -32,7 +32,7 @@ public class DragonTamerBlinkMixin {
             cancellable = true
     )
     private void randomperks$rejectStaleBlink(ServerboundMoveVehiclePacket packet, CallbackInfo ci) {
-        if (DragonTamerService.INSTANCE.shouldIgnoreStaleVehicleMove(this.player, packet.movingTo().position())) {
+        if (DragonTamerService.INSTANCE.shouldIgnoreStaleVehicleMove(this.player, packet.position())) {
             ci.cancel();
         }
     }

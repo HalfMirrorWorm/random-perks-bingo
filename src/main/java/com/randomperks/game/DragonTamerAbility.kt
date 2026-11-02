@@ -15,7 +15,7 @@ import net.minecraft.world.entity.monster.breeze.Breeze
 import net.minecraft.world.entity.monster.Creeper
 import net.minecraft.world.entity.monster.zombie.Drowned
 import net.minecraft.world.entity.monster.ElderGuardian
-import net.minecraft.world.entity.monster.Enderman
+import net.minecraft.world.entity.monster.EnderMan
 import net.minecraft.world.entity.monster.illager.Evoker
 import net.minecraft.world.entity.projectile.EvokerFangs
 import net.minecraft.world.entity.monster.Ghast
@@ -49,7 +49,6 @@ import net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.minecraft.world.item.component.SwingAnimation
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.world.item.alchemy.Potions
 import net.minecraft.server.level.ServerPlayer
@@ -119,7 +118,7 @@ object DragonTamerAbility {
             is Frog -> frog(player, world, mob, target)
             is MagmaCube -> slam(player, world, mob, true)
             is Slime -> slam(player, world, mob, false)
-            is Enderman -> blink(player, mob, target)
+            is EnderMan -> blink(player, mob, target)
             is WitherSkeleton -> melee(player, mob, target, reachOf(mob), MELEE, null)
             is Pillager -> {
                 looseArrow(world, mob, aim, mob.mainHandItem)
@@ -238,7 +237,7 @@ object DragonTamerAbility {
         for (entity in cone(player, mob, 4.5, 0.25)) {
             if (entity.hurtServer(world, source, amount)) {
                 entity.knockback(0.7, mob.x - entity.x, mob.z - entity.z, entity.damageSources().generic(), 0f)
-                entity.syncVelocity = true
+                entity.hurtMarked = true
             }
         }
     }
@@ -288,7 +287,7 @@ object DragonTamerAbility {
         val stand = ArmorStand(world, aim.x, aim.y, aim.z)
         stand.setInvisible(true)
         stand.setNoGravity(true)
-        stand.setPermanentlyInvulnerable(true)
+        stand.setInvulnerable(true)
         stand.isSilent = true
         world.addFreshEntity(stand)
         val now = player.level().getServer().tickCount.toLong()
@@ -407,7 +406,7 @@ object DragonTamerAbility {
         for (entity in cone(player, mob, 3.6, 0.4)) {
             if (entity.hurtServer(world, source, amount)) {
                 entity.knockback(1.8, mob.x - entity.x, mob.z - entity.z, entity.damageSources().generic(), 0f)
-                entity.syncVelocity = true
+                entity.hurtMarked = true
             }
         }
         return GOAT
@@ -418,7 +417,7 @@ object DragonTamerAbility {
         target.hurtServer(world, mob.damageSources().sting(mob), 2.0f)
         target.addEffect(MobEffectInstance(MobEffects.POISON, 200, 0), mob)
         mob.playSound(SoundEvents.BEE_STING, 1.0f, 1.0f)
-        mob.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true)
+        mob.swing(InteractionHand.MAIN_HAND, true)
         return BEE
     }
 
@@ -445,7 +444,7 @@ object DragonTamerAbility {
             entity.hurtServer(world, source, amount)
             if (ignite) entity.igniteForSeconds(4.0f)
             entity.knockback(0.45, mob.x - entity.x, mob.z - entity.z, entity.damageSources().generic(), 0f)
-            entity.syncVelocity = true
+            entity.hurtMarked = true
         }
         val sound = if (ignite) SoundEvents.MAGMA_CUBE_SQUISH else SoundEvents.SLIME_ATTACK
         mob.playSound(sound, 1.0f, 1.0f)
@@ -457,7 +456,7 @@ object DragonTamerAbility {
         return SLIME
     }
 
-    private fun blink(player: ServerPlayer, mob: Enderman, target: LivingEntity?): Long? {
+    private fun blink(player: ServerPlayer, mob: EnderMan, target: LivingEntity?): Long? {
         val now = player.level().getServer().tickCount.toLong()
         val from = mob.position()
         val look = player.getViewVector(1.0f)
@@ -467,7 +466,7 @@ object DragonTamerAbility {
             val flat = Vec3(back.x, 0.0, back.z)
             val offset = if (flat.lengthSqr() < 1.0e-4) horizontalLook(player.yRot).scale(-1.5) else flat.normalize().scale(1.5)
             val dest = target.position().add(offset)
-            arrived = mob.randomTeleport(dest.x, dest.y, dest.z, true) { _ -> false }
+            arrived = mob.randomTeleport(dest.x, dest.y, dest.z, true)
         }
         if (!arrived) {
             val eye = player.eyePosition
@@ -477,7 +476,7 @@ object DragonTamerAbility {
             )
             if (hit.type != HitResult.Type.BLOCK) return null
             val dest = hit.location.subtract(look.scale(0.8))
-            if (!mob.randomTeleport(dest.x, dest.y, dest.z, true) { _ -> false }) return null
+            if (!mob.randomTeleport(dest.x, dest.y, dest.z, true)) return null
         }
         mob.setYRot(player.yRot)
         mob.setYHeadRot(player.yRot)
@@ -561,7 +560,7 @@ object DragonTamerAbility {
         val hit = mob.doHurtTarget(player.level(), target)
         // 铁傀儡进了攻击动作就会挥臂, 打空也吃冷却, 免得连点把方块放出去
         if (!hit && mob !is IronGolem) return null
-        mob.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true)
+        mob.swing(InteractionHand.MAIN_HAND, true)
         if (hit && sound != null) mob.playSound(sound, 1.0f, 1.0f)
         return cooldown
     }

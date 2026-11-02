@@ -71,7 +71,7 @@ object PerkEffects {
      *  ★ 必须用 offerOrDrop: PlayerEntity.giveItemStack 内部只是 inventory.insertStack,
      *  塞不下的部分会留在传入对象里被静默丢弃 —— 原版"给不下就掉"的 API 是 PlayerInventory.offerOrDrop。 */
     fun giveStack(player: ServerPlayer, stack: ItemStack) {
-        player.inventory.placeItemBackInInventory(stack, net.minecraft.util.Prediction.SERVER_ONLY)
+        player.inventory.placeItemBackInInventory(stack)
     }
 
     /** 生成一份"该方块的真实掉落"作为掉落物 (自动含时运/精准采集结果; 标准拾取延迟)。
