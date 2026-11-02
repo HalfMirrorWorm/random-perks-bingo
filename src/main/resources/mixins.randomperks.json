@@ -14,8 +14,8 @@
     "ServerWorldAccessor",
     "WanderingTraderManagerInvoker",
     "ProjectileHitInvoker",
-    "DragonTamerActMixin",
-    "DragonTamerVehicleMoveMixin",
+    "DragonTamerControlMixin",
+    "DragonTamerBlinkMixin",
     "ReviveArmorMixin",
     "SmallDamageGuardMixin",
     "VillagerFillRecipesInvoker",
@@ -65,7 +65,6 @@
     "BigBackpackSlotMixin",
     "BigBackpackPlayerInventoryMixin",
     "VillageHeroTradeMixin",
-    "BingoMenuButtonMixin",
     "BingoMenuPageMixin"
   ],
   "client": [
@@ -81,7 +80,8 @@
     "BigSnowballRendererMixin",
     "BigSnowballRenderStateMixin",
     "OmnimovementMixin",
-    "ScreenInvoker",
+    "DragonTamerControlClientMixin",
+    "DragonTamerTravelMixin",
     "SoulCameraMixin",
     "SoulHandMixin",
     "SoulLookMixin",

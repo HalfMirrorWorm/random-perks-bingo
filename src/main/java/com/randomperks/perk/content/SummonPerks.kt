@@ -32,9 +32,10 @@ import kotlin.math.sin
  */
 object SummonPerks {
 
-    /** 金 · 唤法: **驯龙高手** —— 右键任意生物即可骑乘 (玩家与 Boss 除外);
-     *  骑乘时用 WASD 控制移动, 右键让坐骑使用它的能力 (远程攻击 / 近战 / 火球等),
-     *  潜行下马。由 [com.randomperks.game.DragonTamerService] 实现。 */
+    /** 金 · 唤法: **驯龙高手** —— 右键任意生物即可骑乘 (玩家与 Boss 除外)。
+     *  地面坐骑 WASD 移动、跳跃起跳; 飞行坐骑沿准星飞, 跳跃上升, 松开悬停。
+     *  右键让坐骑使出它自己的招式, 潜行下马。
+     *  由 [com.randomperks.game.DragonTamerService] 实现。 */
     object DragonTamer : PerkDefinition {
         override val id = "summon_dragon_tamer"
         override val rarity = PerkRarity.GOLD

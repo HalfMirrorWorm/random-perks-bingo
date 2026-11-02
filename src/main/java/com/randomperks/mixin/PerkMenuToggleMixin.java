@@ -39,9 +39,9 @@ public class PerkMenuToggleMixin {
     private static final double TILE_HEIGHT = 0.7;
     private static final double TILE_MARGIN = 0.1;
     private static final double TILE_OFFSET_X = (TILE_WIDTH + TILE_MARGIN) / 2.0;
-    /** 第三行格子的中心 y (面板原点下方) */
+    /** 第三行格子的中心 y (面板原点下方)。registerTileButton 的 y 是格子底边。 */
     private static final double ROW_3_Y = -(0.6 + 3 * TILE_HEIGHT + 2 * TILE_MARGIN);
-    /** 「特性」按钮原本的中心 y */
+    /** 「特性」按钮原本的底边 y */
     private static final double FEATURES_ORIGINAL_Y = -(0.6 + 2 * TILE_HEIGHT + 2 * TILE_MARGIN + 0.4);
 
     /** GameModesKt 里「特性」按钮的唯一一次注册调用 */

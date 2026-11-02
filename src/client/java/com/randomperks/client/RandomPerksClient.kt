@@ -25,7 +25,6 @@ object RandomPerksClient : ClientModInitializer {
         AutoBridgeClient.register()
         Keybinds.register()
         AbilityHandler.register()
-        YaclPerkButton.register()
         com.randomperks.client.render.XrayRenderer.register()
 
         // UI 渲染自测 (开发用): 环境变量 randomperks_UITEST=true 时

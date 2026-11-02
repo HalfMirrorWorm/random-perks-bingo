@@ -1,78 +1,90 @@
 package com.randomperks.mixin;
 
-import com.randomperks.menu.BingoMenuBridge;
 import com.randomperks.recap.RecapService;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
-import me.jfenn.bingo.common.card.CardService;
-import me.jfenn.bingo.common.config.ConfigService;
-import me.jfenn.bingo.common.game.GameService;
 import me.jfenn.bingo.common.menu.ButtonKt;
 import me.jfenn.bingo.common.menu.CommonKt;
 import me.jfenn.bingo.common.menu.ConstantProperty;
 import me.jfenn.bingo.common.menu.MenuComponent;
-import me.jfenn.bingo.common.options.BingoOptions;
-import me.jfenn.bingo.common.options.OptionsService;
-import me.jfenn.bingo.common.state.BingoState;
-import me.jfenn.bingo.koin.core.scope.Scope;
 import me.jfenn.bingo.platform.IPlayerHandle;
 import me.jfenn.bingo.platform.text.IText;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Formatting;
 import org.joml.Vector3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.List;
 
 /**
- * 在 bingo 大厅菜单的 ROOT 页里, **「开始游戏」按钮正下方**加一个「上局回顾」按钮。
+ * 把大厅「开始游戏」按钮上下对切。
  *
- * <p>做法: 在 {@code MenuPageKt#createRootPage} 返回时拿到刚建好的 {@link MenuComponent},
- * 再从 {@link BingoMenuBridge} 取出"最后注册的按钮"(就是开始按钮) 的位置/宽高,
- * 用同样的宽度、0.35 的高度挤在它下面 (菜单底部正好还有约 0.4 的空间)。
+ * <p>上半仍是开始游戏, 下半是「上局回顾」, 外框还是原来那一块。
+ * 中间留一条 0.05 的缝, 两块混凝土才不会贴成一个按钮。
  *
- * <p>点击后由服务端把上一局的回顾整包发给该玩家, 客户端弹出回顾界面。
- * 权限判定直接放行 (不继承 bingo 的 CONFIGURE_GAME) —— 所有玩家都能看回顾。
- *
- * <p>本 mixin 的 {@code remap = false}: 目标类和参数都是 bingo 自己的类, 与 MC 混淆无关。
+ * <p>bingo 的按钮坐标是底边, 方块从底边向上长。对切时下半留在原底边,
+ * 上半的底边抬到缝的上面。必须在 {@code createRootPage$lambda$0} 里改,
+ * 这个 lambda 才是真正登记开始按钮的地方。
  */
 @Mixin(targets = "me.jfenn.bingo.common.menu.MenuPageKt", remap = false)
 public class BingoMenuPageMixin {
 
-    /** 按钮高度: 开始按钮下方到菜单底部只剩约 0.4 */
-    private static final double RECAP_BUTTON_HEIGHT = 0.35;
-    private static final double RECAP_BUTTON_GAP = 0.05;
+    /** 两块按钮之间的缝, 避免贴在一起分不出点击区域 */
+    private static final double SPLIT_GAP = 0.05;
 
-    @Inject(method = "createRootPage", at = @At("RETURN"), remap = false)
-    private static void randomperks$addRecapButton(
-            Scope koinScope,
-            Vector3d position,
-            BingoState state,
-            BingoOptions options,
-            OptionsService optionsService,
-            GameService gameService,
-            CardService cardService,
-            ConfigService configService,
-            CallbackInfoReturnable<MenuComponent> cir
-    ) {
-        MenuComponent component = cir.getReturnValue();
-        if (component == null) return;
+    private static final String TILE_BUTTON =
+            "Lme/jfenn/bingo/common/menu/ButtonKt;registerTileButton$default("
+                    + "Lme/jfenn/bingo/common/menu/MenuComponent;"
+                    + "Lorg/joml/Vector3d;"
+                    + "Ljava/lang/String;"
+                    + "Lme/jfenn/bingo/platform/text/IText;"
+                    + "Lme/jfenn/bingo/common/menu/Property;"
+                    + "F"
+                    + "Ljava/util/List;"
+                    + "Lme/jfenn/bingo/common/menu/Property;"
+                    + "Lme/jfenn/bingo/common/menu/Property;"
+                    + "Ljava/lang/String;"
+                    + "Lme/jfenn/bingo/platform/IDisplayEntity$Brightness;"
+                    + "DD"
+                    + "Lkotlin/jvm/functions/Function1;"
+                    + "Lkotlin/jvm/functions/Function1;"
+                    + "ILjava/lang/Object;)V";
 
-        // 防御: 只有当"最后注册的按钮"确实属于这个 ROOT 组件时才加
-        if (BingoMenuBridge.lastComponent != component) return;
-        Vector3d start = BingoMenuBridge.lastPosition;
-        if (start == null) return;
+    /**
+     * {@code createRootPage$lambda$0} 里第二次 registerTileButton 就是开始游戏
+     * (第一次是「重置默认」, 高度 0.55; 开始按钮高度约 1.6)。
+     */
+    @ModifyArgs(
+            method = "createRootPage$lambda$0",
+            at = @At(value = "INVOKE", target = TILE_BUTTON, ordinal = 1),
+            remap = false
+    )
+    private static void randomperks$splitStartButton(Args args) {
+        MenuComponent component = args.get(0);
+        Vector3d position = args.get(1);
+        double width = args.get(11);
+        double height = args.get(12);
+        if (component == null || position == null || height <= SPLIT_GAP) {
+            return;
+        }
 
-        double width = BingoMenuBridge.lastWidth;
-        double startHeight = BingoMenuBridge.lastHeight;
-        double y = start.y - startHeight / 2.0 - RECAP_BUTTON_GAP - RECAP_BUTTON_HEIGHT / 2.0;
+        double half = (height - SPLIT_GAP) / 2.0;
+        Vector3d bottom = new Vector3d(position);
 
         IText label = component.getText().translatable(
-                "random-perks-bingo.recap.title", "Last Game Recap"
+                "random-perks-bingo.recap.title", "上局回顾"
         );
-
+        List<IText> tooltip = List.of(
+                component.getText().translatable("random-perks-bingo.recap.title", "上局回顾")
+                        .formatted(Formatting.GREEN),
+                component.getText().translatable(
+                        "random-perks-bingo.recap.menu.tooltip",
+                        "查看上一局的词条选取和队伍完成顺序"
+                )
+        );
         Function1<IPlayerHandle, Boolean> everyone = player -> Boolean.TRUE;
         Function1<IPlayerHandle, Unit> onClick = player -> {
             ServerPlayerEntity serverPlayer = player.getPlayer();
@@ -82,22 +94,27 @@ public class BingoMenuPageMixin {
             return Unit.INSTANCE;
         };
 
+        // 下半: 底边不动
         ButtonKt.registerTileButton(
                 component,
-                new Vector3d(start.x, y, 0.0),
-                null,                                          // icon
-                label,                                         // text
-                new ConstantProperty<>(label),                 // textProp
-                0.7f,                                          // textScale (MENU_TEXT_SCALE)
-                null,                                          // tooltip
-                new ConstantProperty<List<IText>>(null),       // tooltipProp
-                new ConstantProperty<>(false),                 // isActiveProp
-                null,                                          // blockIdentifier (默认材质)
+                bottom,
+                null,
+                label,
+                new ConstantProperty<>(label),
+                CommonKt.MENU_TEXT_SCALE,
+                tooltip,
+                new ConstantProperty<>(tooltip),
+                new ConstantProperty<>(false),
+                null,
                 CommonKt.getMENU_BRIGHTNESS_ALT(),
                 width,
-                RECAP_BUTTON_HEIGHT,
+                half,
                 everyone,
                 onClick
         );
+
+        // 上半: 开始游戏, 底边抬到缝上面, 高度改成一半
+        args.set(1, new Vector3d(bottom).add(0.0, half + SPLIT_GAP, 0.0));
+        args.set(12, half);
     }
 }
