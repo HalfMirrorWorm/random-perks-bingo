@@ -51,7 +51,6 @@ import net.minecraft.village.TradeOffers
 import net.minecraft.village.VillagerData
 import net.minecraft.village.VillagerProfession
 import net.minecraft.village.VillagerType
-import net.minecraft.world.Heightmap
 import net.minecraft.world.WanderingTraderManager
 import net.minecraft.world.poi.PointOfInterestTypes
 import net.minecraft.world.gen.structure.StructureKeys
@@ -568,8 +567,8 @@ object SeekerPerks {
     }
 
     /** 蓝 · 秘藏 · 贮藏: **老牧师** —— 在词条列表点击使用, 获得 16 个绿宝石,
-     *  并在脚下召唤一只**大师级牧师**村民; 但他的交易项会被随机标成 **缺货** 0~3 项
-     *  (交易项还在, 只是点不了)。 */
+     *  并在玩家当前位置召唤一只**大师级牧师**村民; 但他的交易项会被随机标成 **缺货** 0~3 项
+     *  (交易项还在, 只是点不了)。不往周围或地表另找落点。 */
     object OldPriest : PerkDefinition {
         override val id = "seeker_old_priest"
         override val rarity = PerkRarity.BLUE
@@ -588,7 +587,7 @@ object SeekerPerks {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.EMERALD, EMERALD_REWARD))
 
             val world = ctx.player.world as? ServerWorld ?: return
-            if (!spawnAt(world, ctx.player.blockPos)) {
+            if (!spawnAt(world, ctx.player)) {
                 ctx.player.sendMessage(
                     Text.translatable("random-perks-bingo.message.old_priest_failed"),
                     false,
@@ -600,9 +599,7 @@ object SeekerPerks {
             PerkGrantService.syncAbilities(ctx.player)
         }
 
-        private fun spawnAt(world: ServerWorld, center: BlockPos): Boolean {
-            val pos = if (standable(world, center)) center else nearbyStandable(world, center) ?: center
-
+        private fun spawnAt(world: ServerWorld, player: ServerPlayerEntity): Boolean {
             val villager = EntityType.VILLAGER.create(world, SpawnReason.EVENT) ?: return false
 
             val registryManager = world.registryManager
@@ -619,8 +616,8 @@ object SeekerPerks {
             villager.setOffers(buildMasterClericOffers(villager, world))
 
             villager.refreshPositionAndAngles(
-                pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
-                world.random.nextFloat() * 360f, 0f,
+                player.x, player.y, player.z,
+                player.yaw, 0f,
             )
             villager.setPersistent()
             world.spawnEntity(villager)
@@ -642,9 +639,6 @@ object SeekerPerks {
             }
             return true
         }
-
-        private fun standable(world: ServerWorld, pos: BlockPos): Boolean =
-            world.getBlockState(pos).isAir && world.getBlockState(pos.down()).isSolidBlock(world, pos.down())
 
         /**
          * 按 1→5 级从原版交易表构建大师级牧师的交易列表。
@@ -674,15 +668,6 @@ object SeekerPerks {
                 }
             }
             return offers
-        }
-
-        private fun nearbyStandable(world: ServerWorld, center: BlockPos): BlockPos? {
-            for (i in 0 until 12) {
-                val candidate = center.add(world.random.nextInt(33) - 16, 0, world.random.nextInt(33) - 16)
-                val top = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, candidate)
-                if (standable(world, top)) return top
-            }
-            return null
         }
     }
 
