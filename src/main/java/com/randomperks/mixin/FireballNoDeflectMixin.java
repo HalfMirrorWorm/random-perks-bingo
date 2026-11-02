@@ -1,9 +1,9 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.FireballService;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ProjectileDeflection;
-import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * <p>只拦 {@code fromAttack = true} 的情况 (即玩家近战打弹射物) ——
  * 其他来源的偏转 (例如世界边界) 不受影响, 也不会出现"穿过实体不爆炸"的副作用。
  */
-@Mixin(ProjectileEntity.class)
+@Mixin(Projectile.class)
 public class FireballNoDeflectMixin {
 
     @Inject(method = "deflect", at = @At("HEAD"), cancellable = true)
@@ -28,8 +28,8 @@ public class FireballNoDeflectMixin {
                                        boolean fromAttack, CallbackInfoReturnable<Boolean> cir) {
         if (!fromAttack) return;
 
-        ProjectileEntity self = (ProjectileEntity) (Object) this;
-        if (!self.getCommandTags().contains(FireballService.FIREBALL_TAG)) return;
+        Projectile self = (Projectile) (Object) this;
+        if (!self.entityTags().contains(FireballService.FIREBALL_TAG)) return;
 
         cir.setReturnValue(false);
     }

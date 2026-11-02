@@ -1,9 +1,9 @@
 package com.randomperks.client.screen
 
 import com.randomperks.network.PerkOptionData
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.text.Text
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.network.chat.Component
 
 /**
  * 词条列表的排序方式 (V 键「我的词条」与 K 键「词条百科」共用)。
@@ -28,7 +28,7 @@ enum class PerkSortMode(val id: String) {
         DEFAULT -> perks
         NAME -> {
             val comparator = compareBy<PerkOptionData> {
-                Text.translatable("random-perks-bingo.perk.${it.id}.name").string.lowercase()
+                Component.translatable("random-perks-bingo.perk.${it.id}.name").string.lowercase()
             }
             if (descending) perks.sortedWith(comparator.reversed()) else perks.sortedWith(comparator)
         }
@@ -39,10 +39,10 @@ enum class PerkSortMode(val id: String) {
     }
 
     /** 未选中时的按钮文字 (默认 / 名称 / 等级) */
-    fun label(): Text = Text.translatable("random-perks-bingo.sort.$id")
+    fun label(): Component = Component.translatable("random-perks-bingo.sort.$id")
 
     /** 选中时的按钮文字: 非默认模式带上当前方向 (名称↑ / 名称↓ / 等级↑ / 等级↓) */
-    fun label(descending: Boolean): Text {
+    fun label(descending: Boolean): Component {
         val base = label()
         if (this == DEFAULT) return base
         return base.copy().append(if (descending) "↓" else "↑")
@@ -93,8 +93,8 @@ class PerkSortState {
  * @return 每个按钮的 mode 与点击区域 `[x, y, w, h]`, 供调用方做命中检测
  */
 fun drawPerkSortButtons(
-    context: DrawContext,
-    textRenderer: TextRenderer,
+    context: GuiGraphicsExtractor,
+    font: Font,
     right: Int,
     top: Int,
     state: PerkSortState,
@@ -108,7 +108,7 @@ fun drawPerkSortButtons(
     for (mode in PerkSortMode.entries.reversed()) {
         val selected = mode == state.mode
         val label = if (selected) mode.label(state.isDescending) else mode.label()
-        val w = textRenderer.getWidth(label) + 8
+        val w = font.width(label) + 8
         x -= w
 
         val hover = mouseX in x until (x + w) && mouseY in top until (top + h)
@@ -117,8 +117,8 @@ fun drawPerkSortButtons(
             hover -> ScreenStyle.CARD_BG
             else -> 0x40000000
         })
-        context.drawCenteredTextWithShadow(
-            textRenderer, label, x + w / 2, top + 2,
+        context.centeredText(
+            font, label, x + w / 2, top + 2,
             if (selected) ScreenStyle.TEXT_HIGHLIGHT else ScreenStyle.TEXT_DIM,
         )
 

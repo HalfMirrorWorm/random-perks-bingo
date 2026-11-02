@@ -1,10 +1,10 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.passive.CatEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,20 +19,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * {@link MobTargetSelectorAccessor} 而不是 @Shadow —— 没有 refmap 时 @Shadow 在目标类
  * 自身找不到继承字段, 会在 APPLY 阶段报 "field_6185 was not located"。
  */
-@Mixin(CatEntity.class)
+@Mixin(Cat.class)
 public class CatTargetMixin {
 
-    @Inject(method = "initGoals", at = @At("TAIL"))
+    @Inject(method = "registerGoals", at = @At("TAIL"))
     private void randomperks$huntOldWu(CallbackInfo ci) {
-        CatEntity self = (CatEntity) (Object) this;
+        Cat self = (Cat) (Object) this;
 
-        ((MobTargetSelectorAccessor) this).randomperks$getTargetSelector().add(1, new ActiveTargetGoal<>(
+        ((MobTargetSelectorAccessor) this).randomperks$getTargetSelector().addGoal(1, new NearestAttackableTargetGoal<>(
             self,
-            PlayerEntity.class,
+            Player.class,
             true,
             // 只有**未驯服**的猫才会袭击持词条的玩家 —— 家养的猫不会被词条策反
-            (entity, world) -> !self.isTamed()
-                && entity instanceof ServerPlayerEntity player
+            (entity, world) -> !self.isTame()
+                && entity instanceof ServerPlayer player
                 && PerkBoostQuery.INSTANCE.hasYowl(player)
         ));
     }

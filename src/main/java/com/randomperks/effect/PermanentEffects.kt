@@ -1,11 +1,11 @@
 package com.randomperks.effect
 
 import com.randomperks.state.PerkStateManager
-import net.minecraft.entity.effect.StatusEffect
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.world.effect.MobEffect
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.core.Holder
+import net.minecraft.server.level.ServerPlayer
 
 /**
  * "本局永久"状态效果的登记与**事件驱动**重挂 (无任何周期轮询)。
@@ -19,33 +19,33 @@ import net.minecraft.server.network.ServerPlayerEntity
 object PermanentEffects {
 
     private data class Entry(
-        val effect: RegistryEntry<StatusEffect>,
+        val effect: Holder<MobEffect>,
         val perkId: String,
         val amplifier: Int,
     )
 
     /** 永久效果 → 授予它的词条 / 增幅等级 */
     private val ENTRIES = listOf(
-        Entry(StatusEffects.NIGHT_VISION, "delver_night_vision", 0),
-        Entry(StatusEffects.RESISTANCE, "delver_toughness", 0),
-        Entry(StatusEffects.HASTE, "delver_haste", 1),
-        Entry(StatusEffects.JUMP_BOOST, "swift_jump", 0),
-        Entry(StatusEffects.DOLPHINS_GRACE, "swift_gura_shark", 0),
+        Entry(MobEffects.NIGHT_VISION, "delver_night_vision", 0),
+        Entry(MobEffects.RESISTANCE, "delver_toughness", 0),
+        Entry(MobEffects.HASTE, "delver_haste", 1),
+        Entry(MobEffects.JUMP_BOOST, "swift_jump", 0),
+        Entry(MobEffects.DOLPHINS_GRACE, "swift_gura_shark", 0),
     )
 
     /** 效果被移除 (由 EffectPersistMixin 在所有移除路径的汇聚点调用) */
-    fun onEffectsRemoved(player: ServerPlayerEntity, removed: Collection<StatusEffectInstance>) {
+    fun onEffectsRemoved(player: ServerPlayer, removed: Collection<MobEffectInstance>) {
         val affected = ENTRIES.filter { entry ->
-            removed.any { it.effectType.value() == entry.effect.value() }
+            removed.any { it.effect.value() == entry.effect.value() }
         }
         if (affected.isEmpty()) return
 
-        player.server?.execute {
+        player.level().getServer().execute {
             for (entry in affected) applyIfOwned(player, entry)
         }
     }
 
-    private fun applyIfOwned(player: ServerPlayerEntity, entry: Entry) {
+    private fun applyIfOwned(player: ServerPlayer, entry: Entry) {
         if (!player.isAlive) return
         if (PerkStateManager.get(player.uuid)?.hasPerk(entry.perkId) != true) return
         PerkEffects.permanentEffect(player, entry.effect, entry.amplifier)

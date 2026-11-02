@@ -2,16 +2,16 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.consume.UseAction;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -38,33 +38,33 @@ public class OldSchoolBlockMixin {
     private static final int BLOCK_USE_TICKS = 72000;
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
-    private void randomperks$startSwordBlock(World world, PlayerEntity user, Hand hand,
-                                             CallbackInfoReturnable<ActionResult> cir) {
-        ItemStack stack = user.getStackInHand(hand);
-        if (!stack.isIn(ItemTags.SWORDS)) return;
+    private void randomperks$startSwordBlock(Level world, Player user, InteractionHand hand,
+                                             CallbackInfoReturnable<InteractionResult> cir) {
+        ItemStack stack = user.getItemInHand(hand);
+        if (!stack.is(ItemTags.SWORDS)) return;
         if (!hasVeteran(user)) return;
 
         // ★ 必须自己调 setCurrentHand —— 原版里这一步是 ConsumableComponent.use 内部做的
         //   (吃东西时就是它调的), 框架并不会因为返回 consume 就自动进入"使用中"。
         //   漏掉这一句: 客户端/服务端都不会进入 using 状态, 格挡姿势、减伤、减速全都不会生效。
-        user.setCurrentHand(hand);
+        user.startUsingItem(hand);
 
         // CONSUME = 使用成功但不挥手臂 —— 右键举剑不该有挥手动作
-        cir.setReturnValue(ActionResult.CONSUME);
+        cir.setReturnValue(InteractionResult.CONSUME);
     }
 
-    @Inject(method = "getMaxUseTime", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getUseDuration", at = @At("HEAD"), cancellable = true)
     private void randomperks$swordBlockDuration(ItemStack stack, LivingEntity user,
                                                 CallbackInfoReturnable<Integer> cir) {
-        if (stack.isIn(ItemTags.SWORDS)) {
+        if (stack.is(ItemTags.SWORDS)) {
             cir.setReturnValue(BLOCK_USE_TICKS);
         }
     }
 
-    @Inject(method = "getUseAction", at = @At("HEAD"), cancellable = true)
-    private void randomperks$swordBlockAction(ItemStack stack, CallbackInfoReturnable<UseAction> cir) {
-        if (stack.isIn(ItemTags.SWORDS)) {
-            cir.setReturnValue(UseAction.BLOCK);
+    @Inject(method = "getUseAnimation", at = @At("HEAD"), cancellable = true)
+    private void randomperks$swordBlockAction(ItemStack stack, CallbackInfoReturnable<ItemUseAnimation> cir) {
+        if (stack.is(ItemTags.SWORDS)) {
+            cir.setReturnValue(ItemUseAnimation.BLOCK);
         }
     }
 
@@ -75,11 +75,11 @@ public class OldSchoolBlockMixin {
      * 都会摆出格挡姿势 —— 所以没有词条的玩家必须在**客户端**就被拦下, 否则看起来"谁都能格挡"。
      * (客户端标志由 PerkAbilitySyncS2C 同步; 服务端还会再校验一次。)
      */
-    private static boolean hasVeteran(PlayerEntity user) {
-        if (user.getWorld().isClient()) {
+    private static boolean hasVeteran(Player user) {
+        if (user.level().isClientSide()) {
             return ClientPerkFlags.has("hunter_veteran");
         }
-        return user instanceof ServerPlayerEntity player
+        return user instanceof ServerPlayer player
                 && PerkBoostQuery.INSTANCE.hasOldSchoolCombat(player);
     }
 }

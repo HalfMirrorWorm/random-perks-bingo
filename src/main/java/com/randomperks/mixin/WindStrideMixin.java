@@ -1,8 +1,8 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +18,7 @@ public class WindStrideMixin {
 
     @Inject(method = "setSprinting(Z)V", at = @At("TAIL"))
     private void randomperks$windStride(boolean sprinting, CallbackInfo ci) {
-        if (!((Object) this instanceof ServerPlayerEntity player)) return;
+        if (!((Object) this instanceof ServerPlayer player)) return;
         PerkBoostQuery.INSTANCE.updateWindStride(player, sprinting);
     }
 }

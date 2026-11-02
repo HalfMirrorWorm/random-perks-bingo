@@ -2,9 +2,9 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,21 +18,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * 服务端决定实际伤害; 客户端决定准星/冷却条显示, 所以两边都要放行。
  */
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public class OldSchoolCombatMixin {
 
     private static final String VETERAN_PERK = "hunter_veteran";
 
-    @Inject(method = "getAttackCooldownProgress", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getAttackStrengthScale", at = @At("HEAD"), cancellable = true)
     private void randomperks$alwaysCharged(float baseTime, CallbackInfoReturnable<Float> cir) {
-        PlayerEntity self = (PlayerEntity) (Object) this;
-        if (!self.getMainHandStack().isIn(ItemTags.SWORDS)) return;
+        Player self = (Player) (Object) this;
+        if (!self.getMainHandItem().is(ItemTags.SWORDS)) return;
 
-        if (self.getWorld().isClient()) {
+        if (self.level().isClientSide()) {
             if (ClientPerkFlags.has(VETERAN_PERK)) cir.setReturnValue(1.0F);
             return;
         }
-        if (self instanceof ServerPlayerEntity player && PerkBoostQuery.INSTANCE.hasOldSchoolCombat(player)) {
+        if (self instanceof ServerPlayer player && PerkBoostQuery.INSTANCE.hasOldSchoolCombat(player)) {
             cir.setReturnValue(1.0F);
         }
     }

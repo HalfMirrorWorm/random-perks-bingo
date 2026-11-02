@@ -6,10 +6,12 @@ import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.minecraft.core.registries.Registries
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.entity.animal.pig.PigSoundVariants
 
 /**
  * "变群友" (蓝 · 丰饶) 的服务端状态维护。
@@ -32,7 +34,7 @@ object PigMorphService {
     fun register() {
         // 每秒对账 (20 tick = 1 秒)
         ServerTickEvents.END_SERVER_TICK.register { server ->
-            if (server.ticks % 20 == 0) reconcile(server)
+            if (server.tickCount % 20 == 0) reconcile(server)
         }
 
         // 重生后重新对账一次 (UUID 不变, 但新实体的碰撞箱需要立即刷新)
@@ -55,10 +57,10 @@ object PigMorphService {
     }
 
     /** 立即按当前词条状态刷新某位玩家 (获得词条 / 重生时调用) */
-    fun refresh(player: ServerPlayerEntity) = apply(player)
+    fun refresh(player: ServerPlayer) = apply(player)
 
     private fun reconcile(server: MinecraftServer) {
-        val online = server.playerManager.playerList
+        val online = server.playerList.players
         for (player in online) apply(player)
 
         // 清掉已经不在线的玩家 UUID
@@ -71,21 +73,27 @@ object PigMorphService {
         }
     }
 
-    private fun apply(player: ServerPlayerEntity) {
+    private fun apply(player: ServerPlayer) {
         val wanted = PerkStateManager.get(player.uuid)?.hasPerk(PERK_ID) == true
         val changed = MorphState.isMorphed(player.uuid) != wanted
 
         if (changed) {
             MorphState.setMorphed(player.uuid, wanted)
-            broadcast(player.server, MorphS2C(player.uuid, wanted))
+            broadcast(player.level().getServer(), MorphS2C(player.uuid, wanted))
 
             // 变形的那一瞬间"哼"一声
             if (wanted) {
-                player.world.playSound(
+                val oink = player.level().registryAccess()
+                    .lookupOrThrow(Registries.PIG_SOUND_VARIANT)
+                    .getValueOrThrow(PigSoundVariants.CLASSIC)
+                    .adultSounds()
+                    .ambientSound()
+                    .value()
+                player.level().playSound(
                     null,
                     player.x, player.y, player.z,
-                    SoundEvents.ENTITY_PIG_AMBIENT,
-                    SoundCategory.NEUTRAL,
+                    oink,
+                    SoundSource.NEUTRAL,
                     1.0f,
                     0.9f + player.random.nextFloat() * 0.2f,
                 )
@@ -94,20 +102,20 @@ object PigMorphService {
 
         // ★ 即使 UUID 状态没变也要刷新碰撞箱: 重生会创建新的实体, 它的 boundingBox
         //   是新算的; 不调用的话新实体仍是普通玩家尺寸 (钻不过 1 格缝)。
-        player.calculateDimensions()
+        player.refreshDimensions()
     }
 
     /** 把"每位在线玩家是否是猪"完整发给某个客户端 (加入服务器时用) */
-    private fun syncTo(player: ServerPlayerEntity) {
-        val server = player.server ?: return
-        for (other in server.playerManager.playerList) {
+    private fun syncTo(player: ServerPlayer) {
+        val server = player.level().getServer()
+        for (other in server.playerList.players) {
             PerkNetworking.sendMorph(player, MorphS2C(other.uuid, MorphState.isMorphed(other.uuid)))
         }
     }
 
     private fun broadcast(server: MinecraftServer?, payload: MorphS2C) {
         server ?: return
-        for (target in server.playerManager.playerList) {
+        for (target in server.playerList.players) {
             PerkNetworking.sendMorph(target, payload)
         }
     }

@@ -3,15 +3,15 @@ package com.randomperks.mixin;
 import com.randomperks.game.PerkBoostQuery;
 import com.randomperks.network.BigSnowballS2C;
 import com.randomperks.network.PerkNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.BlazeEntity;
-import net.minecraft.entity.projectile.thrown.SnowballEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Blaze;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * 注: {@code Entity.commandTags} 是个普通字段、不在 TrackedData 里, **不会同步给客户端**,
  * 所以"变大"这件事只能靠单独的包通知 (BigSnowballS2C)。
  */
-@Mixin(SnowballEntity.class)
+@Mixin(Snowball.class)
 public class BigSnowballMixin {
 
     /** 服务端标记 (客户端看不到) */
@@ -44,43 +44,43 @@ public class BigSnowballMixin {
     private static final double LAUNCH = 0.35;
 
     @Inject(
-            method = "<init>(Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;)V",
+            method = "<init>(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;)V",
             at = @At("TAIL"))
-    private void randomperks$markBigSnowball(World world, LivingEntity owner, ItemStack stack, CallbackInfo ci) {
-        if (world.isClient()) return;
-        if (!(owner instanceof ServerPlayerEntity player)) return;
+    private void randomperks$markBigSnowball(Level world, LivingEntity owner, ItemStack stack, CallbackInfo ci) {
+        if (world.isClientSide()) return;
+        if (!(owner instanceof ServerPlayer player)) return;
         if (!PerkBoostQuery.INSTANCE.hasBigSnowball(player)) return;
 
-        SnowballEntity self = (SnowballEntity) (Object) this;
-        self.addCommandTag(TAG);
+        Snowball self = (Snowball) (Object) this;
+        self.addTag(TAG);
 
-        if (!(world instanceof ServerWorld serverWorld)) return;
+        if (!(world instanceof ServerLevel serverWorld)) return;
         BigSnowballS2C payload = new BigSnowballS2C(self.getId());
-        for (ServerPlayerEntity viewer : serverWorld.getServer().getPlayerManager().getPlayerList()) {
+        for (ServerPlayer viewer : serverWorld.getServer().getPlayerList().getPlayers()) {
             PerkNetworking.INSTANCE.sendBigSnowball(viewer, payload);
         }
     }
 
-    @Inject(method = "onEntityHit", at = @At("TAIL"))
+    @Inject(method = "onHitEntity", at = @At("TAIL"))
     private void randomperks$bigSnowballHit(EntityHitResult result, CallbackInfo ci) {
-        SnowballEntity self = (SnowballEntity) (Object) this;
-        if (!self.getCommandTags().contains(TAG)) return;
+        Snowball self = (Snowball) (Object) this;
+        if (!self.entityTags().contains(TAG)) return;
 
         Entity hit = result.getEntity();
         if (!(hit instanceof LivingEntity living)) return;
 
         // 只在服务端结算伤害 (onEntityHit 在两端都会跑, 客户端那次只负责粒子/音效)
-        if (!(self.getWorld() instanceof ServerWorld serverWorld)) return;
+        if (!(self.level() instanceof ServerLevel serverWorld)) return;
 
         // 原版对烈焰人本来就打 3 点, 这里只补差额, 免得叠加成 6 点
-        float amount = hit instanceof BlazeEntity ? 0.0f : DAMAGE;
+        float amount = hit instanceof Blaze ? 0.0f : DAMAGE;
         if (amount > 0.0f) {
-            living.damage(serverWorld, self.getDamageSources().thrown(self, self.getOwner()), amount);
+            living.hurtServer(serverWorld, self.damageSources().thrown(self, self.getOwner()), amount);
         }
 
         // 击飞: 水平推开 + 一点上抛
-        living.takeKnockback(KNOCKBACK, self.getX() - living.getX(), self.getZ() - living.getZ());
-        living.addVelocity(0.0, LAUNCH, 0.0);
-        living.velocityModified = true;
+        living.knockback(KNOCKBACK, self.getX() - living.getX(), self.getZ() - living.getZ(), living.damageSources().generic(), 0.0f);
+        living.push(0.0, LAUNCH, 0.0);
+        living.syncVelocity = true;
     }
 }

@@ -2,11 +2,12 @@ package com.randomperks.mixin;
 
 import com.randomperks.client.render.PigMorphRenderer;
 import com.randomperks.game.MorphState;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.util.SkinTextures;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,15 +28,15 @@ public class MorphRendererMixin {
     // 必须写完整描述符: getRenderer 有两个重载 (收实体 / 收渲染状态), 只写方法名会同时匹配,
     // 另一个的签名对不上 → 注入失败 → defaultRequire=1 直接崩启动
     @Inject(
-            method = "getRenderer(Lnet/minecraft/entity/Entity;)Lnet/minecraft/client/render/entity/EntityRenderer;",
+            method = "getRenderer(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/client/renderer/entity/EntityRenderer;",
             at = @At("HEAD"),
             cancellable = true)
     private void randomperks$pigRenderer(Entity entity, CallbackInfoReturnable<EntityRenderer> cir) {
-        if (!(entity instanceof AbstractClientPlayerEntity player)) return;
-        if (!MorphState.isMorphed(player.getUuid())) return;
+        if (!(entity instanceof AbstractClientPlayer player)) return;
+        if (!MorphState.isMorphed(player.getUUID())) return;
 
-        SkinTextures skin = player.getSkinTextures();
-        boolean slim = skin != null && skin.model() == SkinTextures.Model.SLIM;
+        PlayerSkin skin = player.getSkin();
+        boolean slim = skin != null && skin.model() == PlayerModelType.SLIM;
 
         PigMorphRenderer renderer = PigMorphRenderer.get(slim);
         if (renderer != null) {

@@ -2,14 +2,14 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
 import com.randomperks.game.PerkWorldEventService;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ConsumableComponent;
-import net.minecraft.component.type.FoodComponent;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.HungerManager;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.food.FoodData;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,19 +31,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * <p>另注: 蛋糕(方块)走 CakeBlock 自己的 HungerManager.add 路径, 不经过 ConsumableComponent,
  * 两个词条都不享受。
  */
-@Mixin(ConsumableComponent.class)
+@Mixin(Consumable.class)
 public class ConsumableBoostMixin {
 
-    @Inject(method = "finishConsumption", at = @At("TAIL"))
+    @Inject(method = "onConsume", at = @At("TAIL"))
     private void randomperks$afterEating(
-            World world,
+            Level world,
             LivingEntity user,
             ItemStack stack,
             CallbackInfoReturnable<ItemStack> cir
     ) {
-        if (!(user instanceof ServerPlayerEntity player)) return;
+        if (!(user instanceof ServerPlayer player)) return;
 
-        FoodComponent food = stack.get(DataComponentTypes.FOOD);
+        FoodProperties food = stack.get(DataComponents.FOOD);
         if (food == null) return;   // 只处理食物 (药水等没有 FOOD 组件)
 
         // 1) "小鸟胃": 恢复的饥饿值与饱和度翻倍
@@ -55,15 +55,15 @@ public class ConsumableBoostMixin {
             float bonusSaturation = food.saturation() * 1.0f;
 
             // 钳制方式与原版 HungerManager.addInternal 完全一致: 食物钳 20, 饱和度钳到新食物值
-            HungerManager hunger = player.getHungerManager();
+            FoodData hunger = player.getFoodData();
             int newFood = Math.min(20, hunger.getFoodLevel() + bonusFood);
             hunger.setFoodLevel(newFood);
-            hunger.setSaturationLevel(Math.min(newFood, hunger.getSaturationLevel() + bonusSaturation));
+            hunger.setSaturation(Math.min(newFood, hunger.getSaturationLevel() + bonusSaturation));
         }
 
         // 2) "丰盛大餐": 吃完一份食物时饱食度已满 → 随机炖菜效果
         //    (放在小鸟胃之后, 让"翻倍之后才满"也算满)
-        if (player.getHungerManager().getFoodLevel() >= 20) {
+        if (player.getFoodData().getFoodLevel() >= 20) {
             PerkWorldEventService.INSTANCE.dispatchFoodEaten(player);
         }
     }

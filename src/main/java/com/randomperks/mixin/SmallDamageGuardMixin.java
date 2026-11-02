@@ -1,10 +1,10 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,15 +20,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public class SmallDamageGuardMixin {
 
-    @Inject(method = "modifyAppliedDamage", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getDamageAfterMagicAbsorb", at = @At("RETURN"), cancellable = true)
     private void randomperks$clampSmallDamage(
             DamageSource source,
             float amount,
             CallbackInfoReturnable<Float> cir
     ) {
-        if (!((Object) this instanceof ServerPlayerEntity player)) return;
+        if (!((Object) this instanceof ServerPlayer player)) return;
         if (!PerkBoostQuery.INSTANCE.hasSmallDamageGuard(player)) return;
-        if (source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
+        if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
 
         float modified = cir.getReturnValue();
         if (modified > 1.0F && modified <= 5.0F) {

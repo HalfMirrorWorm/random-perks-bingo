@@ -1,10 +1,9 @@
 package com.randomperks.mixin;
 
 import com.randomperks.client.SoulCameraClient;
-import net.minecraft.client.render.Camera;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
+import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,25 +21,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class SoulCameraMixin {
 
     @Shadow
-    protected abstract void setPos(Vec3d pos);
+    protected abstract void setPosition(Vec3 pos);
 
     @Shadow
     protected abstract void setRotation(float yaw, float pitch);
 
     @Shadow
-    private boolean thirdPerson;
+    private boolean detached;
 
     @Inject(method = "update", at = @At("TAIL"))
-    private void randomperks$applySoulCamera(BlockView area, Entity focusedEntity, boolean thirdPerson,
-                                             boolean inverseView, float tickDelta, CallbackInfo ci) {
+    private void randomperks$applySoulCamera(DeltaTracker tickDelta, CallbackInfo ci) {
         if (!SoulCameraClient.active) return;
 
         SoulCameraClient.INSTANCE.updatePerFrame();
 
-        this.setPos(SoulCameraClient.pos);
+        this.setPosition(SoulCameraClient.pos);
         this.setRotation(SoulCameraClient.yaw, SoulCameraClient.pitch);
         // 让 WorldRenderer 把"相机实体"(也就是留在原地的身体)照常渲染出来;
         // 第一人称手部由 SoulHandMixin 另外取消 (灵魂没有手)
-        this.thirdPerson = true;
+        this.detached = true;
     }
 }

@@ -1,7 +1,8 @@
 package com.randomperks.client.screen
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.util.Formatting
+import net.minecraft.client.Minecraft
+import net.minecraft.world.scores.TeamColor
+import java.util.Optional
 import java.util.UUID
 
 /**
@@ -12,20 +13,20 @@ object TeamColorUtil {
 
     fun forPlayer(uuid: UUID?): Int {
         if (uuid == null) return ScreenStyle.TEXT_NAME
-        val entry = MinecraftClient.getInstance().networkHandler?.getPlayerListEntry(uuid)
+        val entry = Minecraft.getInstance().connection?.getPlayerInfo(uuid)
             ?: return ScreenStyle.TEXT_NAME
-        return fromTeamColor(entry.scoreboardTeam?.color)
+        return fromTeamColor(entry.team?.color)
     }
 
     fun forPlayerName(name: String): Int {
-        val handler = MinecraftClient.getInstance().networkHandler ?: return ScreenStyle.TEXT_NAME
-        val entry = handler.playerList.firstOrNull { it.profile.name == name }
+        val handler = Minecraft.getInstance().connection ?: return ScreenStyle.TEXT_NAME
+        val entry = handler.onlinePlayers.firstOrNull { it.profile.name == name }
             ?: return ScreenStyle.TEXT_NAME
-        return fromTeamColor(entry.scoreboardTeam?.color)
+        return fromTeamColor(entry.team?.color)
     }
 
-    private fun fromTeamColor(color: Formatting?): Int {
-        val rgb = color?.colorValue ?: return ScreenStyle.TEXT_NAME
+    private fun fromTeamColor(color: Optional<TeamColor>?): Int {
+        val rgb = color?.orElse(null)?.rgb() ?: return ScreenStyle.TEXT_NAME
         return 0xFF000000.toInt() or (rgb and 0xFFFFFF)
     }
 }

@@ -1,10 +1,11 @@
 package com.randomperks.client.screen
 
+import net.minecraft.client.input.MouseButtonEvent
 import com.randomperks.client.net.ClientPerkNetworking
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.item.ItemStack
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.Component
 
 /**
  * "顺手牵羊"的选择界面: 显示目标玩家背包 (9×4 网格), 点击一格偷取。
@@ -12,7 +13,7 @@ import net.minecraft.text.Text
 class StealScreen(
     private val targetName: String,
     private val items: List<ItemStack>,
-) : Screen(Text.translatable("random-perks-bingo.screen.steal", targetName)) {
+) : Screen(Component.translatable("random-perks-bingo.screen.steal", targetName)) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -33,20 +34,20 @@ class StealScreen(
         gridTop = (height - ROWS * CELL) / 2 + 6
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
-        val titleWidth = textRenderer.getWidth(title)
+        val titleWidth = font.width(title)
         PlayerHeadRenderer.drawByName(context, targetName, width / 2 - titleWidth / 2 - 12, gridTop - 34)
-        context.drawCenteredTextWithShadow(
-            textRenderer,
+        context.centeredText(
+            font,
             title,
             width / 2, gridTop - 30,
             TeamColorUtil.forPlayerName(targetName),
         )
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.steal.hint"),
+        context.centeredText(
+            font,
+            Component.translatable("random-perks-bingo.steal.hint"),
             width / 2, gridTop - 17, ScreenStyle.TEXT_DIM,
         )
 
@@ -71,30 +72,33 @@ class StealScreen(
                 },
             )
             if (!isEmpty) {
-                context.drawItem(stack, x + 2, y + 2)
+                context.item(stack, x + 2, y + 2)
             }
         }
 
         // 悬停: 显示物品名与数量
         if (hovered >= 0) {
-            context.drawCenteredTextWithShadow(
-                textRenderer,
-                items[hovered].name,
+            context.centeredText(
+                font,
+                items[hovered].hoverName,
                 width / 2, gridTop + ROWS * CELL + 8, ScreenStyle.TEXT_HIGHLIGHT,
             )
         }
 
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        val mouseX = event.x()
+        val mouseY = event.y()
+        val button = event.button()
         if (button == 0 && hovered >= 0) {
             ClientPerkNetworking.pickSteal(hovered)
-            close()
+            onClose()
             return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, doubleClick)
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 }

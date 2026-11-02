@@ -1,8 +1,6 @@
 package com.randomperks.mixin.compass;
 
 import com.randomperks.client.compat.CompassSearchCompat;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,6 +8,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.world.level.Level;
 
 /**
  * "自然罗盘" 界面: 在它自己的名称过滤结果后面补上拼音命中的生物群系。
@@ -24,10 +24,10 @@ public abstract class NaturesCompassSearchMixin {
     private List<?> allowedBiomes;
 
     @Shadow
-    private World world;
+    private Level world;
 
     @Shadow
-    private TextFieldWidget searchTextField;
+    private EditBox searchTextField;
 
     @Inject(method = "sortBiomes", at = @At("RETURN"))
     private void randomperks$addPinyinMatches(CallbackInfoReturnable<List<?>> cir) {

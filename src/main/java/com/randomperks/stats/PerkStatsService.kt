@@ -75,8 +75,8 @@ object PerkStatsService {
 
         ServerTickEvents.END_SERVER_TICK.register { server ->
             if (!dirty) return@register
-            if (server.ticks < nextFlushTick) return@register
-            nextFlushTick = server.ticks + FLUSH_INTERVAL_TICKS
+            if (server.tickCount < nextFlushTick) return@register
+            nextFlushTick = server.tickCount + FLUSH_INTERVAL_TICKS
             save()
         }
 

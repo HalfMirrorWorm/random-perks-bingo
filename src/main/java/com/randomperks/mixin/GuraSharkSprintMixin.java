@@ -2,9 +2,9 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,15 +34,15 @@ public class GuraSharkSprintMixin {
     @Inject(method = "setSprinting(Z)V", at = @At("HEAD"), cancellable = true)
     private void randomperks$blockLandSprint(boolean sprinting, CallbackInfo ci) {
         if (!sprinting) return;
-        if (!((Object) this instanceof PlayerEntity player)) return;
-        if (player.isTouchingWater()) return;
+        if (!((Object) this instanceof Player player)) return;
+        if (player.isInWater()) return;
         if (player.getAbilities().flying) return;
 
         boolean hasPerk;
-        if (player.getWorld().isClient()) {
+        if (player.level().isClientSide()) {
             hasPerk = ClientPerkFlags.has(PERK_ID);
         } else {
-            hasPerk = player instanceof ServerPlayerEntity serverPlayer
+            hasPerk = player instanceof ServerPlayer serverPlayer
                 && PerkBoostQuery.INSTANCE.hasGuraShark(serverPlayer);
         }
         if (hasPerk) ci.cancel();

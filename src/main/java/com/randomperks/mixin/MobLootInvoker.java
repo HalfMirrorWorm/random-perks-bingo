@@ -1,8 +1,8 @@
 package com.randomperks.mixin;
 
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Mob;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.gen.Invoker;
  * killed_by_player 条件全部照旧)。取代了旧的"扫描尸体周围地上的物品实体再复制"——
  * 那种做法会连玩家刚丢出的物品一起复制 (物品复制漏洞), 同一 tick 群杀时还会链式放大。
  */
-@Mixin(MobEntity.class)
+@Mixin(Mob.class)
 public interface MobLootInvoker {
 
-    @Invoker("dropLoot")
-    void invokeDropLoot(ServerWorld world, DamageSource damageSource, boolean causedByPlayer);
+    @Invoker("dropFromLootTable")
+    void invokeDropLoot(ServerLevel world, DamageSource damageSource, boolean causedByPlayer);
 }

@@ -1,15 +1,15 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
+import net.minecraft.world.phys.BlockHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,36 +29,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * <p>潜行时不拦 —— 保留原版"放置方块"的行为 (与服务端一致)。
  */
-@Mixin(ClientPlayerInteractionManager.class)
+@Mixin(MultiPlayerGameMode.class)
 public class PortableOpenClientMixin {
 
     private static final String MAGNET_PERK = "seeker_magnet_upgrade";
     private static final String CRAFTING_PERK = "artisan_portable_crafting";
 
-    @Inject(method = "interactBlockInternal", at = @At("HEAD"), cancellable = true)
-    private void randomperks$skipLocalPlacement(ClientPlayerEntity player, Hand hand,
+    @Inject(method = "performUseItemOn", at = @At("HEAD"), cancellable = true)
+    private void randomperks$skipLocalPlacement(LocalPlayer player, InteractionHand hand,
                                                 BlockHitResult hitResult,
-                                                CallbackInfoReturnable<ActionResult> cir) {
-        if (hand != Hand.MAIN_HAND) return;
-        if (player.isSneaking()) return;
+                                                CallbackInfoReturnable<InteractionResult> cir) {
+        if (hand != InteractionHand.MAIN_HAND) return;
+        if (player.isShiftKeyDown()) return;
 
-        ItemStack stack = player.getStackInHand(hand);
+        ItemStack stack = player.getItemInHand(hand);
         if (stack.isEmpty()) return;
         if (!randomperks$opensInsteadOfPlacing(stack)) return;
 
-        cir.setReturnValue(ActionResult.SUCCESS);
+        cir.setReturnValue(InteractionResult.SUCCESS);
     }
 
     /** 这件物品在这名玩家手里是"打开界面"而不是"放置方块" */
     private static boolean randomperks$opensInsteadOfPlacing(ItemStack stack) {
-        if (stack.isOf(Items.ENDER_CHEST)) {
+        if (stack.is(Items.ENDER_CHEST)) {
             return ClientPerkFlags.has(MAGNET_PERK);
         }
         if (stack.getItem() instanceof BlockItem blockItem
                 && blockItem.getBlock() instanceof ShulkerBoxBlock) {
             return ClientPerkFlags.has(MAGNET_PERK);
         }
-        if (stack.isOf(Items.CRAFTING_TABLE)) {
+        if (stack.is(Items.CRAFTING_TABLE)) {
             return ClientPerkFlags.has(CRAFTING_PERK);
         }
         return false;

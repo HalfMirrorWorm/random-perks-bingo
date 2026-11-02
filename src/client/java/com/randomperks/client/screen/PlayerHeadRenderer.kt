@@ -1,8 +1,8 @@
 package com.randomperks.client.screen
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gl.RenderPipelines
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import java.util.UUID
 
 /**
@@ -13,21 +13,21 @@ object PlayerHeadRenderer {
 
     const val SIZE = 8
 
-    fun draw(context: DrawContext, uuid: UUID?, x: Int, y: Int): Boolean {
+    fun draw(context: GuiGraphicsExtractor, uuid: UUID?, x: Int, y: Int): Boolean {
         if (uuid == null) return false
-        val entry = MinecraftClient.getInstance().networkHandler?.getPlayerListEntry(uuid)
+        val entry = Minecraft.getInstance().connection?.getPlayerInfo(uuid)
             ?: return false
-        return drawEntry(context, entry.skinTextures.texture(), x, y)
+        return drawEntry(context, entry.skin.body().texturePath(), x, y)
     }
 
-    fun drawByName(context: DrawContext, name: String, x: Int, y: Int): Boolean {
-        val handler = MinecraftClient.getInstance().networkHandler ?: return false
-        val entry = handler.playerList.firstOrNull { it.profile.name == name } ?: return false
-        return drawEntry(context, entry.skinTextures.texture(), x, y)
+    fun drawByName(context: GuiGraphicsExtractor, name: String, x: Int, y: Int): Boolean {
+        val handler = Minecraft.getInstance().connection ?: return false
+        val entry = handler.onlinePlayers.firstOrNull { it.profile.name == name } ?: return false
+        return drawEntry(context, entry.skin.body().texturePath(), x, y)
     }
 
-    private fun drawEntry(context: DrawContext, texture: net.minecraft.util.Identifier, x: Int, y: Int): Boolean {
-        context.drawTexture(
+    private fun drawEntry(context: GuiGraphicsExtractor, texture: net.minecraft.resources.Identifier, x: Int, y: Int): Boolean {
+        context.blit(
             RenderPipelines.GUI_TEXTURED,
             texture,
             x, y,

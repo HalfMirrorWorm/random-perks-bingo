@@ -14,11 +14,11 @@ object PerkTickService {
     fun register() {
         // 每 20 tick (1 秒) 驱动一次 onTick
         ServerTickEvents.END_SERVER_TICK.register { server ->
-            if (server.ticks % 20 != 0) return@register
+            if (server.tickCount % 20 != 0) return@register
 
             for (state in PerkStateManager.all()) {
                 if (state.ownedPerks.isEmpty()) continue
-                val player = server.playerManager.getPlayer(state.uuid) ?: continue
+                val player = server.playerList.getPlayer(state.uuid) ?: continue
                 val ctx = PerkContext(player, state)
                 for (perk in state.ownedPerks.toList()) {
                     runCatching { perk.onTick(ctx) }

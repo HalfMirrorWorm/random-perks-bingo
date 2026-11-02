@@ -1,9 +1,9 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.DragonTamerService;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,14 +19,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * <p>马/猪/炽足兽和套了挽具的快乐恶魂走原版, 这里不改。
  */
-@Mixin(MobEntity.class)
+@Mixin(Mob.class)
 public abstract class DragonTamerControlMixin {
 
     @Inject(method = "getControllingPassenger", at = @At("HEAD"), cancellable = true)
     private void randomperks$serverRiderControls(CallbackInfoReturnable<LivingEntity> cir) {
-        MobEntity self = (MobEntity) (Object) this;
-        if (self.getWorld().isClient()) return;
-        if (!(self.getFirstPassenger() instanceof ServerPlayerEntity rider)) return;
+        Mob self = (Mob) (Object) this;
+        if (self.level().isClientSide()) return;
+        if (!(self.getFirstPassenger() instanceof ServerPlayer rider)) return;
         if (!DragonTamerService.INSTANCE.isManuallySteered(self)) return;
         if (DragonTamerService.INSTANCE.isManualRide(rider, self)) {
             cir.setReturnValue(rider);

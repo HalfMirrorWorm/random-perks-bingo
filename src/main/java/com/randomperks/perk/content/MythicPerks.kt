@@ -12,13 +12,13 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import com.randomperks.state.PerkStateManager
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.registry.Registry
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.Registries
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
 import java.util.UUID
 
 /**
@@ -69,7 +69,7 @@ object MythicPerks {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.hodgepodge_no_target"), true)
+                player.sendSystemMessage(Component.translatable("random-perks-bingo.message.hodgepodge_no_target"), true)
                 return
             }
             PerkNetworking.sendActionTargets(
@@ -80,7 +80,7 @@ object MythicPerks {
         }
 
         /** 客户端在选择器里选中了一名玩家 → 把他背包里的每种物品各自换掉 */
-        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
@@ -89,10 +89,10 @@ object MythicPerks {
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
-            val registry = target.server?.registryManager?.getOrThrow(RegistryKeys.ITEM) ?: return
+            val registry = target.level().getServer().registryAccess().lookupOrThrow(Registries.ITEM) ?: return
 
             var changed = 0
-            val main = target.inventory.mainStacks
+            val main = target.inventory.nonEquipmentItems
             for (index in 0 until main.size) {
                 val stack = main.get(index)
                 if (stack.isEmpty) continue
@@ -102,12 +102,12 @@ object MythicPerks {
             }
             state.markUsed(id)
 
-            player.sendMessage(
-                Text.translatable("random-perks-bingo.message.hodgepodge_applied", target.name, changed),
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.hodgepodge_applied", target.name, changed),
                 false,
             )
-            target.sendMessage(
-                Text.translatable("random-perks-bingo.message.hodgepodge_received"),
+            target.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.hodgepodge_received"),
                 false,
             )
         }
@@ -115,7 +115,7 @@ object MythicPerks {
         /** 从物品注册表里随机挑一个非空气物品 (getRandom 有小概率给到 AIR, 重试几次) */
         private fun randomItem(
             registry: Registry<Item>,
-            random: net.minecraft.util.math.random.Random,
+            random: net.minecraft.util.RandomSource,
         ): Item? {
             repeat(16) {
                 val entry = registry.getRandom(random).orElse(null) ?: return null
@@ -126,8 +126,8 @@ object MythicPerks {
         }
 
         /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
-        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+        private fun candidates(player: ServerPlayer): List<ServerPlayer> =
+            player.level().getServer().playerList.players.filter { !it.isSpectator }
     }
 
     /** 神话 · 秘藏 · 全局唯一: **逆转时间** —— 获得时立即触发,

@@ -1,8 +1,8 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,12 +17,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * <p>通用的 +15% 仍走 {@code BLOCK_BREAK_SPEED} 属性 (所有方块), 本 mixin 只补矿石部分。
  */
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public class MinerWristMixin {
 
-    @Inject(method = "getBlockBreakingSpeed", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getDestroySpeed", at = @At("RETURN"), cancellable = true)
     private void randomperks$oreMiningBonus(BlockState state, CallbackInfoReturnable<Float> cir) {
-        PlayerEntity self = (PlayerEntity) (Object) this;
+        Player self = (Player) (Object) this;
         float multiplier = PerkBoostQuery.INSTANCE.miningBreakSpeedMultiplier(self, state);
         if (multiplier != 1.0f) {
             cir.setReturnValue(cir.getReturnValueF() * multiplier);

@@ -10,10 +10,10 @@ import com.randomperks.perk.PerkRegistry
 import com.randomperks.roll.PerkRollService
 import com.randomperks.state.PerkStateManager
 import com.randomperks.state.PlayerPerkState
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.text.TranslatableTextContent
-import net.minecraft.util.Formatting
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.contents.TranslatableContents
+import net.minecraft.ChatFormatting
 
 /**
  * 服务端: 三选一的展示与选择处理。
@@ -23,7 +23,7 @@ import net.minecraft.util.Formatting
 object PerkOfferService {
 
     /** 玩家请求打开三选一界面 → 下发当前(队列第一个)候选, 未选择前保持不变 */
-    fun handleRequest(player: ServerPlayerEntity) {
+    fun handleRequest(player: ServerPlayer) {
         val state = PerkStateManager.getOrCreate(player.uuid)
         val offer = state.currentOffer()
         if (offer == null) {
@@ -46,7 +46,7 @@ object PerkOfferService {
     }
 
     /** 玩家选择了第 index 项 */
-    fun handlePick(player: ServerPlayerEntity, index: Int) {
+    fun handlePick(player: ServerPlayer, index: Int) {
         val state = PerkStateManager.getOrCreate(player.uuid)
         val offer = state.currentOffer() ?: return
 
@@ -55,9 +55,9 @@ object PerkOfferService {
 
         if (state.hasPerk(perk.id)) {
             // 已拥有: 不消耗机会, 提示重新选择
-            player.sendMessage(
-                Text.translatable("random-perks-bingo.message.already_owned", Text.translatable("random-perks-bingo.perk.${perk.id}.name"))
-                    .formatted(Formatting.YELLOW),
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.already_owned", Component.translatable("random-perks-bingo.perk.${perk.id}.name"))
+                    .withStyle(ChatFormatting.YELLOW),
                 false,
             )
             return
@@ -66,8 +66,8 @@ object PerkOfferService {
         // 全局唯一词条 (神话): 若已被其他玩家抢选 → 拒绝并刷新该选项位
         if (perk.rarity == PerkRarity.MYTHIC && PerkStateManager.isOwnedByAnyone(perk.id)) {
             val rerolled = rerollOfferSlot(state, index)
-            player.sendMessage(
-                Text.translatable("random-perks-bingo.message.mythic_taken").formatted(Formatting.YELLOW),
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.mythic_taken").withStyle(ChatFormatting.YELLOW),
                 false,
             )
             if (rerolled) handleRequest(player) // 重新下发选项 (客户端界面刷新)
@@ -84,27 +84,27 @@ object PerkOfferService {
 
         // 反馈
         val rarityName = when (perk.rarity) {
-            PerkRarity.BLUE -> Text.translatable("random-perks-bingo.rarity.blue").formatted(Formatting.BLUE)
-            PerkRarity.GREEN -> Text.translatable("random-perks-bingo.rarity.green").formatted(Formatting.GREEN)
-            PerkRarity.PURPLE -> Text.translatable("random-perks-bingo.rarity.purple").formatted(Formatting.LIGHT_PURPLE)
-            PerkRarity.GOLD -> Text.translatable("random-perks-bingo.rarity.gold").formatted(Formatting.GOLD)
-            PerkRarity.RED -> Text.translatable("random-perks-bingo.rarity.red").formatted(Formatting.RED)
-            PerkRarity.MYTHIC -> Text.translatable("random-perks-bingo.rarity.mythic").formatted(Formatting.LIGHT_PURPLE)
+            PerkRarity.BLUE -> Component.translatable("random-perks-bingo.rarity.blue").withStyle(ChatFormatting.BLUE)
+            PerkRarity.GREEN -> Component.translatable("random-perks-bingo.rarity.green").withStyle(ChatFormatting.GREEN)
+            PerkRarity.PURPLE -> Component.translatable("random-perks-bingo.rarity.purple").withStyle(ChatFormatting.LIGHT_PURPLE)
+            PerkRarity.GOLD -> Component.translatable("random-perks-bingo.rarity.gold").withStyle(ChatFormatting.GOLD)
+            PerkRarity.RED -> Component.translatable("random-perks-bingo.rarity.red").withStyle(ChatFormatting.RED)
+            PerkRarity.MYTHIC -> Component.translatable("random-perks-bingo.rarity.mythic").withStyle(ChatFormatting.LIGHT_PURPLE)
         }
-        player.sendMessage(
-            Text.translatable("random-perks-bingo.message.acquired", rarityName, Text.translatable("random-perks-bingo.perk.${perk.id}.name")),
+        player.sendSystemMessage(
+            Component.translatable("random-perks-bingo.message.acquired", rarityName, Component.translatable("random-perks-bingo.perk.${perk.id}.name")),
             false,
         )
 
         // 金色及以上词条向全服公告
         if (perk.rarity.ordinal >= PerkRarity.GOLD.ordinal) {
-            val announce = Text.translatable(
+            val announce = Component.translatable(
                 "random-perks-bingo.message.high_rarity_announce",
                 player.name,
                 rarityName,
-                Text.translatable("random-perks-bingo.perk.${perk.id}.name"),
+                Component.translatable("random-perks-bingo.perk.${perk.id}.name"),
             )
-            player.server?.playerManager?.playerList?.forEach { it.sendMessage(announce, false) }
+            player.level().getServer().playerList.players.forEach { it.sendSystemMessage(announce, false) }
         }
 
         PerkNetworking.sendNotify(player, state.pendingChoices)
@@ -116,22 +116,22 @@ object PerkOfferService {
     }
 
     /** 玩家请求查看词条列表 —— 下发**所有在线玩家**的, 客户端用 tab 页切换 */
-    fun handleListRequest(player: ServerPlayerEntity) {
-        val server = player.server ?: return
+    fun handleListRequest(player: ServerPlayer) {
+        val server = player.level().getServer()
         val state = PerkStateManager.getOrCreate(player.uuid)
 
-        val players = server.playerManager.playerList.map { other ->
+        val players = server.playerList.players.map { other ->
             val otherState = PerkStateManager.get(other.uuid)
 
             // 所有词条 (含神话) 对所有人可见
             val visiblePerks = otherState?.ownedPerks ?: emptyList()
 
-            val team = other.scoreboardTeam
+            val team = other.team
             // 队伍名在 bingo 里是可翻译文本 (如 bingo.team.red); 直接取 .string 会在服务端
             // 按服务端语言解析成英文, 客户端就永远看到 "Red"。这里把 key 一起发过去,
             // 让客户端按玩家自己的语言显示 (红队 / Red)。
             // 临时队伍的名字是 "队伍：%s" 这种带 1 个参数的形式, 参数也一并带上。
-            val teamNameText = team?.displayName?.content as? TranslatableTextContent
+            val teamNameText = team?.displayName?.contents as? TranslatableContents
             val teamNameKey: String
             val teamNameArg: String
             if (teamNameText != null && teamNameText.args.size <= 1) {
@@ -155,7 +155,7 @@ object PerkOfferService {
                 team?.displayName?.string ?: "",
                 teamNameKey,
                 teamNameArg,
-                team?.color?.colorValue ?: 0xFFFFFF,
+                team?.color?.orElse(null)?.rgb() ?: 0xFFFFFF,
             )
         }
 
@@ -168,7 +168,7 @@ object PerkOfferService {
      * 这里只负责"打开使用流程"(目标选择器 / 装备选择器 / 偷窃目标);
      * "已使用"标记由各词条在效果真正生效时自己写入, 所以中途取消选择不会浪费词条。
      */
-    fun handleActivate(player: ServerPlayerEntity, perkId: String) {
+    fun handleActivate(player: ServerPlayer, perkId: String) {
         if (!PerkSession.isEnabled()) return
 
         val state = PerkStateManager.get(player.uuid) ?: return
@@ -202,7 +202,7 @@ object PerkOfferService {
     }
 
     /** 玩家请求词条百科: 下发全部词条定义 + 已收集标记 */
-    fun handleCatalogRequest(player: ServerPlayerEntity) {
+    fun handleCatalogRequest(player: ServerPlayer) {
         val state = PerkStateManager.getOrCreate(player.uuid)
         PerkNetworking.sendCatalog(
             player,

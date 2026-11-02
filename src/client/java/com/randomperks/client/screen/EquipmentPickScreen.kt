@@ -1,11 +1,12 @@
 package com.randomperks.client.screen
 
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.text.Text
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.Component
 
 /**
  * **物品选择器** —— 把玩家身上所有东西摆成一个网格, 点一格就回调 onPick。
@@ -15,13 +16,13 @@ import net.minecraft.text.Text
  * 客户端直接读自己的背包来显示就够了; 服务端拿到 key 之后还会自己再查一遍。
  *
  * 每格带一个 key: 装备槽用 `EquipmentSlot.getName()` (head / chest / legs / feet / offhand),
- * 物品栏用 `inv:<索引>` —— 索引是 [PlayerInventory] 的原始索引, 0-8 是快捷栏。
+ * 物品栏用 `inv:<索引>` —— 索引是 [Inventory] 的原始索引, 0-8 是快捷栏。
  */
 class EquipmentPickScreen(
     titleKey: String,
     private val hintKey: String,
     private val onPick: (String) -> Unit,
-) : Screen(Text.translatable(titleKey)) {
+) : Screen(Component.translatable(titleKey)) {
 
     private companion object {
         val EQUIP_SLOTS: List<EquipmentSlot> = listOf(
@@ -49,22 +50,22 @@ class EquipmentPickScreen(
 
     /** 按原版背包的视觉顺序摆: 装备 → 主背包 → 快捷栏 (快捷栏压在最下面一行, 和原版一致) */
     private fun buildCells(): List<Cell> {
-        val player = client?.player ?: return emptyList()
+        val player = minecraft?.player ?: return emptyList()
         val inventory = player.inventory
         val list = ArrayList<Cell>(COLS * 5)
 
         // 第一行: 4 个护甲槽 + 副手, 余下的格子用占位补齐, 免得背包跟着错位
         for (slot in EQUIP_SLOTS) {
-            list.add(Cell(slot.getName(), player.getEquippedStack(slot)))
+            list.add(Cell(slot.getName(), player.getItemBySlot(slot)))
         }
         repeat(COLS - EQUIP_SLOTS.size) { list.add(Cell(null, ItemStack.EMPTY)) }
 
-        val hotbarSize = PlayerInventory.getHotbarSize()
-        for (index in hotbarSize until inventory.size()) {
-            list.add(Cell("inv:$index", inventory.getStack(index)))
+        val hotbarSize = Inventory.getSelectionSize()
+        for (index in hotbarSize until inventory.containerSize) {
+            list.add(Cell("inv:$index", inventory.getItem(index)))
         }
         for (index in 0 until hotbarSize) {
-            list.add(Cell("inv:$index", inventory.getStack(index)))
+            list.add(Cell("inv:$index", inventory.getItem(index)))
         }
         return list
     }
@@ -76,16 +77,16 @@ class EquipmentPickScreen(
         gridTop = (height - rows * CELL) / 2 + 8
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         // 每帧重读一次 —— 弹窗期间背包仍可能被外部改动 (自动拾取等), 格子顺序是固定的, 不影响 hovered
         cells = buildCells()
 
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, gridTop - 30, ScreenStyle.TEXT_NAME)
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable(hintKey),
+        context.centeredText(font, title, width / 2, gridTop - 30, ScreenStyle.TEXT_NAME)
+        context.centeredText(
+            font,
+            Component.translatable(hintKey),
             width / 2, gridTop - 17, ScreenStyle.TEXT_DIM,
         )
 
@@ -105,26 +106,29 @@ class EquipmentPickScreen(
 
             context.fill(x, y, x + CELL, y + CELL, if (isHovered) CELL_BG_HOVER else CELL_BG)
             if (filled) {
-                context.drawItem(cell.stack, x + 1, y + 1)
+                context.item(cell.stack, x + 1, y + 1)
             }
         }
 
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
 
-        hoveredStack?.let { context.drawItemTooltip(textRenderer, it, mouseX, mouseY) }
+        hoveredStack?.let { context.setTooltipForNextFrame(font, it, mouseX, mouseY) }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        val mouseX = event.x()
+        val mouseY = event.y()
+        val button = event.button()
         if (button == 0 && hovered >= 0) {
             val key = cells[hovered].key
             if (key != null) {
                 onPick(key)
-                close()
+                onClose()
                 return true
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, doubleClick)
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 }

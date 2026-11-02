@@ -1,17 +1,17 @@
 package com.randomperks.perk
 
 import com.randomperks.state.PlayerPerkState
-import net.minecraft.block.BlockState
-import net.minecraft.entity.LivingEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.core.BlockPos
 
 /**
  * 词条上下文: 传给词条的生命周期回调, 提供玩家与状态访问。
  */
 class PerkContext(
-    val player: ServerPlayerEntity,
+    val player: ServerPlayer,
     val state: PlayerPerkState,
 ) {
     /** 该玩家当前拥有的、指定流派的词条数量 (用于流派联动) */

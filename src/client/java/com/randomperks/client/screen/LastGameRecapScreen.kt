@@ -3,10 +3,10 @@ package com.randomperks.client.screen
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.recap.RecapCapture
 import com.randomperks.recap.RecapData
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.components.Button
+import net.minecraft.network.chat.Component
 import java.util.Locale
 
 /**
@@ -19,7 +19,7 @@ import java.util.Locale
  */
 class LastGameRecapScreen(
     private val data: RecapData,
-) : Screen(Text.translatable("random-perks-bingo.recap.title")) {
+) : Screen(Component.translatable("random-perks-bingo.recap.title")) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -46,13 +46,13 @@ class LastGameRecapScreen(
         val total = TAB_KEYS.size * TAB_WIDTH + (TAB_KEYS.size - 1) * TAB_GAP
         var x = (width - total) / 2
         TAB_KEYS.forEachIndexed { index, key ->
-            val button = ButtonWidget.builder(Text.translatable("random-perks-bingo.recap.tab.$key")) {
+            val button = Button.builder(Component.translatable("random-perks-bingo.recap.tab.$key")) {
                 setTab(index)
             }
-                .dimensions(x, 32, TAB_WIDTH, 20)
+                .bounds(x, 32, TAB_WIDTH, 20)
                 .build()
             button.active = index != tab
-            addDrawableChild(button)
+            addRenderableWidget(button)
             x += TAB_WIDTH + TAB_GAP
         }
     }
@@ -60,22 +60,22 @@ class LastGameRecapScreen(
     private fun setTab(newTab: Int) {
         if (newTab == tab) return
         tab = newTab
-        if (client != null) {
-            clearChildren()
+        if (minecraft != null) {
+            clearWidgets()
             init()
         }
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         context.fill(0, 0, width, height, DIM_BACKGROUND)
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
 
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 14, 0xFFFFFFFF.toInt())
+        context.centeredText(font, title, width / 2, 14, 0xFFFFFFFF.toInt())
 
         if (data.isEmpty) {
-            context.drawCenteredTextWithShadow(
-                textRenderer,
-                Text.translatable("random-perks-bingo.recap.empty"),
+            context.centeredText(
+                font,
+                Component.translatable("random-perks-bingo.recap.empty"),
                 width / 2, height / 2, 0xFFAAAAAA.toInt(),
             )
             return
@@ -87,19 +87,19 @@ class LastGameRecapScreen(
             if (y + ROW_HEIGHT > bottom) break
             val row = rows[index]
             if (row.text.isNotEmpty()) {
-                val text = textRenderer.trimToWidth(row.text, width - 48)
-                context.drawText(textRenderer, text, 24, y, row.color, row.bold)
+                val text = font.plainSubstrByWidth(row.text, width - 48)
+                context.text(font, text, 24, y, row.color, row.bold)
             }
             y += ROW_HEIGHT
         }
 
         // 底部提示 + 滚动位置
         val hint = if (rows.size * ROW_HEIGHT > bottom - CONTENT_TOP) {
-            Text.translatable("random-perks-bingo.recap.hint.scroll", scroll + 1, rows.size)
+            Component.translatable("random-perks-bingo.recap.hint.scroll", scroll + 1, rows.size)
         } else {
-            Text.translatable("random-perks-bingo.recap.hint")
+            Component.translatable("random-perks-bingo.recap.hint")
         }
-        context.drawCenteredTextWithShadow(textRenderer, hint, width / 2, height - 18, 0xFF888888.toInt())
+        context.centeredText(font, hint, width / 2, height - 18, 0xFF888888.toInt())
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -110,7 +110,7 @@ class LastGameRecapScreen(
         return true
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 
     // ------------------------------------------------------------------
     // rows
@@ -126,7 +126,7 @@ class LastGameRecapScreen(
         val rows = mutableListOf<Row>()
         val byPlayer = data.picks.groupBy { it.playerUuid }
         if (byPlayer.isEmpty()) {
-            rows += Row(Text.translatable("random-perks-bingo.recap.empty.picks").string, 0xFFAAAAAA.toInt())
+            rows += Row(Component.translatable("random-perks-bingo.recap.empty.picks").string, 0xFFAAAAAA.toInt())
             return rows
         }
 
@@ -136,7 +136,7 @@ class LastGameRecapScreen(
         for (player in players) {
             val team = teamsById[player.teamId]
             rows += Row(
-                Text.translatable(
+                Component.translatable(
                     "random-perks-bingo.recap.player_header",
                     player.playerName,
                     team?.name ?: player.teamId,
@@ -146,9 +146,9 @@ class LastGameRecapScreen(
             )
 
             for (pick in byPlayer.getValue(player.playerUuid).sortedBy { it.seconds }) {
-                val perkName = Text.translatable("random-perks-bingo.perk.${pick.perkId}.name").string
+                val perkName = Component.translatable("random-perks-bingo.perk.${pick.perkId}.name").string
                 val rarity = PerkRegistry.byId(pick.perkId)?.rarity
-                    ?.let { Text.translatable("random-perks-bingo.rarity.${it.name.lowercase()}").string }
+                    ?.let { Component.translatable("random-perks-bingo.rarity.${it.name.lowercase()}").string }
                     ?: "?"
                 rows += Row("    ${formatTime(pick.seconds)}  $perkName ($rarity)", 0xFFDDDDDD.toInt())
             }
@@ -165,7 +165,7 @@ class LastGameRecapScreen(
             firstCaptures.putIfAbsent(capture.playerUuid, capture)
         }
         if (firstCaptures.isEmpty()) {
-            rows += Row(Text.translatable("random-perks-bingo.recap.empty.captures").string, 0xFFAAAAAA.toInt())
+            rows += Row(Component.translatable("random-perks-bingo.recap.empty.captures").string, 0xFFAAAAAA.toInt())
             return rows
         }
 
@@ -174,7 +174,7 @@ class LastGameRecapScreen(
         for ((uuid, capture) in firstCaptures) {
             val team = teamsById[capture.teamId]
             rows += Row(
-                Text.translatable(
+                Component.translatable(
                     "random-perks-bingo.recap.rank_row",
                     index,
                     capture.playerName,
@@ -193,14 +193,14 @@ class LastGameRecapScreen(
     private fun timelineRows(): List<Row> {
         val rows = mutableListOf<Row>()
         if (data.captures.isEmpty()) {
-            rows += Row(Text.translatable("random-perks-bingo.recap.empty.captures").string, 0xFFAAAAAA.toInt())
+            rows += Row(Component.translatable("random-perks-bingo.recap.empty.captures").string, 0xFFAAAAAA.toInt())
             return rows
         }
         for (capture in data.captures.sortedBy { it.seconds }) {
             val team = teamsById[capture.teamId]
             val player = capture.playerName.ifEmpty { "?" }
             rows += Row(
-                Text.translatable(
+                Component.translatable(
                     "random-perks-bingo.recap.timeline_row",
                     formatTime(capture.seconds),
                     team?.name ?: capture.teamId,

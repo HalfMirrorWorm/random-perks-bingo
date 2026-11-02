@@ -9,28 +9,28 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
-import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.ItemEntity
-import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.registry.Registries
-import net.minecraft.registry.tag.BlockTags
-import net.minecraft.registry.tag.ItemTags
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.Identifier
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.item.ItemEntity
+import net.minecraft.world.entity.ai.attributes.AttributeModifier
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.tags.BlockTags
+import net.minecraft.tags.ItemTags
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Unit
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.LightType
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.LightLayer
+import net.minecraft.world.level.Level
 import kotlin.math.abs
 
 /**
@@ -38,7 +38,7 @@ import kotlin.math.abs
  */
 object DelverPerks {
 
-    private val MOD_MINING = Identifier.of("random-perks-bingo", "delver_mining")
+    private val MOD_MINING = Identifier.fromNamespaceAndPath("random-perks-bingo", "delver_mining")
 
     /** 蓝 · 矿工手腕: 挖掘速度 +15%; 挖**矿石**时再额外 ×1.25 (合计约 ×1.4375)
      *  (矿石部分由 MinerWristMixin 在 PlayerEntity.getBlockBreakingSpeed 里乘算) */
@@ -51,10 +51,10 @@ object DelverPerks {
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING, 0.15, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+            PerkEffects.setAttribute(ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_MINING, 0.15, AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
+            PerkEffects.removeAttribute(ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_MINING)
     }
 
     /** 紫 · 深掘: **贪吃蛇** —— 基础挖掘速度 -20%; 每挖掉一个矿石 +1%, **没有上限**。
@@ -65,7 +65,7 @@ object DelverPerks {
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.RAW_GOLD)
 
-        private val MOD_SPEED = Identifier.of("random-perks-bingo", "gluttonous_snake_speed")
+        private val MOD_SPEED = Identifier.fromNamespaceAndPath("random-perks-bingo", "gluttonous_snake_speed")
         private const val KEY_STACKS = "gluttonous_snake_stacks"
         private const val BASE_PENALTY = -0.20
         private const val PER_ORE = 0.01
@@ -83,8 +83,8 @@ object DelverPerks {
 
         private fun apply(ctx: PerkContext) {
             PerkEffects.setAttribute(
-                ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_SPEED,
-                BASE_PENALTY + PER_ORE * stacks(ctx), EntityAttributeModifier.Operation.ADD_VALUE,
+                ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_SPEED,
+                BASE_PENALTY + PER_ORE * stacks(ctx), AttributeModifier.Operation.ADD_VALUE,
             )
         }
 
@@ -92,7 +92,7 @@ object DelverPerks {
             (ctx.state.memory[KEY_STACKS]?.toIntOrNull() ?: 0).coerceAtLeast(0)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_SPEED)
+            PerkEffects.removeAttribute(ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_SPEED)
     }
 
     /** 蓝 · 深掘: **矿洞幽灵** —— 身处矿洞时隐身。
@@ -118,19 +118,19 @@ object DelverPerks {
             val player = ctx.player
             if (!isInCave(player)) return
             // 不能带粒子 —— 隐身粒子会直接暴露位置
-            player.addStatusEffect(
-                StatusEffectInstance(
-                    StatusEffects.INVISIBILITY, INVISIBILITY_TICKS, 0,
+            player.addEffect(
+                MobEffectInstance(
+                    MobEffects.INVISIBILITY, INVISIBILITY_TICKS, 0,
                     false, false, true,
                 )
             )
         }
 
         /** 是否在矿洞里: 主世界 + 脚下的天空光为 0 */
-        private fun isInCave(player: ServerPlayerEntity): Boolean {
-            val world = player.world
-            if (world.registryKey != World.OVERWORLD) return false
-            return world.getLightLevel(LightType.SKY, player.blockPos) == 0
+        private fun isInCave(player: ServerPlayer): Boolean {
+            val world = player.level()
+            if (world.dimension() != Level.OVERWORLD) return false
+            return world.getBrightness(LightLayer.SKY, player.blockPosition()) == 0
         }
     }
 
@@ -145,7 +145,7 @@ object DelverPerks {
         override fun onAcquire(ctx: PerkContext) {
             val pickaxe = ItemStack(Items.GOLDEN_PICKAXE)
             // 1.21.7 的 unbreakable 是无值组件 (Unit), 设置后耐久不再消耗
-            pickaxe.set(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+            pickaxe.set(DataComponents.UNBREAKABLE, Unit.INSTANCE)
             PerkEffects.giveStack(ctx.player, pickaxe)
         }
     }
@@ -159,9 +159,9 @@ object DelverPerks {
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
-        private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, StatusEffects.NIGHT_VISION, 0)
+        private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, MobEffects.NIGHT_VISION, 0)
 
-        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.NIGHT_VISION)
+        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, MobEffects.NIGHT_VISION)
     }
 
     /** 蓝 · 匠造: 抗性提升 I */
@@ -173,9 +173,9 @@ object DelverPerks {
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
-        private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, StatusEffects.RESISTANCE, 0)
+        private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, MobEffects.RESISTANCE, 0)
 
-        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.RESISTANCE)
+        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, MobEffects.RESISTANCE)
     }
 
     /** 紫 · 深层专注: 永久急迫 II */
@@ -187,9 +187,9 @@ object DelverPerks {
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
-        private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, StatusEffects.HASTE, 1)
+        private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, MobEffects.HASTE, 1)
 
-        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, StatusEffects.HASTE)
+        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, MobEffects.HASTE)
     }
 
     /** 蓝 · 矿脉嗅觉: 挖掘矿石时 18% 概率额外掉落一份, 每拥有一个其他深掘词条 +3%
@@ -209,7 +209,7 @@ object DelverPerks {
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.IRON_CHESTPLATE)
 
-        private val MOD_IRON_SKIN = Identifier.of("random-perks-bingo", "delver_iron_skin")
+        private val MOD_IRON_SKIN = Identifier.fromNamespaceAndPath("random-perks-bingo", "delver_iron_skin")
 
         override fun onAcquire(ctx: PerkContext) = refresh(ctx)
         override fun onRespawn(ctx: PerkContext) = refresh(ctx)
@@ -220,16 +220,16 @@ object DelverPerks {
         private fun refresh(ctx: PerkContext) {
             if (PerkEffects.hasNoArmor(ctx.player)) {
                 PerkEffects.setAttribute(
-                    ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN,
-                    7.0, EntityAttributeModifier.Operation.ADD_VALUE,
+                    ctx.player, Attributes.ARMOR, MOD_IRON_SKIN,
+                    7.0, AttributeModifier.Operation.ADD_VALUE,
                 )
             } else {
-                PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
+                PerkEffects.removeAttribute(ctx.player, Attributes.ARMOR, MOD_IRON_SKIN)
             }
         }
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.ARMOR, MOD_IRON_SKIN)
+            PerkEffects.removeAttribute(ctx.player, Attributes.ARMOR, MOD_IRON_SKIN)
     }
 
     /** 金 · 深掘: 10 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 35% 概率消失
@@ -267,24 +267,24 @@ object DelverPerks {
 
         /** 全部原版物品的奖池 (排除清单), 首次使用时构建 */
         private val LOOT_POOL: List<Item> by lazy {
-            Registries.ITEM.filter { item ->
-                Registries.ITEM.getId(item).let { id ->
+            BuiltInRegistries.ITEM.filter { item ->
+                BuiltInRegistries.ITEM.getKey(item).let { id ->
                     id.namespace == "minecraft" && item !in EXCLUDED_ITEMS
                 }
             }
         }
 
-        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: BlockState) {
-            if (!ctx.player.mainHandStack.isIn(ItemTags.PICKAXES)) return   // 用镐子挖
-            if (!ctx.player.canHarvest(blockState)) return                   // 挖了也不掉落的方块不触发
+        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.core.BlockPos, blockState: BlockState) {
+            if (!ctx.player.mainHandItem.`is`(ItemTags.PICKAXES)) return   // 用镐子挖
+            if (!ctx.player.hasCorrectToolForDrops(blockState)) return                   // 挖了也不掉落的方块不触发
 
             // 按"方块的需求镐等级"分档 (从高到低判; 1.21 没有"木镐"需求标签,
             // 以"掉落需要正确工具"兜底为木档 —— 石头/煤等)
             val chance = when {
-                blockState.isIn(BlockTags.NEEDS_DIAMOND_TOOL) -> 0.30f
-                blockState.isIn(BlockTags.NEEDS_IRON_TOOL) -> 0.05f
-                blockState.isIn(BlockTags.NEEDS_STONE_TOOL) -> 0.02f
-                blockState.isToolRequired -> 0.01f
+                blockState.`is`(BlockTags.NEEDS_DIAMOND_TOOL) -> 0.30f
+                blockState.`is`(BlockTags.NEEDS_IRON_TOOL) -> 0.05f
+                blockState.`is`(BlockTags.NEEDS_STONE_TOOL) -> 0.02f
+                blockState.requiresCorrectToolForDrops() -> 0.01f
                 else -> return   // 无需工具的方块 (土/木/沙等) 不触发
             }
             if (ctx.player.random.nextFloat() >= chance) return
@@ -292,11 +292,11 @@ object DelverPerks {
             // 联动"透视之眼"代价: 本次破坏被判定为不掉落 → 奖品一并抑制
             if (PerkBoostQuery.isXraySuppressed(ctx.player, pos)) return
 
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.level() as? ServerLevel ?: return
             val prize = LOOT_POOL[ctx.player.random.nextInt(LOOT_POOL.size)]
             val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, ItemStack(prize))
-            entity.setToDefaultPickupDelay()
-            world.spawnEntity(entity)
+            entity.setDefaultPickUpDelay()
+            world.addFreshEntity(entity)
         }
     }
 
@@ -310,44 +310,37 @@ object DelverPerks {
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.DIAMOND)
 
-        private val MOD_MINING = Identifier.of("random-perks-bingo", "collector_mining")
+        private val MOD_MINING = Identifier.fromNamespaceAndPath("random-perks-bingo", "collector_mining")
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
 
         private fun apply(ctx: PerkContext) = PerkEffects.setAttribute(
-            ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING,
-            -0.5, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+            ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_MINING,
+            -0.5, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
         )
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_BREAK_SPEED, MOD_MINING)
+            PerkEffects.removeAttribute(ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_MINING)
     }
 
     /** 矿石判定 (矿脉嗅觉/老矿工共用): 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */
     private val ORE_CHECK_TAGS = listOf(
-        BlockTags.COAL_ORES,
-        BlockTags.IRON_ORES,
-        BlockTags.COPPER_ORES,
-        BlockTags.GOLD_ORES,
-        BlockTags.REDSTONE_ORES,
-        BlockTags.LAPIS_ORES,
-        BlockTags.DIAMOND_ORES,
-        BlockTags.EMERALD_ORES,
+        BlockTags.ORES,
     )
 
     private fun isOreBlock(state: BlockState): Boolean {
-        if (ORE_CHECK_TAGS.any { state.isIn(it) }) return true
-        val path = Registries.BLOCK.getId(state.block).path
+        if (ORE_CHECK_TAGS.any { state.`is`(it) }) return true
+        val path = BuiltInRegistries.BLOCK.getKey(state.block).path
         return path == "ancient_debris" || path.contains("ore")
     }
 
     /** "石头"判定: 自然石头 (石头/花岗岩/闪长岩/安山岩/凝灰岩/深板岩) +
      *  下界石头 (下界岩/玄武岩/黑石) + 两种圆石 */
     private fun isStoneBlock(state: BlockState): Boolean =
-        state.isIn(BlockTags.BASE_STONE_OVERWORLD) ||
-            state.isIn(BlockTags.BASE_STONE_NETHER) ||
-            state.isOf(Blocks.COBBLESTONE) || state.isOf(Blocks.COBBLED_DEEPSLATE)
+        state.`is`(BlockTags.BASE_STONE_OVERWORLD) ||
+            state.`is`(BlockTags.BASE_STONE_NETHER) ||
+            state.`is`(Blocks.COBBLESTONE) || state.`is`(Blocks.COBBLED_DEEPSLATE)
 
     /** 蓝 · 深掘: **八十** —— 用镐挖石头类方块时, 顺着你正在看的那个面,
      *  把以该方块为中心的 3×3 **同种**方块一并挖掉 (每块额外消耗 1 点耐久)。
@@ -364,12 +357,12 @@ object DelverPerks {
 
         override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
             val player = ctx.player
-            val tool = player.mainHandStack
-            if (!tool.isIn(ItemTags.PICKAXES)) return          // 只认镐
+            val tool = player.mainHandItem
+            if (!tool.`is`(ItemTags.PICKAXES)) return          // 只认镐
             if (!isStoneBlock(blockState)) return              // 只认石头类方块
-            val world = player.world as? ServerWorld ?: return
+            val world = player.level() as? ServerLevel ?: return
 
-            val look = player.rotationVector
+            val look = player.lookAngle
             val ax = abs(look.x); val ay = abs(look.y); val az = abs(look.z)
             val axis = when {
                 ax >= ay && ax >= az -> 0                       // 面向 X 轴 → YZ 平面
@@ -387,24 +380,24 @@ object DelverPerks {
                 for (b in -1..1) {
                     if (a == 0 && b == 0) continue              // 中心块已经挖掉了
                     val target = when (axis) {
-                        0 -> pos.add(0, a, b)
-                        1 -> pos.add(a, 0, b)
-                        else -> pos.add(a, b, 0)
+                        0 -> pos.offset(0, a, b)
+                        1 -> pos.offset(a, 0, b)
+                        else -> pos.offset(a, b, 0)
                     }
                     val targetState = world.getBlockState(target)
                     if (targetState.block !== broken) continue  // 同种类
                     if (tool.isEmpty) return                    // 耐久挖断了就停
 
                     // 只移除方块, 掉落统一按主方块的结算结果处理
-                    if (!world.breakBlock(target, false, player)) continue
+                    if (!world.destroyBlock(target, false, player)) continue
                     // 创造模式不掉落 (与原版一致); 透视抑制时整批不掉落
                     if (!suppressed && !player.isCreative) {
                         // 掉落在主方块位置生成 (自动含时运/精准采集); 整批翻倍时按同一份结果生成两份
                         PerkEffects.spawnBlockDrops(player, world, pos, targetState, dropCopies)
                         // 挖掘经验仍按每块结算 (翻倍只翻物品)
-                        targetState.onStacksDropped(world, target, tool, true)
+                        targetState.spawnAfterBreak(world, target, tool, true)
                     }
-                    if (!player.isCreative) tool.damage(1, player, EquipmentSlot.MAINHAND)
+                    if (!player.isCreative) tool.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
                 }
             }
         }
@@ -429,11 +422,11 @@ object DelverPerks {
 
         override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
             val player = ctx.player
-            val tool = player.mainHandStack
-            if (!tool.isIn(ItemTags.PICKAXES)) return          // 只认镐
+            val tool = player.mainHandItem
+            if (!tool.`is`(ItemTags.PICKAXES)) return          // 只认镐
             if (!isOreBlock(blockState)) return                // 只认矿石
-            if (!player.canHarvest(blockState)) return         // 挖了也不掉落的矿石不触发
-            val world = player.world as? ServerWorld ?: return
+            if (!player.hasCorrectToolForDrops(blockState)) return         // 挖了也不掉落的矿石不触发
+            val world = player.level() as? ServerLevel ?: return
 
             // 本次破坏的判定由 BreakDecisionMixin 在流程开头掷好, 整条矿脉共用
             val suppressed = PerkBoostQuery.isXraySuppressed(player, pos)
@@ -453,22 +446,22 @@ object DelverPerks {
                     for (dy in -1..1) {
                         for (dz in -1..1) {
                             if (dx == 0 && dy == 0 && dz == 0) continue
-                            val next = cur.add(dx, dy, dz)
+                            val next = cur.offset(dx, dy, dz)
                             if (!visited.add(next)) continue
 
                             val chainState = world.getBlockState(next)
                             if (chainState.block !== ore) continue                   // 同种矿石
                             if (tool.isEmpty) return                                 // 挖断了就停
                             // 只移除方块, 不在这里生成掉落 —— 掉落统一在下面按主矿石的结算结果处理
-                            if (!world.breakBlock(next, false, player)) continue
+                            if (!world.destroyBlock(next, false, player)) continue
                             // 创造模式不掉落 (与原版一致); 透视抑制时整批不掉落
                             if (!suppressed && !player.isCreative) {
                                 // 掉落在主矿石的位置生成 (自动含时运/精准采集), 与主矿石的掉落堆在一起
                                 PerkEffects.spawnBlockDrops(player, world, pos, chainState, dropCopies)
                                 // 挖矿经验仍按每块结算 (翻倍只翻物品)
-                                chainState.onStacksDropped(world, next, tool, true)
+                                chainState.spawnAfterBreak(world, next, tool, true)
                             }
-                            if (!player.isCreative) tool.damage(1, player, EquipmentSlot.MAINHAND)
+                            if (!player.isCreative) tool.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
                             broken++
                             if (broken >= MAX_CHAIN) return
                             queue.add(next)
@@ -485,7 +478,7 @@ object DelverPerks {
         override val id = "delver_carefree_sleep"
         override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.DELVER
-        override fun icon() = ItemStack(Items.RED_BED)
+        override fun icon() = ItemStack(Items.BED.red())
     }
 
     /** 绿 · 深掘: **切洋葱** —— 手持镐右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换

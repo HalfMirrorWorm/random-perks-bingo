@@ -1,7 +1,7 @@
 package com.randomperks.client
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.util.math.Vec3d
+import net.minecraft.client.Minecraft
+import net.minecraft.world.phys.Vec3
 
 /**
  * "灵魂出窍" 的客户端相机 (参考 FreeCam / 灵魂出窍类 mod)。
@@ -22,7 +22,7 @@ object SoulCameraClient {
     var active: Boolean = false
 
     @JvmField
-    var pos: Vec3d = Vec3d.ZERO
+    var pos: Vec3 = Vec3.ZERO
 
     @JvmField
     var yaw: Float = 0.0f
@@ -33,15 +33,15 @@ object SoulCameraClient {
     private var lastFrameNanos: Long = 0L
 
     fun start() {
-        val client = MinecraftClient.getInstance()
+        val client = Minecraft.getInstance()
         val player = client.player ?: return
-        pos = player.eyePos
-        yaw = player.yaw
-        pitch = player.pitch
+        pos = player.eyePosition
+        yaw = player.yRot
+        pitch = player.xRot
         lastFrameNanos = System.nanoTime()
         active = true
         // 灵魂状态不能交互; 如果正在挖掘, 先停掉
-        client.interactionManager?.cancelBlockBreaking()
+        client.gameMode?.stopDestroyBlock()
     }
 
     fun stop() {
@@ -59,11 +59,11 @@ object SoulCameraClient {
 
     /** 每帧由相机 mixin 调用: 处理移动键 */
     fun updatePerFrame() {
-        val client = MinecraftClient.getInstance()
+        val client = Minecraft.getInstance()
         val now = System.nanoTime()
 
         // 打开界面时不动 (避免在聊天栏里打字时灵魂乱飞)
-        if (client.currentScreen != null) {
+        if (client.gui.screen() != null) {
             lastFrameNanos = now
             return
         }
@@ -72,27 +72,27 @@ object SoulCameraClient {
         lastFrameNanos = now
 
         val options = client.options
-        val forward = options.forwardKey.isPressed
-        val backward = options.backKey.isPressed
-        val left = options.leftKey.isPressed
-        val right = options.rightKey.isPressed
-        val up = options.jumpKey.isPressed
-        val down = options.sneakKey.isPressed
-        val fast = options.sprintKey.isPressed
+        val forward = options.keyUp.isDown
+        val backward = options.keyDown.isDown
+        val left = options.keyLeft.isDown
+        val right = options.keyRight.isDown
+        val up = options.keyJump.isDown
+        val down = options.keyShift.isDown
+        val fast = options.keySprint.isDown
 
         // 与 Freecam 一致: W/S 只按水平朝向 (yaw) 飞, 升降交给空格/Shift;
         // 俯仰只影响视角, 这样低头看地面时按 W 不会往地里钻。
         val speed = if (fast) SPEED_FAST else SPEED_NORMAL
-        var move = Vec3d.ZERO
+        var move = Vec3.ZERO
 
-        var horizontal = Vec3d.ZERO
-        val forwardVec = Vec3d.fromPolar(0.0f, yaw)
+        var horizontal = Vec3.ZERO
+        val forwardVec = Vec3.directionFromRotation(0.0f, yaw)
         if (forward) horizontal = horizontal.add(forwardVec)
         if (backward) horizontal = horizontal.subtract(forwardVec)
         if (left) horizontal = horizontal.subtract(rightVector())
         if (right) horizontal = horizontal.add(rightVector())
-        if (horizontal.lengthSquared() > 1.0E-6) {
-            move = move.add(horizontal.normalize().multiply(speed * dt))
+        if (horizontal.lengthSqr() > 1.0E-6) {
+            move = move.add(horizontal.normalize().scale(speed * dt))
         }
 
         var vertical = 0.0
@@ -100,9 +100,9 @@ object SoulCameraClient {
         if (down) vertical -= 1.0
         if (vertical != 0.0) move = move.add(0.0, vertical * speed * dt, 0.0)
 
-        if (move.lengthSquared() < 1.0E-6) return
+        if (move.lengthSqr() < 1.0E-6) return
         pos = pos.add(move)
     }
 
-    private fun rightVector(): Vec3d = Vec3d.fromPolar(0.0f, yaw + 90.0f)
+    private fun rightVector(): Vec3 = Vec3.directionFromRotation(0.0f, yaw + 90.0f)
 }

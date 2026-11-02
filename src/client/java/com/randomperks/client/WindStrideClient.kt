@@ -1,10 +1,10 @@
 package com.randomperks.client
 
 import com.randomperks.client.net.ClientPerkNetworking
-import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.util.Identifier
+import net.minecraft.client.player.LocalPlayer
+import net.minecraft.world.entity.ai.attributes.AttributeModifier
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.resources.Identifier
 
 /**
  * "风之步伐"的客户端侧结算。
@@ -15,20 +15,20 @@ import net.minecraft.util.Identifier
 object WindStrideClient {
 
     // 必须与服务端 PerkBoostQuery 中的同名定义保持一致
-    private val WIND_STRIDE_MOD = Identifier.of("random-perks-bingo", "wind_stride_sprint")
+    private val WIND_STRIDE_MOD = Identifier.fromNamespaceAndPath("random-perks-bingo", "wind_stride_sprint")
     private const val WIND_STRIDE_BONUS = 0.39
     private const val WIND_STRIDE_PERK = "swift_wind_stride"
 
     /** 疾跑状态变化时由 WindStrideClientMixin 调用 */
-    fun update(player: ClientPlayerEntity, sprinting: Boolean) {
+    fun update(player: LocalPlayer, sprinting: Boolean) {
         if (sprinting && ClientPerkNetworking.hasPerk(WIND_STRIDE_PERK)) {
-            val instance = player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED) ?: return
+            val instance = player.getAttribute(Attributes.MOVEMENT_SPEED) ?: return
             instance.removeModifier(WIND_STRIDE_MOD)
-            instance.addTemporaryModifier(
-                EntityAttributeModifier(WIND_STRIDE_MOD, WIND_STRIDE_BONUS, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+            instance.addTransientModifier(
+                AttributeModifier(WIND_STRIDE_MOD, WIND_STRIDE_BONUS, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
             )
         } else {
-            player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)?.removeModifier(WIND_STRIDE_MOD)
+            player.getAttribute(Attributes.MOVEMENT_SPEED)?.removeModifier(WIND_STRIDE_MOD)
         }
     }
 }

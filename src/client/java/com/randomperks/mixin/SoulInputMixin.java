@@ -1,10 +1,10 @@
 package com.randomperks.mixin;
 
 import com.randomperks.client.SoulCameraClient;
-import net.minecraft.client.input.Input;
-import net.minecraft.client.input.KeyboardInput;
-import net.minecraft.util.PlayerInput;
-import net.minecraft.util.math.Vec2f;
+import net.minecraft.client.player.ClientInput;
+import net.minecraft.client.player.KeyboardInput;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.phys.Vec2;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -15,13 +15,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * (空格/潜行仍然被 [com.randomperks.client.SoulCameraClient] 直接读取用于升降)
  */
 @Mixin(KeyboardInput.class)
-public abstract class SoulInputMixin extends Input {
+public abstract class SoulInputMixin extends ClientInput {
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void randomperks$freezeBodyInput(CallbackInfo ci) {
         if (!SoulCameraClient.active) return;
 
-        this.playerInput = PlayerInput.DEFAULT;
-        this.movementVector = Vec2f.ZERO;
+        this.keyPresses = Input.EMPTY;
+        this.moveVector = Vec2.ZERO;
     }
 }

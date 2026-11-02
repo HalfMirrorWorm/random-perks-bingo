@@ -14,15 +14,16 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.state.PerkStateManager
-import net.minecraft.block.Blocks
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.SpawnReason
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.EntityTypes
+import net.minecraft.world.entity.EntitySpawnReason
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.network.chat.Component
+import net.minecraft.core.BlockPos
 import java.util.UUID
 import kotlin.math.cos
 import kotlin.math.sin
@@ -44,7 +45,7 @@ object SummonPerks {
 
         /** 对局结束/词条被清掉时别把人留在坐骑上 */
         override fun onRemove(ctx: PerkContext) {
-            if (ctx.player.hasVehicle()) ctx.player.stopRiding()
+            if (ctx.player.isPassenger()) ctx.player.stopRiding()
         }
     }
 
@@ -74,15 +75,15 @@ object SummonPerks {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.remote_transfer_no_target"),
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.remote_transfer_no_target"),
                     true,
                 )
                 return
             }
             if (itemSlots(player).isEmpty()) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.remote_transfer_empty"),
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.remote_transfer_empty"),
                     true,
                 )
                 return
@@ -95,7 +96,7 @@ object SummonPerks {
         }
 
         /** 客户端选中队友 → 记住目标, 打开物品选择界面 */
-        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
@@ -105,28 +106,28 @@ object SummonPerks {
             // 校验: 必须是当下的合法候选, 防止客户端伪造 uuid 传给队外玩家
             val target = candidates(player).firstOrNull { it.uuid == uuid }
             if (target == null) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.remote_transfer_no_target"),
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.remote_transfer_no_target"),
                     true,
                 )
                 return
             }
 
             if (itemSlots(player).isEmpty()) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.remote_transfer_empty"),
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.remote_transfer_empty"),
                     true,
                 )
                 return
             }
 
             state.memory[TARGET_KEY] = target.uuid.toString()
-            val items = (0 until SLOT_COUNT).map { player.inventory.getStack(it).copy() }
+            val items = (0 until SLOT_COUNT).map { player.inventory.getItem(it).copy() }
             PerkNetworking.sendItemSelectOpen(player, PURPOSE, items, TRANSFER_COUNT)
         }
 
         /** 客户端提交选中的物品格 → 传送过去 */
-        fun handleItemPick(player: ServerPlayerEntity, slots: List<Int>) {
+        fun handleItemPick(player: ServerPlayer, slots: List<Int>) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
@@ -139,23 +140,23 @@ object SummonPerks {
             val target = candidates(player).firstOrNull { it.uuid == targetUuid }
             if (target == null) {
                 state.memory.remove(TARGET_KEY)
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.remote_transfer_no_target"),
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.remote_transfer_no_target"),
                     true,
                 )
                 return
             }
 
             // 校验: 选中的格数必须等于"最多 4 格且不超过现有非空格数", 且互不重复、都非空
-            val nonEmpty = (0 until SLOT_COUNT).count { !player.inventory.getStack(it).isEmpty }
+            val nonEmpty = (0 until SLOT_COUNT).count { !player.inventory.getItem(it).isEmpty }
             val required = minOf(TRANSFER_COUNT, nonEmpty)
             val distinct = slots.toSet()
             if (required == 0 || slots.size != required || distinct.size != slots.size) return
-            if (distinct.any { it !in 0 until SLOT_COUNT || player.inventory.getStack(it).isEmpty }) return
+            if (distinct.any { it !in 0 until SLOT_COUNT || player.inventory.getItem(it).isEmpty }) return
 
             val taken = mutableListOf<ItemStack>()
             for (slot in distinct) {
-                val stack = player.inventory.removeStack(slot)
+                val stack = player.inventory.removeItemNoUpdate(slot)
                 if (!stack.isEmpty) taken += stack
             }
             if (taken.isEmpty()) return
@@ -166,28 +167,28 @@ object SummonPerks {
             // 目标背包放不下时, 剩余部分显式掉在他脚下 —— 不允许静默吞掉
             for (stack in taken) {
                 val remaining = stack.copy()
-                target.inventory.insertStack(remaining)
+                target.inventory.add(remaining)
                 if (!remaining.isEmpty) {
-                    target.dropItem(remaining, false)
+                    target.spawnAtLocation(target.level() as ServerLevel, remaining)
                 }
             }
-            target.inventory.markDirty()
+            target.inventory.setChanged()
 
             state.markUsed(id)
             state.memory.remove(TARGET_KEY)
             PerkGrantService.notifyPerkListChanged(player)
             PerkGrantService.syncAbilities(player)
 
-            player.sendMessage(
-                Text.translatable(
+            player.sendSystemMessage(
+                Component.translatable(
                     "random-perks-bingo.message.remote_transfer_success",
                     itemSummary,
                     target.name,
                 ),
                 false,
             )
-            target.sendMessage(
-                Text.translatable(
+            target.sendSystemMessage(
+                Component.translatable(
                     "random-perks-bingo.message.remote_transfer_received",
                     player.name,
                     itemSummary,
@@ -197,32 +198,32 @@ object SummonPerks {
         }
 
         /** 把物品列表拼成 "钻石 ×4, 面包 ×16" 这样的提示文本 */
-        private fun summarize(stacks: List<ItemStack>): Text {
-            var text = Text.empty()
+        private fun summarize(stacks: List<ItemStack>): Component {
+            var text = Component.empty()
             stacks.forEachIndexed { index, stack ->
-                if (index > 0) text = text.append(Text.literal(", "))
-                text = text.append(stack.name.copy())
-                if (stack.count > 1) text = text.append(Text.literal(" ×${stack.count}"))
+                if (index > 0) text = text.append(Component.literal(", "))
+                text = text.append(stack.hoverName.copy())
+                if (stack.count > 1) text = text.append(Component.literal(" ×${stack.count}"))
             }
             return text
         }
 
         /** 主背包里所有非空格子 */
-        private fun itemSlots(player: ServerPlayerEntity): MutableList<Int> {
+        private fun itemSlots(player: ServerPlayer): MutableList<Int> {
             val slots = mutableListOf<Int>()
             for (slot in 0 until SLOT_COUNT) {
-                if (!player.inventory.getStack(slot).isEmpty) slots += slot
+                if (!player.inventory.getItem(slot).isEmpty) slots += slot
             }
             return slots
         }
 
         /** 候选: 与自己在同一支原版队伍里的其他在线玩家 (无队伍时没有候选) */
-        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> {
-            val myTeam = player.scoreboardTeam?.name ?: return emptyList()
-            return player.server?.playerManager?.playerList?.filter {
-                it.uuid != player.uuid &&
+        private fun candidates(player: ServerPlayer): List<ServerPlayer> {
+            val myTeam = player.team?.name ?: return emptyList()
+            return player.level().getServer().playerList.players.filter {
+                it.getUUID() != player.uuid &&
                     !it.isSpectator &&
-                    it.scoreboardTeam?.name == myTeam
+                    it.team?.name == myTeam
             } ?: emptyList()
         }
     }
@@ -241,14 +242,14 @@ object SummonPerks {
 
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
-            val candidates = player.server?.playerManager?.playerList
-                ?.filter { it.isAlive && !it.isSpectator && it.uuid != player.uuid }
-                ?.map { PlayerTargetEntry(it.uuid, it.name.string) }
+            val candidates = player.level().getServer().playerList.players
+                ?.filter { it.isAlive && !it.isSpectator && it.getUUID() != player.uuid }
+                ?.map { PlayerTargetEntry(it.getUUID(), it.name.string) }
                 ?: emptyList()
 
             if (candidates.isEmpty()) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.swap_not_enough"),
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.swap_not_enough"),
                     true,
                 )
                 return
@@ -257,19 +258,19 @@ object SummonPerks {
         }
 
         /** 客户端选中目标后调用: 开始 5 秒倒计时 (到期后由 [SwapService] 传送并消耗词条) */
-        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
             if (state.isUsed(id)) return
 
-            val target = player.server?.playerManager?.getPlayer(uuid) ?: return
+            val target = player.level().getServer().playerList.getPlayer(uuid) ?: return
             if (target === player || !target.isAlive || target.isRemoved || target.isSpectator) return
 
             if (!SwapService.startCountdown(player, target)) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.swap_in_progress"),
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.swap_in_progress"),
                     true,
                 )
             }
@@ -292,8 +293,8 @@ object SummonPerks {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
-                player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.phantoms_no_target"),
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.phantoms_no_target"),
                     true,
                 )
                 return
@@ -305,7 +306,7 @@ object SummonPerks {
             )
         }
 
-        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
@@ -313,11 +314,11 @@ object SummonPerks {
             if (state.isUsed(id)) return
 
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
-            val world = target.world as? ServerWorld ?: return
+            val world = target.level() as? ServerLevel ?: return
 
             var spawned = 0
             for (index in 0 until PHANTOM_COUNT) {
-                val phantom = EntityType.PHANTOM.create(world, SpawnReason.COMMAND) ?: continue
+                val phantom = EntityTypes.PHANTOM.create(world, EntitySpawnReason.COMMAND) ?: continue
 
                 // 在目标周围 4-8 格、上方 3-7 格找一个空气位置
                 var placed = false
@@ -327,15 +328,15 @@ object SummonPerks {
                     val x = target.x + cos(angle) * radius
                     val z = target.z + sin(angle) * radius
                     val y = target.y + 3.0 + world.random.nextDouble() * 4.0
-                    val pos = BlockPos.ofFloored(x, y, z)
-                    if (!world.isAir(pos)) continue
+                    val pos = BlockPos.containing(x, y, z)
+                    if (!world.isEmptyBlock(pos)) continue
 
-                    phantom.refreshPositionAndAngles(x, y, z, world.random.nextFloat() * 360f, 0f)
+                    phantom.snapTo(x, y, z, world.random.nextFloat() * 360f, 0f)
                     placed = true
                     break
                 }
                 if (!placed) {
-                    phantom.refreshPositionAndAngles(
+                    phantom.snapTo(
                         target.x, target.y + 6.0, target.z,
                         world.random.nextFloat() * 360f, 0f,
                     )
@@ -343,7 +344,7 @@ object SummonPerks {
 
                 phantom.setPhantomSize(1)
                 phantom.setTarget(target)
-                world.spawnEntity(phantom)
+                world.addFreshEntity(phantom)
                 spawned++
             }
 
@@ -353,18 +354,18 @@ object SummonPerks {
             PerkGrantService.notifyPerkListChanged(player)
             PerkGrantService.syncAbilities(player)
 
-            player.sendMessage(
-                Text.translatable("random-perks-bingo.message.insomnia_spawned", target.name),
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.insomnia_spawned", target.name),
                 false,
             )
-            target.sendMessage(
-                Text.translatable("random-perks-bingo.message.insomnia_target", player.name),
+            target.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.insomnia_target", player.name),
                 true,
             )
         }
 
-        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+        private fun candidates(player: ServerPlayer): List<ServerPlayer> =
+            player.level().getServer().playerList.players.filter { !it.isSpectator }
     }
 
     /** 紫 · 唤法: **Boss盲盒** —— 随机获得一个 Boss 刷怪蛋 */
@@ -404,24 +405,24 @@ object SummonPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.level() as? ServerLevel ?: return
 
             // 头顶 (脚上方 2 格) 开始向上找第一个空气方块, 最多找 8 格
-            val base = player.blockPos.up(2)
+            val base = player.blockPosition().above(2)
             var pos = base
             for (dy in 0..8) {
-                val candidate = base.up(dy)
+                val candidate = base.above(dy)
                 if (world.getBlockState(candidate).isAir) {
                     pos = candidate
                     break
                 }
             }
-            world.setBlockState(pos, Blocks.END_PORTAL.defaultState)
+            world.setBlockAndUpdate(pos, Blocks.END_PORTAL.defaultBlockState())
 
-            val dimension = Text.translatable(
-                "dimension.${world.registryKey.value.namespace}.${world.registryKey.value.path}"
+            val dimension = Component.translatable(
+                "dimension.${world.dimension().identifier().namespace}.${world.dimension().identifier().path}"
             )
-            val message = Text.translatable(
+            val message = Component.translatable(
                 "random-perks-bingo.message.end_portal_announce",
                 player.name,
                 dimension,
@@ -429,7 +430,7 @@ object SummonPerks {
                 pos.y,
                 pos.z,
             )
-            player.server?.playerManager?.playerList?.forEach { it.sendMessage(message, false) }
+            player.level().getServer().playerList.players.forEach { it.sendSystemMessage(message, false) }
         }
     }
 

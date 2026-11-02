@@ -2,10 +2,10 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -23,27 +23,27 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * <p>所以这里把该上限换成"背包格上限" (大背包生效时是 4 倍上限), 保证每次至少前进 1 个。
  * 没持有该词条时返回原值, 与未安装本 mod 的行为完全一致。
  */
-@Mixin(PlayerInventory.class)
+@Mixin(Inventory.class)
 public class BigBackpackPlayerInventoryMixin {
 
     private static final String PERK_ID = "artisan_big_backpack";
 
     @Redirect(
-            method = "offer(Lnet/minecraft/item/ItemStack;Z)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getMaxCount()I")
+            method = "placeItemBackInInventory(Lnet/minecraft/world/item/ItemStack;ZLnet/minecraft/util/Prediction;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getMaxStackSize()I")
     )
     private int randomperks$bigBackpackOfferMax(ItemStack stack) {
-        PlayerInventory inventory = (PlayerInventory) (Object) this;
-        PlayerEntity owner = inventory.player;
+        Inventory inventory = (Inventory) (Object) this;
+        Player owner = inventory.player;
 
         boolean hasPerk;
-        if (owner.getWorld().isClient()) {
+        if (owner.level().isClientSide()) {
             hasPerk = ClientPerkFlags.has(PERK_ID);
         } else {
-            hasPerk = owner instanceof ServerPlayerEntity serverPlayer
+            hasPerk = owner instanceof ServerPlayer serverPlayer
                 && PerkBoostQuery.INSTANCE.hasBigBackpack(serverPlayer);
         }
 
-        return hasPerk ? inventory.getMaxCount(stack) : stack.getMaxCount();
+        return hasPerk ? inventory.getMaxStackSize(stack) : stack.getMaxStackSize();
     }
 }

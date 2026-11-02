@@ -1,6 +1,6 @@
 package com.randomperks.mixin;
 
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.gen.Invoker;
  * 跨类访问 protected 成员只能走 @Invoker: mixin 生成的桥接方法写在**目标类内部**,
  * 因此能合法调用 protected 方法。
  */
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public interface PlayerEntityInvoker {
 
-    @Invoker("vanishCursedItems")
+    @Invoker("destroyVanishingCursedItems")
     void randomperks$vanishCursedItems();
 }

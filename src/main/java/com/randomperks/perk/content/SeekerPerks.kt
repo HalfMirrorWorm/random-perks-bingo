@@ -18,42 +18,50 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import com.randomperks.state.PerkStateManager
-import net.minecraft.block.Block
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.PotionContentsComponent
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.SpawnReason
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.projectile.ProjectileUtil
-import net.minecraft.item.FilledMapItem
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.item.map.MapDecorationTypes
-import net.minecraft.item.map.MapState
-import net.minecraft.potion.Potions
-import net.minecraft.registry.Registry
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.entry.RegistryEntryList
-import net.minecraft.registry.tag.BiomeTags
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
-import net.minecraft.util.math.BlockPos
-import net.minecraft.entity.passive.VillagerEntity
-import net.minecraft.resource.featuretoggle.FeatureFlags
-import net.minecraft.village.TradeOfferList
-import net.minecraft.village.TradeOffers
-import net.minecraft.village.VillagerData
-import net.minecraft.village.VillagerProfession
-import net.minecraft.village.VillagerType
-import net.minecraft.world.WanderingTraderManager
-import net.minecraft.world.poi.PointOfInterestTypes
-import net.minecraft.world.gen.structure.StructureKeys
+import net.minecraft.world.level.block.Block
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.alchemy.PotionContents
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.EntityTypes
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.EntitySpawnReason
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.entity.projectile.ProjectileUtil
+import net.minecraft.world.item.MapItem
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.saveddata.maps.MapDecorationTypes
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData
+import net.minecraft.world.item.alchemy.Potions
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.Registries
+import net.minecraft.core.HolderSet
+import net.minecraft.tags.BiomeTags
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
+import net.minecraft.core.BlockPos
+import net.minecraft.world.entity.npc.villager.Villager
+import net.minecraft.core.Holder
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.item.trading.MerchantOffers
+import net.minecraft.world.item.trading.TradeSet
+import net.minecraft.world.item.trading.TradeSets
+import net.minecraft.world.item.trading.VillagerTrade
+import net.minecraft.world.level.storage.loot.LootContext
+import net.minecraft.world.level.storage.loot.LootParams
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams
+import net.minecraft.world.entity.npc.villager.VillagerData
+import net.minecraft.world.entity.npc.villager.VillagerProfession
+import net.minecraft.world.entity.npc.villager.VillagerType
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTraderSpawner
+import net.minecraft.world.entity.ai.village.poi.PoiTypes
+import net.minecraft.world.level.levelgen.structure.BuiltinStructures
 import java.util.UUID
 
 /**
@@ -84,18 +92,18 @@ object SeekerPerks {
         /** 使用望远镜时, 高亮标记**视线瞄准的**生物或玩家 (发光轮廓可透视看到) */
         override fun onTick(ctx: PerkContext) {
             val player = ctx.player
-            if (!player.isUsingSpyglass) return
+            if (!player.isScoping) return
 
-            val eyePos = player.eyePos
-            val lookVec = player.rotationVector
-            val endPos = eyePos.add(lookVec.multiply(REACH))
-            val searchBox = player.boundingBox.stretch(lookVec.multiply(REACH)).expand(1.0)
+            val eyePos = player.eyePosition
+            val lookVec = player.lookAngle
+            val endPos = eyePos.add(lookVec.scale(REACH))
+            val searchBox = player.boundingBox.expandTowards(lookVec.scale(REACH)).inflate(1.0)
 
-            val hit = ProjectileUtil.raycast(
+            val hit = ProjectileUtil.getEntityHitResult(
                 player, eyePos, endPos, searchBox,
                 { entity ->
                     entity !== player && entity is LivingEntity && entity.isAlive &&
-                        !(entity is PlayerEntity && entity.isSpectator)
+                        !(entity is Player && entity.isSpectator)
                 },
                 REACH * REACH,
             )
@@ -106,27 +114,27 @@ object SeekerPerks {
         }
 
         /** 生成原版沉船式藏宝图: 指向最近"埋藏的宝藏"(沙滩下的宝箱), 红叉标记; 找不到时返回 null */
-        private fun createTreasureMap(player: ServerPlayerEntity): ItemStack? {
-            val world = player.world as? ServerWorld ?: return null
+        private fun createTreasureMap(player: ServerPlayer): ItemStack? {
+            val world = player.level() as? ServerLevel ?: return null
 
             val pos = runCatching {
-                val structureRegistry = world.registryManager.getOrThrow(RegistryKeys.STRUCTURE)
-                val buriedTreasure = structureRegistry.getOrThrow(StructureKeys.BURIED_TREASURE)
-                world.chunkManager.chunkGenerator.locateStructure(
+                val structureRegistry = world.registryAccess().lookupOrThrow(Registries.STRUCTURE)
+                val buriedTreasure = structureRegistry.getOrThrow(BuiltinStructures.BURIED_TREASURE)
+                world.chunkSource.generator.findNearestMapStructure(
                     world,
-                    RegistryEntryList.of(buriedTreasure),
-                    player.blockPos,
+                    HolderSet.direct(buriedTreasure),
+                    player.blockPosition(),
                     100,
                     false,
                 )?.first
             }.getOrNull() ?: return null
 
             // 地图以宝藏位置为中心, 打开即可看到红叉
-            val mapStack = FilledMapItem.createMap(world, pos.x, pos.z, 1.toByte(), true, true)
-            MapState.addDecorationsNbt(mapStack, pos, "random-perks-bingo:treasure", MapDecorationTypes.RED_X)
+            val mapStack = MapItem.create(world, pos.x, pos.z, 1.toByte(), true, true)
+            MapItemSavedData.addTargetDecoration(mapStack, pos, "random-perks-bingo:treasure", MapDecorationTypes.RED_X)
             mapStack.set(
-                DataComponentTypes.CUSTOM_NAME,
-                Text.translatable("random-perks-bingo.item.treasure_map").formatted(Formatting.GOLD),
+                DataComponents.CUSTOM_NAME,
+                Component.translatable("random-perks-bingo.item.treasure_map").withStyle(ChatFormatting.GOLD),
             )
             return mapStack
         }
@@ -165,7 +173,7 @@ object SeekerPerks {
             grant(ctx)
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.level().getServer().tickCount.toLong()
 
         private fun grant(ctx: PerkContext) {
             val (item, count) = pool[ctx.player.random.nextInt(pool.size)]
@@ -196,7 +204,7 @@ object SeekerPerks {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.ENDER_PEARL))
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.level().getServer().tickCount.toLong()
     }
 
     /** 金 · 秘藏 · 质变: **获得时立即**打开一名随机敌方玩家的背包, 偷走其中一格自选物品 (一次性) */
@@ -226,13 +234,13 @@ object SeekerPerks {
 
         override fun onTick(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
-            val creatures = world.getEntitiesByClass(
+            val world = player.level() as? ServerLevel ?: return
+            val creatures = world.getEntitiesOfClass(
                 LivingEntity::class.java,
-                player.boundingBox.expand(RANGE),
-            ) { it !== player && it !is PlayerEntity && it.isAlive &&
+                player.boundingBox.inflate(RANGE),
+            ) { it !== player && it !is Player && it.isAlive &&
                 // 盒子查询只是粗筛, 这里再按**球面**判一次: 否则斜角方向能到 ~111 格 (描述写的是 64 格)
-                it.squaredDistanceTo(player) <= RANGE * RANGE }
+                it.distanceToSqr(player) <= RANGE * RANGE }
 
             // 每秒重发 (仅自己可见)
             if (creatures.isNotEmpty()) {
@@ -262,7 +270,7 @@ object SeekerPerks {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.ENDER_CHEST))
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.level().getServer().tickCount.toLong()
     }
 
     /** 紫 · 秘藏: 立即获得 1 瓶随机药水, 之后每 2 分钟再获得 1 瓶 */
@@ -302,10 +310,10 @@ object SeekerPerks {
 
         private fun grant(ctx: PerkContext) {
             val potion = POTIONS[ctx.player.random.nextInt(POTIONS.size)]
-            PerkEffects.giveStack(ctx.player, PotionContentsComponent.createStack(Items.POTION, potion))
+            PerkEffects.giveStack(ctx.player, PotionContents.createItemStack(Items.POTION, potion))
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.level().getServer().tickCount.toLong()
     }
 
     /** 蓝 · 唤法 · 贮藏: **流浪拴绳** —— 在词条列表点击使用, **直接在玩家脚下**生成一只流浪商人 + 2 只商队羊驼,
@@ -326,10 +334,10 @@ object SeekerPerks {
         private const val EMERALD_REWARD = 5
 
         override fun onActivate(ctx: PerkContext) {
-            val world = ctx.player.world as? ServerWorld ?: return
-            if (!spawnAt(world, ctx.player.blockPos)) {
-                ctx.player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.trader_failed"),
+            val world = ctx.player.level() as? ServerLevel ?: return
+            if (!spawnAt(world, ctx.player.blockPosition())) {
+                ctx.player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.trader_failed"),
                     false,
                 )
                 return
@@ -342,43 +350,43 @@ object SeekerPerks {
         }
 
         /** 商人 + 2 只羊驼; 玩家脚下站不住 (水里/卡墙) 时才在附近找一块 */
-        private fun spawnAt(world: ServerWorld, center: BlockPos): Boolean {
+        private fun spawnAt(world: ServerLevel, center: BlockPos): Boolean {
             val pos = if (standable(world, center)) center else nearbyStandable(world, center) ?: center
 
-            val trader = net.minecraft.entity.EntityType.WANDERING_TRADER
-                .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return false
-            trader.refreshPositionAndAngles(
+            val trader = net.minecraft.world.entity.EntityTypes.WANDERING_TRADER
+                .create(world, net.minecraft.world.entity.EntitySpawnReason.EVENT) ?: return false
+            trader.snapTo(
                 pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
                 world.random.nextFloat() * 360f, 0f,
             )
             trader.setDespawnDelay(48000)
-            world.spawnEntity(trader)
+            world.addFreshEntity(trader)
             // 与原版一致: 给它一个漫游目标, 商人会自己在附近走动
             trader.setWanderTarget(pos)
-            trader.setPositionTarget(pos, 16)
+            trader.setHomeTo(pos, 16)
 
             repeat(2) { index ->
-                val llama = net.minecraft.entity.EntityType.TRADER_LLAMA
-                    .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return@repeat
-                llama.refreshPositionAndAngles(
+                val llama = net.minecraft.world.entity.EntityTypes.TRADER_LLAMA
+                    .create(world, net.minecraft.world.entity.EntitySpawnReason.EVENT) ?: return@repeat
+                llama.snapTo(
                     pos.x + 0.5 + if (index == 0) -1.2 else 1.2, pos.y.toDouble(), pos.z + 0.5,
                     world.random.nextFloat() * 360f, 0f,
                 )
                 llama.setDespawnDelay(47999)
-                world.spawnEntity(llama)
+                world.addFreshEntity(llama)
                 // 与原版一致: 拴在商人身上, 羊驼会跟着他走
-                llama.attachLeash(trader, true)
+                llama.setLeashedTo(trader, true)
             }
             return true
         }
 
-        private fun standable(world: ServerWorld, pos: BlockPos): Boolean =
-            world.getBlockState(pos).isAir && world.getBlockState(pos.down()).isSolidBlock(world, pos.down())
+        private fun standable(world: ServerLevel, pos: BlockPos): Boolean =
+            world.getBlockState(pos).isAir && world.getBlockState(pos.below()).isCollisionShapeFullBlock(world, pos.below())
 
-        private fun nearbyStandable(world: ServerWorld, center: BlockPos): BlockPos? {
+        private fun nearbyStandable(world: ServerLevel, center: BlockPos): BlockPos? {
             for (i in 0 until 12) {
-                val candidate = center.add(world.random.nextInt(33) - 16, 0, world.random.nextInt(33) - 16)
-                val top = world.getTopPosition(net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, candidate)
+                val candidate = center.offset(world.random.nextInt(33) - 16, 0, world.random.nextInt(33) - 16)
+                val top = world.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, candidate)
                 if (standable(world, top)) return top
             }
             return null
@@ -394,16 +402,16 @@ object SeekerPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.level() as? ServerLevel ?: return
 
             val villagePos = runCatching {
-                world.locateStructure(net.minecraft.registry.tag.StructureTags.VILLAGE, player.blockPos, 100, false)
+                world.findNearestMapStructure(net.minecraft.tags.StructureTags.VILLAGE, player.blockPosition(), 100, false)
             }.getOrNull()
 
             if (villagePos == null) {
                 PerkEffects.giveStack(player, ItemStack(Items.COMPASS))
-                player.sendMessage(
-                    net.minecraft.text.Text.translatable("random-perks-bingo.message.village_not_found"),
+                player.sendSystemMessage(
+                    net.minecraft.network.chat.Component.translatable("random-perks-bingo.message.village_not_found"),
                     true,
                 )
                 return
@@ -411,20 +419,20 @@ object SeekerPerks {
 
             // 优先指向村庄的钟 (meeting POI); 村庄范围内找不到钟则退回结构起点
             val bellPos = runCatching {
-                world.pointOfInterestStorage.getNearestPosition(
-                    { entry -> entry.key.map { it == PointOfInterestTypes.MEETING }.orElse(false) },
+                world.poiManager.findClosest(
+                    { entry -> entry.unwrapKey().map { it == PoiTypes.MEETING }.orElse(false) },
                     villagePos,
                     96,
-                    net.minecraft.world.poi.PointOfInterestStorage.OccupationStatus.ANY,
+                    net.minecraft.world.entity.ai.village.poi.PoiManager.Occupancy.ANY,
                 ).orElse(null)
             }.getOrNull()
 
             val target = bellPos ?: villagePos
             val stack = ItemStack(Items.COMPASS)
             stack.set(
-                DataComponentTypes.LODESTONE_TRACKER,
-                net.minecraft.component.type.LodestoneTrackerComponent(
-                    java.util.Optional.of(net.minecraft.util.math.GlobalPos.create(world.registryKey, target)),
+                DataComponents.LODESTONE_TRACKER,
+                net.minecraft.world.item.component.LodestoneTracker(
+                    java.util.Optional.of(net.minecraft.core.GlobalPos.of(world.dimension(), target)),
                     false,
                 ),
             )
@@ -464,7 +472,7 @@ object SeekerPerks {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.puny_no_target"), true)
+                player.sendSystemMessage(Component.translatable("random-perks-bingo.message.puny_no_target"), true)
                 return
             }
             PerkNetworking.sendActionTargets(
@@ -475,7 +483,7 @@ object SeekerPerks {
         }
 
         /** 客户端在选择器里选中了一名玩家 → 送矿物 + 召来蠹虫 */
-        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
@@ -490,19 +498,19 @@ object SeekerPerks {
             VerminSwarmService.start(target)
             state.markUsed(id)
 
-            player.sendMessage(
-                Text.translatable("random-perks-bingo.message.puny_given", target.name, mineral.name),
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.puny_given", target.name, ItemStack(mineral).hoverName),
                 false,
             )
-            target.sendMessage(
-                Text.translatable("random-perks-bingo.message.puny_received", mineral.name),
+            target.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.puny_received", ItemStack(mineral).hoverName),
                 true,
             )
         }
 
         /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
-        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+        private fun candidates(player: ServerPlayer): List<ServerPlayer> =
+            player.level().getServer().playerList.players.filter { !it.isSpectator }
     }
 
     /** 蓝 · 秘藏: **随机地基** —— 获得瞬间, 把脚下 3×3 的地面各替换成一块随机方块 */
@@ -517,14 +525,14 @@ object SeekerPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
-            val registry = world.registryManager.getOrThrow(RegistryKeys.BLOCK)
-            val center = player.blockPos.down()
+            val world = player.level() as? ServerLevel ?: return
+            val registry = world.registryAccess().lookupOrThrow(Registries.BLOCK)
+            val center = player.blockPosition().below()
 
             for (dx in -RADIUS..RADIUS) {
                 for (dz in -RADIUS..RADIUS) {
                     val block = randomBlock(registry, player.random) ?: continue
-                    world.setBlockState(center.add(dx, 0, dz), block.defaultState)
+                    world.setBlockAndUpdate(center.offset(dx, 0, dz), block.defaultBlockState())
                 }
             }
         }
@@ -532,12 +540,12 @@ object SeekerPerks {
         /** 从方块注册表里随机挑一个非空气方块 (getRandom 可能给到空气, 重试几次) */
         private fun randomBlock(
             registry: Registry<Block>,
-            random: net.minecraft.util.math.random.Random,
+            random: net.minecraft.util.RandomSource,
         ): Block? {
             repeat(16) {
                 val entry = registry.getRandom(random).orElse(null) ?: return null
                 val block = entry.value()
-                if (!block.defaultState.isAir) return block
+                if (!block.defaultBlockState().isAir) return block
             }
             return null
         }
@@ -586,10 +594,10 @@ object SeekerPerks {
         override fun onActivate(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.EMERALD, EMERALD_REWARD))
 
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.level() as? ServerLevel ?: return
             if (!spawnAt(world, ctx.player)) {
-                ctx.player.sendMessage(
-                    Text.translatable("random-perks-bingo.message.old_priest_failed"),
+                ctx.player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.old_priest_failed"),
                     false,
                 )
             }
@@ -599,76 +607,99 @@ object SeekerPerks {
             PerkGrantService.syncAbilities(ctx.player)
         }
 
-        private fun spawnAt(world: ServerWorld, player: ServerPlayerEntity): Boolean {
-            val villager = EntityType.VILLAGER.create(world, SpawnReason.EVENT) ?: return false
+        private fun spawnAt(world: ServerLevel, player: ServerPlayer): Boolean {
+            val villager = EntityTypes.VILLAGER.create(world, EntitySpawnReason.EVENT) ?: return false
 
-            val registryManager = world.registryManager
-            val type = registryManager.getOrThrow(RegistryKeys.VILLAGER_TYPE)
+            val registryManager = world.registryAccess()
+            val type = registryManager.lookupOrThrow(Registries.VILLAGER_TYPE)
                 .getOrThrow(VillagerType.PLAINS)
-            val profession = registryManager.getOrThrow(RegistryKeys.VILLAGER_PROFESSION)
+            val profession = registryManager.lookupOrThrow(Registries.VILLAGER_PROFESSION)
                 .getOrThrow(VillagerProfession.CLERIC)
             // 等级直接设 5 级 (界面显示为大师级)
             villager.setVillagerData(VillagerData(type, profession, 5))
-            // 交易列表**自己按 1→5 级构建**: 顺序固定为 新手 → 学徒 → 老手 → 专家 → 大师,
-            // 每级 2 项 (与原版每次升级时 fillRecipesFromPool(count=2) 完全一致)。
-            // 不再走"逐级 setVillagerData + fillRecipes"的模拟 —— 那条路依赖懒加载与数据同步,
-            // 实测出现过交易顺序不对的问题。
-            villager.setOffers(buildMasterClericOffers(villager, world))
-
-            villager.refreshPositionAndAngles(
+            villager.snapTo(
                 player.x, player.y, player.z,
-                player.yaw, 0f,
+                player.yRot, 0f,
             )
-            villager.setPersistent()
-            world.spawnEntity(villager)
+            // 交易列表按 1→5 级的 TradeSet 自己抽。先摆好位置, 战利品上下文里的原点才是玩家脚下。
+            villager.setOffers(buildMasterClericOffers(villager, world))
+            villager.setPersistenceRequired()
+            world.addFreshEntity(villager)
 
             // 诊断: 把逐级累积出来的交易列表打出来, 方便核对等级顺序与内容
             RandomPerksMod.logger.info(
                 "[RandomPerks] old priest trades: {}",
                 villager.offers.joinToString(" | ") {
-                    "${it.displayedFirstBuyItem.name.string} x${it.displayedFirstBuyItem.count}" +
-                        " -> ${it.sellItem.name.string} x${it.sellItem.count}"
+                    "${it.costA.hoverName.string} x${it.costA.count}" +
+                        " -> ${it.result.hoverName.string} x${it.result.count}"
                 },
             )
 
             // 交易是懒生成的: getOffers() 会按当前等级补满 10 项, 再把其中随机的 0~3 项标成缺货。
-            // TradeOffer.disable() 就是把 uses 顶到 maxUses —— 界面上显示为红色的缺货叉, 交易项本身还在。
+            // TradeOffer.setToOutOfStock() 就是把 uses 顶到 maxUses —— 界面上显示为红色的缺货叉, 交易项本身还在。
             val pool = villager.offers.toMutableList()
             repeat(minOf(world.random.nextInt(MAX_DISABLED + 1), pool.size)) {
-                pool.removeAt(world.random.nextInt(pool.size)).disable()
+                pool.removeAt(world.random.nextInt(pool.size)).setToOutOfStock()
             }
             return true
         }
 
         /**
-         * 按 1→5 级从原版交易表构建大师级牧师的交易列表。
+         * 按 1→5 级从当前世界的交易表构建大师级牧师的交易列表。
          *
-         * 每级从该等级的工厂池里随机抽 2 项 (与原版 fillRecipesFromPool(count=2) 一致),
-         * 顺序固定为 新手 → 学徒 → 老手 → 专家 → 大师。
-         * 开了 TRADE_REBALANCE 的实验性世界优先用平衡表, 与 fillRecipes 的分支保持一致。
+         * 26.3 起每级是一份 [TradeSet]: 抽几项、能否重复都由这张表决定,
+         * 实验性交易重平衡开着时注册表里已经是那一套, 这里不再另选一张表。
+         * 顺序仍是新手 → 学徒 → 老手 → 专家 → 大师。
          */
-        private fun buildMasterClericOffers(villager: VillagerEntity, world: ServerWorld): TradeOfferList {
-            val offers = TradeOfferList()
-
-            val rebalanced = if (world.enabledFeatures.contains(FeatureFlags.TRADE_REBALANCE)) {
-                TradeOffers.REBALANCED_PROFESSION_TO_LEVELED_TRADE[VillagerProfession.CLERIC]
-            } else {
-                null
-            }
-            val table = rebalanced
-                ?: TradeOffers.PROFESSION_TO_LEVELED_TRADE[VillagerProfession.CLERIC]
-                ?: return offers
-
-            for (level in 1..5) {
-                val factories = table.get(level) ?: continue
-                val pool = factories.toMutableList()
-                repeat(minOf(2, pool.size)) {
-                    val factory = pool.removeAt(villager.random.nextInt(pool.size))
-                    factory.create(villager, villager.random)?.let { offers.add(it) }
-                }
+        private fun buildMasterClericOffers(villager: Villager, world: ServerLevel): MerchantOffers {
+            val offers = MerchantOffers()
+            for (level in CLERIC_LEVELS) {
+                addTradeSet(villager, world, offers, level)
             }
             return offers
         }
+
+        private fun addTradeSet(
+            villager: Villager,
+            world: ServerLevel,
+            offers: MerchantOffers,
+            key: ResourceKey<TradeSet>,
+        ) {
+            val tradeSet = world.registryAccess().lookupOrThrow(Registries.TRADE_SET)
+                .getOptional(key).orElse(null) ?: return
+            val context = LootContext.Builder(
+                LootParams.Builder(world)
+                    .withParameter(LootContextParams.ORIGIN, villager.position())
+                    .withParameter(LootContextParams.THIS_ENTITY, villager)
+                    .withParameter(
+                        LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED,
+                        net.minecraft.util.Unit.INSTANCE,
+                    )
+                    .create(LootContextParamSets.VILLAGER_TRADE),
+            ).create(tradeSet.randomSequence())
+            val count = tradeSet.calculateNumberOfTrades(context)
+            val pool = ArrayList<Holder<VillagerTrade>>(tradeSet.trades().toList())
+            var added = 0
+            while (added < count && pool.isNotEmpty()) {
+                val index = context.random.nextInt(pool.size)
+                val offer = pool[index].value().getOffer(context)
+                if (offer == null) {
+                    pool.removeAt(index)
+                    continue
+                }
+                if (!tradeSet.allowDuplicates()) pool.removeAt(index)
+                offers.add(offer)
+                added++
+            }
+        }
+
+        private val CLERIC_LEVELS = arrayOf(
+            TradeSets.CLERIC_LEVEL_1,
+            TradeSets.CLERIC_LEVEL_2,
+            TradeSets.CLERIC_LEVEL_3,
+            TradeSets.CLERIC_LEVEL_4,
+            TradeSets.CLERIC_LEVEL_5,
+        )
     }
 
     /** 蓝 · 秘藏: **暖水考古** —— 获得一把刷子; 用刷子刷珊瑚块会把它刷掉, 并有 10% 概率
@@ -713,10 +744,10 @@ object SeekerPerks {
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
 
         private fun apply(ctx: PerkContext) =
-            PerkEffects.permanentEffect(ctx.player, StatusEffects.HERO_OF_THE_VILLAGE, 0)
+            PerkEffects.permanentEffect(ctx.player, MobEffects.HERO_OF_THE_VILLAGE, 0)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeEffect(ctx.player, StatusEffects.HERO_OF_THE_VILLAGE)
+            PerkEffects.removeEffect(ctx.player, MobEffects.HERO_OF_THE_VILLAGE)
     }
 
     fun registerAll() {

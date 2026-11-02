@@ -1,7 +1,7 @@
 package com.randomperks.game
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.minecraft.entity.ItemEntity
+import net.minecraft.world.entity.item.ItemEntity
 
 /**
  * "磁力升级" (蓝 · 秘藏) —— 把拾取范围扩大到 5 格。
@@ -20,19 +20,19 @@ object MagnetService {
 
     fun register() {
         ServerTickEvents.END_SERVER_TICK.register { server ->
-            if (server.ticks % INTERVAL_TICKS != 0) return@register
+            if (server.tickCount % INTERVAL_TICKS != 0) return@register
 
-            for (player in server.playerManager.playerList) {
+            for (player in server.playerList.players) {
                 if (!PerkBoostQuery.hasMagnetUpgrade(player)) continue
 
-                val items = player.world.getEntitiesByClass(
+                val items = player.level().getEntitiesOfClass(
                     ItemEntity::class.java,
-                    player.boundingBox.expand(RANGE),
-                ) { it.isAlive && !it.cannotPickup() && it.squaredDistanceTo(player) <= RANGE * RANGE }
+                    player.boundingBox.inflate(RANGE),
+                ) { it.isAlive && !it.hasPickUpDelay() && it.distanceToSqr(player) <= RANGE * RANGE }
 
                 for (item in items) {
                     // onPlayerCollision 内部会再检查 pickupDelay / 背包是否有空间
-                    item.onPlayerCollision(player)
+                    item.playerTouch(player)
                 }
             }
         }

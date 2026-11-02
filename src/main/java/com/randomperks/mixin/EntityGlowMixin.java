@@ -1,7 +1,7 @@
 package com.randomperks.mixin;
 
 import com.randomperks.client.GlowMarkState;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Entity.class)
 public class EntityGlowMixin {
 
-    @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "isCurrentlyGlowing", at = @At("HEAD"), cancellable = true)
     private void randomperks$isGlowing(CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
         if (GlowMarkState.INSTANCE.isMarked(self.getId())) {
@@ -24,7 +24,7 @@ public class EntityGlowMixin {
         }
     }
 
-    @Inject(method = "isGlowingLocal", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "hasGlowingTag", at = @At("HEAD"), cancellable = true)
     private void randomperks$isGlowingLocal(CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
         if (GlowMarkState.INSTANCE.isMarked(self.getId())) {

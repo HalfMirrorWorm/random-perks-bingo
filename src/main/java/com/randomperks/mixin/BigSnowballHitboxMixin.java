@@ -1,8 +1,8 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ProjectileUtil.class)
 public class BigSnowballHitboxMixin {
 
-    /** 原版雪球边长 (EntityType.SNOWBALL 的尺寸) */
+    /** 原版雪球边长 (EntityTypes.SNOWBALL 的尺寸) */
     private static final float SNOWBALL_SIZE = 0.25f;
 
     /** 渲染放大倍数 (与 BigSnowballRendererMixin.SCALE 保持一致) */
@@ -40,7 +40,7 @@ public class BigSnowballHitboxMixin {
     /** 判定半径应该多出来的部分 */
     private static final float EXTRA_MARGIN = (RENDER_SCALE - 1.0f) * SNOWBALL_SIZE / 2.0f;
 
-    @Inject(method = "getToleranceMargin", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "computeMargin", at = @At("RETURN"), cancellable = true)
     private static void randomperks$bigSnowballMargin(Entity entity, CallbackInfoReturnable<Float> cir) {
         if (!PerkBoostQuery.INSTANCE.isBigSnowball(entity)) return;
         cir.setReturnValue(cir.getReturnValue() + EXTRA_MARGIN);

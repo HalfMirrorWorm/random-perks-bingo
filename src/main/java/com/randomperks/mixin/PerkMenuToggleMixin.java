@@ -1,6 +1,7 @@
 package com.randomperks.mixin;
 
 import com.randomperks.config.PerkConfig;
+import com.randomperks.hook.BingoCardAccess;
 import me.jfenn.bingo.common.menu.ButtonKt;
 import me.jfenn.bingo.common.menu.MenuComponent;
 import me.jfenn.bingo.common.options.BingoCardOptions;
@@ -8,7 +9,7 @@ import me.jfenn.bingo.common.options.OptionsService;
 import me.jfenn.bingo.common.state.BingoState;
 import me.jfenn.bingo.common.text.TextProvider;
 import me.jfenn.bingo.platform.text.IText;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
 import org.joml.Vector3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -69,7 +70,7 @@ public class PerkMenuToggleMixin {
     /** 「特性」按钮: 从整行挪到第三行右格 */
     @ModifyArg(
             method = "registerGameModes",
-            at = @At(value = "INVOKE", target = FEATURES_BUTTON_CALL),
+            at = @At(value = "INVOKE", target = "Lme/jfenn/bingo/common/menu/ButtonKt;registerTileButton$default(Lme/jfenn/bingo/common/menu/MenuComponent;Lorg/joml/Vector3d;Ljava/lang/String;Lme/jfenn/bingo/platform/text/IText;Lme/jfenn/bingo/common/menu/Property;FLjava/util/List;Lme/jfenn/bingo/common/menu/Property;Lme/jfenn/bingo/common/menu/Property;Ljava/lang/String;Lme/jfenn/bingo/platform/IDisplayEntity$Brightness;DDLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V"),
             index = 1
     )
     private static Vector3d randomperks$moveFeaturesButton(Vector3d position) {
@@ -79,7 +80,7 @@ public class PerkMenuToggleMixin {
     /** 「特性」按钮: 宽度缩成普通模式格 */
     @ModifyArg(
             method = "registerGameModes",
-            at = @At(value = "INVOKE", target = FEATURES_BUTTON_CALL),
+            at = @At(value = "INVOKE", target = "Lme/jfenn/bingo/common/menu/ButtonKt;registerTileButton$default(Lme/jfenn/bingo/common/menu/MenuComponent;Lorg/joml/Vector3d;Ljava/lang/String;Lme/jfenn/bingo/platform/text/IText;Lme/jfenn/bingo/common/menu/Property;FLjava/util/List;Lme/jfenn/bingo/common/menu/Property;Lme/jfenn/bingo/common/menu/Property;Ljava/lang/String;Lme/jfenn/bingo/platform/IDisplayEntity$Brightness;DDLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V"),
             index = 11
     )
     private static double randomperks$shrinkFeaturesWidth(double width) {
@@ -89,7 +90,7 @@ public class PerkMenuToggleMixin {
     /** 「特性」按钮: 高度改成普通模式格 */
     @ModifyArg(
             method = "registerGameModes",
-            at = @At(value = "INVOKE", target = FEATURES_BUTTON_CALL),
+            at = @At(value = "INVOKE", target = "Lme/jfenn/bingo/common/menu/ButtonKt;registerTileButton$default(Lme/jfenn/bingo/common/menu/MenuComponent;Lorg/joml/Vector3d;Ljava/lang/String;Lme/jfenn/bingo/platform/text/IText;Lme/jfenn/bingo/common/menu/Property;FLjava/util/List;Lme/jfenn/bingo/common/menu/Property;Lme/jfenn/bingo/common/menu/Property;Ljava/lang/String;Lme/jfenn/bingo/platform/IDisplayEntity$Brightness;DDLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V"),
             index = 12
     )
     private static double randomperks$shrinkFeaturesHeight(double height) {
@@ -111,7 +112,7 @@ public class PerkMenuToggleMixin {
 
         // 与其他模式按钮一致: 标题 + 一行说明
         List<IText> tooltip = List.of(
-                text.translatable(KEY_NAME, "随机词条").formatted(Formatting.GREEN),
+                text.translatable(KEY_NAME, "随机词条").formatted(ChatFormatting.GREEN),
                 text.translatable(KEY_TOOLTIP, "当团队完成格子或连线时，可以三选一词条效果")
         );
 
@@ -133,7 +134,7 @@ public class PerkMenuToggleMixin {
                     // 「物品占领 ↔ 消耗」互斥保持一致: 后打开的那个生效。
                     if (newEnabled) {
                         try {
-                            BingoCardOptions options = state.getActiveCard().getOptions();
+                            BingoCardOptions options = BingoCardAccess.INSTANCE.activeCardOptions(state);
                             if (options.isInventoryMode()) {
                                 options.setInventoryMode(false);
                             }

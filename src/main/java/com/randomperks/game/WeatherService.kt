@@ -2,9 +2,10 @@ package com.randomperks.game
 
 import com.randomperks.network.PerkNetworking
 import com.randomperks.state.PerkStateManager
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.world.World
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.saveddata.WeatherData
 
 /**
  * "世界一直下雨"词条的服务端逻辑。
@@ -24,7 +25,7 @@ object WeatherService {
     const val THUNDER = 2
 
     /** 玩家在 V 界面点击词条: 下发选择器 (已用过就不再弹) */
-    fun handleRequest(player: ServerPlayerEntity) {
+    fun handleRequest(player: ServerPlayer) {
         if (!PerkSession.isEnabled()) return
 
         val state = PerkStateManager.get(player.uuid) ?: return
@@ -35,7 +36,7 @@ object WeatherService {
     }
 
     /** 客户端选定了天气 (0 晴 / 1 雨 / 2 雷雨) */
-    fun handlePick(player: ServerPlayerEntity, weather: Int) {
+    fun handlePick(player: ServerPlayer, weather: Int) {
         if (!PerkSession.isEnabled()) return
         if (weather !in CLEAR..THUNDER) return   // 服务端校验, 不信客户端的序号
 
@@ -43,13 +44,14 @@ object WeatherService {
         if (!state.hasPerk(PERK_ID)) return
         if (state.isUsed(PERK_ID)) return
 
-        val server = player.server ?: return
-        val world = server.getWorld(World.OVERWORLD) ?: return
+        val server = player.level().getServer()
+        val world = server.getLevel(Level.OVERWORLD) ?: return
 
+        val data = world.weatherData
         when (weather) {
-            CLEAR -> world.setWeather(DURATION_TICKS, 0, false, false)
-            RAIN -> world.setWeather(0, DURATION_TICKS, true, false)
-            else -> world.setWeather(0, DURATION_TICKS, true, true)
+            CLEAR -> applyWeather(data, DURATION_TICKS, 0, raining = false, thundering = false)
+            RAIN -> applyWeather(data, 0, DURATION_TICKS, raining = true, thundering = false)
+            else -> applyWeather(data, 0, DURATION_TICKS, raining = true, thundering = true)
         }
 
         state.markUsed(PERK_ID)
@@ -61,12 +63,27 @@ object WeatherService {
             RAIN -> "random-perks-bingo.message.weather_rain"
             else -> "random-perks-bingo.message.weather_thunder"
         }
-        player.sendMessage(Text.translatable(messageKey), true)
+        player.sendSystemMessage(Component.translatable(messageKey), true)
 
         // 天气是全局的: 广播让其他玩家知道是谁改的
-        server.playerManager.broadcast(
-            Text.translatable("random-perks-bingo.message.weather_broadcast", player.name),
+        server.playerList.broadcastSystemMessage(
+            Component.translatable("random-perks-bingo.message.weather_broadcast", player.name),
             false,
         )
+    }
+
+    /** 对齐 1.21 的 setWeatherParameters: 雷雨时长跟下雨时长走同一值。 */
+    private fun applyWeather(
+        data: WeatherData,
+        clearTime: Int,
+        rainTime: Int,
+        raining: Boolean,
+        thundering: Boolean,
+    ) {
+        data.clearWeatherTime = clearTime
+        data.rainTime = rainTime
+        data.thunderTime = rainTime
+        data.isRaining = raining
+        data.isThundering = thundering
     }
 }

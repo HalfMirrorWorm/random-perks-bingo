@@ -1,8 +1,8 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
-import net.minecraft.client.input.Input;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.player.ClientInput;
+import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -24,35 +24,35 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * <p>持词条时把这三处的判断换成"任意方向有输入"(等价于原版私有方法 hasMovementInput),
  * 于是侧移、后退、四个斜向都能跑起来; 松开所有方向键时仍然照常停下。
  */
-@Mixin(ClientPlayerEntity.class)
+@Mixin(LocalPlayer.class)
 public class OmnimovementMixin {
 
     private static final String PERK_ID = "swift_omnimovement";
 
     @Redirect(
             method = "canStartSprinting",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/input/Input;hasForwardMovement()Z"))
-    private boolean randomperks$startInAnyDirection(Input input) {
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/ClientInput;hasForwardImpulse()Z"))
+    private boolean randomperks$startInAnyDirection(ClientInput input) {
         return randomperks$hasMovement(input);
     }
 
     @Redirect(
-            method = "shouldStopSprinting",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/input/Input;hasForwardMovement()Z"))
-    private boolean randomperks$keepInAnyDirection(Input input) {
+            method = "shouldStopRunSprinting",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/ClientInput;hasForwardImpulse()Z"))
+    private boolean randomperks$keepInAnyDirection(ClientInput input) {
         return randomperks$hasMovement(input);
     }
 
     @Redirect(
             method = "shouldStopSwimSprinting",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/input/Input;hasForwardMovement()Z"))
-    private boolean randomperks$keepInAnyDirectionSwim(Input input) {
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/ClientInput;hasForwardImpulse()Z"))
+    private boolean randomperks$keepInAnyDirectionSwim(ClientInput input) {
         return randomperks$hasMovement(input);
     }
 
     /** 持词条: 任意方向有输入就算"在移动"; 否则保持原版"只有前进算移动"。 */
-    private static boolean randomperks$hasMovement(Input input) {
-        if (!ClientPerkFlags.has(PERK_ID)) return input.hasForwardMovement();
-        return input.getMovementInput().lengthSquared() > 0.0F;
+    private static boolean randomperks$hasMovement(ClientInput input) {
+        if (!ClientPerkFlags.has(PERK_ID)) return input.hasForwardImpulse();
+        return input.getMoveVector().lengthSquared() > 0.0F;
     }
 }

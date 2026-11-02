@@ -1,8 +1,8 @@
 package com.randomperks.game
 
-import net.minecraft.entity.Entity
-import net.minecraft.world.explosion.Explosion
-import net.minecraft.world.explosion.ExplosionBehavior
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.ExplosionDamageCalculator
 import kotlin.math.sqrt
 
 /**
@@ -17,11 +17,11 @@ import kotlin.math.sqrt
  * <p>超出原版半径 (10 格) 的目标伤害为 0（原版本来也打不到），但依然会被击退、
  * 方块也依然会被炸掉 —— 这正是"范围翻倍"的部分。
  */
-class BedBombBehavior : ExplosionBehavior() {
+class BedBombBehavior : ExplosionDamageCalculator() {
 
-    override fun calculateDamage(explosion: Explosion, entity: Entity, amount: Float): Float {
+    override fun getEntityDamageAmount(explosion: Explosion, entity: Entity, amount: Float): Float {
         val vanillaRadius = VANILLA_POWER * 2.0
-        val distance = sqrt(entity.squaredDistanceTo(explosion.position)) / vanillaRadius
+        val distance = sqrt(entity.distanceToSqr(explosion.center())) / vanillaRadius
         val e = (1.0 - distance) * amount
         val vanillaDamage = (e * e + e) / 2.0 * 7.0 * vanillaRadius + 1.0
         return maxOf(0.0, vanillaDamage * DAMAGE_MULTIPLIER).toFloat()

@@ -1,9 +1,9 @@
 package com.randomperks.client.screen
 
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.components.Button
+import net.minecraft.network.chat.Component
 
 /**
  * 天气选择器 (词条「世界一直下雨」): 三个按钮 —— 晴朗 / 下雨 / 雷雨。
@@ -13,7 +13,7 @@ import net.minecraft.text.Text
  */
 class WeatherSelectScreen(
     private val onPick: (Int) -> Unit,
-) : Screen(Text.translatable("random-perks-bingo.screen.weather")) {
+) : Screen(Component.translatable("random-perks-bingo.screen.weather")) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -35,12 +35,12 @@ class WeatherSelectScreen(
         firstTop = (height - totalHeight) / 2 + 8
 
         for ((index, key) in labels.withIndex()) {
-            addDrawableChild(
-                ButtonWidget.builder(Text.translatable(key)) {
+            addRenderableWidget(
+                Button.builder(Component.translatable(key)) {
                     onPick(index)
-                    close()
+                    onClose()
                 }
-                    .dimensions(
+                    .bounds(
                         (width - BUTTON_WIDTH) / 2,
                         firstTop + index * (BUTTON_HEIGHT + BUTTON_GAP),
                         BUTTON_WIDTH,
@@ -51,18 +51,18 @@ class WeatherSelectScreen(
         }
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         context.fill(0, 0, width, height, DIM_BACKGROUND)
-        context.drawCenteredTextWithShadow(
-            textRenderer, title, width / 2, firstTop - 32, ScreenStyle.TEXT_NAME,
+        context.centeredText(
+            font, title, width / 2, firstTop - 32, ScreenStyle.TEXT_NAME,
         )
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.screen.weather.hint"),
+        context.centeredText(
+            font,
+            Component.translatable("random-perks-bingo.screen.weather.hint"),
             width / 2, firstTop - 18, ScreenStyle.TEXT_DIM,
         )
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 }

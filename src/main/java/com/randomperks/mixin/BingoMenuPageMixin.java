@@ -9,8 +9,8 @@ import me.jfenn.bingo.common.menu.ConstantProperty;
 import me.jfenn.bingo.common.menu.MenuComponent;
 import me.jfenn.bingo.platform.IPlayerHandle;
 import me.jfenn.bingo.platform.text.IText;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.server.level.ServerPlayer;
 import org.joml.Vector3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -54,12 +54,12 @@ public class BingoMenuPageMixin {
                     + "ILjava/lang/Object;)V";
 
     /**
-     * {@code createRootPage$lambda$0} 里第二次 registerTileButton 就是开始游戏
-     * (第一次是「重置默认」, 高度 0.55; 开始按钮高度约 1.6)。
+     * 2.15 的 {@code createRootPage$lambda$0} 里第一次 registerTileButton 是开始游戏
+     * (StringKey.OptionsStart), 第二次才是「重置默认」。
      */
     @ModifyArgs(
             method = "createRootPage$lambda$0",
-            at = @At(value = "INVOKE", target = TILE_BUTTON, ordinal = 1),
+            at = @At(value = "INVOKE", target = TILE_BUTTON, ordinal = 0),
             remap = false
     )
     private static void randomperks$splitStartButton(Args args) {
@@ -79,7 +79,7 @@ public class BingoMenuPageMixin {
         );
         List<IText> tooltip = List.of(
                 component.getText().translatable("random-perks-bingo.recap.title", "上局回顾")
-                        .formatted(Formatting.GREEN),
+                        .formatted(ChatFormatting.GREEN),
                 component.getText().translatable(
                         "random-perks-bingo.recap.menu.tooltip",
                         "查看上一局的词条选取和队伍完成顺序"
@@ -87,7 +87,7 @@ public class BingoMenuPageMixin {
         );
         Function1<IPlayerHandle, Boolean> everyone = player -> Boolean.TRUE;
         Function1<IPlayerHandle, Unit> onClick = player -> {
-            ServerPlayerEntity serverPlayer = player.getPlayer();
+            ServerPlayer serverPlayer = player.getPlayer();
             if (serverPlayer != null) {
                 RecapService.INSTANCE.openFor(serverPlayer);
             }

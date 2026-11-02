@@ -1,9 +1,9 @@
 package com.randomperks.game
 
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.mob.MobEntity
-import net.minecraft.util.PlayerInput
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.entity.Mob
+import net.minecraft.world.entity.player.Input
+import net.minecraft.world.phys.Vec3
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -34,7 +34,7 @@ object DragonTamerMotion {
     /**
      * @param airborneVertical 地面坐骑留在空中时, 上一拍算出来的竖直速度。飞行坐骑不用。
      */
-    fun velocity(mob: MobEntity, yaw: Float, pitch: Float, input: PlayerInput, airborneVertical: Double): Vec3d {
+    fun velocity(mob: Mob, yaw: Float, pitch: Float, input: Input, airborneVertical: Double): Vec3 {
         val forward = (if (input.forward()) 1.0 else 0.0) - (if (input.backward()) 1.0 else 0.0)
         val strafe = (if (input.left()) 1.0 else 0.0) - (if (input.right()) 1.0 else 0.0)
         return if (DragonTamerService.isFlyingMount(mob)) {
@@ -45,14 +45,14 @@ object DragonTamerMotion {
     }
 
     private fun fly(
-        mob: MobEntity,
+        mob: Mob,
         yaw: Float,
         pitch: Float,
         forward: Double,
         strafe: Double,
         jump: Boolean,
         sprint: Boolean,
-    ): Vec3d {
+    ): Vec3 {
         val yawRad = Math.toRadians(yaw.toDouble())
         val pitchRad = Math.toRadians(pitch.toDouble())
         val cosPitch = cos(pitchRad)
@@ -87,24 +87,24 @@ object DragonTamerMotion {
         }
 
         // 体型越大飞得越快, 恶魂不会跟蝙蝠一个速度。0.6 格宽是玩家量级, 到 1.55 封顶。
-        val bulk = (1.0 + (mob.width.toDouble() - 0.6).coerceAtLeast(0.0) * 0.18).coerceAtMost(1.55)
+        val bulk = (1.0 + (mob.bbWidth.toDouble() - 0.6).coerceAtLeast(0.0) * 0.18).coerceAtMost(1.55)
         val speed = (if (sprint) FLY_SPRINT else FLY_SPEED) * bulk
         x *= speed
         y *= speed
         z *= speed
         if (jump) y += FLY_LIFT
-        return Vec3d(x, y, z)
+        return Vec3(x, y, z)
     }
 
     private fun ground(
-        mob: MobEntity,
+        mob: Mob,
         yaw: Float,
         forward: Double,
         strafe: Double,
         jump: Boolean,
         sprint: Boolean,
         airborneVertical: Double,
-    ): Vec3d {
+    ): Vec3 {
         val yawRad = Math.toRadians(yaw.toDouble())
         var mx = -sin(yawRad) * forward + cos(yawRad) * strafe
         var mz = cos(yawRad) * forward + sin(yawRad) * strafe
@@ -114,15 +114,15 @@ object DragonTamerMotion {
             mz /= length
         }
 
-        var speed = (mob.getAttributeValue(EntityAttributes.MOVEMENT_SPEED) * 1.8).coerceIn(0.18, 0.42)
+        var speed = (mob.getAttributeValue(Attributes.MOVEMENT_SPEED) * 1.8).coerceIn(0.18, 0.42)
         if (sprint) speed = (speed * 1.35).coerceAtMost(0.55)
         val moving = length > 1.0E-4
 
         val vy = when {
-            jump && mob.isOnGround -> GROUND_JUMP
-            mob.isOnGround -> 0.0
-            else -> (airborneVertical - mob.finalGravity) * 0.98
+            jump && mob.onGround() -> GROUND_JUMP
+            mob.onGround() -> 0.0
+            else -> (airborneVertical - mob.gravity) * 0.98
         }
-        return Vec3d(if (moving) mx * speed else 0.0, vy, if (moving) mz * speed else 0.0)
+        return Vec3(if (moving) mx * speed else 0.0, vy, if (moving) mz * speed else 0.0)
     }
 }

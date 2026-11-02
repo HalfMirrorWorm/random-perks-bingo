@@ -7,8 +7,8 @@ import com.randomperks.game.PerkSession
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.state.PerkStateManager
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.PotionContentsComponent
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.alchemy.PotionContents
 import java.util.UUID
 import com.randomperks.mixin.MobLootInvoker
 import com.randomperks.perk.PerkArchetype
@@ -16,32 +16,33 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
-import net.minecraft.enchantment.Enchantments
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.entity.mob.MobEntity
-import net.minecraft.entity.mob.Monster
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.potion.Potions
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
-import net.minecraft.world.GameRules
-import net.minecraft.world.World
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.EntityTypes
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.ai.attributes.AttributeModifier
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.Mob
+import net.minecraft.world.entity.monster.Enemy
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.alchemy.Potions
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.world.level.gamerules.GameRules
+import net.minecraft.world.level.Level
 
 /**
  * 猎杀 HUNTER —— 战斗 / 怪物掉落。
  */
 object HunterPerks {
 
-    private val MOD_ATTACK = Identifier.of("random-perks-bingo", "hunter_strength")
-    private val MOD_HEALTH = Identifier.of("random-perks-bingo", "hunter_health")
+    private val MOD_ATTACK = Identifier.fromNamespaceAndPath("random-perks-bingo", "hunter_strength")
+    private val MOD_HEALTH = Identifier.fromNamespaceAndPath("random-perks-bingo", "hunter_health")
 
     /** 蓝 · 猎人直觉: **对怪物**造成的伤害 +25% (结算在 LivingEntityDamageMixin)。
      *  旧实现是全局攻击力 +25% 的持久化修饰符, 获得/重生/失去时都清一遍, 免老存档残留。 */
@@ -56,7 +57,7 @@ object HunterPerks {
         override fun onRemove(ctx: PerkContext) = clearLegacy(ctx)
 
         private fun clearLegacy(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_ATTACK)
+            PerkEffects.removeAttribute(ctx.player, Attributes.ATTACK_DAMAGE, MOD_ATTACK)
     }
 
     /** 蓝 · 强壮体魄: 最大生命 +4 */
@@ -79,10 +80,10 @@ object HunterPerks {
         }
 
         private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_HEALTH, 4.0, EntityAttributeModifier.Operation.ADD_VALUE)
+            PerkEffects.setAttribute(ctx.player, Attributes.MAX_HEALTH, MOD_HEALTH, 4.0, AttributeModifier.Operation.ADD_VALUE)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_HEALTH)
+            PerkEffects.removeAttribute(ctx.player, Attributes.MAX_HEALTH, MOD_HEALTH)
     }
 
     /** 蓝 · 战地急救: 击杀生物回复 2 生命 */
@@ -90,7 +91,7 @@ object HunterPerks {
         override val id = "hunter_vampire"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.HUNTER
-        override fun icon() = ItemStack(Items.RED_DYE)
+        override fun icon() = ItemStack(Items.DYE.red())
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             ctx.player.heal(2f)
@@ -117,7 +118,7 @@ object HunterPerks {
         private val lootTotalWeight = loot.sumOf { it.second }
 
         /** 按权重随机抽一件 */
-        private fun rollLoot(random: net.minecraft.util.math.random.Random): net.minecraft.item.Item {
+        private fun rollLoot(random: net.minecraft.util.RandomSource): net.minecraft.world.item.Item {
             var roll = random.nextInt(lootTotalWeight)
             for ((item, weight) in loot) {
                 if (roll < weight) return item
@@ -129,10 +130,10 @@ object HunterPerks {
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             // "怪物"必须用 Monster 接口判定: HostileEntity 只是个抽象类, 史莱姆 / 岩浆怪 / 恶魂 /
             // 幻翼 / 潜影贝 / 疣猪兽 / 末影龙 都只实现 Monster 接口而不继承它, 用类判定会把这批全漏掉
-            if (victim !is Monster) return
+            if (victim !is Enemy) return
             if (ctx.player.random.nextFloat() >= 0.30f) return
-            val world = ctx.player.world as? ServerWorld ?: return
-            victim.dropStack(world, ItemStack(rollLoot(ctx.player.random)))
+            val world = ctx.player.level() as? ServerLevel ?: return
+            victim.spawnAtLocation(world, ItemStack(rollLoot(ctx.player.random)))
         }
     }
 
@@ -147,21 +148,21 @@ object HunterPerks {
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             // 同"剥皮专家": 用 Monster 接口判定 (HostileEntity 会漏掉史莱姆/恶魂/幻翼/末影龙等)
-            if (victim !is Monster) return
+            if (victim !is Enemy) return
             if (ctx.player.random.nextFloat() >= CHANCE) return
 
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.level() as? ServerLevel ?: return
             val prizes = prizesFor(victim)
             if (prizes.isNotEmpty()) {
                 // 有专属条目: 直接以掉落物形态落在怪物死亡位置
-                prizes.forEach { victim.dropStack(world, it) }
+                prizes.forEach { victim.spawnAtLocation(world, it) }
             } else {
                 // 未收录的怪物 (蠹虫/末影龙/凋灵/模组怪等): 回退成"让它自己的战利品表再滚一次",
                 // 掉出来的东西天生与这只怪对应
-                val source = victim.recentDamageSource ?: return
+                val source = victim.lastDamageSource ?: return
                 (victim as? MobLootInvoker)?.invokeDropLoot(world, source, true)
             }
-            ctx.player.sendMessage(net.minecraft.text.Text.translatable("random-perks-bingo.message.loot_bag"), false)
+            ctx.player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("random-perks-bingo.message.loot_bag"), false)
         }
 
         /**
@@ -172,54 +173,54 @@ object HunterPerks {
          * 依据: 1.21.7 的 `data/minecraft/loot_table/entities/` 下各实体的战利品表。
          */
         private fun prizesFor(victim: LivingEntity): List<ItemStack> = when (victim.type) {
-            EntityType.ZOMBIE, EntityType.HUSK, EntityType.ZOMBIE_VILLAGER -> listOf(
+            EntityTypes.ZOMBIE, EntityTypes.HUSK, EntityTypes.ZOMBIE_VILLAGER -> listOf(
                 ItemStack(Items.IRON_INGOT, 3), ItemStack(Items.ROTTEN_FLESH, 16),
             )
-            EntityType.DROWNED -> listOf(
+            EntityTypes.DROWNED -> listOf(
                 ItemStack(Items.COPPER_INGOT, 4), ItemStack(Items.ROTTEN_FLESH, 16),
             )
-            EntityType.SKELETON, EntityType.STRAY, EntityType.BOGGED -> listOf(
+            EntityTypes.SKELETON, EntityTypes.STRAY, EntityTypes.BOGGED -> listOf(
                 ItemStack(Items.BONE, 8), ItemStack(Items.ARROW, 16),
             )
-            EntityType.CREEPER -> listOf(
+            EntityTypes.CREEPER -> listOf(
                 ItemStack(Items.GUNPOWDER, 8), ItemStack(Items.MUSIC_DISC_CAT),
             )
-            EntityType.SPIDER, EntityType.CAVE_SPIDER -> listOf(
+            EntityTypes.SPIDER, EntityTypes.CAVE_SPIDER -> listOf(
                 ItemStack(Items.STRING, 8), ItemStack(Items.SPIDER_EYE, 2),
             )
-            EntityType.ENDERMAN -> listOf(ItemStack(Items.ENDER_PEARL, 4))
-            EntityType.BLAZE -> listOf(ItemStack(Items.BLAZE_ROD, 4))
-            EntityType.GHAST -> listOf(
+            EntityTypes.ENDERMAN -> listOf(ItemStack(Items.ENDER_PEARL, 4))
+            EntityTypes.BLAZE -> listOf(ItemStack(Items.BLAZE_ROD, 4))
+            EntityTypes.GHAST -> listOf(
                 ItemStack(Items.GHAST_TEAR, 2), ItemStack(Items.GUNPOWDER, 8),
             )
-            EntityType.WITHER_SKELETON -> listOf(
+            EntityTypes.WITHER_SKELETON -> listOf(
                 ItemStack(Items.WITHER_SKELETON_SKULL), ItemStack(Items.COAL, 8),
             )
-            EntityType.ZOMBIFIED_PIGLIN -> listOf(
+            EntityTypes.ZOMBIFIED_PIGLIN -> listOf(
                 ItemStack(Items.GOLD_INGOT, 4), ItemStack(Items.GOLD_NUGGET, 16),
             )
-            EntityType.PIGLIN -> listOf(ItemStack(Items.GOLD_INGOT, 4))
-            EntityType.MAGMA_CUBE -> listOf(
+            EntityTypes.PIGLIN -> listOf(ItemStack(Items.GOLD_INGOT, 4))
+            EntityTypes.MAGMA_CUBE -> listOf(
                 ItemStack(Items.MAGMA_CREAM, 4), ItemStack(Items.OCHRE_FROGLIGHT),
             )
-            EntityType.SLIME -> listOf(ItemStack(Items.SLIME_BALL, 8))
-            EntityType.PHANTOM -> listOf(ItemStack(Items.PHANTOM_MEMBRANE, 4))
-            EntityType.GUARDIAN -> listOf(
+            EntityTypes.SLIME -> listOf(ItemStack(Items.SLIME_BALL, 8))
+            EntityTypes.PHANTOM -> listOf(ItemStack(Items.PHANTOM_MEMBRANE, 4))
+            EntityTypes.GUARDIAN -> listOf(
                 ItemStack(Items.PRISMARINE_CRYSTALS, 4), ItemStack(Items.COD, 4),
             )
-            EntityType.ELDER_GUARDIAN -> listOf(
+            EntityTypes.ELDER_GUARDIAN -> listOf(
                 ItemStack(Items.WET_SPONGE), ItemStack(Items.PRISMARINE_CRYSTALS, 4),
             )
-            EntityType.SHULKER -> listOf(ItemStack(Items.SHULKER_SHELL, 2))
-            EntityType.WITCH -> listOf(
+            EntityTypes.SHULKER -> listOf(ItemStack(Items.SHULKER_SHELL, 2))
+            EntityTypes.WITCH -> listOf(
                 ItemStack(Items.GLOWSTONE_DUST, 8), ItemStack(Items.REDSTONE, 8),
             )
-            EntityType.PILLAGER -> listOf(ItemStack(Items.OMINOUS_BOTTLE, 2))
-            EntityType.VINDICATOR -> listOf(ItemStack(Items.EMERALD, 4))
-            EntityType.EVOKER -> listOf(
+            EntityTypes.PILLAGER -> listOf(ItemStack(Items.OMINOUS_BOTTLE, 2))
+            EntityTypes.VINDICATOR -> listOf(ItemStack(Items.EMERALD, 4))
+            EntityTypes.EVOKER -> listOf(
                 ItemStack(Items.TOTEM_OF_UNDYING), ItemStack(Items.EMERALD, 4),
             )
-            EntityType.RAVAGER -> listOf(ItemStack(Items.SADDLE))
+            EntityTypes.RAVAGER -> listOf(ItemStack(Items.SADDLE))
             else -> emptyList()
         }
     }
@@ -231,7 +232,7 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.DIAMOND_SWORD)
 
-        private val MOD_BARE_RAGE = Identifier.of("random-perks-bingo", "hunter_bare_rage")
+        private val MOD_BARE_RAGE = Identifier.fromNamespaceAndPath("random-perks-bingo", "hunter_bare_rage")
 
         override fun onAcquire(ctx: PerkContext) = refresh(ctx)
         override fun onRespawn(ctx: PerkContext) = refresh(ctx)
@@ -243,16 +244,16 @@ object HunterPerks {
         private fun refresh(ctx: PerkContext) {
             if (PerkEffects.hasNoArmor(ctx.player)) {
                 PerkEffects.setAttribute(
-                    ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE,
-                    0.25, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+                    ctx.player, Attributes.ATTACK_DAMAGE, MOD_BARE_RAGE,
+                    0.25, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
                 )
             } else {
-                PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
+                PerkEffects.removeAttribute(ctx.player, Attributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
             }
         }
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
+            PerkEffects.removeAttribute(ctx.player, Attributes.ATTACK_DAMAGE, MOD_BARE_RAGE)
     }
 
     /** 金 · 猎杀: 始终标记**距离最近**的敌方玩家 (每秒跟随切换) —— 持续显示其方位/坐标/距离并高亮轮廓;
@@ -263,7 +264,7 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.COMPASS)
 
-        private val MOD_SPEED = Identifier.of("random-perks-bingo", "marked_prey_speed")
+        private val MOD_SPEED = Identifier.fromNamespaceAndPath("random-perks-bingo", "marked_prey_speed")
         private const val TARGET_KEY = "marked_prey_target"
 
         /** 在目标这个距离内就常驻 +50% 移速 */
@@ -282,7 +283,7 @@ object HunterPerks {
             val target = nearestEnemy(player)
             if (target == null) {
                 // 场上没有敌人 (全部离线, 或只剩自己): 清掉加速与标记, 有人上线后会自动重新锁定
-                PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+                PerkEffects.removeAttribute(player, Attributes.MOVEMENT_SPEED, MOD_SPEED)
                 ctx.state.memory.remove(TARGET_KEY)
                 return
             }
@@ -291,13 +292,13 @@ object HunterPerks {
             ctx.state.memory[TARGET_KEY] = target.uuid.toString()
 
             // 跨维度: 两个世界的坐标硬算出来的距离/方位没有意义 → 只提示目标在哪个维度, 不给加速
-            if (target.world !== player.world) {
-                PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
-                player.sendMessage(
-                    Text.translatable(
+            if (target.level() !== player.level()) {
+                PerkEffects.removeAttribute(player, Attributes.MOVEMENT_SPEED, MOD_SPEED)
+                player.sendSystemMessage(
+                    Component.translatable(
                         "random-perks-bingo.message.prey_tracker_dimension",
                         target.name,
-                        dimensionName(target.world),
+                        dimensionName(target.level()),
                     ),
                     true,
                 )
@@ -309,25 +310,25 @@ object HunterPerks {
 
             // **在目标 256 格以内就常驻 +50% 移速**
             // (旧逻辑是"这一秒比上一秒更近才加速", 走动/绕圈时会反复开关, 手感很差)
-            val dist = player.pos.distanceTo(target.pos).toInt()
+            val dist = player.position().distanceTo(target.position()).toInt()
             if (dist <= SPEED_RADIUS) {
                 PerkEffects.setAttribute(
-                    player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
-                    0.5, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+                    player, Attributes.MOVEMENT_SPEED, MOD_SPEED,
+                    0.5, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
                 )
             } else {
-                PerkEffects.removeAttribute(player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+                PerkEffects.removeAttribute(player, Attributes.MOVEMENT_SPEED, MOD_SPEED)
             }
 
             // actionbar: 方位 + 坐标 + 距离
-            player.sendMessage(
-                Text.translatable(
+            player.sendSystemMessage(
+                Component.translatable(
                     "random-perks-bingo.message.prey_tracker",
                     target.name,
                     dist,
-                    target.blockPos.x,
-                    target.blockPos.z,
-                    directionHint(player.pos.x, player.pos.z, target.pos.x, target.pos.z),
+                    target.blockPosition().x,
+                    target.blockPosition().z,
+                    directionHint(player.position().x, player.position().z, target.position().x, target.position().z),
                 ),
                 true,
             )
@@ -336,17 +337,17 @@ object HunterPerks {
         /** 当前**距离最近**的敌方在线玩家 (以原版队伍判断归属; 无队伍时视为全体为敌)。
          *  距离只在同维度内可比 (跨维度坐标无意义) → 同维度有敌人时取其中最近的;
          *  同维度一个敌人都没有时, 才退化为其他维度中的一名。 */
-        private fun nearestEnemy(player: ServerPlayerEntity): ServerPlayerEntity? {
-            val server = player.server ?: return null
-            val myTeam = player.scoreboardTeam?.name
-            val enemies = server.playerManager.playerList.filter { other ->
+        private fun nearestEnemy(player: ServerPlayer): ServerPlayer? {
+            val server = player.level().getServer()
+            val myTeam = player.team?.name
+            val enemies = server.playerList.players.filter { other ->
                 !other.isSpectator &&
                     other.uuid != player.uuid &&
-                    (myTeam == null || other.scoreboardTeam?.name != myTeam)
+                    (myTeam == null || other.team?.name != myTeam)
             }
             if (enemies.isEmpty()) return null
-            return enemies.filter { it.world === player.world }
-                .minByOrNull { it.pos.squaredDistanceTo(player.pos) }
+            return enemies.filter { it.level() === player.level() }
+                .minByOrNull { it.position().distanceToSqr(player.position()) }
                 ?: enemies.first()
         }
 
@@ -374,15 +375,15 @@ object HunterPerks {
         }
 
         /** 维度显示名 (原版三维度走本地化; 其他维度直接显示 id) */
-        private fun dimensionName(world: World): Text = when (world.registryKey) {
-            World.OVERWORLD -> Text.translatable("random-perks-bingo.dimension.overworld")
-            World.NETHER -> Text.translatable("random-perks-bingo.dimension.nether")
-            World.END -> Text.translatable("random-perks-bingo.dimension.end")
-            else -> Text.literal(world.registryKey.value.toString())
+        private fun dimensionName(world: Level): Component = when (world.dimension()) {
+            Level.OVERWORLD -> Component.translatable("random-perks-bingo.dimension.overworld")
+            Level.NETHER -> Component.translatable("random-perks-bingo.dimension.nether")
+            Level.END -> Component.translatable("random-perks-bingo.dimension.end")
+            else -> Component.literal(world.dimension().identifier().toString())
         }
 
         override fun onRemove(ctx: PerkContext) {
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+            PerkEffects.removeAttribute(ctx.player, Attributes.MOVEMENT_SPEED, MOD_SPEED)
             ctx.state.memory.remove(TARGET_KEY)
         }
     }
@@ -396,7 +397,7 @@ object HunterPerks {
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
             // add(food, saturationModifier): 饱和度增量 = food * saturationModifier * 2
-            ctx.player.hungerManager.add(2, 0.5f)
+            ctx.player.foodData.eat(2, 0.5f)
         }
     }
 
@@ -408,7 +409,7 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.PLAYER_HEAD)
 
-        private val MOD_MAX_HEALTH = Identifier.of("random-perks-bingo", "headhunter_health")
+        private val MOD_MAX_HEALTH = Identifier.fromNamespaceAndPath("random-perks-bingo", "headhunter_health")
         private const val BONUS_KEY = "headhunter_bonus"
 
         /** 每击杀一名敌方玩家 +2 最大生命 (1 颗心) */
@@ -428,11 +429,11 @@ object HunterPerks {
         }
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
-            if (victim !is ServerPlayerEntity) return
+            if (victim !is ServerPlayer) return
             if (victim.uuid == ctx.player.uuid) return                     // 自爆不算 ("每击杀一名其他玩家")
             // 只算敌方: 与"猎杀印记"同一口径 (同队不算; 自己无队伍时视为全体为敌)
-            val myTeam = ctx.player.scoreboardTeam?.name
-            if (myTeam != null && victim.scoreboardTeam?.name == myTeam) return
+            val myTeam = ctx.player.team?.name
+            if (myTeam != null && victim.team?.name == myTeam) return
 
             val current = ctx.state.memory[BONUS_KEY]?.toDoubleOrNull() ?: 0.0
             if (current >= MAX_BONUS) return                      // 已到上限, 不再叠加
@@ -447,13 +448,13 @@ object HunterPerks {
         private fun applyBonus(ctx: PerkContext) {
             val bonus = ctx.state.memory[BONUS_KEY]?.toDoubleOrNull() ?: return
             PerkEffects.setAttribute(
-                ctx.player, EntityAttributes.MAX_HEALTH, MOD_MAX_HEALTH,
-                bonus, EntityAttributeModifier.Operation.ADD_VALUE,
+                ctx.player, Attributes.MAX_HEALTH, MOD_MAX_HEALTH,
+                bonus, AttributeModifier.Operation.ADD_VALUE,
             )
         }
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_MAX_HEALTH)
+            PerkEffects.removeAttribute(ctx.player, Attributes.MAX_HEALTH, MOD_MAX_HEALTH)
     }
 
     /** 绿 · 唤法: 获得 16 个火焰弹 —— 手持右键即可像恶魂一样发射火球 (发射逻辑见 FireballService) */
@@ -474,7 +475,7 @@ object HunterPerks {
         override val id = "summon_call_lightning"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SUMMON
-        override fun icon() = ItemStack(Items.LIGHTNING_ROD)
+        override fun icon() = ItemStack(Items.LIGHTNING_ROD.weathering().unaffected())
 
         override val isOneTime = true
 
@@ -482,7 +483,7 @@ object HunterPerks {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.lightning_no_target"), true)
+                player.sendSystemMessage(Component.translatable("random-perks-bingo.message.lightning_no_target"), true)
                 return
             }
             PerkNetworking.sendActionTargets(
@@ -493,7 +494,7 @@ object HunterPerks {
         }
 
         /** 客户端在选择器里选中了一名玩家 → 在他的位置劈雷 */
-        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
@@ -507,44 +508,44 @@ object HunterPerks {
 
         /** 候选: **所有在线玩家** —— 不限队伍、不限维度, 也包括自己 (跨维度劈雷对目标依然有效,
          *  只是施法者看不到, 所以不排除); 旁观者除外 */
-        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+        private fun candidates(player: ServerPlayer): List<ServerPlayer> =
+            player.level().getServer().playerList.players.filter { !it.isSpectator }
 
         /** 在目标位置劈一次闪电 (16 格内的引雷针会把闪电引过去); @return 是否成功生成 */
-        private fun strike(target: ServerPlayerEntity): Boolean {
-            val world = target.world as? ServerWorld ?: return false
+        private fun strike(target: ServerPlayer): Boolean {
+            val world = target.level() as? ServerLevel ?: return false
 
-            val rod = findNearbyLightningRod(world, target.blockPos, 16)
-            val lightning = net.minecraft.entity.EntityType.LIGHTNING_BOLT
-                .create(world, net.minecraft.entity.SpawnReason.TRIGGERED) ?: return false
+            val rod = findNearbyLightningRod(world, target.blockPosition(), 16)
+            val lightning = net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT
+                .create(world, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED) ?: return false
 
             if (rod != null) {
-                lightning.refreshPositionAfterTeleport(rod.x + 0.5, rod.y.toDouble(), rod.z + 0.5)
+                lightning.snapTo(rod.x + 0.5, rod.y.toDouble(), rod.z + 0.5)
             } else {
-                lightning.refreshPositionAfterTeleport(target.x, target.y, target.z)
+                lightning.snapTo(target.x, target.y, target.z)
             }
-            world.spawnEntity(lightning)
+            world.addFreshEntity(lightning)
             return true
         }
 
         /** 在半径内寻找最近的引雷针 (找不到返回 null) */
         private fun findNearbyLightningRod(
-            world: ServerWorld,
-            center: net.minecraft.util.math.BlockPos,
+            world: ServerLevel,
+            center: net.minecraft.core.BlockPos,
             radius: Int,
-        ): net.minecraft.util.math.BlockPos? {
-            var best: net.minecraft.util.math.BlockPos? = null
+        ): net.minecraft.core.BlockPos? {
+            var best: net.minecraft.core.BlockPos? = null
             var bestDist = Int.MAX_VALUE
 
             for (dx in -radius..radius) {
                 for (dy in -radius..radius) {
                     for (dz in -radius..radius) {
-                        val pos = center.add(dx, dy, dz)
-                        if (!world.getBlockState(pos).isOf(net.minecraft.block.Blocks.LIGHTNING_ROD)) continue
+                        val pos = center.offset(dx, dy, dz)
+                        if (world.getBlockState(pos).block !in net.minecraft.world.level.block.Blocks.LIGHTNING_ROD.asList()) continue
                         val dist = dx * dx + dy * dy + dz * dz
                         if (dist < bestDist) {
                             bestDist = dist
-                            best = pos.toImmutable()
+                            best = pos.immutable()
                         }
                     }
                 }
@@ -564,7 +565,7 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.IRON_SWORD)
 
-        private val MOD_SWEEP = Identifier.of("random-perks-bingo", "veteran_no_sweep")
+        private val MOD_SWEEP = Identifier.fromNamespaceAndPath("random-perks-bingo", "veteran_no_sweep")
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
@@ -572,12 +573,12 @@ object HunterPerks {
         /** 横扫伤害比例默认 1.0, -1.0 后为 0 (只影响剑的横扫, 对单体攻击无影响) */
         private fun apply(ctx: PerkContext) =
             PerkEffects.setAttribute(
-                ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP,
-                -1.0, EntityAttributeModifier.Operation.ADD_VALUE,
+                ctx.player, Attributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP,
+                -1.0, AttributeModifier.Operation.ADD_VALUE,
             )
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
+            PerkEffects.removeAttribute(ctx.player, Attributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
     }
 
     /** 绿 · 猎杀: **不倒翁** —— 受到的击退效果降低 80% */
@@ -587,7 +588,7 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.IRON_BLOCK)
 
-        private val MOD_KNOCKBACK = Identifier.of("random-perks-bingo", "roly_poly_knockback")
+        private val MOD_KNOCKBACK = Identifier.fromNamespaceAndPath("random-perks-bingo", "roly_poly_knockback")
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
@@ -595,12 +596,12 @@ object HunterPerks {
         /** 原版击退抗性属性 (0 ~ 1), +0.8 即击退距离只剩 20% */
         private fun apply(ctx: PerkContext) =
             PerkEffects.setAttribute(
-                ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK,
-                0.8, EntityAttributeModifier.Operation.ADD_VALUE,
+                ctx.player, Attributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK,
+                0.8, AttributeModifier.Operation.ADD_VALUE,
             )
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK)
+            PerkEffects.removeAttribute(ctx.player, Attributes.KNOCKBACK_RESISTANCE, MOD_KNOCKBACK)
     }
 
     /** 蓝 · 唤法: **核电轻而易举** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后**在他头顶**生成一只
@@ -617,7 +618,7 @@ object HunterPerks {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.nuke_no_target"), true)
+                player.sendSystemMessage(Component.translatable("random-perks-bingo.message.nuke_no_target"), true)
                 return
             }
             PerkNetworking.sendActionTargets(
@@ -628,7 +629,7 @@ object HunterPerks {
         }
 
         /** 客户端在选择器里选中了一名玩家 → 在他头顶生成闪电苦力怕 */
-        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
@@ -639,15 +640,15 @@ object HunterPerks {
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
             if (!spawnChargedCreeper(target)) return
             state.markUsed(id)
-            player.sendMessage(
-                Text.translatable("random-perks-bingo.message.nuke_spawned", target.name),
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.nuke_spawned", target.name),
                 false,
             )
         }
 
         /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
-        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+        private fun candidates(player: ServerPlayer): List<ServerPlayer> =
+            player.level().getServer().playerList.players.filter { !it.isSpectator }
 
         /** 在目标**头顶**生成一只**发光**的闪电苦力怕, 并直接让它仇恨目标。
          *
@@ -657,25 +658,25 @@ object HunterPerks {
          *  引信不做任何调整, 就是原版苦力怕的 30 tick (1.5 秒)。
          *
          *  头顶位置 (脚下往上 2 格) 被挡住时退回脚下生成, 免得苦力怕卡在方块里憋死。 */
-        private fun spawnChargedCreeper(target: ServerPlayerEntity): Boolean {
-            val world = target.world as? ServerWorld ?: return false
+        private fun spawnChargedCreeper(target: ServerPlayer): Boolean {
+            val world = target.level() as? ServerLevel ?: return false
             val random = world.random
 
-            val headPos = target.blockPos.up(2)
-            val pos = if (world.getBlockState(headPos).isAir) headPos else target.blockPos
+            val headPos = target.blockPosition().above(2)
+            val pos = if (world.getBlockState(headPos).isAir) headPos else target.blockPosition()
 
-            val creeper = net.minecraft.entity.EntityType.CREEPER
-                .create(world, net.minecraft.entity.SpawnReason.EVENT) ?: return false
-            creeper.refreshPositionAndAngles(
+            val creeper = net.minecraft.world.entity.EntityTypes.CREEPER
+                .create(world, net.minecraft.world.entity.EntitySpawnReason.EVENT) ?: return false
+            creeper.snapTo(
                 pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
                 random.nextFloat() * 360f, 0f,
             )
             // 闪电苦力怕 (爆炸强度翻倍) —— 直接写 TrackedData, 不用闪电实体 (避免额外伤害/点燃)
-            creeper.dataTracker.set(com.randomperks.mixin.CreeperChargedAccessor.getChargedTracker(), true)
-            creeper.isGlowing = true     // 高亮: 隔着墙也能看到它
+            creeper.entityData.set(com.randomperks.mixin.CreeperChargedAccessor.getChargedTracker(), true)
+            creeper.setGlowingTag(true)     // 高亮: 隔着墙也能看到它
             // 仇恨: 没有目标时 CreeperIgniteGoal 不会启动, 苦力怕就只会站着不动
             creeper.setTarget(target)
-            world.spawnEntity(creeper)
+            world.addFreshEntity(creeper)
             return true
         }
     }
@@ -720,12 +721,12 @@ object HunterPerks {
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.BOW))
             // 先给一组, 之后每 2 分钟由 onTick 续
-            ctx.player.server?.let { ctx.state.memory[TICK_KEY] = it.ticks.toString() }
+            ctx.player.level().getServer().let { ctx.state.memory[TICK_KEY] = it.tickCount.toString() }
             giveArrows(ctx)
         }
 
         override fun onTick(ctx: PerkContext) {
-            val now = ctx.player.server?.ticks ?: return
+            val now = ctx.player.level().getServer().tickCount
             val last = ctx.state.memory[TICK_KEY]?.toLongOrNull()
             if (last == null) {
                 ctx.state.memory[TICK_KEY] = now.toString()
@@ -740,7 +741,7 @@ object HunterPerks {
         private fun giveArrows(ctx: PerkContext) {
             val potion = TIPPED_POTIONS[ctx.player.random.nextInt(TIPPED_POTIONS.size)]
             repeat(ARROWS_PER_GRANT) {
-                PerkEffects.giveStack(ctx.player, PotionContentsComponent.createStack(Items.TIPPED_ARROW, potion))
+                PerkEffects.giveStack(ctx.player, PotionContents.createItemStack(Items.TIPPED_ARROW, potion))
             }
         }
     }
@@ -772,11 +773,11 @@ object HunterPerks {
         private const val EXTRA_DROP_CHANCE = 0.5f
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
-            if (victim !is MobEntity) return                                    // 只有生物有掉落表 (玩家/盔甲架没有)
+            if (victim !is Mob) return                                    // 只有生物有掉落表 (玩家/盔甲架没有)
             if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return      // 每次击杀掷一次, 不是每件物品
-            val world = ctx.player.world as? ServerWorld ?: return
-            if (!world.gameRules.getBoolean(GameRules.DO_MOB_LOOT)) return      // 跟随原版"生物掉落"游戏规则
-            val source = victim.recentDamageSource ?: return
+            val world = ctx.player.level() as? ServerLevel ?: return
+            if (!world.gameRules.get(GameRules.MOB_DROPS)) return      // 跟随原版"生物掉落"游戏规则
+            val source = victim.lastDamageSource ?: return
             // 让这只怪的掉落表再滚一次 —— 掉落物直接从它自己身上出来; 与原版死亡掉落同一套结算
             (victim as MobLootInvoker).invokeDropLoot(world, source, true)
         }
@@ -791,7 +792,7 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.DIAMOND_SWORD)
 
-        private val MOD_SWEEP = Identifier.of("random-perks-bingo", "pearl_gauntlet_no_sweep")
+        private val MOD_SWEEP = Identifier.fromNamespaceAndPath("random-perks-bingo", "pearl_gauntlet_no_sweep")
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
@@ -799,13 +800,13 @@ object HunterPerks {
         private fun apply(ctx: PerkContext) {
             // 剑不再横扫 (与"老玩家"同一机制: 把横扫伤害比例压到 0)
             PerkEffects.setAttribute(
-                ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP,
-                -1.0, EntityAttributeModifier.Operation.ADD_VALUE,
+                ctx.player, Attributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP,
+                -1.0, AttributeModifier.Operation.ADD_VALUE,
             )
         }
 
         override fun onRemove(ctx: PerkContext) {
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
+            PerkEffects.removeAttribute(ctx.player, Attributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
         }
     }
 
@@ -822,7 +823,7 @@ object HunterPerks {
         private const val EXTRA_EXHAUSTION_PER_SECOND = 0.5f
 
         override fun onTick(ctx: PerkContext) {
-            ctx.player.addExhaustion(EXTRA_EXHAUSTION_PER_SECOND)
+            ctx.player.causeFoodExhaustion(EXTRA_EXHAUSTION_PER_SECOND)
         }
     }
 
@@ -871,9 +872,9 @@ object HunterPerks {
         private const val MEMORY_KEY = "bounty_hunter_types"
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
-            if (victim !is Monster) return
+            if (victim !is Enemy) return
 
-            val typeId = net.minecraft.registry.Registries.ENTITY_TYPE.getId(victim.type).toString()
+            val typeId = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(victim.type).toString()
             val known = ctx.state.memory[MEMORY_KEY].orEmpty()
             if (known.split(',').contains(typeId)) return
 

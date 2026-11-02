@@ -1,6 +1,6 @@
 package com.randomperks.game
 
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.BlockPos
 import kotlin.math.abs
 
 /**
@@ -24,7 +24,7 @@ object AutoBridgePlan {
      * 减去一个很小的数, 使正好站在方块顶上 (y 为整数) 时落在脚下那一层;
      * 刚踏空、只掉了不到 1 格时仍然是原来那一层。
      */
-    fun bridgeY(feetY: Double): Int = BlockPos.ofFloored(0.0, feetY - 1.0e-3, 0.0).y
+    fun bridgeY(feetY: Double): Int = BlockPos.containing(0.0, feetY - 1.0e-3, 0.0).y
 
     /**
      * 本 tick 按顺序尝试的格子: 先脚下, 再沿速度走到的那一格。
@@ -38,8 +38,8 @@ object AutoBridgePlan {
         velocityZ: Double,
     ): List<BlockPos> {
         val y = bridgeY(feetY)
-        val origin = BlockPos.ofFloored(feetX, y.toDouble(), feetZ)
-        val ahead = BlockPos.ofFloored(
+        val origin = BlockPos.containing(feetX, y.toDouble(), feetZ)
+        val ahead = BlockPos.containing(
             feetX + velocityX + lead(velocityX),
             y.toDouble(),
             feetZ + velocityZ + lead(velocityZ),

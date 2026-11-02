@@ -2,12 +2,12 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.entity.projectile.FishingBobberEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.context.LootWorldContext;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -21,23 +21,23 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * 钓饵 III / 海之眷顾 III 由 {@link FishingEnchantMixin} 在浮标创建时注入,
  * 这里只负责鹦鹉螺壳这额外的一层。
  */
-@Mixin(FishingBobberEntity.class)
+@Mixin(FishingHook.class)
 public class FishingLootMixin {
 
     private static final float BONUS_NAUTILUS_CHANCE = 0.50f;
 
     @Redirect(
-            method = "use",
+            method = "retrieve",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/loot/LootTable;generateLoot(Lnet/minecraft/loot/context/LootWorldContext;)Lit/unimi/dsi/fastutil/objects/ObjectArrayList;"
+                    target = "Lnet/minecraft/world/level/storage/loot/LootTable;getRandomItems(Lnet/minecraft/world/level/storage/loot/LootParams;)Lit/unimi/dsi/fastutil/objects/ObjectArrayList;"
             )
     )
-    private ObjectArrayList<ItemStack> randomperks$bonusNautilus(LootTable table, LootWorldContext params) {
-        ObjectArrayList<ItemStack> loot = table.generateLoot(params);
+    private ObjectArrayList<ItemStack> randomperks$bonusNautilus(LootTable table, LootParams params) {
+        ObjectArrayList<ItemStack> loot = table.getRandomItems(params);
 
-        FishingBobberEntity self = (FishingBobberEntity) (Object) this;
-        if (!(self.getPlayerOwner() instanceof ServerPlayerEntity owner)) return loot;
+        FishingHook self = (FishingHook) (Object) this;
+        if (!(self.getPlayerOwner() instanceof ServerPlayer owner)) return loot;
         if (!PerkBoostQuery.INSTANCE.hasLuckyFishing(owner)) return loot;
         if (owner.getRandom().nextFloat() >= BONUS_NAUTILUS_CHANCE) return loot;
 

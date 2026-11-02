@@ -4,17 +4,17 @@ import com.randomperks.effect.PerkEffects
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.Registries
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import java.util.UUID
 
 /**
@@ -34,8 +34,8 @@ object LayFlatService {
     /** 缓慢 IV (amplifier 3) */
     private const val SLOWNESS_AMPLIFIER = 3
 
-    private val NATURES_COMPASS = Identifier.of("naturescompass", "naturescompass")
-    private val EXPLORERS_COMPASS = Identifier.of("explorerscompass", "explorerscompass")
+    private val NATURES_COMPASS = Identifier.fromNamespaceAndPath("naturescompass", "naturescompass")
+    private val EXPLORERS_COMPASS = Identifier.fromNamespaceAndPath("explorerscompass", "explorerscompass")
 
     /** 玩家 uuid → 结算 tick */
     private val active = mutableMapOf<UUID, Long>()
@@ -47,20 +47,20 @@ object LayFlatService {
         // 到期结算: 发两枚罗盘
         ServerTickEvents.END_SERVER_TICK.register { server ->
             if (active.isEmpty()) return@register
-            val now = server.ticks.toLong()
+            val now = server.tickCount.toLong()
 
             for ((uuid, endTick) in active.toList()) {
                 if (now < endTick) continue
                 active.remove(uuid)
                 if (failed.remove(uuid)) continue   // 死了的, 石斧已经/将在重生时发
-                val player = server.playerManager.getPlayer(uuid) ?: continue
+                val player = server.playerList.getPlayer(uuid) ?: continue
                 grantCompasses(player)
             }
         }
 
         // 中途死亡 → 标记失败并停止计时
         ServerLivingEntityEvents.AFTER_DEATH.register { entity, _ ->
-            if (entity !is ServerPlayerEntity) return@register
+            if (entity !is ServerPlayer) return@register
             if (!active.containsKey(entity.uuid)) return@register
             active.remove(entity.uuid)
             failed.add(entity.uuid)
@@ -80,18 +80,18 @@ object LayFlatService {
      * 我们的 onInitialize 可能先于 Nature's Compass 执行。
      */
     fun hasCompassMods(): Boolean {
-        val registry = Registries.ITEM
-        return registry.getEntry(NATURES_COMPASS).isPresent &&
-            registry.getEntry(EXPLORERS_COMPASS).isPresent
+        val registry = BuiltInRegistries.ITEM
+        return registry.get(NATURES_COMPASS).isPresent &&
+            registry.get(EXPLORERS_COMPASS).isPresent
     }
 
     /** 获得词条时调用: 上 debuff 并开始计时 */
-    fun start(player: ServerPlayerEntity) {
-        val server = player.server ?: return
-        active[player.uuid] = server.ticks.toLong() + DURATION_TICKS
+    fun start(player: ServerPlayer) {
+        val server = player.level().getServer()
+        active[player.uuid] = server.tickCount.toLong() + DURATION_TICKS
 
-        player.addStatusEffect(StatusEffectInstance(StatusEffects.BLINDNESS, DURATION_TICKS, 0))
-        player.addStatusEffect(StatusEffectInstance(StatusEffects.SLOWNESS, DURATION_TICKS, SLOWNESS_AMPLIFIER))
+        player.addEffect(MobEffectInstance(MobEffects.BLINDNESS, DURATION_TICKS, 0))
+        player.addEffect(MobEffectInstance(MobEffects.SLOWNESS, DURATION_TICKS, SLOWNESS_AMPLIFIER))
     }
 
     /** 对局结束 / 重置时清理 */
@@ -101,15 +101,15 @@ object LayFlatService {
     }
 
     /** 发奖励 —— 两个罗盘来自外部 mod, 没装就提示并跳过 (不崩) */
-    private fun grantCompasses(player: ServerPlayerEntity) {
+    private fun grantCompasses(player: ServerPlayer) {
         val registry: Registry<Item> =
-            player.server?.registryManager?.getOrThrow(RegistryKeys.ITEM) ?: return
+            player.level().getServer().registryAccess().lookupOrThrow(Registries.ITEM) ?: return
 
-        val natures = registry.getEntry(NATURES_COMPASS).orElse(null)?.value()
-        val explorers = registry.getEntry(EXPLORERS_COMPASS).orElse(null)?.value()
+        val natures = registry.get(NATURES_COMPASS).orElse(null)?.value()
+        val explorers = registry.get(EXPLORERS_COMPASS).orElse(null)?.value()
         if (natures == null || explorers == null) {
-            player.sendMessage(
-                Text.translatable("random-perks-bingo.message.lay_flat_missing_mod"),
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.lay_flat_missing_mod"),
                 false,
             )
             return

@@ -1,13 +1,14 @@
 package com.randomperks.client.screen
 
+import net.minecraft.client.input.MouseButtonEvent
 import com.randomperks.client.net.ClientPerkNetworking
 import com.randomperks.network.PerkOptionData
 import com.randomperks.network.PlayerPerkList
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.resource.language.I18n
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.locale.Language
+import net.minecraft.network.chat.Component
 
 /**
  * 词条列表 (按键 V 打开)。
@@ -18,7 +19,7 @@ import net.minecraft.text.Text
 class PerkListScreen(
     private val pendingCount: Int,
     private val players: List<PlayerPerkList>,
-) : Screen(Text.translatable("random-perks-bingo.screen.my_perks")) {
+) : Screen(Component.translatable("random-perks-bingo.screen.my_perks")) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -40,7 +41,7 @@ class PerkListScreen(
     private data class TeamTab(val groupIndex: Int, val x: Int, val y: Int, val width: Int)
     private data class TeamGroup(
         val id: String,
-        val name: Text,
+        val name: Component,
         val color: Int,
         val players: List<Int>,
     )
@@ -66,7 +67,7 @@ class PerkListScreen(
     private val tabs = mutableListOf<TabBox>()
     private val teamTabs = mutableListOf<TeamTab>()
 
-    private fun selfUuid() = MinecraftClient.getInstance().player?.uuid
+    private fun selfUuid() = Minecraft.getInstance().player?.getUUID()
 
     override fun init() {
         listWidth = (width - 60).coerceAtMost(MAX_WIDTH)
@@ -101,13 +102,13 @@ class PerkListScreen(
         groups = order.map { (id, members) ->
             val first = players[members.first()]
             val name = when {
-                id.isEmpty() -> Text.translatable("random-perks-bingo.list.no_team")
+                id.isEmpty() -> Component.translatable("random-perks-bingo.list.no_team")
                 // 服务端传来的队伍名是已按服务端语言解析后的文本 (通常是英文),
                 // 这里优先用翻译 key 在客户端按当前语言重新解析。
                 first.teamNameKey.isNotEmpty() ->
                     localizedTeamName(first.teamNameKey, first.teamNameArg, first.teamName)
-                first.teamName.isNotEmpty() -> Text.literal(first.teamName)
-                else -> Text.literal(id)
+                first.teamName.isNotEmpty() -> Component.literal(first.teamName)
+                else -> Component.literal(id)
             }
             val color = if (id.isEmpty()) {
                 0xFFAAAAAA.toInt()
@@ -119,9 +120,9 @@ class PerkListScreen(
     }
 
     /** 用翻译 key 按客户端语言重新解析队伍名; 没有对应翻译时退回服务端给的文本 */
-    private fun localizedTeamName(key: String, arg: String, fallback: String): Text {
-        if (!I18n.hasTranslation(key)) return Text.literal(fallback.ifEmpty { key })
-        return if (arg.isNotEmpty()) Text.translatable(key, arg) else Text.translatable(key)
+    private fun localizedTeamName(key: String, arg: String, fallback: String): Component {
+        if (!Language.getInstance().has(key)) return Component.literal(fallback.ifEmpty { key })
+        return if (arg.isNotEmpty()) Component.translatable(key, arg) else Component.translatable(key)
     }
 
     /** 上行队伍父 tab; 下行只显示当前队伍成员的名字 tab */
@@ -137,7 +138,7 @@ class PerkListScreen(
         var x = listLeft
         var y = TAB_TOP
         for ((groupIndex, group) in groups.withIndex()) {
-            val tabWidth = textRenderer.getWidth(group.name) + TAB_PAD * 2
+            val tabWidth = font.width(group.name) + TAB_PAD * 2
             if (x > listLeft && x + tabWidth > listLeft + listWidth) {
                 x = listLeft
                 y += TAB_HEIGHT + TAB_LINE_GAP
@@ -153,7 +154,7 @@ class PerkListScreen(
         for (playerIndex in group.players) {
             val player = players[playerIndex]
             // 左侧预留头像位置: 4 + 8 + 2 + 右侧 4
-            val tabWidth = textRenderer.getWidth(player.name) + 18
+            val tabWidth = font.width(player.name) + 18
             if (x > listLeft && x + tabWidth > listLeft + listWidth) {
                 x = listLeft
                 childY += TAB_HEIGHT + TAB_LINE_GAP
@@ -167,7 +168,7 @@ class PerkListScreen(
 
     private fun listBottom() = height - LIST_BOTTOM_MARGIN
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         // 同 PerkChoiceScreen: 不调 renderBackground, 避免 1.21.6+ 的二次 blur 崩溃
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
@@ -175,21 +176,21 @@ class PerkListScreen(
         val self = selfUuid()
 
         // 右上角的排序切换 (默认 / 名称↑↓ / 等级↑↓)
-        sortBoxes = drawPerkSortButtons(context, textRenderer, width - 8, 6, sortState, mouseX, mouseY)
+        sortBoxes = drawPerkSortButtons(context, font, width - 8, 6, sortState, mouseX, mouseY)
 
         // 标题: 看自己 → "我的词条"; 看别人 → "XXX 的词条"
         val viewingOther = current != null && current.uuid != self
         val title = if (viewingOther) {
-            Text.translatable("random-perks-bingo.screen.player_perks", current!!.name)
+            Component.translatable("random-perks-bingo.screen.player_perks", current!!.name)
         } else {
-            Text.translatable("random-perks-bingo.screen.my_perks")
+            Component.translatable("random-perks-bingo.screen.my_perks")
         }
         if (viewingOther) {
-            val titleWidth = textRenderer.getWidth(title)
+            val titleWidth = font.width(title)
             PlayerHeadRenderer.draw(context, current?.uuid, width / 2 - titleWidth / 2 - 12, 12)
         }
-        context.drawCenteredTextWithShadow(
-            textRenderer,
+        context.centeredText(
+            font,
             title,
             width / 2, 16,
             if (viewingOther) TeamColorUtil.forPlayer(current!!.uuid) else ScreenStyle.TEXT_NAME,
@@ -197,9 +198,9 @@ class PerkListScreen(
 
         // 待选数只对自己有意义
         if (current != null && current.uuid == self) {
-            context.drawCenteredTextWithShadow(
-                textRenderer,
-                Text.translatable("random-perks-bingo.list.pending", pendingCount),
+            context.centeredText(
+                font,
+                Component.translatable("random-perks-bingo.list.pending", pendingCount),
                 width / 2, 30,
                 if (pendingCount > 0) ScreenStyle.TEXT_HIGHLIGHT else ScreenStyle.TEXT_DIM,
             )
@@ -223,8 +224,8 @@ class PerkListScreen(
                     group.color,
                 )
             }
-            context.drawCenteredTextWithShadow(
-                textRenderer,
+            context.centeredText(
+                font,
                 group.name,
                 tab.x + tab.width / 2,
                 tab.y + 3,
@@ -251,9 +252,9 @@ class PerkListScreen(
                 )
             }
             PlayerHeadRenderer.draw(context, players[tab.index].uuid, tab.x + 4, tab.y + 3)
-            context.drawTextWithShadow(
-                textRenderer,
-                Text.literal(players[tab.index].name),
+            context.text(
+                font,
+                Component.literal(players[tab.index].name),
                 tab.x + 14,
                 tab.y + 3,
                 teamColor,
@@ -263,12 +264,12 @@ class PerkListScreen(
         val perks = sortState.sort(current?.perks.orEmpty())
         cardBoxes.clear()
         if (perks.isEmpty()) {
-            context.drawCenteredTextWithShadow(
-                textRenderer,
-                Text.translatable("random-perks-bingo.list.empty"),
+            context.centeredText(
+                font,
+                Component.translatable("random-perks-bingo.list.empty"),
                 width / 2, listTop + 12, ScreenStyle.TEXT_DIM,
             )
-            super.render(context, mouseX, mouseY, delta)
+            super.extractRenderState(context, mouseX, mouseY, delta)
             return
         }
 
@@ -320,20 +321,20 @@ class PerkListScreen(
         // 悬停时底部显示描述
         if (hovered in perks.indices) {
             val perk = perks[hovered]
-            val lines = textRenderer.wrapLines(Text.translatable("random-perks-bingo.perk.${perk.id}.desc"), width - 100)
+            val lines = font.split(Component.translatable("random-perks-bingo.perk.${perk.id}.desc"), width - 100)
             var textY = height - 14 - lines.size * 10
             context.fill(30, textY - 5, width - 30, height - 6, 0xC0000000.toInt())
             for (line in lines) {
-                context.drawCenteredTextWithShadow(textRenderer, line, width / 2, textY, ScreenStyle.TEXT_DESC)
+                context.centeredText(font, line, width / 2, textY, ScreenStyle.TEXT_DESC)
                 textY += 10
             }
         }
 
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 
     private fun drawRow(
-        context: DrawContext,
+        context: GuiGraphicsExtractor,
         perk: PerkOptionData,
         x: Int,
         y: Int,
@@ -361,31 +362,34 @@ class PerkListScreen(
             context.fill(x + cardWidth - 1, y, x + cardWidth, y + CARD_HEIGHT, glow)
         }
         if (pending) {
-            val hint = Text.translatable("random-perks-bingo.list.click_to_use")
-            context.drawTextWithShadow(
-                textRenderer, hint,
-                x + cardWidth - 6 - textRenderer.getWidth(hint), y + 15,
+            val hint = Component.translatable("random-perks-bingo.list.click_to_use")
+            context.text(
+                font, hint,
+                x + cardWidth - 6 - font.width(hint), y + 15,
                 ScreenStyle.TEXT_HIGHLIGHT,
             )
         }
 
         // 图标 (16x16, 垂直居中)
-        context.drawItem(perk.icon, x + 8, y + 5)
+        context.item(perk.icon, x + 8, y + 5)
 
         // 名称 (品质色) + 流派 (灰色)
-        context.drawTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.perk.${perk.id}.name"),
+        context.text(
+            font,
+            Component.translatable("random-perks-bingo.perk.${perk.id}.name"),
             x + 30, y + 5, displayColor,
         )
-        context.drawTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.archetype.${archetype.id}"),
+        context.text(
+            font,
+            Component.translatable("random-perks-bingo.archetype.${archetype.id}"),
             x + 30, y + 15, ScreenStyle.TEXT_DIM,
         )
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        val mouseX = event.x()
+        val mouseY = event.y()
+        val button = event.button()
         // 排序切换
         for ((mode, box) in sortBoxes) {
             if (mouseX in box[0].toDouble()..(box[0] + box[2]).toDouble() &&
@@ -445,7 +449,7 @@ class PerkListScreen(
                 }
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, doubleClick)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -456,5 +460,5 @@ class PerkListScreen(
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 }

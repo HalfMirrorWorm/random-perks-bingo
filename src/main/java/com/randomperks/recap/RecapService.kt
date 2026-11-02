@@ -6,7 +6,7 @@ import com.randomperks.network.PerkNetworking
 import kotlinx.serialization.json.Json
 import me.jfenn.bingo.api.BingoEvents
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.level.ServerPlayer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.UUID
@@ -125,14 +125,14 @@ object RecapService {
     }
 
     /** 玩家从三选一里选走了一个词条 */
-    fun recordPerkPick(player: ServerPlayerEntity, perkId: String) {
+    fun recordPerkPick(player: ServerPlayer, perkId: String) {
         if (!recording) return
         picks.add(
             RecapPick(
                 seconds = secondsSinceStart(),
                 playerUuid = player.uuid.toString(),
                 playerName = player.name.string,
-                teamId = player.scoreboardTeam?.name ?: "",
+                teamId = player.team?.name ?: "",
                 perkId = perkId,
             )
         )
@@ -143,7 +143,7 @@ object RecapService {
     // ------------------------------------------------------------------
 
     /** 大厅菜单里的按钮被点击: 把上一局的回顾发给该玩家 */
-    fun openFor(player: ServerPlayerEntity) {
+    fun openFor(player: ServerPlayer) {
         val data = last
         val payload = if (data == null) RecapData() else data
         PerkNetworking.sendRecap(player, json.encodeToString(RecapData.serializer(), payload))

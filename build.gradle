@@ -1,7 +1,7 @@
 plugins {
-    id 'fabric-loom' version '1.14-SNAPSHOT'
-    id 'org.jetbrains.kotlin.jvm' version '2.2.21'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '2.2.21'
+    id 'net.fabricmc.fabric-loom' version '1.18.4'
+    id 'org.jetbrains.kotlin.jvm' version '2.3.21'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.3.21'
 }
 
 version = project.mod_version
@@ -14,6 +14,10 @@ base {
 repositories {
     mavenCentral()
 
+    maven {
+        name = 'Modmuss'
+        url = 'https://maven.modmuss50.me/'
+    }
     maven {
         name = 'Fabric'
         url = 'https://maven.fabricmc.net/'
@@ -33,33 +37,35 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin_version}"
+    // 26.x 不混淆, Loom 不再提供 modImplementation / modCompileOnly.
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin_version}"
 
     // ---- Yet Another Bingo ----
     // 编译期依赖主 jar: 提供 mixin 目标类 (ScoreUpdateService 等) 与内部类型
+    // Modrinth 上的文件名是 bingo-<version>.jar, 不是 slug 名.
     // 注意: 绝不能 include / shadow 进本 mod 的 jar (会导致 mod id 重复崩溃)
-    modCompileOnly "maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}"
-    // 开发环境运行时加载真正的 bingo (Loom 会自动 remap 到 dev 环境)
-    modLocalRuntime "maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}"
+    compileOnly("maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}") {
+        artifact { name = 'bingo' }
+    }
+    // 开发环境运行时加载真正的 bingo
+    localRuntime("maven.modrinth:yet-another-minecraft-bingo:${project.bingo_version}") {
+        artifact { name = 'bingo' }
+    }
     // 公开 API (BingoEvents 等)
-    modCompileOnly "me.jfenn.bingo:api:${project.bingo_api_version}"
+    compileOnly "me.jfenn.bingo:api:${project.bingo_api_version}"
 
     // bingo 的 Jar-in-Jar 依赖在开发环境不会被 Loom 自动加载, 手动补齐 (仅开发环境, 不会打进本 mod)
     localRuntime "com.zaxxer:HikariCP:7.0.2"
     localRuntime "org.xerial:sqlite-jdbc:3.50.3.0"
     localRuntime "app.cash.sqldelight:runtime-jvm:2.0.2"
     localRuntime "app.cash.sqldelight:jdbc-driver:2.0.2"
-    // 开发环境: Carpet 假玩家, 用于自动化端到端测试 (不会打进本 mod)
-    modLocalRuntime "maven.modrinth:carpet:1.4.177"
-
     // Kotlin stdlib 由 fabric-language-kotlin 在运行时提供 (与 bingo 的惯例一致)
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_version}"
     // kotlinx-serialization: 版本必须与 fabric-language-kotlin 内置版本一致 (同 bingo)
-    compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0"
+    compileOnly "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0"
 
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit5"
     testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
@@ -68,12 +74,6 @@ dependencies {
 
 loom {
     splitEnvironmentSourceSets()
-
-    // 必须显式指定: 否则 mixin 注解处理器不生成 refmap, 运行期 @Shadow/@Inject 里的
-    // yarn 名 (如 targetSelector / field_6185) 无法映射到 intermediary, 直接崩在 APPLY 阶段
-    mixin {
-        defaultRefmapName = "random-perks-bingo-refmap.json"
-    }
 
     mods {
         "random-perks-bingo" {
@@ -102,16 +102,27 @@ processResources {
 java {
     withSourcesJar()
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
+}
+
+// bingo 2.15 把 BingoState / BingoTeam 标成了 internal. 词条回顾要读这些状态,
+// 编译期把 bingo jar 当成 friend, 不改调用方式.
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    def bingoJars = configurations.compileClasspath.files.findAll { it.name.startsWith('bingo-') && it.name.endsWith('.jar') }
+    if (!bingoJars.isEmpty()) {
+        compilerOptions {
+            freeCompilerArgs.add('-Xfriend-paths=' + bingoJars.collect { it.absolutePath }.join(File.pathSeparator))
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = 25
 }
 
 tasks.named('test') {

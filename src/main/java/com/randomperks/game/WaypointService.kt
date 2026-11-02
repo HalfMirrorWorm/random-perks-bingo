@@ -3,11 +3,11 @@ package com.randomperks.game
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.UseItemCallback
-import net.minecraft.item.Items
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
+import net.minecraft.world.item.Items
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionHand
 
 /**
  * "传送时钟"词条的右键逻辑: 传送到**上次死亡地点** (5 分钟冷却)。
@@ -25,32 +25,32 @@ object WaypointService {
     fun register() {
         // 记录"上次死亡地点" (只记录持有词条的玩家)
         ServerLivingEntityEvents.AFTER_DEATH.register { entity, _ ->
-            if (entity !is ServerPlayerEntity) return@register
+            if (entity !is ServerPlayer) return@register
             val state = PerkStateManager.get(entity.uuid) ?: return@register
             if (!state.hasPerk(PERK_ID)) return@register
-            val worldId = entity.world.registryKey.value.toString()
+            val worldId = entity.level().dimension().identifier().toString()
             state.memory[DEATH_POINT_KEY] = "$worldId|${entity.x}|${entity.y}|${entity.z}"
         }
 
         UseItemCallback.EVENT.register { player, _, hand ->
-            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
-            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
-            if (!player.mainHandStack.isOf(Items.CLOCK)) return@register ActionResult.PASS
+            if (hand != InteractionHand.MAIN_HAND) return@register InteractionResult.PASS
+            if (player !is ServerPlayer) return@register InteractionResult.PASS
+            if (!player.mainHandItem.`is`(Items.CLOCK)) return@register InteractionResult.PASS
 
-            if (handleUse(player)) ActionResult.SUCCESS else ActionResult.PASS
+            if (handleUse(player)) InteractionResult.SUCCESS else InteractionResult.PASS
         }
     }
 
-    private fun handleUse(player: ServerPlayerEntity): Boolean {
+    private fun handleUse(player: ServerPlayer): Boolean {
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk(PERK_ID)) return false
 
-        val server = player.server ?: return false
-        val now = server.ticks.toLong()
+        val server = player.level().getServer()
+        val now = server.tickCount.toLong()
 
         val point = state.memory[DEATH_POINT_KEY]
         if (point == null) {
-            player.sendMessage(Text.translatable("random-perks-bingo.message.waypoint_no_death"), true)
+            player.sendSystemMessage(Component.translatable("random-perks-bingo.message.waypoint_no_death"), true)
             return true
         }
 
@@ -58,8 +58,8 @@ object WaypointService {
         val next = state.cooldowns[COOLDOWN_KEY] ?: 0L
         if (now < next) {
             val remainSeconds = ((next - now) / 20).toInt()
-            player.sendMessage(
-                Text.translatable("random-perks-bingo.message.waypoint_cooldown", remainSeconds),
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.waypoint_cooldown", remainSeconds),
                 true,
             )
             return true
@@ -76,16 +76,16 @@ object WaypointService {
         val y = parts[2].toDoubleOrNull() ?: return false
         val z = parts[3].toDoubleOrNull() ?: return false
 
-        val targetWorld = server.worlds.firstOrNull { it.registryKey.value.toString() == worldId }
+        val targetWorld = server.allLevels.firstOrNull { it.dimension().identifier().toString() == worldId }
         if (targetWorld == null) {
-            player.sendMessage(Text.translatable("random-perks-bingo.message.waypoint_world_gone"), true)
+            player.sendSystemMessage(Component.translatable("random-perks-bingo.message.waypoint_world_gone"), true)
             return true
         }
 
         // 传送 (保留视角; 跨维度同样允许)
-        player.teleport(targetWorld, x, y, z, emptySet(), player.yaw, player.pitch, false)
+        player.teleportTo(targetWorld, x, y, z, emptySet(), player.yRot, player.xRot, false)
         state.cooldowns[COOLDOWN_KEY] = now + COOLDOWN_TICKS
-        player.sendMessage(Text.translatable("random-perks-bingo.message.waypoint_teleport"), true)
+        player.sendSystemMessage(Component.translatable("random-perks-bingo.message.waypoint_teleport"), true)
         return true
     }
 }

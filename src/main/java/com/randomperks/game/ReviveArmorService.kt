@@ -1,15 +1,15 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.DeathProtectionComponent
-import net.minecraft.entity.EntityStatuses
-import net.minecraft.entity.damage.DamageSource
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.registry.tag.DamageTypeTags
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Hand
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.component.DeathProtection
+import net.minecraft.world.entity.EntityEvent
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.tags.DamageTypeTags
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.InteractionHand
 
 /**
  * "复活甲" (紫 · 匠造) 的服务端逻辑。
@@ -33,15 +33,15 @@ object ReviveArmorService {
      *
      * @return true 表示已触发 (调用方应跳过原版死亡结算)
      */
-    fun tryTrigger(player: ServerPlayerEntity, source: DamageSource): Boolean {
+    fun tryTrigger(player: ServerPlayer, source: DamageSource): Boolean {
         if (!PerkSession.isEnabled()) return false
         if (!PerkBoostQuery.hasReviveArmor(player)) return false
 
         // 与原版不死图腾一致: 无视无敌的伤害 (虚空 / /kill 等) 无法触发
-        if (source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY)) return false
+        if (source.`is`(DamageTypeTags.BYPASSES_INVULNERABILITY)) return false
 
         // 手上已经有真图腾: 交给原版处理, 不浪费词条冷却
-        if (hasTotemInHand(player, Hand.MAIN_HAND) || hasTotemInHand(player, Hand.OFF_HAND)) return false
+        if (hasTotemInHand(player, InteractionHand.MAIN_HAND) || hasTotemInHand(player, InteractionHand.OFF_HAND)) return false
 
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (state.memory[USED_KEY] == "1") return false
@@ -50,14 +50,14 @@ object ReviveArmorService {
 
         // 复刻原版 tryUseDeathProtector 的结算 (不消耗物品)
         player.setHealth(1.0f)
-        DeathProtectionComponent.TOTEM_OF_UNDYING.applyDeathEffects(
+        DeathProtection.TOTEM_OF_UNDYING.applyEffects(
             ItemStack(Items.TOTEM_OF_UNDYING),
             player,
         )
-        player.world.sendEntityStatus(player, EntityStatuses.USE_TOTEM_OF_UNDYING)
+        player.level().broadcastEntityEvent(player, EntityEvent.PROTECTED_FROM_DEATH)
         return true
     }
 
-    private fun hasTotemInHand(player: ServerPlayerEntity, hand: Hand): Boolean =
-        player.getStackInHand(hand).get(DataComponentTypes.DEATH_PROTECTION) != null
+    private fun hasTotemInHand(player: ServerPlayer, hand: InteractionHand): Boolean =
+        player.getItemInHand(hand).get(DataComponents.DEATH_PROTECTION) != null
 }

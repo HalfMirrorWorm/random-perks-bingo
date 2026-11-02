@@ -1,10 +1,11 @@
 package com.randomperks.client.screen
 
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.item.ItemStack
-import net.minecraft.text.Text
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.components.Button
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.Component
 
 /**
  * **多格物品选择器** —— 显示自己的物品栏 (9×4 网格), 点格子切换选中, 集齐 required 格后确认。
@@ -15,7 +16,7 @@ class ItemSelectScreen(
     private val items: List<ItemStack>,
     private val count: Int,
     private val onSubmit: (List<Int>) -> Unit,
-) : Screen(Text.translatable("random-perks-bingo.screen.remote_transfer_items")) {
+) : Screen(Component.translatable("random-perks-bingo.screen.remote_transfer_items")) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -36,35 +37,35 @@ class ItemSelectScreen(
     private var gridLeft = 0
     private var gridTop = 0
     private var hovered = -1
-    private var confirmButton: ButtonWidget? = null
+    private var confirmButton: Button? = null
 
     override fun init() {
         gridLeft = (width - COLS * CELL) / 2
         gridTop = (height - ROWS * CELL) / 2 + 6
 
-        confirmButton = ButtonWidget.builder(
-            Text.translatable("random-perks-bingo.remote_transfer_items.confirm"),
+        confirmButton = Button.builder(
+            Component.translatable("random-perks-bingo.remote_transfer_items.confirm"),
         ) { submit() }
-            .dimensions(width / 2 - 60, gridTop + ROWS * CELL + 24, 120, 20)
+            .bounds(width / 2 - 60, gridTop + ROWS * CELL + 24, 120, 20)
             .build()
             .also { button ->
                 button.active = false
-                addDrawableChild(button)
+                addRenderableWidget(button)
             }
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, gridTop - 38, ScreenStyle.TEXT_NAME)
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.remote_transfer_items.hint", required),
+        context.centeredText(font, title, width / 2, gridTop - 38, ScreenStyle.TEXT_NAME)
+        context.centeredText(
+            font,
+            Component.translatable("random-perks-bingo.remote_transfer_items.hint", required),
             width / 2, gridTop - 24, ScreenStyle.TEXT_DIM,
         )
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable(
+        context.centeredText(
+            font,
+            Component.translatable(
                 "random-perks-bingo.remote_transfer_items.selected",
                 selected.size,
                 required,
@@ -99,16 +100,19 @@ class ItemSelectScreen(
                 },
             )
             if (!isEmpty) {
-                context.drawItem(stack, x + 2, y + 2)
+                context.item(stack, x + 2, y + 2)
             }
         }
 
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
 
-        hoveredStack?.let { context.drawItemTooltip(textRenderer, it, mouseX, mouseY) }
+        hoveredStack?.let { context.setTooltipForNextFrame(font, it, mouseX, mouseY) }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        val mouseX = event.x()
+        val mouseY = event.y()
+        val button = event.button()
         if (button == 0 && hovered >= 0) {
             if (hovered in selected) {
                 selected.remove(hovered)
@@ -118,14 +122,14 @@ class ItemSelectScreen(
             confirmButton?.active = selected.size == required
             return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, doubleClick)
     }
 
     private fun submit() {
         if (selected.size != required || required <= 0) return
         onSubmit(selected.toList())
-        close()
+        onClose()
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 }

@@ -1,10 +1,10 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayerGameMode;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,17 +26,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * </ul>
  * 掉落入口和所有 onBlockBreak 都读同一份结果。
  */
-@Mixin(ServerPlayerInteractionManager.class)
+@Mixin(ServerPlayerGameMode.class)
 public class BreakDecisionMixin {
 
     @Shadow
-    public ServerPlayerEntity player;
+    public ServerPlayer player;
 
     @Shadow
-    public ServerWorld world;
+    public ServerLevel level;
 
-    @Inject(method = "tryBreakBlock", at = @At("HEAD"))
+    @Inject(method = "destroyBlock", at = @At("HEAD"))
     private void randomperks$rollBreakDecisions(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        PerkBoostQuery.INSTANCE.rollBreakDecisions(this.player, pos, this.world.getBlockState(pos));
+        PerkBoostQuery.INSTANCE.rollBreakDecisions(this.player, pos, this.level.getBlockState(pos));
     }
 }

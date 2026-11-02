@@ -5,12 +5,12 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.server.ServerHolder
 import com.randomperks.state.PerkStateManager
 import com.randomperks.state.PlayerPerkState
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.text.Text
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.network.chat.Component
 
 /**
  * "灵魂出窍" (金 · 深掘 · 贮藏) 的服务端逻辑。
@@ -39,31 +39,29 @@ object SoulOutService {
         if (state.isUsed(PERK_ID)) return
         if (isActive(player)) return
 
-        val server = player.server ?: return
-        val now = server.ticks.toLong()
+        val server = player.level().getServer()
+        val now = server.tickCount.toLong()
 
         state.memory[KEY_END] = (now + DURATION_TICKS).toString()
         state.markUsed(PERK_ID)
         PerkNetworking.sendSoulOut(player, true)
 
-        player.playSoundToPlayer(
-            SoundEvents.PARTICLE_SOUL_ESCAPE.value(),
-            SoundCategory.PLAYERS,
-            0.9f,
-            0.8f,
+        player.level().playSound(
+            null, player.x, player.y, player.z,
+            SoundEvents.SOUL_ESCAPE.value(), SoundSource.PLAYERS, 0.9f, 0.8f,
         )
-        (player.world as? ServerWorld)?.spawnParticles(
+        (player.level() as? ServerLevel)?.sendParticles(
             ParticleTypes.SOUL,
             player.x, player.y + 0.9, player.z,
             24, 0.35, 0.6, 0.35, 0.02,
         )
-        player.sendMessage(Text.translatable("random-perks-bingo.message.soul_out_start"), false)
+        player.sendSystemMessage(Component.translatable("random-perks-bingo.message.soul_out_start"), false)
     }
 
     /** 每秒驱动一次: 时间到了就结束 (客户端相机随之归位), 否则在快捷栏上方显示剩余秒数 */
     fun tick(ctx: PerkContext) {
         val end = ctx.state.memory[KEY_END]?.toLongOrNull() ?: return
-        val now = ctx.player.server?.ticks?.toLong() ?: return
+        val now = ctx.player.level().getServer().tickCount.toLong()
         if (now >= end) {
             end(ctx.player, ctx.state)
             return
@@ -71,14 +69,14 @@ object SoulOutService {
 
         // 剩余秒数向上取整 (剩余 59.2 秒显示 60)
         val seconds = (((end - now) + 19) / 20).toInt()
-        ctx.player.sendMessage(
-            Text.translatable("random-perks-bingo.message.soul_out_remaining", seconds),
+        ctx.player.sendSystemMessage(
+            Component.translatable("random-perks-bingo.message.soul_out_remaining", seconds),
             true,
         )
     }
 
     /** 玩家断线重连: 补回灵魂状态; 如果离线期间已经到期, 直接结束 */
-    fun syncOnJoin(player: ServerPlayerEntity) {
+    fun syncOnJoin(player: ServerPlayer) {
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.memory.containsKey(KEY_END)) return
 
@@ -92,7 +90,7 @@ object SoulOutService {
     /** 对局重置 / 关闭时调用: 结束所有还在进行中的灵魂出窍 (必须在清空 memory 之前调用) */
     fun clear() {
         val server = ServerHolder.server ?: return
-        for (player in server.playerManager.playerList) {
+        for (player in server.playerList.players) {
             val state = PerkStateManager.get(player.uuid) ?: continue
             if (state.memory.containsKey(KEY_END)) {
                 end(player, state)
@@ -101,31 +99,29 @@ object SoulOutService {
     }
 
     /** 该玩家此刻是否处于灵魂状态 */
-    fun isSoul(player: ServerPlayerEntity): Boolean = isActive(player)
+    fun isSoul(player: ServerPlayer): Boolean = isActive(player)
 
-    private fun isActive(player: ServerPlayerEntity): Boolean {
+    private fun isActive(player: ServerPlayer): Boolean {
         val state = PerkStateManager.get(player.uuid) ?: return false
         val end = state.memory[KEY_END]?.toLongOrNull() ?: return false
-        val now = player.server?.ticks?.toLong() ?: return false
+        val now = player.level().getServer().tickCount.toLong()
         return now < end
     }
 
-    fun end(player: ServerPlayerEntity, state: PlayerPerkState) {
+    fun end(player: ServerPlayer, state: PlayerPerkState) {
         if (state.memory.remove(KEY_END) == null) return
 
         PerkNetworking.sendSoulOut(player, false)
 
-        player.playSoundToPlayer(
-            SoundEvents.PARTICLE_SOUL_ESCAPE.value(),
-            SoundCategory.PLAYERS,
-            0.7f,
-            1.25f,
+        player.level().playSound(
+            null, player.x, player.y, player.z,
+            SoundEvents.SOUL_ESCAPE.value(), SoundSource.PLAYERS, 0.7f, 1.25f,
         )
-        (player.world as? ServerWorld)?.spawnParticles(
+        (player.level() as? ServerLevel)?.sendParticles(
             ParticleTypes.SOUL,
             player.x, player.y + 0.9, player.z,
             16, 0.3, 0.5, 0.3, 0.02,
         )
-        player.sendMessage(Text.translatable("random-perks-bingo.message.soul_out_end"), false)
+        player.sendSystemMessage(Component.translatable("random-perks-bingo.message.soul_out_end"), false)
     }
 }

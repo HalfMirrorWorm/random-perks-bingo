@@ -2,32 +2,32 @@ package com.randomperks.game
 
 import com.randomperks.RandomPerksMod
 import com.randomperks.state.PerkStateManager
-import net.minecraft.block.Block
-import net.minecraft.block.Blocks
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.loot.LootTable
-import net.minecraft.loot.context.LootContextParameters
-import net.minecraft.loot.context.LootContextTypes
-import net.minecraft.loot.context.LootWorldContext
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.storage.loot.LootTable
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
+import net.minecraft.world.level.storage.loot.LootParams
+import net.minecraft.resources.ResourceKey
+import net.minecraft.core.registries.Registries
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.resources.Identifier
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.Vec3
 import java.util.UUID
 
 /**
  * "暖水考古" —— 用刷子刷珊瑚块, 按颜色刷出对应的矿物。
  *
  * <p>节奏与**原版刷可疑沙**一致: 按住右键, 刷子每 10 tick 刷一下, 刷满 [BRUSH_STEPS] 次
- * （约 5 秒）才完成 —— 不是右键一次立刻出结果。刷动期间原版 [net.minecraft.item.BrushItem]
+ * （约 5 秒）才完成 —— 不是右键一次立刻出结果。刷动期间原版 [net.minecraft.world.item.BrushItem]
  * 自己会播放刷子音效与方块碎屑粒子, 这里只负责计数与结算。
  *
  * <p>完成时:
@@ -54,9 +54,9 @@ object WarmArchaeologyService {
     private val brushing = mutableMapOf<UUID, BrushProgress>()
 
     /** 暖水海洋废墟的考古战利品表 —— "暖水考古"这个名字就来自这里 */
-    private val LOOT_TABLE: RegistryKey<LootTable> = RegistryKey.of(
-        RegistryKeys.LOOT_TABLE,
-        Identifier.ofVanilla("archaeology/ocean_ruin_warm"),
+    private val LOOT_TABLE: ResourceKey<LootTable> = ResourceKey.create(
+        Registries.LOOT_TABLE,
+        Identifier.withDefaultNamespace("archaeology/ocean_ruin_warm"),
     )
 
     /**
@@ -93,8 +93,8 @@ object WarmArchaeologyService {
      * @return true 表示这次刷动被"暖水考古"接管了
      */
     fun handleBrushTick(
-        player: ServerPlayerEntity,
-        world: ServerWorld,
+        player: ServerPlayer,
+        world: ServerLevel,
         pos: BlockPos,
         stack: ItemStack,
     ): Boolean {
@@ -102,11 +102,11 @@ object WarmArchaeologyService {
 
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk(PERK_ID)) return false
-        if (!stack.isOf(Items.BRUSH)) return false
+        if (!stack.`is`(Items.BRUSH)) return false
 
         val coral = CORALS[world.getBlockState(pos).block] ?: return false
 
-        val now = world.server?.ticks?.toLong() ?: return false
+        val now = world.getServer().tickCount.toLong()
         var progress = brushing[player.uuid]
         if (progress == null || progress.pos != pos || now - progress.lastTick > BRUSH_TIMEOUT_TICKS) {
             progress = BrushProgress(pos, 0, now)
@@ -117,7 +117,7 @@ object WarmArchaeologyService {
         progress.steps++
 
         // 和原版刷子一样, 每刷一下消耗 1 点耐久 (归零时自动损坏)
-        stack.damage(1, player, EquipmentSlot.MAINHAND)
+        stack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
 
         if (progress.steps < BRUSH_STEPS) return true
 
@@ -128,23 +128,23 @@ object WarmArchaeologyService {
 
     /** 刷满之后: 变失活珊瑚 + 结算掉落 */
     private fun completeBrush(
-        player: ServerPlayerEntity,
-        world: ServerWorld,
+        player: ServerPlayer,
+        world: ServerLevel,
         pos: BlockPos,
         coral: CoralInfo,
         tool: ItemStack,
     ) {
         // 刷完变失活 (活珊瑚被"刷掉"了), 而不是直接消失
-        world.setBlockState(pos, coral.deadBlock.defaultState)
+        world.setBlockAndUpdate(pos, coral.deadBlock.defaultBlockState())
         world.playSound(
             null, pos,
-            SoundEvents.ITEM_BRUSH_BRUSHING_GENERIC,
-            SoundCategory.BLOCKS,
+            SoundEvents.BRUSH_GENERIC,
+            SoundSource.BLOCKS,
             1.0f, 1.0f,
         )
 
         if (player.random.nextFloat() < MINERAL_CHANCE) {
-            Block.dropStack(world, pos, ItemStack(coral.mineral))
+            Block.popResource(world, pos, ItemStack(coral.mineral))
         } else {
             dropArchaeologyLoot(player, world, pos, tool)
         }
@@ -152,12 +152,12 @@ object WarmArchaeologyService {
 
     /** 从暖水考古战利品表抽一次, 掉在方块所在位置 */
     private fun dropArchaeologyLoot(
-        player: ServerPlayerEntity,
-        world: ServerWorld,
+        player: ServerPlayer,
+        world: ServerLevel,
         pos: BlockPos,
         tool: ItemStack,
     ) {
-        val lookup = player.server?.reloadableRegistries
+        val lookup = player.level().getServer().reloadableRegistries()
         if (lookup == null) {
             RandomPerksMod.logger.warn("[RandomPerks] coral loot: reloadableRegistries unavailable")
             return dropFallback(player, world, pos)
@@ -171,17 +171,17 @@ object WarmArchaeologyService {
 
         // 原版 ARCHAEOLOGY 上下文要求 origin / this_entity / tool 三个参数**缺一不可**,
         // 少传任何一个 Builder.build() 都会抛 IllegalArgumentException。
-        val params = LootWorldContext.Builder(world)
-            .add(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos))
-            .add(LootContextParameters.THIS_ENTITY, player)
-            .add(LootContextParameters.TOOL, tool)
-            .build(LootContextTypes.ARCHAEOLOGY)
+        val params = LootParams.Builder(world)
+            .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
+            .withParameter(LootContextParams.THIS_ENTITY, player)
+            .withParameter(LootContextParams.TOOL, tool)
+            .create(LootContextParamSets.ARCHAEOLOGY)
 
         var dropped = 0
         try {
-            table.generateLoot(params, player.random.nextLong()) { loot ->
+            table.getRandomItems(params, player.random.nextLong()) { loot ->
                 dropped++
-                Block.dropStack(world, pos, loot)
+                Block.popResource(world, pos, loot)
             }
         } catch (e: Exception) {
             RandomPerksMod.logger.warn("[RandomPerks] coral loot: generation failed", e)
@@ -193,8 +193,8 @@ object WarmArchaeologyService {
         }
     }
 
-    private fun dropFallback(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos) {
+    private fun dropFallback(player: ServerPlayer, world: ServerLevel, pos: BlockPos) {
         RandomPerksMod.logger.warn("[RandomPerks] coral loot: using fallback pool")
-        Block.dropStack(world, pos, ItemStack(FALLBACK_LOOT[player.random.nextInt(FALLBACK_LOOT.size)]))
+        Block.popResource(world, pos, ItemStack(FALLBACK_LOOT[player.random.nextInt(FALLBACK_LOOT.size)]))
     }
 }

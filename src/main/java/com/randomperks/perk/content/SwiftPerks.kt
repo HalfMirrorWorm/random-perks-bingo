@@ -7,25 +7,25 @@ import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.FireworksComponent
-import net.minecraft.enchantment.Enchantments
-import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.util.Identifier
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.component.Fireworks
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.entity.ai.attributes.AttributeModifier
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.resources.Identifier
 
 /**
  * 疾风 SWIFT —— 跑图 / 位移 / 机动。
  */
 object SwiftPerks {
 
-    private val MOD_SPEED = Identifier.of("random-perks-bingo", "swift_speed")
-    private val MOD_FALL = Identifier.of("random-perks-bingo", "swift_feather_fall")
-    private val MOD_TAILWIND = Identifier.of("random-perks-bingo", "swift_tailwind")
+    private val MOD_SPEED = Identifier.fromNamespaceAndPath("random-perks-bingo", "swift_speed")
+    private val MOD_FALL = Identifier.fromNamespaceAndPath("random-perks-bingo", "swift_feather_fall")
+    private val MOD_TAILWIND = Identifier.fromNamespaceAndPath("random-perks-bingo", "swift_tailwind")
 
     /** 蓝 · 轻装疾行: 移动速度 +8% */
     object Speed : PerkDefinition {
@@ -37,10 +37,10 @@ object SwiftPerks {
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED, 0.08, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+            PerkEffects.setAttribute(ctx.player, Attributes.MOVEMENT_SPEED, MOD_SPEED, 0.08, AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+            PerkEffects.removeAttribute(ctx.player, Attributes.MOVEMENT_SPEED, MOD_SPEED)
     }
 
     /** 蓝 · 柔软鞋底: 摔落伤害 -50% */
@@ -53,10 +53,10 @@ object SwiftPerks {
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.FALL_DAMAGE_MULTIPLIER, MOD_FALL, -0.5, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+            PerkEffects.setAttribute(ctx.player, Attributes.FALL_DAMAGE_MULTIPLIER, MOD_FALL, -0.5, AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.FALL_DAMAGE_MULTIPLIER, MOD_FALL)
+            PerkEffects.removeAttribute(ctx.player, Attributes.FALL_DAMAGE_MULTIPLIER, MOD_FALL)
     }
 
     /** 绿 · 弹簧腿: 跳跃高度提升到约 2 格 (原版默认约 1.25 格) */
@@ -66,7 +66,7 @@ object SwiftPerks {
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.RABBIT_FOOT)
 
-        private val MOD_JUMP = Identifier.of("random-perks-bingo", "swift_jump")
+        private val MOD_JUMP = Identifier.fromNamespaceAndPath("random-perks-bingo", "swift_jump")
 
         /** 原版跳跃初速度 0.42 → 约 1.25 格; 跳跃高度 ∝ 初速度², 故 0.42 + 0.13 = 0.55 → 约 2.1 格 */
         private const val JUMP_BONUS = 0.13
@@ -74,10 +74,10 @@ object SwiftPerks {
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.JUMP_STRENGTH, MOD_JUMP, JUMP_BONUS)
+            PerkEffects.setAttribute(ctx.player, Attributes.JUMP_STRENGTH, MOD_JUMP, JUMP_BONUS)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.JUMP_STRENGTH, MOD_JUMP)
+            PerkEffects.removeAttribute(ctx.player, Attributes.JUMP_STRENGTH, MOD_JUMP)
     }
 
     /** 紫 · 风之步伐: 疾跑速度比原版疾跑再快 30% (1.3 → 1.69 倍基础速度) ——
@@ -113,11 +113,11 @@ object SwiftPerks {
         private fun apply(ctx: PerkContext) {
             val allies = (ctx.countArchetype(PerkArchetype.SWIFT) - 1).coerceAtLeast(0)
             val bonus = 0.18 + 0.03 * allies
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_TAILWIND, bonus, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+            PerkEffects.setAttribute(ctx.player, Attributes.MOVEMENT_SPEED, MOD_TAILWIND, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
         }
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_TAILWIND)
+            PerkEffects.removeAttribute(ctx.player, Attributes.MOVEMENT_SPEED, MOD_TAILWIND)
     }
 
     /** 紫 · 疾风: 空中可以再跳跃一次 (每段离地一次, 水中不可用;
@@ -139,19 +139,19 @@ object SwiftPerks {
         override val archetype = PerkArchetype.SWIFT
         override fun icon() = ItemStack(Items.ELYTRA)
 
-        private val MOD_SPEED = Identifier.of("random-perks-bingo", "elytra_bond_speed")
+        private val MOD_SPEED = Identifier.fromNamespaceAndPath("random-perks-bingo", "elytra_bond_speed")
 
         override fun onAcquire(ctx: PerkContext) {
             applySpeed(ctx)
 
             val elytra = ItemStack(Items.ELYTRA)
             // 最大耐久 432 → 扣掉 1/4 = 108, 剩余 324 (3/4)
-            elytra.damage = elytra.maxDamage / 4
+            elytra.damageValue = elytra.maxDamage / 4
             PerkEffects.giveStack(ctx.player, elytra)
 
             // 附赠 2 个烟花火箭 (飞行时长 2) —— 没有 FIREWORKS 组件的裸火箭是废品, 飞不了
             val rocket = ItemStack(Items.FIREWORK_ROCKET, 2)
-            rocket.set(DataComponentTypes.FIREWORKS, FireworksComponent(2, emptyList()))
+            rocket.set(DataComponents.FIREWORKS, Fireworks(2, emptyList()))
             PerkEffects.giveStack(ctx.player, rocket)
         }
 
@@ -160,13 +160,13 @@ object SwiftPerks {
         /** 移动速度降低 30% (总速度 x0.7) */
         private fun applySpeed(ctx: PerkContext) {
             PerkEffects.setAttribute(
-                ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED,
-                -0.3, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+                ctx.player, Attributes.MOVEMENT_SPEED, MOD_SPEED,
+                -0.3, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
             )
         }
 
         override fun onRemove(ctx: PerkContext) {
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, MOD_SPEED)
+            PerkEffects.removeAttribute(ctx.player, Attributes.MOVEMENT_SPEED, MOD_SPEED)
         }
     }
 
@@ -214,18 +214,18 @@ object SwiftPerks {
 
         /** 每 20 tick 驱动一次: 在水里/雨中续潮涌能量 (与原版导管方块同一节奏) */
         override fun onTick(ctx: PerkContext) {
-            if (!ctx.player.isTouchingWaterOrRain) return
-            ctx.player.addStatusEffect(
-                StatusEffectInstance(StatusEffects.CONDUIT_POWER, CONDUIT_DURATION, 0, true, true)
+            if (!ctx.player.isInWaterOrRain) return
+            ctx.player.addEffect(
+                MobEffectInstance(MobEffects.CONDUIT_POWER, CONDUIT_DURATION, 0, true, true)
             )
         }
 
         private fun applyDolphinsGrace(ctx: PerkContext) =
-            PerkEffects.permanentEffect(ctx.player, StatusEffects.DOLPHINS_GRACE, 0)
+            PerkEffects.permanentEffect(ctx.player, MobEffects.DOLPHINS_GRACE, 0)
 
         override fun onRemove(ctx: PerkContext) {
-            PerkEffects.removeEffect(ctx.player, StatusEffects.DOLPHINS_GRACE)
-            PerkEffects.removeEffect(ctx.player, StatusEffects.CONDUIT_POWER)
+            PerkEffects.removeEffect(ctx.player, MobEffects.DOLPHINS_GRACE)
+            PerkEffects.removeEffect(ctx.player, MobEffects.CONDUIT_POWER)
         }
     }
 
@@ -249,14 +249,14 @@ object SwiftPerks {
          * 何时可以删掉这三行 + [LEGACY_SPEED]: 确认没有玩家存档还带着旧版残留时
          * (旧版已停止分发一段时间, 且没有玩家从旧版本升级上来)。
          */
-        private val LEGACY_SPEED = Identifier.of("random-perks-bingo", "omnimovement_speed")
+        private val LEGACY_SPEED = Identifier.fromNamespaceAndPath("random-perks-bingo", "omnimovement_speed")
 
         override fun onAcquire(ctx: PerkContext) = clearLegacy(ctx)
         override fun onRespawn(ctx: PerkContext) = clearLegacy(ctx)
         override fun onRemove(ctx: PerkContext) = clearLegacy(ctx)
 
         private fun clearLegacy(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MOVEMENT_SPEED, LEGACY_SPEED)
+            PerkEffects.removeAttribute(ctx.player, Attributes.MOVEMENT_SPEED, LEGACY_SPEED)
     }
 
     /** 蓝 · 疾风: **冰！** —— 你可以**食用糖**, 吃完获得 15 秒速度 I。
@@ -301,10 +301,10 @@ object SwiftPerks {
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) =
-            PerkEffects.permanentEffect(ctx.player, StatusEffects.WATER_BREATHING, 0)
+            PerkEffects.permanentEffect(ctx.player, MobEffects.WATER_BREATHING, 0)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeEffect(ctx.player, StatusEffects.WATER_BREATHING)
+            PerkEffects.removeEffect(ctx.player, MobEffects.WATER_BREATHING)
     }
 
     /** 蓝 · 疾风: **逃跑计划** —— 受到生物伤害后, 自动获得速度 II 与抗性提升 I, 持续 10 秒。

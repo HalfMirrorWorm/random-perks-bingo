@@ -1,9 +1,9 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.DragonTamerService;
-import net.minecraft.network.packet.c2s.play.VehicleMoveC2SPacket;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,23 +16,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <p>只在短窗口里丢掉离当前坐标还很远、或仍更靠近瞬移前位置的包, 并再补一发
  * 服务端坐标。已经跟上的驾驶包照常交给原版。
  */
-@Mixin(ServerPlayNetworkHandler.class)
+@Mixin(ServerGamePacketListenerImpl.class)
 public class DragonTamerBlinkMixin {
 
     @Shadow
-    public ServerPlayerEntity player;
+    public ServerPlayer player;
 
     @Inject(
-            method = "onVehicleMove(Lnet/minecraft/network/packet/c2s/play/VehicleMoveC2SPacket;)V",
+            method = "handleMoveVehicle(Lnet/minecraft/network/protocol/game/ServerboundMoveVehiclePacket;)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V",
+                    target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V",
                     shift = At.Shift.AFTER
             ),
             cancellable = true
     )
-    private void randomperks$rejectStaleBlink(VehicleMoveC2SPacket packet, CallbackInfo ci) {
-        if (DragonTamerService.INSTANCE.shouldIgnoreStaleVehicleMove(this.player, packet.position())) {
+    private void randomperks$rejectStaleBlink(ServerboundMoveVehiclePacket packet, CallbackInfo ci) {
+        if (DragonTamerService.INSTANCE.shouldIgnoreStaleVehicleMove(this.player, packet.movingTo().position())) {
             ci.cancel();
         }
     }

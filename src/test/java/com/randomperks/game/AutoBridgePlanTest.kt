@@ -1,6 +1,6 @@
 package com.randomperks.game
 
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.BlockPos
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals

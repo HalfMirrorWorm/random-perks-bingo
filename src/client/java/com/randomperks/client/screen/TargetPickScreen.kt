@@ -1,9 +1,10 @@
 package com.randomperks.client.screen
 
+import net.minecraft.client.input.MouseButtonEvent
 import com.randomperks.network.PlayerTargetEntry
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.network.chat.Component
 import java.util.UUID
 
 /**
@@ -20,11 +21,11 @@ class TargetPickScreen(
      * 选中后是否自动关闭。
      *
      * "易位"要连选两次, 第二次弹窗必须由调用方在 onPick 里直接 setScreen 换过去 ——
-     * 所以那边设成 false, 否则这里的 close() 会把刚换上去的屏幕一起清掉。
+     * 所以那边设成 false, 否则这里的 onClose() 会把刚换上去的屏幕一起清掉。
      */
     private val closeOnPick: Boolean = true,
     private val onPick: (UUID) -> Unit,
-) : Screen(Text.translatable(titleKey)) {
+) : Screen(Component.translatable(titleKey)) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -48,13 +49,13 @@ class TargetPickScreen(
         listTop = (height - visibleRows * ROW_H) / 2 + 6
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, listTop - 30, ScreenStyle.TEXT_NAME)
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable(hintKey),
+        context.centeredText(font, title, width / 2, listTop - 30, ScreenStyle.TEXT_NAME)
+        context.centeredText(
+            font,
+            Component.translatable(hintKey),
             width / 2, listTop - 17, ScreenStyle.TEXT_DIM,
         )
 
@@ -72,24 +73,27 @@ class TargetPickScreen(
                 if (isHovered) ROW_BG_HOVER else ROW_BG,
             )
             PlayerHeadRenderer.draw(context, targets[index].uuid, listLeft + 5, y + 5)
-            context.drawTextWithShadow(
-                textRenderer,
+            context.text(
+                font,
                 targets[index].name,
                 listLeft + 17, y + 4,
                 TeamColorUtil.forPlayer(targets[index].uuid),
             )
         }
 
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        val mouseX = event.x()
+        val mouseY = event.y()
+        val button = event.button()
         if (button == 0 && hovered >= 0) {
             onPick(targets[hovered].uuid)
-            if (closeOnPick) close()
+            if (closeOnPick) onClose()
             return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, doubleClick)
     }
 
     override fun mouseScrolled(
@@ -104,5 +108,5 @@ class TargetPickScreen(
         return true
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 }

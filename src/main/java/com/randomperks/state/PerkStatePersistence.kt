@@ -8,16 +8,17 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.server.ServerHolder
 import me.jfenn.bingo.api.BingoEvents
+import me.jfenn.bingo.api.data.BingoGameStatus
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
-import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.NbtIo
-import net.minecraft.nbt.NbtList
-import net.minecraft.nbt.NbtString
+import net.minecraft.nbt.ListTag
+import net.minecraft.nbt.StringTag
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.WorldSavePath
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.level.storage.LevelResource
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -97,7 +98,7 @@ object PerkStatePersistence {
         ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             val player = handler.player
             if (pendingApply.remove(player.uuid)) {
-                player.server?.execute { applyPerks(player) }
+                player.level().getServer().execute { applyPerks(player) }
             }
         }
     }
@@ -115,8 +116,8 @@ object PerkStatePersistence {
 
     private fun autosave(server: MinecraftServer) {
         if (!gameActive) return
-        if (server.ticks < nextAutosaveTick) return
-        nextAutosaveTick = server.ticks + AUTOSAVE_TICKS
+        if (server.tickCount < nextAutosaveTick) return
+        nextAutosaveTick = server.tickCount + AUTOSAVE_TICKS
         write(server)
     }
 
@@ -127,36 +128,36 @@ object PerkStatePersistence {
 
     private fun write(server: MinecraftServer) {
         val path = statePath(server) ?: return
-        val root = NbtCompound()
+        val root = CompoundTag()
         root.putInt(KEY_VERSION, CURRENT_VERSION)
         root.putBoolean("enabled", PerkSession.isEnabled())
 
-        val players = NbtList()
+        val players = ListTag()
         for (state in PerkStateManager.all()) {
-            val entry = NbtCompound()
+            val entry = CompoundTag()
             entry.putString("uuid", state.uuid.toString())
 
-            val pending = NbtList()
+            val pending = ListTag()
             for (offer in state.pendingOffers) {
-                val inner = NbtList()
-                offer.forEach { inner.add(NbtString.of(it)) }
+                val inner = ListTag()
+                offer.forEach { inner.add(StringTag.valueOf(it)) }
                 pending.add(inner)
             }
             entry.put("pending", pending)
 
-            val owned = NbtList()
-            state.ownedPerks.forEach { owned.add(NbtString.of(it.id)) }
+            val owned = ListTag()
+            state.ownedPerks.forEach { owned.add(StringTag.valueOf(it.id)) }
             entry.put("owned", owned)
 
-            val used = NbtList()
-            state.usedPerks.forEach { used.add(NbtString.of(it)) }
+            val used = ListTag()
+            state.usedPerks.forEach { used.add(StringTag.valueOf(it)) }
             entry.put("used", used)
 
-            val cooldowns = NbtCompound()
+            val cooldowns = CompoundTag()
             state.cooldowns.forEach { (id, tick) -> cooldowns.putLong(id, tick) }
             entry.put("cooldowns", cooldowns)
 
-            val memory = NbtCompound()
+            val memory = CompoundTag()
             state.memory.forEach { (key, value) -> memory.putString(key, value) }
             entry.put("memory", memory)
 
@@ -184,8 +185,10 @@ object PerkStatePersistence {
             return
         }
 
-        // 对局没在运行: 这份文件属于上一局, 丢掉
-        if (!bingo.state.isPlayingOrCountdown) {
+        // 对局没在运行: 这份文件属于上一局, 丢掉。
+        // LOADING / COUNTDOWN 的 status 是 STARTING, 进行中是 PLAYING。
+        val running = bingo.state.status
+        if (running != BingoGameStatus.STARTING && running != BingoGameStatus.PLAYING) {
             deleteFile(server)
             gameActive = false
             return
@@ -209,20 +212,20 @@ object PerkStatePersistence {
             return
         }
 
-        nextAutosaveTick = server.ticks + AUTOSAVE_TICKS
+        nextAutosaveTick = server.tickCount + AUTOSAVE_TICKS
         RandomPerksMod.logger.info(
             "[RandomPerks] restored perk state for {} player(s) from the previous server run",
             pendingApply.size,
         )
     }
 
-    private fun restore(server: MinecraftServer, root: NbtCompound) {
-        PerkSession.restoreRound(root.getBoolean("enabled", false))
+    private fun restore(server: MinecraftServer, root: CompoundTag) {
+        PerkSession.restoreRound(root.getBooleanOr("enabled", false))
 
         val players = root.getListOrEmpty("players")
         for (i in 0 until players.size) {
             val entry = players.getCompoundOrEmpty(i)
-            val uuid = runCatching { UUID.fromString(entry.getString("uuid", "")) }.getOrNull() ?: continue
+            val uuid = runCatching { UUID.fromString(entry.getStringOr("uuid", "")) }.getOrNull() ?: continue
 
             val state = PerkStateManager.getOrCreate(uuid)
             state.reset()
@@ -232,7 +235,7 @@ object PerkStatePersistence {
                 val inner = pending.getListOrEmpty(j)
                 val offer = ArrayList<String>(inner.size)
                 for (k in 0 until inner.size) {
-                    val id = inner.getString(k, "")
+                    val id = inner.getStringOr(k, "")
                     if (id.isNotEmpty()) offer.add(id)
                 }
                 if (offer.isNotEmpty()) state.pendingOffers.add(offer)
@@ -240,25 +243,25 @@ object PerkStatePersistence {
 
             val owned = entry.getListOrEmpty("owned")
             for (j in 0 until owned.size) {
-                val id = owned.getString(j, "")
+                val id = owned.getStringOr(j, "")
                 val perk = PerkRegistry.byId(id) ?: continue
                 state.ownedPerks.add(perk)
             }
 
             val used = entry.getListOrEmpty("used")
             for (j in 0 until used.size) {
-                val id = used.getString(j, "")
+                val id = used.getStringOr(j, "")
                 if (id.isNotEmpty()) state.usedPerks.add(id)
             }
 
             val cooldowns = entry.getCompoundOrEmpty("cooldowns")
-            for (key in cooldowns.getKeys()) {
-                state.cooldowns[key] = cooldowns.getLong(key, 0L)
+            for (key in cooldowns.keySet()) {
+                state.cooldowns[key] = cooldowns.getLongOr(key, 0L)
             }
 
             val memory = entry.getCompoundOrEmpty("memory")
-            for (key in memory.getKeys()) {
-                state.memory[key] = memory.getString(key, "")
+            for (key in memory.keySet()) {
+                state.memory[key] = memory.getStringOr(key, "")
             }
 
             if (state.ownedPerks.isNotEmpty() || state.pendingOffers.isNotEmpty()) {
@@ -268,7 +271,7 @@ object PerkStatePersistence {
 
         // 服务器刚启动, 通常没有在线玩家; 万一有, 直接补挂
         for (uuid in pendingApply.toList()) {
-            val player = server.playerManager.getPlayer(uuid) ?: continue
+            val player = server.playerList.getPlayer(uuid) ?: continue
             pendingApply.remove(uuid)
             applyPerks(player)
         }
@@ -281,7 +284,7 @@ object PerkStatePersistence {
      * 它们不会写进玩家存档, 重启后自然消失; 而永久状态效果是写进存档的, 但为了让
      * "顺风而行"之类的联动重新按当前词条列表结算, 也一并跑一次 onPerkListChanged。
      */
-    private fun applyPerks(player: ServerPlayerEntity) {
+    private fun applyPerks(player: ServerPlayer) {
         val state = PerkStateManager.get(player.uuid) ?: return
         if (state.ownedPerks.isEmpty()) {
             PerkGrantService.syncAbilities(player)
@@ -305,7 +308,7 @@ object PerkStatePersistence {
     // ------------------------------------------------------------------
 
     private fun statePath(server: MinecraftServer): Path? = try {
-        server.getSavePath(WorldSavePath.ROOT).resolve(FILE_NAME)
+        server.getWorldPath(LevelResource.ROOT).resolve(FILE_NAME)
     } catch (t: Throwable) {
         RandomPerksMod.logger.warn("[RandomPerks] could not resolve the save path", t)
         null

@@ -1,21 +1,21 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * 挖掘掉落的两条"代价/收益"路径, 都挂在原版唯一的掉落生成入口
@@ -33,17 +33,17 @@ import java.util.List;
 public class MiningDropMixin {
 
     @Inject(
-            method = "dropStacks(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/item/ItemStack;)V",
+            method = "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;)V",
             at = @At("HEAD"),
             cancellable = true
     )
     private static void randomperks$miningDrops(
-            BlockState state, World world, BlockPos pos,
+            BlockState state, Level world, BlockPos pos,
             BlockEntity blockEntity, Entity entity, ItemStack tool,
             CallbackInfo ci
     ) {
-        if (!(entity instanceof ServerPlayerEntity player)) return;
-        if (!(world instanceof ServerWorld serverWorld)) return;
+        if (!(entity instanceof ServerPlayer player)) return;
+        if (!(world instanceof ServerLevel serverWorld)) return;
 
         // 透视之眼: 读取 XrayDecisionMixin 在破坏流程开头掷出的判定
         if (PerkBoostQuery.INSTANCE.isXraySuppressed(player, pos)) {
@@ -55,12 +55,12 @@ public class MiningDropMixin {
         if (!PerkBoostQuery.INSTANCE.isExtraDropDoubled(player, pos)) return;
 
         // 只结算一次掉落表 (含时运), 然后把同一份结果生成两遍
-        List<ItemStack> drops = Block.getDroppedStacks(state, serverWorld, pos, blockEntity, player, tool);
+        List<ItemStack> drops = Block.getDrops(state, serverWorld, pos, blockEntity, player, tool);
         for (ItemStack drop : drops) {
-            Block.dropStack(serverWorld, pos, drop.copy());
-            Block.dropStack(serverWorld, pos, drop.copy());
+            Block.popResource(serverWorld, pos, drop.copy());
+            Block.popResource(serverWorld, pos, drop.copy());
         }
-        state.onStacksDropped(serverWorld, pos, tool, true);
+        state.spawnAfterBreak(serverWorld, pos, tool, true);
 
         ci.cancel();
     }

@@ -6,10 +6,10 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.roll.PerkRollService
 import com.randomperks.server.ServerHolder
 import com.randomperks.state.PerkStateManager
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.text.Text
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.network.chat.Component
 import java.util.UUID
 
 /**
@@ -26,7 +26,7 @@ object PerkGrantService {
     fun onTeamScored(memberUuids: List<UUID>, objectiveId: String) {
         if (!PerkSession.isEnabled()) return
         val server = ServerHolder.server ?: return
-        val players = memberUuids.mapNotNull { server.playerManager.getPlayer(it) }
+        val players = memberUuids.mapNotNull { server.playerList.getPlayer(it) }
         if (players.isEmpty()) return
 
         // 已获得词条的联动回调 (如"每次完成格子触发一次效果")
@@ -56,7 +56,7 @@ object PerkGrantService {
         if (lineCount <= 0) return
         if (!PerkSession.isEnabled()) return
         val server = ServerHolder.server ?: return
-        val players = memberUuids.mapNotNull { server.playerManager.getPlayer(it) }
+        val players = memberUuids.mapNotNull { server.playerList.getPlayer(it) }
         if (players.isEmpty()) return
 
         grantOffer(players, lineCount)
@@ -71,7 +71,7 @@ object PerkGrantService {
      *
      * @return 是否至少发放成功一次 (词条池耗尽时为 false)
      */
-    fun grantOffer(players: List<ServerPlayerEntity>, count: Int = 1): Boolean {
+    fun grantOffer(players: List<ServerPlayer>, count: Int = 1): Boolean {
         if (count <= 0) return false
         var anyGranted = false
 
@@ -105,7 +105,7 @@ object PerkGrantService {
     }
 
     /** 单人发放 (调试命令用) */
-    fun grantChoice(player: ServerPlayerEntity, count: Int) {
+    fun grantChoice(player: ServerPlayer, count: Int) {
         val state = PerkStateManager.getOrCreate(player.uuid)
         repeat(count) {
             val offer = PerkRollService.rollOptions(
@@ -121,13 +121,13 @@ object PerkGrantService {
     }
 
     /** 把玩家的词条能力列表同步给其客户端 (矿透渲染/偷窃按键等客户端能力依赖它) */
-    fun syncAbilities(player: ServerPlayerEntity) {
+    fun syncAbilities(player: ServerPlayer) {
         val state = PerkStateManager.getOrCreate(player.uuid)
         PerkNetworking.sendAbilitySync(player, state.ownedPerks.map { it.id })
     }
 
     /** 词条列表变化后调用: 让已拥有的词条即时重算联动效果 (替代定时轮询) */
-    fun notifyPerkListChanged(player: ServerPlayerEntity) {
+    fun notifyPerkListChanged(player: ServerPlayer) {
         val state = PerkStateManager.get(player.uuid) ?: return
         if (state.ownedPerks.isEmpty()) return
 
@@ -138,17 +138,15 @@ object PerkGrantService {
         }
     }
 
-    private fun notifyChoicesAvailable(player: ServerPlayerEntity, pending: Int) {
+    private fun notifyChoicesAvailable(player: ServerPlayer, pending: Int) {
         PerkNetworking.sendNotify(player, pending)
-        player.sendMessage(
-            Text.translatable("random-perks-bingo.message.gained_choice", pending),
+        player.sendSystemMessage(
+            Component.translatable("random-perks-bingo.message.gained_choice", pending),
             true, // actionbar
         )
-        player.playSoundToPlayer(
-            SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP,
-            SoundCategory.PLAYERS,
-            0.8f,
-            1.2f,
+        player.level().playSound(
+            null, player.x, player.y, player.z,
+            SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.8f, 1.2f,
         )
     }
 }

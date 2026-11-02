@@ -9,24 +9,24 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.block.CropBlock
-import net.minecraft.block.NetherWartBlock
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.damage.DamageTypes
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.entity.mob.SpiderEntity
-import net.minecraft.entity.passive.AbstractHorseEntity
-import net.minecraft.entity.passive.ChickenEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.CropBlock
+import net.minecraft.world.level.block.NetherWartBlock
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.damagesource.DamageTypes
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.monster.spider.Spider
+import net.minecraft.world.entity.animal.equine.AbstractHorse
+import net.minecraft.world.entity.animal.chicken.Chicken
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionHand
 
 /**
  * 把世界事件 (击杀 / 破坏方块 / 装备变化 / 实体交互) 分发给玩家已获得的词条。
@@ -58,13 +58,13 @@ object PerkWorldEventService {
     fun register() {
         // 击杀生物
         ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource ->
-            val killer = damageSource.attacker as? ServerPlayerEntity ?: return@register
+            val killer = damageSource.entity as? ServerPlayer ?: return@register
             dispatch(killer) { ctx, perk -> perk.onKill(ctx, entity) }
         }
 
         // 破坏方块
         PlayerBlockBreakEvents.AFTER.register { _, player, pos, state, _ ->
-            if (player !is ServerPlayerEntity) return@register
+            if (player !is ServerPlayer) return@register
             dispatch(player) { ctx, perk -> perk.onBlockBreak(ctx, pos, state) }
         }
 
@@ -72,78 +72,78 @@ object PerkWorldEventService {
         // (注意: 这一块原先被误嵌在下面的 UseEntityCallback lambda 里, 结果是每右键一次实体
         //  就多注册一个监听器 —— 拾穗的额外掉落会随右键次数翻倍, 监听器也永远不释放。)
         PlayerBlockBreakEvents.AFTER.register { world, player, pos, state, _ ->
-            if (player !is ServerPlayerEntity) return@register
+            if (player !is ServerPlayer) return@register
             if (!PerkBoostQuery.hasGleaning(player)) return@register
             if (!isMatureCrop(state)) return@register
             if (player.random.nextFloat() >= SEED_BONUS_CHANCE) return@register
 
-            Block.dropStack(world, pos, ItemStack(SEED_POOL[player.random.nextInt(SEED_POOL.size)]))
+            Block.popResource(world, pos, ItemStack(SEED_POOL[player.random.nextInt(SEED_POOL.size)]))
         }
 
         // 受伤后 → "逃跑计划": 挨了生物一下就给速度 II + 抗性 I
         ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
             if (damageTaken <= 0.0f) return@register
             // 注意: Kotlin 的 `!is` 不能像 `is` 那样在条件里声明新变量, 所以用 as?
-            val player = entity as? ServerPlayerEntity ?: return@register
+            val player = entity as? ServerPlayer ?: return@register
             // "生物伤害" = 有生物作为攻击者 (含玩家); 摔落/岩浆这类没有攻击者的不触发
-            if (source.getAttacker() !is LivingEntity) return@register
+            if (source.entity !is LivingEntity) return@register
             if (!PerkBoostQuery.hasEscapePlan(player)) return@register
 
-            player.addStatusEffect(StatusEffectInstance(StatusEffects.SPEED, ESCAPE_PLAN_TICKS, 1))
-            player.addStatusEffect(StatusEffectInstance(StatusEffects.RESISTANCE, ESCAPE_PLAN_TICKS, 0))
+            player.addEffect(MobEffectInstance(MobEffects.SPEED, ESCAPE_PLAN_TICKS, 1))
+            player.addEffect(MobEffectInstance(MobEffects.RESISTANCE, ESCAPE_PLAN_TICKS, 0))
         }
 
         // 攻击敌方玩家 → "苔藓侵蚀": 随机转化对方 2 件物品
         ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
             if (damageTaken <= 0.0f) return@register
-            val victim = entity as? ServerPlayerEntity ?: return@register
-            val attacker = source.attacker as? ServerPlayerEntity ?: return@register
+            val victim = entity as? ServerPlayer ?: return@register
+            val attacker = source.entity as? ServerPlayer ?: return@register
             FungalInfectionService.handleAttack(attacker, victim)
         }
 
         // 受到玩家伤害 → "盘丝大仙": 蜘蛛获得 5 秒盘丝 (织网) 效果
         ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
             if (damageTaken <= 0.0f) return@register
-            val spider = entity as? SpiderEntity ?: return@register
-            val attacker = source.attacker as? ServerPlayerEntity ?: return@register
+            val spider = entity as? Spider ?: return@register
+            val attacker = source.entity as? ServerPlayer ?: return@register
             if (!PerkBoostQuery.hasSpiderWeaving(attacker)) return@register
-            spider.addStatusEffect(StatusEffectInstance(StatusEffects.WEAVING, 5 * 20, 0))
+            spider.addEffect(MobEffectInstance(MobEffects.WEAVING, 5 * 20, 0))
         }
 
         // 受到伤害 → "忠心护主": 由附近属于该玩家的宠物承受 2 倍伤害
         ServerLivingEntityEvents.ALLOW_DAMAGE.register { entity, source, amount ->
-            val player = entity as? ServerPlayerEntity ?: return@register true
+            val player = entity as? ServerPlayer ?: return@register true
             !LoyalGuardService.tryRedirect(player, source, amount)
         }
 
         // 受到生物伤害 → "刺猬": 把 75% 伤害反弹给攻击者
         ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
             if (damageTaken <= 0.0f) return@register
-            val player = entity as? ServerPlayerEntity ?: return@register
+            val player = entity as? ServerPlayer ?: return@register
             if (!PerkBoostQuery.hasHedgehog(player)) return@register
             // 反弹本身也走 THORNS 伤害; 跳过它, 避免两个刺猬互相递归
-            if (source.isOf(DamageTypes.THORNS)) return@register
-            val attacker = source.attacker as? LivingEntity ?: return@register
+            if (source.`is`(DamageTypes.THORNS)) return@register
+            val attacker = source.entity as? LivingEntity ?: return@register
             if (attacker === player) return@register
-            val attackerWorld = attacker.world as? ServerWorld ?: return@register
+            val attackerWorld = attacker.level() as? ServerLevel ?: return@register
 
-            attacker.damage(
+            attacker.hurtServer(
                 attackerWorld,
-                attackerWorld.damageSources.thorns(player),
+                attackerWorld.damageSources().thorns(player),
                 damageTaken * 0.75f,
             )
         }
 
         // 右键方块 → "切洋葱" / "海带成骨" / "点石成金"
         UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
-            if (world.isClient) return@register ActionResult.PASS
-            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
-            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
-            val serverWorld = world as ServerWorld
+            if (world.isClientSide) return@register InteractionResult.PASS
+            if (hand != InteractionHand.MAIN_HAND) return@register InteractionResult.PASS
+            if (player !is ServerPlayer) return@register InteractionResult.PASS
+            val serverWorld = world as ServerLevel
             val onion = OnionCutService.handleUse(player, serverWorld, hitResult.blockPos)
-            if (onion != ActionResult.PASS) return@register onion
+            if (onion != InteractionResult.PASS) return@register onion
             val kelp = KelpToBoneService.handleUse(player, serverWorld, hitResult.blockPos)
-            if (kelp != ActionResult.PASS) return@register kelp
+            if (kelp != InteractionResult.PASS) return@register kelp
             MidasTouchService.handleUse(player, serverWorld, hitResult.blockPos)
         }
 
@@ -152,39 +152,39 @@ object PerkWorldEventService {
         // isTame 检查拒绝 (表现为"按 E 打不开装备界面"), 见到就补上驯服标志。
         // 其余交互 (骑乘 / 按 E 或潜行右键开装备界面 / 剪刀剪下装备) 全部交还原版处理。
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
-            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
-            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
+            if (hand != InteractionHand.MAIN_HAND) return@register InteractionResult.PASS
+            if (player !is ServerPlayer) return@register InteractionResult.PASS
 
             // "叮咚鸡": 手持染料右键鸡 → 给它染色 (原版染料对鸡没有反应)
-            if (entity is ChickenEntity) {
+            if (entity is Chicken) {
                 val dyed = ChickenDyeService.tryDye(player, entity, hand)
-                if (dyed != ActionResult.PASS) return@register dyed
+                if (dyed != InteractionResult.PASS) return@register dyed
             }
 
-            if (entity !is AbstractHorseEntity) return@register ActionResult.PASS
-            val owner = entity.ownerReference ?: return@register ActionResult.PASS
-            if (owner.uuid != player.uuid) return@register ActionResult.PASS
+            if (entity !is AbstractHorse) return@register InteractionResult.PASS
+            val owner = entity.ownerReference ?: return@register InteractionResult.PASS
+            if (owner.uuid != player.uuid) return@register InteractionResult.PASS
 
-            if (!entity.isTame && HarvestPerks.SummonHorse.TAG in entity.commandTags) {
-                entity.setTame(true)
+            if (!entity.isTamed && HarvestPerks.SummonHorse.TAG in entity.entityTags()) {
+                entity.setTamed(true)
             }
 
-            ActionResult.PASS
+            InteractionResult.PASS
         }
     }
 
     /** 装备变化 (由 EquipmentChangeMixin 注入原版 equipStack 调用) —— 即时重算装备相关词条 */
-    fun dispatchEquipmentChange(player: ServerPlayerEntity) {
+    fun dispatchEquipmentChange(player: ServerPlayer) {
         dispatch(player) { ctx, perk -> perk.onEquipmentChange(ctx) }
     }
 
     /** 吃完一份食物 (由 ConsumableBoostMixin 注入原版 ConsumableComponent.finishConsumption 调用) */
-    fun dispatchFoodEaten(player: ServerPlayerEntity) {
+    fun dispatchFoodEaten(player: ServerPlayer) {
         dispatch(player) { ctx, perk -> perk.onFoodEaten(ctx) }
     }
 
     private inline fun dispatch(
-        player: ServerPlayerEntity,
+        player: ServerPlayer,
         action: (PerkContext, PerkDefinition) -> Unit,
     ) {
         val state = PerkStateManager.get(player.uuid) ?: return

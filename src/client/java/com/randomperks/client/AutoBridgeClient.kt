@@ -3,17 +3,17 @@ package com.randomperks.client
 import com.randomperks.game.AutoBridgePlan
 import com.randomperks.game.ClientPerkFlags
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.client.network.ClientPlayerInteractionManager
-import net.minecraft.client.world.ClientWorld
-import net.minecraft.item.Items
-import net.minecraft.util.Hand
-import net.minecraft.util.hit.BlockHitResult
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Box
-import net.minecraft.util.math.Direction
-import net.minecraft.util.math.Vec3d
+import net.minecraft.client.Minecraft
+import net.minecraft.client.player.LocalPlayer
+import net.minecraft.client.multiplayer.MultiPlayerGameMode
+import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.world.item.Items
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.AABB
+import net.minecraft.core.Direction
+import net.minecraft.world.phys.Vec3
 
 /**
  * "自动搭路" (金 · 疾风) 的**客户端**实现: 手持圆石时, 自动在脚下铺圆石。
@@ -25,8 +25,8 @@ import net.minecraft.util.math.Vec3d
  *
  * <h3>参考的做法 (Meteor Scaffold / Wurst ScaffoldWalk)</h3>
  * 脚手架类 mod 全都是**客户端放置**: 客户端调用
- * [net.minecraft.client.network.ClientPlayerInteractionManager.interactBlock], 它内部走原版的
- * "序列化预测" (sendSequencedPacket → interactBlockInternal) —— 先在**本地**世界
+ * [net.minecraft.client.network.ClientPlayerInteractionManager.useItemOn], 它内部走原版的
+ * "序列化预测" (sendSequencedPacket → useItemOnInternal) —— 先在**本地**世界
  * `setBlockState` 把方块放出来, 再发 `PlayerInteractBlockC2SPacket` 给服务端。
  * 于是客户端物理从这一 tick 起就踩在方块上, 根本不会预测下落, 也就没有回弹;
  * 服务端收到同一个包后按原版规则权威放置 (距离校验 / 领地保护 / 创造不消耗 / 扣物品),
@@ -52,22 +52,22 @@ object AutoBridgeClient {
         ClientTickEvents.START_CLIENT_TICK.register { client -> tick(client) }
     }
 
-    private fun tick(client: MinecraftClient) {
+    private fun tick(client: Minecraft) {
         val player = client.player ?: return
-        val world = client.world ?: return
-        val interaction = client.interactionManager ?: return
+        val world = client.level ?: return
+        val interaction = client.gameMode ?: return
 
         if (!ClientPerkFlags.has(PERK_ID)) return
         if (player.isSpectator || player.abilities.flying) return
-        if (player.isGliding || player.getVehicle() != null) return
+        if (player.isFallFlying || player.getVehicle() != null) return
         if (player.isInLava || player.isSwimming) return
-        if (player.velocity.y > JUMP_VELOCITY) return
-        if (!player.mainHandStack.isOf(Items.COBBLESTONE)) return
+        if (player.deltaMovement.y > JUMP_VELOCITY) return
+        if (!player.mainHandItem.`is`(Items.COBBLESTONE)) return
 
-        val velocity = player.velocity
+        val velocity = player.deltaMovement
         val targets = AutoBridgePlan.targets(player.x, player.y, player.z, velocity.x, velocity.z)
         for (placePos in targets) {
-            if (!player.mainHandStack.isOf(Items.COBBLESTONE)) return
+            if (!player.mainHandItem.`is`(Items.COBBLESTONE)) return
             tryPlace(world, player, interaction, placePos)
         }
     }
@@ -77,17 +77,17 @@ object AutoBridgeClient {
      * 成功后本地世界已经有这块方块, 同一 tick 里后面的格子可以点它的面。
      */
     private fun tryPlace(
-        world: ClientWorld,
-        player: ClientPlayerEntity,
-        interaction: ClientPlayerInteractionManager,
+        world: ClientLevel,
+        player: LocalPlayer,
+        interaction: MultiPlayerGameMode,
         placePos: BlockPos,
     ) {
         val state = world.getBlockState(placePos)
-        if (!state.isReplaceable) return
-        if (player.boundingBox.intersects(Box(placePos))) return
+        if (!state.canBeReplaced()) return
+        if (player.boundingBox.intersects(AABB(placePos))) return
 
         val hit = findClickTarget(world, placePos, player) ?: return
-        interaction.interactBlock(player, Hand.MAIN_HAND, hit)
+        interaction.useItemOn(player, InteractionHand.MAIN_HAND, hit)
     }
 
     /**
@@ -98,11 +98,11 @@ object AutoBridgeClient {
      * 的交互 (门/拉杆/箱子等) 吃掉这次右键。
      */
     private fun findClickTarget(
-        world: ClientWorld,
+        world: ClientLevel,
         target: BlockPos,
-        player: ClientPlayerEntity,
+        player: LocalPlayer,
     ): BlockHitResult? {
-        val behind = player.horizontalFacing.opposite
+        val behind = player.direction.opposite
         val order = ArrayList<Direction>(6)
         order.add(behind)
         order.add(Direction.DOWN)
@@ -111,14 +111,14 @@ object AutoBridgeClient {
         }
 
         for (dir in order) {
-            val neighbor = target.offset(dir)
+            val neighbor = target.relative(dir)
             val neighborState = world.getBlockState(neighbor)
-            if (neighborState.isReplaceable) continue
+            if (neighborState.canBeReplaced()) continue
             if (neighborState.getCollisionShape(world, neighbor).isEmpty) continue
 
             // 点击邻居朝向目标的那一面: 放置位置 = neighbor.offset(face) = target
             val face = dir.opposite
-            val hitPos = Vec3d.ofCenter(neighbor).add(Vec3d.of(face.vector).multiply(0.5))
+            val hitPos = Vec3.atCenterOf(neighbor).add(face.unitVec3.scale(0.5))
             return BlockHitResult(hitPos, face, neighbor, false)
         }
         return null

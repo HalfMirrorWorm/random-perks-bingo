@@ -1,14 +1,15 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.component.EnchantmentEffectComponentTypes;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.GameRules;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.util.Prediction;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.scores.PlayerTeam;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,22 +30,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <p>注入 {@code onDeath} 而不是 dropInventory: 致命一击的伤害源只存在于 onDeath 入参里
  * (原版 {@code damage()} 在调用 onDeath **之后**才写 lastDamageSource)。
  */
-@Mixin(ServerPlayerEntity.class)
+@Mixin(ServerPlayer.class)
 public class DoomsdayMixin {
 
     /** 背包位: 主背包 27 格 (跳过快捷栏 0~8) */
     private static final int BACKPACK_START = 9;
     private static final int BACKPACK_END = 36;
 
-    @Inject(method = "onDeath", at = @At("HEAD"))
+    @Inject(method = "die", at = @At("HEAD"))
     private void randomperks$onDeath(DamageSource source, CallbackInfo ci) {
-        ServerPlayerEntity self = (ServerPlayerEntity) (Object) this;
+        ServerPlayer self = (ServerPlayer) (Object) this;
         if (self.isSpectator()) return;
 
-        ServerPlayerEntity killer = source.getAttacker() instanceof ServerPlayerEntity player
+        ServerPlayer killer = source.getEntity() instanceof ServerPlayer player
                 && player != self ? player : null;
         boolean enemyKill = killer != null && !isSameTeam(self, killer);
-        boolean keepInventory = self.getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY);
+        boolean keepInventory = self.level().getGameRules().get(GameRules.KEEP_INVENTORY);
 
         // 自己持有天启日: 只有被敌方玩家击杀才掉落, 且这次死亡结束效果
         if (PerkBoostQuery.INSTANCE.hasDoomsdayEffect(self)) {
@@ -64,26 +65,26 @@ public class DoomsdayMixin {
     }
 
     /** 强制掉落主背包 27 格; 消失诅咒物品按原版规则直接消失 */
-    private static void dropBackpack(ServerPlayerEntity player) {
-        PlayerInventory inventory = player.getInventory();
+    private static void dropBackpack(ServerPlayer player) {
+        Inventory inventory = player.getInventory();
         for (int slot = BACKPACK_START; slot < BACKPACK_END; slot++) {
-            ItemStack stack = inventory.getStack(slot);
+            ItemStack stack = inventory.getItem(slot);
             if (stack.isEmpty()) continue;
 
-            if (EnchantmentHelper.hasAnyEnchantmentsWith(
-                    stack, EnchantmentEffectComponentTypes.PREVENT_EQUIPMENT_DROP)) {
-                inventory.setStack(slot, ItemStack.EMPTY);
+            if (EnchantmentHelper.has(
+                    stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+                inventory.setItem(slot, ItemStack.EMPTY);
                 continue;
             }
 
-            player.dropItem(stack, true, false);
-            inventory.setStack(slot, ItemStack.EMPTY);
+            player.drop(stack, true, Prediction.SERVER_ONLY);
+            inventory.setItem(slot, ItemStack.EMPTY);
         }
     }
 
-    private static boolean isSameTeam(ServerPlayerEntity a, ServerPlayerEntity b) {
-        Team teamA = a.getScoreboardTeam();
-        Team teamB = b.getScoreboardTeam();
+    private static boolean isSameTeam(ServerPlayer a, ServerPlayer b) {
+        PlayerTeam teamA = a.getTeam();
+        PlayerTeam teamB = b.getTeam();
         if (teamA == null || teamB == null) return teamA == teamB;
         return teamA.getName().equals(teamB.getName());
     }

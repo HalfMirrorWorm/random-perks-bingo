@@ -1,17 +1,18 @@
 package com.randomperks.client.screen
 
+import net.minecraft.client.input.MouseButtonEvent
 import com.randomperks.client.net.ClientPerkNetworking
 import com.randomperks.network.PerkOptionData
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.network.chat.Component
 
 /**
  * 三选一词条界面: 横向三张品质色卡牌, 点击选择, Esc 放弃 (不消耗机会)。
  */
 class PerkChoiceScreen(
     private val options: List<PerkOptionData>,
-) : Screen(Text.translatable("random-perks-bingo.screen.choose_perk")) {
+) : Screen(Component.translatable("random-perks-bingo.screen.choose_perk")) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -32,15 +33,15 @@ class PerkChoiceScreen(
 
     private fun cardX(index: Int) = startX + index * (cardWidth + gap)
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         // 注意: 1.21.6+ 的渲染管线会自动模糊屏幕背景,
         // 这里不能再调 renderBackground() (会造成二次 blur 崩溃), 用自绘遮罩代替
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, cardY - 30, ScreenStyle.TEXT_NAME)
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.screen.choose_perk.hint"),
+        context.centeredText(font, title, width / 2, cardY - 30, ScreenStyle.TEXT_NAME)
+        context.centeredText(
+            font,
+            Component.translatable("random-perks-bingo.screen.choose_perk.hint"),
             width / 2, cardY - 18, ScreenStyle.TEXT_DIM,
         )
 
@@ -52,10 +53,10 @@ class PerkChoiceScreen(
             drawCard(context, option, x, y, hovered == index)
         }
 
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 
-    private fun drawCard(context: DrawContext, option: PerkOptionData, x: Int, y: Int, isHovered: Boolean) {
+    private fun drawCard(context: GuiGraphicsExtractor, option: PerkOptionData, x: Int, y: Int, isHovered: Boolean) {
         val rarity = ScreenStyle.rarity(option.rarityOrdinal)
         val archetype = ScreenStyle.archetype(option.archetypeOrdinal)
         val displayColor = ScreenStyle.rarityDisplayColor(option.rarityOrdinal)
@@ -76,20 +77,20 @@ class PerkChoiceScreen(
         // 图标区
         val centerX = x + cardWidth / 2
         context.fill(centerX - 20, y + 24, centerX + 20, y + 64, ScreenStyle.SLOT_BG)
-        context.drawItem(option.icon, centerX - 8, y + 36)
+        context.item(option.icon, centerX - 8, y + 36)
 
         // 名称
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.perk.${option.id}.name"),
+        context.centeredText(
+            font,
+            Component.translatable("random-perks-bingo.perk.${option.id}.name"),
             centerX, y + 74, ScreenStyle.TEXT_NAME,
         )
 
         // 品质 · 流派 (+ 贮藏标记)
-        val rarityLabel = Text.translatable("random-perks-bingo.rarity.${rarity.name.lowercase()}")
-        val archetypeLabel = Text.translatable("random-perks-bingo.archetype.${archetype.id}")
-        context.drawCenteredTextWithShadow(textRenderer, rarityLabel, centerX, y + 90, displayColor)
-        context.drawCenteredTextWithShadow(textRenderer, archetypeLabel, centerX, y + 102, ScreenStyle.TEXT_DIM)
+        val rarityLabel = Component.translatable("random-perks-bingo.rarity.${rarity.name.lowercase()}")
+        val archetypeLabel = Component.translatable("random-perks-bingo.archetype.${archetype.id}")
+        context.centeredText(font, rarityLabel, centerX, y + 90, displayColor)
+        context.centeredText(font, archetypeLabel, centerX, y + 102, ScreenStyle.TEXT_DIM)
 
         // 分隔线
         context.fill(x + 12, y + 118, x + cardWidth - 12, y + 119, ScreenStyle.DIVIDER)
@@ -97,36 +98,39 @@ class PerkChoiceScreen(
         // 贮藏标记: 放在分隔线下方、词条描述上一行 (神话词条不允许贮藏)
         val showStorable = option.storable && rarity != com.randomperks.perk.PerkRarity.MYTHIC
         if (showStorable) {
-            context.drawCenteredTextWithShadow(
-                textRenderer,
-                Text.translatable("random-perks-bingo.option.storable"),
+            context.centeredText(
+                font,
+                Component.translatable("random-perks-bingo.option.storable"),
                 centerX, y + 123, ScreenStyle.TEXT_HIGHLIGHT,
             )
         }
 
         // 描述 (自动换行) —— 有贮藏标记时整体下移一行
-        val desc = Text.translatable("random-perks-bingo.perk.${option.id}.desc")
+        val desc = Component.translatable("random-perks-bingo.perk.${option.id}.desc")
         var lineY = if (showStorable) y + 135 else y + 128
-        for (line in textRenderer.wrapLines(desc, cardWidth - 20)) {
-            context.drawCenteredTextWithShadow(textRenderer, line, centerX, lineY, ScreenStyle.TEXT_DESC)
+        for (line in font.split(desc, cardWidth - 20)) {
+            context.centeredText(font, line, centerX, lineY, ScreenStyle.TEXT_DESC)
             lineY += 10
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        val mouseX = event.x()
+        val mouseY = event.y()
+        val button = event.button()
         if (button == 0 && hovered in options.indices) {
             ClientPerkNetworking.pick(hovered)
-            close()
+            onClose()
             return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, doubleClick)
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 
-    override fun close() {
+    override fun onClose() {
         // 未选择就关闭时, 清掉客户端缓存 (机会不会消耗)
         ClientPerkNetworking.clearOptions()
-        super.close()
+        super.onClose()
     }
 }

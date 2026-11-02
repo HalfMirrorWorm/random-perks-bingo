@@ -2,23 +2,23 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.component.type.ConsumableComponent;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
-import net.minecraft.item.consume.UseAction;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -58,20 +58,20 @@ public class EdibleSugarMixin {
 
     /** 懒初始化: 直接写在静态初始化里会早于注册表引导访问 StatusEffects */
     @Unique
-    private static ConsumableComponent randomperks$sugarComponent;
+    private static Consumable randomperks$sugarComponent;
 
     /** 糖的消费定义: 1.6 秒吃完 (与原版食物默认时长一致), 吃完给 15 秒速度 I */
     @Unique
-    private static ConsumableComponent randomperks$sugar() {
-        ConsumableComponent cached = randomperks$sugarComponent;
+    private static Consumable randomperks$sugar() {
+        Consumable cached = randomperks$sugarComponent;
         if (cached == null) {
-            cached = ConsumableComponent.builder()
+            cached = Consumable.builder()
                     .consumeSeconds(1.6F)
-                    .useAction(UseAction.EAT)
-                    .sound(SoundEvents.ENTITY_GENERIC_EAT)
-                    .consumeParticles(true)
-                    .consumeEffect(new ApplyEffectsConsumeEffect(
-                            new StatusEffectInstance(StatusEffects.SPEED, 15 * 20, 0)))
+                    .animation(ItemUseAnimation.EAT)
+                    .sound(SoundEvents.GENERIC_EAT)
+                    .hasConsumeParticles(true)
+                    .onConsume(new ApplyStatusEffectsConsumeEffect(
+                            new MobEffectInstance(MobEffects.SPEED, 15 * 20, 0)))
                     .build();
             randomperks$sugarComponent = cached;
         }
@@ -79,72 +79,72 @@ public class EdibleSugarMixin {
     }
 
     @Unique
-    private static boolean randomperks$hasPerk(PlayerEntity player) {
-        if (player.getWorld().isClient()) {
+    private static boolean randomperks$hasPerk(Player player) {
+        if (player.level().isClientSide()) {
             return ClientPerkFlags.has(PERK_ID);
         }
-        return player instanceof ServerPlayerEntity serverPlayer
+        return player instanceof ServerPlayer serverPlayer
                 && PerkBoostQuery.INSTANCE.hasEdibleSugar(serverPlayer);
     }
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
-    private void randomperks$useSugar(World world, PlayerEntity user, Hand hand,
-                                      CallbackInfoReturnable<ActionResult> cir) {
+    private void randomperks$useSugar(Level world, Player user, InteractionHand hand,
+                                      CallbackInfoReturnable<InteractionResult> cir) {
         ItemStack self = (ItemStack) (Object) this;
-        if (!self.isOf(Items.SUGAR)) return;
+        if (!self.is(Items.SUGAR)) return;
         if (!randomperks$hasPerk(user)) return;
-        cir.setReturnValue(randomperks$sugar().consume(user, self, hand));
+        cir.setReturnValue(randomperks$sugar().startConsuming(user, self, hand));
     }
 
-    @Inject(method = "getMaxUseTime", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getUseDuration", at = @At("HEAD"), cancellable = true)
     private void randomperks$sugarUseTime(LivingEntity user,
                                           CallbackInfoReturnable<Integer> cir) {
         ItemStack self = (ItemStack) (Object) this;
-        if (!self.isOf(Items.SUGAR)) return;
-        if (!(user instanceof PlayerEntity player) || !randomperks$hasPerk(player)) return;
-        cir.setReturnValue(randomperks$sugar().getConsumeTicks());
+        if (!self.is(Items.SUGAR)) return;
+        if (!(user instanceof Player player) || !randomperks$hasPerk(player)) return;
+        cir.setReturnValue(randomperks$sugar().consumeTicks());
     }
 
-    @Inject(method = "finishUsing", at = @At("HEAD"), cancellable = true)
-    private void randomperks$finishSugar(World world, LivingEntity user,
+    @Inject(method = "finishUsingItem", at = @At("HEAD"), cancellable = true)
+    private void randomperks$finishSugar(Level world, LivingEntity user,
                                          CallbackInfoReturnable<ItemStack> cir) {
         ItemStack self = (ItemStack) (Object) this;
-        if (!self.isOf(Items.SUGAR)) return;
-        if (!(user instanceof PlayerEntity player) || !randomperks$hasPerk(player)) return;
-        ItemStack finished = randomperks$sugar().finishConsumption(world, user, self);
+        if (!self.is(Items.SUGAR)) return;
+        if (!(user instanceof Player player) || !randomperks$hasPerk(player)) return;
+        ItemStack finished = randomperks$sugar().onConsume(world, user, self);
         // 原版食物的打嗝在 FoodComponent.onConsume 里, 糖没有食物组件, 这里按同样的音量和音高补上。
         // 只在服务端播: playSound 的 source 为 null 时会发给周围所有人, 吃的人自己也能听到。
-        if (!world.isClient()) {
-            Random random = user.getRandom();
+        if (!world.isClientSide()) {
+            RandomSource random = user.getRandom();
             world.playSound(
                     null,
                     player.getX(),
                     player.getY(),
                     player.getZ(),
-                    SoundEvents.ENTITY_PLAYER_BURP,
-                    SoundCategory.PLAYERS,
+                    SoundEvents.PLAYER_BURP,
+                    SoundSource.PLAYERS,
                     0.5F,
-                    MathHelper.nextBetween(random, 0.9F, 1.0F));
+                    Mth.randomBetween(random, 0.9F, 1.0F));
         }
         cir.setReturnValue(finished);
     }
 
-    @Inject(method = "usageTick", at = @At("HEAD"))
-    private void randomperks$sugarUsageTick(World world, LivingEntity user, int remainingUseTicks,
+    @Inject(method = "onUseTick", at = @At("HEAD"))
+    private void randomperks$sugarUsageTick(Level world, LivingEntity user, int remainingUseTicks,
                                             CallbackInfo ci) {
         ItemStack self = (ItemStack) (Object) this;
-        if (!self.isOf(Items.SUGAR)) return;
-        if (!(user instanceof PlayerEntity player) || !randomperks$hasPerk(player)) return;
-        ConsumableComponent sugar = randomperks$sugar();
-        if (sugar.shouldSpawnParticlesAndPlaySounds(remainingUseTicks)) {
-            sugar.spawnParticlesAndPlaySound(user.getRandom(), user, self, 5);
+        if (!self.is(Items.SUGAR)) return;
+        if (!(user instanceof Player player) || !randomperks$hasPerk(player)) return;
+        Consumable sugar = randomperks$sugar();
+        if (sugar.shouldEmitParticlesAndSounds(remainingUseTicks)) {
+            sugar.emitParticlesAndSounds(user.getRandom(), user, self, 5);
         }
     }
 
-    @Inject(method = "getUseAction", at = @At("HEAD"), cancellable = true)
-    private void randomperks$sugarUseAction(CallbackInfoReturnable<UseAction> cir) {
-        if (((ItemStack) (Object) this).isOf(Items.SUGAR)) {
-            cir.setReturnValue(UseAction.EAT);
+    @Inject(method = "getUseAnimation", at = @At("HEAD"), cancellable = true)
+    private void randomperks$sugarUseAction(CallbackInfoReturnable<ItemUseAnimation> cir) {
+        if (((ItemStack) (Object) this).is(Items.SUGAR)) {
+            cir.setReturnValue(ItemUseAnimation.EAT);
         }
     }
 }

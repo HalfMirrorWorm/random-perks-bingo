@@ -1,10 +1,10 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.FishingBobberEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -18,24 +18,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *
  * <p>这两个值在浮标创建时就写进 final 字段, 之后只读, 所以在构造函数末尾直接抬到 3。
  */
-@Mixin(FishingBobberEntity.class)
+@Mixin(FishingHook.class)
 public abstract class FishingEnchantMixin {
 
     @Mutable
-    @Accessor("luckBonus")
+    @Accessor("luck")
     abstract void randomperks$setLuckBonus(int value);
 
     @Mutable
-    @Accessor("waitTimeReductionTicks")
+    @Accessor("lureSpeed")
     abstract void randomperks$setWaitTimeReduction(int value);
 
     @Inject(
-            method = "<init>(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;II)V",
+            method = "<init>(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;II)V",
             at = @At("TAIL")
     )
-    private void randomperks$grantFishingEnchants(PlayerEntity player, World world, int luckBonus,
+    private void randomperks$grantFishingEnchants(Player player, Level world, int luckBonus,
                                                   int waitTimeReductionTicks, CallbackInfo ci) {
-        if (!(player instanceof ServerPlayerEntity owner)) return;
+        if (!(player instanceof ServerPlayer owner)) return;
         if (!PerkBoostQuery.INSTANCE.hasLuckyFishing(owner)) return;
 
         this.randomperks$setLuckBonus(Math.max(luckBonus, 3));

@@ -1,14 +1,14 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
-import net.minecraft.block.Block
-import net.minecraft.block.Blocks
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.util.ActionResult
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.InteractionResult
+import net.minecraft.core.BlockPos
 
 /**
  * "点石成金" —— 右键**镶金黑石**把它变成金块。
@@ -20,20 +20,20 @@ object MidasTouchService {
 
     const val PERK_ID = "artisan_midas_touch"
 
-    fun handleUse(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos): ActionResult {
-        if (!PerkSession.isEnabled()) return ActionResult.PASS
+    fun handleUse(player: ServerPlayer, world: ServerLevel, pos: BlockPos): InteractionResult {
+        if (!PerkSession.isEnabled()) return InteractionResult.PASS
 
-        val state = PerkStateManager.get(player.uuid) ?: return ActionResult.PASS
-        if (!state.hasPerk(PERK_ID)) return ActionResult.PASS
-        if (!world.getBlockState(pos).isOf(Blocks.GILDED_BLACKSTONE)) return ActionResult.PASS
+        val state = PerkStateManager.get(player.uuid) ?: return InteractionResult.PASS
+        if (!state.hasPerk(PERK_ID)) return InteractionResult.PASS
+        if (!world.getBlockState(pos).`is`(Blocks.GILDED_BLACKSTONE)) return InteractionResult.PASS
 
-        world.setBlockState(pos, Blocks.GOLD_BLOCK.defaultState, Block.NOTIFY_ALL)
+        world.setBlock(pos, Blocks.GOLD_BLOCK.defaultBlockState(), Block.UPDATE_ALL)
         world.playSound(
             null, pos,
-            SoundEvents.BLOCK_METAL_PLACE,
-            SoundCategory.BLOCKS,
+            SoundEvents.METAL_PLACE,
+            SoundSource.BLOCKS,
             0.8f, 1.2f,
         )
-        return ActionResult.SUCCESS
+        return InteractionResult.SUCCESS
     }
 }

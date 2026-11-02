@@ -1,12 +1,12 @@
 package com.randomperks.game
 
 import com.randomperks.RandomPerksMod
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
+import net.fabricmc.fabric.api.networking.v1.FriendlyByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 
 /**
  * 客户端 / 服务端 mod 版本校验 —— 走 Fabric 的**登录阶段**查询机制。
@@ -24,7 +24,7 @@ import net.minecraft.util.Identifier
 object ModVersionService {
 
     /** 登录阶段的自定义 channel */
-    val CHANNEL: Identifier = Identifier.of(RandomPerksMod.MOD_ID, "mod_version")
+    val CHANNEL: Identifier = Identifier.fromNamespaceAndPath(RandomPerksMod.MOD_ID, "mod_version")
 
     @Volatile
     private var cachedVersion: String? = null
@@ -45,8 +45,8 @@ object ModVersionService {
     fun registerServer() {
         // 登录开始 → 把服务端版本发给客户端
         ServerLoginConnectionEvents.QUERY_START.register { _, _, sender, _ ->
-            val buf = PacketByteBufs.create()
-            buf.writeString(currentVersion())
+            val buf = FriendlyByteBufs.create()
+            buf.writeUtf(currentVersion())
             sender.sendPacket(CHANNEL, buf)
         }
 
@@ -56,7 +56,7 @@ object ModVersionService {
                 // 客户端没装这个 mod (或者不认识这个 channel) —— 它也就**没有本 mod 的语言文件**,
                 // 所以这里必须带 fallback, 否则玩家在连接界面只会看到一串翻译键。
                 listener.disconnect(
-                    Text.translatableWithFallback(
+                    Component.translatableWithFallback(
                         "random-perks-bingo.message.version_missing",
                         "Random Perks mod not detected — please install the same version as the server.\n" +
                             "未检测到随机词条模组 —— 请安装与服务端相同版本的模组后再连接。",
@@ -65,13 +65,13 @@ object ModVersionService {
                 return@registerGlobalReceiver
             }
 
-            val clientVersion = runCatching { buf.readString() }.getOrNull() ?: "unknown"
+            val clientVersion = runCatching { buf.readUtf() }.getOrNull() ?: "unknown"
             val serverVersion = currentVersion()
             if (clientVersion != serverVersion) {
                 // 版本不一致的客户端一般装了 mod, 正常能翻译; fallback 兜底旧版本客户端
                 // (它可能还没有这个翻译键)
                 listener.disconnect(
-                    Text.translatableWithFallback(
+                    Component.translatableWithFallback(
                         "random-perks-bingo.message.version_mismatch",
                         "Random Perks version mismatch!\nServer: %s\nClient: %s",
                         serverVersion,

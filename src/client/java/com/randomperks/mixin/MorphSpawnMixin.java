@@ -1,9 +1,9 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.MorphState;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,13 +17,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *
  * 实体加入客户端世界时如果仍是猪, 立刻重算。别人复活刷出的新实体同样走这里。
  */
-@Mixin(ClientWorld.class)
+@Mixin(ClientLevel.class)
 public class MorphSpawnMixin {
 
     @Inject(method = "addEntity", at = @At("TAIL"))
     private void randomperks$refreshPigDimensions(Entity entity, CallbackInfo ci) {
-        if (!(entity instanceof PlayerEntity player)) return;
-        if (!MorphState.isMorphed(player.getUuid())) return;
-        player.calculateDimensions();
+        if (!(entity instanceof Player player)) return;
+        if (!MorphState.isMorphed(player.getUUID())) return;
+        player.refreshDimensions();
     }
 }

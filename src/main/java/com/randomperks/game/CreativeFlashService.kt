@@ -3,9 +3,9 @@ package com.randomperks.game
 import com.randomperks.RandomPerksMod
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.world.GameMode
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.world.level.GameType
 import java.util.UUID
 
 /**
@@ -16,7 +16,7 @@ object CreativeFlashService {
     private const val FLASH_TICKS = 30L
 
     private data class Flash(
-        val originalMode: GameMode,
+        val originalMode: GameType,
         val wasFlying: Boolean,
         val endTick: Long,
     )
@@ -27,11 +27,11 @@ object CreativeFlashService {
         ServerTickEvents.END_SERVER_TICK.register { server ->
             if (active.isEmpty()) return@register
 
-            val now = server.ticks.toLong()
+            val now = server.tickCount.toLong()
             val expired = active.entries.filter { it.value.endTick <= now }.map { it.key }
             for (uuid in expired) {
                 val flash = active.remove(uuid) ?: continue
-                val player = server.playerManager.getPlayer(uuid) ?: continue
+                val player = server.playerList.getPlayer(uuid) ?: continue
                 restore(player, flash)
             }
         }
@@ -47,24 +47,24 @@ object CreativeFlashService {
     }
 
     /** 恢复闪光前的状态 (游戏模式 + 飞行开关) */
-    private fun restore(player: ServerPlayerEntity, flash: Flash) {
-        player.changeGameMode(flash.originalMode)
+    private fun restore(player: ServerPlayer, flash: Flash) {
+        player.setGameMode(flash.originalMode)
         player.abilities.flying = flash.wasFlying
-        player.sendAbilitiesUpdate()
+        player.onUpdateAbilities()
     }
 
     /** 给玩家 1.5 秒创造模式 (神话词条效果) */
-    fun flash(player: ServerPlayerEntity) {
-        val server = player.server ?: return
-        val original = player.interactionManager.gameMode
-        if (original == GameMode.CREATIVE) return
+    fun flash(player: ServerPlayer) {
+        val server = player.level().getServer()
+        val original = player.gameMode.getGameModeForPlayer()
+        if (original == GameType.CREATIVE) return
 
         val wasFlying = player.abilities.flying
-        active[player.uuid] = Flash(original, wasFlying, server.ticks + FLASH_TICKS)
+        active[player.uuid] = Flash(original, wasFlying, server.tickCount + FLASH_TICKS)
 
-        player.changeGameMode(GameMode.CREATIVE)
-        player.sendMessage(
-            Text.translatable("random-perks-bingo.message.creative_flash"),
+        player.setGameMode(GameType.CREATIVE)
+        player.sendSystemMessage(
+            Component.translatable("random-perks-bingo.message.creative_flash"),
             true,
         )
         RandomPerksMod.logger.info("[RandomPerks] creative flash for {} (1.5s)", player.name.string)

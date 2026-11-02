@@ -9,8 +9,8 @@ import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkRarity
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import org.slf4j.LoggerFactory
 
 object RandomPerksClient : ClientModInitializer {
@@ -49,7 +49,7 @@ object RandomPerksClient : ClientModInitializer {
                 PerkOptionData("harvest_timber", PerkRarity.PURPLE.ordinal, PerkArchetype.HARVEST.ordinal, ItemStack(Items.OAK_LOG)),
                 PerkOptionData("harvest_gardener", PerkRarity.BLUE.ordinal, PerkArchetype.HARVEST.ordinal, ItemStack(Items.WHEAT)),
                 PerkOptionData("hunter_soul_harvest", PerkRarity.GOLD.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.NETHER_STAR)),
-                PerkOptionData("hunter_vampire", PerkRarity.BLUE.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.RED_DYE)),
+                PerkOptionData("hunter_vampire", PerkRarity.BLUE.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.DYE.red())),
                 PerkOptionData("hunter_strength", PerkRarity.BLUE.ordinal, PerkArchetype.HUNTER.ordinal, ItemStack(Items.IRON_SWORD)),
                 PerkOptionData("seeker_scout", PerkRarity.BLUE.ordinal, PerkArchetype.SEEKER.ordinal, ItemStack(Items.SPYGLASS)),
                 PerkOptionData("seeker_ender_supply", PerkRarity.PURPLE.ordinal, PerkArchetype.SEEKER.ordinal, ItemStack(Items.ENDER_PEARL)),
@@ -61,18 +61,18 @@ object RandomPerksClient : ClientModInitializer {
                 tick++
                 when (tick) {
                     100 -> {
-                        client.setScreen(PerkChoiceScreen(choiceOptions))
+                        client.gui.setScreen(PerkChoiceScreen(choiceOptions))
                         logger.info("[RandomPerks] UI self-test: perk choice screen opened")
                     }
                     160 -> {
-                        // 注意: 1.21.7 的 saveScreenshot 只有 3 个参数 (自动生成文件名)
-                        net.minecraft.client.util.ScreenshotRecorder.saveScreenshot(
-                            client.runDirectory,
-                            client.framebuffer,
+                        // 注意: 1.21.7 的 grab 只有 3 个参数 (自动生成文件名)
+                        net.minecraft.client.Screenshot.grab(
+                            client.gameDirectory,
+                            client.gameRenderer.mainRenderTarget(),
                         ) { text -> logger.info("[RandomPerks] screenshot(choice): {}", text.string) }
                     }
                     220 -> {
-                        client.setScreen(
+                        client.gui.setScreen(
                             PerkListScreen(
                                 3,
                                 listOf(
@@ -87,24 +87,24 @@ object RandomPerksClient : ClientModInitializer {
                         logger.info("[RandomPerks] UI self-test: perk list screen opened")
                     }
                     280 -> {
-                        net.minecraft.client.util.ScreenshotRecorder.saveScreenshot(
-                            client.runDirectory,
-                            client.framebuffer,
+                        net.minecraft.client.Screenshot.grab(
+                            client.gameDirectory,
+                            client.gameRenderer.mainRenderTarget(),
                         ) { text -> logger.info("[RandomPerks] screenshot(list): {}", text.string) }
                     }
                     340 -> {
                         val owned = listPerks.take(6).map { it.id }.toSet()
-                        client.setScreen(PerkCatalogScreen(owned, listPerks))
+                        client.gui.setScreen(PerkCatalogScreen(owned, listPerks))
                         logger.info("[RandomPerks] UI self-test: perk catalog screen opened")
                     }
                     400 -> {
-                        net.minecraft.client.util.ScreenshotRecorder.saveScreenshot(
-                            client.runDirectory,
-                            client.framebuffer,
+                        net.minecraft.client.Screenshot.grab(
+                            client.gameDirectory,
+                            client.gameRenderer.mainRenderTarget(),
                         ) { text -> logger.info("[RandomPerks] screenshot(catalog): {}", text.string) }
                     }
                     460 -> {
-                        client.setScreen(null)
+                        client.gui.setScreen(null)
                         logger.info("[RandomPerks] UI self-test: PASSED (all screens rendered without crash)")
                     }
                 }

@@ -1,7 +1,7 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -15,16 +15,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * setSprinting(true) 停不下来。这里放在 tickMovement 开头 (早于本 tick 的
  * 疾跑判定和实体移动), 清掉之后同 tick 内即使再次尝试开跑也会被拦下。
  */
-@Mixin(ClientPlayerEntity.class)
+@Mixin(LocalPlayer.class)
 public class GuraSharkSprintClientMixin {
 
     private static final String PERK_ID = "swift_gura_shark";
 
-    @Inject(method = "tickMovement", at = @At("HEAD"))
+    @Inject(method = "aiStep", at = @At("HEAD"))
     private void randomperks$stopLandSprint(CallbackInfo ci) {
-        ClientPlayerEntity player = (ClientPlayerEntity) (Object) this;
+        LocalPlayer player = (LocalPlayer) (Object) this;
         if (!player.isSprinting()) return;
-        if (player.isTouchingWater() || player.getAbilities().flying) return;
+        if (player.isInWater() || player.getAbilities().flying) return;
         if (!ClientPerkFlags.has(PERK_ID)) return;
         player.setSprinting(false);
     }

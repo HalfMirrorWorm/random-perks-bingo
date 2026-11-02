@@ -1,9 +1,9 @@
 package com.randomperks.client.compat
 
-import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
-import net.minecraft.world.World
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.world.level.Level
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
@@ -37,13 +37,13 @@ object CompassSearchCompat {
     // ---- 自然罗盘 (生物群系) ----
 
     fun addBiomePinyinMatches(
-        world: World?,
-        searchField: TextFieldWidget?,
+        world: Level?,
+        searchField: EditBox?,
         allowed: List<*>?,
         matching: List<*>?,
     ) {
         if (world == null || searchField == null || allowed == null || matching == null) return
-        val query = searchField.text.trim().lowercase()
+        val query = searchField.value.trim().lowercase()
         if (!isPlainQuery(query)) return
         val target = matching as? MutableList<Any?> ?: return
 
@@ -58,7 +58,7 @@ object CompassSearchCompat {
         appendSorted(target, added)
     }
 
-    private fun biomeDisplayName(world: World, biome: Any): String? {
+    private fun biomeDisplayName(world: Level, biome: Any): String? {
         if (biomeNameMethod == null && !biomeNameFailed) {
             biomeNameMethod = findStatic(
                 "com.chaosthedude.naturescompass.utils.BiomeUtils",
@@ -77,12 +77,12 @@ object CompassSearchCompat {
     }
 
     /** `biome.<namespace>.<path>` 的本地化名称 (显示名退化成 id 时用它兜底) */
-    private fun localizedBiomeName(world: World, biome: Any): String? {
+    private fun localizedBiomeName(world: Level, biome: Any): String? {
         val id = biomeIdentifier(world, biome) ?: return null
-        return Text.translatable("biome.${id.namespace}.${id.path}").string
+        return Component.translatable("biome.${id.namespace}.${id.path}").string
     }
 
-    private fun biomeIdentifier(world: World, biome: Any): Identifier? {
+    private fun biomeIdentifier(world: Level, biome: Any): Identifier? {
         if (biomeIdMethod == null && !biomeIdFailed) {
             biomeIdMethod = findStatic(
                 "com.chaosthedude.naturescompass.utils.BiomeUtils",
@@ -133,7 +133,7 @@ object CompassSearchCompat {
         }
         val field = ecSearchField ?: return null
         return try {
-            (field.get(screen) as? TextFieldWidget)?.text
+            (field.get(screen) as? EditBox)?.value
         } catch (t: Throwable) {
             ecSearchFieldFailed = true
             null
@@ -161,7 +161,7 @@ object CompassSearchCompat {
     /** `structure.<namespace>.<path>` 的本地化名称 (未翻译的结构显示的是 id) */
     private fun localizedStructureName(id: Any): String? {
         val identifier = id as? Identifier ?: return null
-        return Text.translatable("structure.${identifier.namespace}.${identifier.path}").string
+        return Component.translatable("structure.${identifier.namespace}.${identifier.path}").string
     }
 
     // ---- 公共 ----

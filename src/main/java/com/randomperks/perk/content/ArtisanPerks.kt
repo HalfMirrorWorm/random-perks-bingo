@@ -13,25 +13,24 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import com.randomperks.state.PerkStateManager
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.PotionContentsComponent
-import net.minecraft.enchantment.Enchantment
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.enchantment.Enchantments
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.potion.Potions
-import net.minecraft.item.Items
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.tag.EnchantmentTags
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.alchemy.PotionContents
+import net.minecraft.world.item.enchantment.Enchantment
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.ai.attributes.AttributeModifier
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.alchemy.Potions
+import net.minecraft.world.item.Items
+import net.minecraft.core.registries.Registries
+import net.minecraft.tags.EnchantmentTags
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import java.util.UUID
 
 /**
@@ -64,7 +63,7 @@ object ArtisanPerks {
             PerkEffects.enchant(ctx.player, pickaxe, Enchantments.EFFICIENCY, 2)
             // 只剩 60 点耐久: ItemStack 只存"已损耗值"(damage), 所以要写成 上限 - 剩余
             // (铁镐上限 250 → 已损耗 190; 铁砧/经验修补修一下即可恢复满耐久)
-            pickaxe.damage = pickaxe.maxDamage - REMAINING_DURABILITY
+            pickaxe.damageValue = pickaxe.maxDamage - REMAINING_DURABILITY
             PerkEffects.giveStack(ctx.player, pickaxe)
         }
 
@@ -109,21 +108,21 @@ object ArtisanPerks {
             grant(ctx)
         }
 
-        private fun now(ctx: PerkContext): Long = ctx.player.server?.ticks?.toLong() ?: 0L
+        private fun now(ctx: PerkContext): Long = ctx.player.level().getServer().tickCount.toLong()
 
         /** 随机一本**满级**附魔书: 从整个附魔注册表里抽 (宝藏附魔也在其中), 一律按该附魔的
          *  {@code max_level} 发放。诅咒不算"满级或宝藏", 排除掉。 */
         private fun grant(ctx: PerkContext) {
-            val registry = ctx.player.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
+            val registry = ctx.player.level().getServer().registryAccess().lookupOrThrow(Registries.ENCHANTMENT) ?: return
 
-            val candidates = registry.entrySet
-                .map { registry.getEntry(it.value) }
-                .filter { !it.isIn(EnchantmentTags.CURSE) }
+            val candidates = registry.entrySet()
+                .map { registry.wrapAsHolder(it.value) }
+                .filter { !it.`is`(EnchantmentTags.CURSE) }
             if (candidates.isEmpty()) return
 
             val entry = candidates[ctx.player.random.nextInt(candidates.size)]
             val book = ItemStack(Items.ENCHANTED_BOOK)
-            book.addEnchantment(entry, entry.value().definition().maxLevel())
+            book.enchant(entry, entry.value().definition().maxLevel())
             PerkEffects.giveStack(ctx.player, book)
         }
     }
@@ -157,14 +156,14 @@ object ArtisanPerks {
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             if (!hasAnyItem(player)) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.quick_enchant_no_item"), true)
+                player.sendSystemMessage(Component.translatable("random-perks-bingo.message.quick_enchant_no_item"), true)
                 return
             }
             PerkNetworking.sendEquipmentPickOpen(player, PURPOSE)
         }
 
         /** 客户端在物品选择器里选中了一件东西 → 给它一个随机满级附魔 */
-        fun handlePick(player: ServerPlayerEntity, key: String) {
+        fun handlePick(player: ServerPlayer, key: String) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
@@ -175,54 +174,54 @@ object ArtisanPerks {
             val stack = stackAt(player, key) ?: return
             if (stack.isEmpty) return
 
-            val registry = player.server?.registryManager?.getOrThrow(RegistryKeys.ENCHANTMENT) ?: return
+            val registry = player.level().getServer().registryAccess().lookupOrThrow(Registries.ENCHANTMENT) ?: return
 
             // 已有附魔既不能重复给, 也不能给和它互斥的 —— 原版的互斥组只允许留一个
             // (比如"锋利"和"亡灵杀手"), 硬塞进去会得到一个原版不可能出现的组合。
-            val existing = EnchantmentHelper.getEnchantments(stack).enchantments
-            val candidates = registry.entrySet
-                .map { registry.getEntry(it.value) }
+            val existing = stack.enchantments.keySet()
+            val candidates = registry.entrySet()
+                .map { registry.wrapAsHolder(it.value) }
                 .filter { it.value().isSupportedItem(stack) }
                 .filter { !existing.contains(it) }
-                .filter { candidate -> existing.all { Enchantment.canBeCombined(candidate, it) } }
+                .filter { candidate -> existing.all { Enchantment.areCompatible(candidate, it) } }
             if (candidates.isEmpty()) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.quick_enchant_none"), true)
+                player.sendSystemMessage(Component.translatable("random-perks-bingo.message.quick_enchant_none"), true)
                 return
             }
 
             val picked = candidates[player.random.nextInt(candidates.size)]
             val level = picked.value().definition().maxLevel()
-            stack.addEnchantment(picked, level)
+            stack.enchant(picked, level)
 
             // 改的是物品栏里已有的 stack (引用没变), 不会自动触发同步 —— 手动推一次
-            player.playerScreenHandler.syncState()
+            player.inventoryMenu.sendAllDataToRemote()
             state.markUsed(id)
 
-            player.sendMessage(
-                Text.translatable(
+            player.sendSystemMessage(
+                Component.translatable(
                     "random-perks-bingo.message.quick_enchant_done",
-                    stack.name,
-                    Enchantment.getName(picked, level),
+                    stack.hoverName,
+                    Enchantment.getFullname(picked, level),
                 ),
                 false,
             )
         }
 
         /** 身上有没有任何可以附魔的东西 (装备槽 + 整个物品栏) */
-        private fun hasAnyItem(player: ServerPlayerEntity): Boolean {
-            if (EQUIP_SLOTS.any { !player.getEquippedStack(it).isEmpty }) return true
-            return (0 until player.inventory.size()).any { !player.inventory.getStack(it).isEmpty }
+        private fun hasAnyItem(player: ServerPlayer): Boolean {
+            if (EQUIP_SLOTS.any { !player.getItemBySlot(it).isEmpty }) return true
+            return (0 until player.inventory.containerSize).any { !player.inventory.getItem(it).isEmpty }
         }
 
         /** 把客户端回传的 key 解析成一件真实存在的物品; 越界 / 名字不认识一律返回 null */
-        private fun stackAt(player: ServerPlayerEntity, key: String): ItemStack? {
+        private fun stackAt(player: ServerPlayer, key: String): ItemStack? {
             if (key.startsWith(INV_PREFIX)) {
                 val index = key.removePrefix(INV_PREFIX).toIntOrNull() ?: return null
-                if (index !in 0 until player.inventory.size()) return null
-                return player.inventory.getStack(index)
+                if (index !in 0 until player.inventory.containerSize) return null
+                return player.inventory.getItem(index)
             }
             val slot = EQUIP_SLOTS.firstOrNull { it.getName() == key } ?: return null
-            return player.getEquippedStack(slot)
+            return player.getItemBySlot(slot)
         }
     }
 
@@ -247,20 +246,20 @@ object ArtisanPerks {
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.ARMOR_STAND)
 
-        private val MOD_BLOCK = Identifier.of("random-perks-bingo", "long_arms_block")
-        private val MOD_ENTITY = Identifier.of("random-perks-bingo", "long_arms_entity")
+        private val MOD_BLOCK = Identifier.fromNamespaceAndPath("random-perks-bingo", "long_arms_block")
+        private val MOD_ENTITY = Identifier.fromNamespaceAndPath("random-perks-bingo", "long_arms_entity")
 
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
 
         private fun apply(ctx: PerkContext) {
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.BLOCK_INTERACTION_RANGE, MOD_BLOCK, 4.0)
-            PerkEffects.setAttribute(ctx.player, EntityAttributes.ENTITY_INTERACTION_RANGE, MOD_ENTITY, 4.0)
+            PerkEffects.setAttribute(ctx.player, Attributes.BLOCK_INTERACTION_RANGE, MOD_BLOCK, 4.0)
+            PerkEffects.setAttribute(ctx.player, Attributes.ENTITY_INTERACTION_RANGE, MOD_ENTITY, 4.0)
         }
 
         override fun onRemove(ctx: PerkContext) {
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.BLOCK_INTERACTION_RANGE, MOD_BLOCK)
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.ENTITY_INTERACTION_RANGE, MOD_ENTITY)
+            PerkEffects.removeAttribute(ctx.player, Attributes.BLOCK_INTERACTION_RANGE, MOD_BLOCK)
+            PerkEffects.removeAttribute(ctx.player, Attributes.ENTITY_INTERACTION_RANGE, MOD_ENTITY)
         }
     }
 
@@ -293,24 +292,24 @@ object ArtisanPerks {
 
         /** 随机负面效果池 (等级 I) */
         private val DEBUFFS = listOf(
-            StatusEffects.SLOWNESS,
-            StatusEffects.MINING_FATIGUE,
-            StatusEffects.NAUSEA,
-            StatusEffects.BLINDNESS,
-            StatusEffects.HUNGER,
-            StatusEffects.WEAKNESS,
-            StatusEffects.POISON,
-            StatusEffects.WITHER,
-            StatusEffects.LEVITATION,
-            StatusEffects.DARKNESS,
-            StatusEffects.UNLUCK,
+            MobEffects.SLOWNESS,
+            MobEffects.MINING_FATIGUE,
+            MobEffects.NAUSEA,
+            MobEffects.BLINDNESS,
+            MobEffects.HUNGER,
+            MobEffects.WEAKNESS,
+            MobEffects.POISON,
+            MobEffects.WITHER,
+            MobEffects.LEVITATION,
+            MobEffects.DARKNESS,
+            MobEffects.UNLUCK,
         )
 
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
-                player.sendMessage(Text.translatable("random-perks-bingo.message.poisoner_no_target"), true)
+                player.sendSystemMessage(Component.translatable("random-perks-bingo.message.poisoner_no_target"), true)
                 return
             }
             PerkNetworking.sendActionTargets(
@@ -321,7 +320,7 @@ object ArtisanPerks {
         }
 
         /** 客户端在选择器里选中了一名玩家 → 给他灌一瓶随机毒药 */
-        fun handleTargetPick(player: ServerPlayerEntity, uuid: UUID) {
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
             if (!PerkSession.isEnabled()) return
 
             val state = PerkStateManager.get(player.uuid) ?: return
@@ -332,23 +331,23 @@ object ArtisanPerks {
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
 
             val effect = DEBUFFS[target.random.nextInt(DEBUFFS.size)]
-            target.addStatusEffect(StatusEffectInstance(effect, DURATION_TICKS, 0))
+            target.addEffect(MobEffectInstance(effect, DURATION_TICKS, 0))
             state.markUsed(id)
 
-            val effectName = Text.translatable(effect.value().translationKey)
-            player.sendMessage(
-                Text.translatable("random-perks-bingo.message.poisoner_applied", target.name, effectName),
+            val effectName = Component.translatable(effect.value().descriptionId)
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.poisoner_applied", target.name, effectName),
                 false,
             )
-            target.sendMessage(
-                Text.translatable("random-perks-bingo.message.poisoner_received", effectName),
+            target.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.poisoner_received", effectName),
                 true,
             )
         }
 
         /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
-        private fun candidates(player: ServerPlayerEntity): List<ServerPlayerEntity> =
-            player.server?.playerManager?.playerList?.filter { !it.isSpectator } ?: emptyList()
+        private fun candidates(player: ServerPlayer): List<ServerPlayer> =
+            player.level().getServer().playerList.players.filter { !it.isSpectator }
     }
 
     /** 紫 · 匠造: **百宝箱** —— 随机开出 **1~5 件**盔甲或工具 (材质上限钻石, 白板不附魔) */
@@ -435,21 +434,21 @@ object ArtisanPerks {
             val axe = ItemStack(Items.GOLDEN_AXE)
             PerkEffects.enchant(ctx.player, axe, Enchantments.SHARPNESS, SHARPNESS_LEVEL)
             // 只有 1 点耐久: 攻击一次由原版耐久结算自动损坏
-            axe.damage = axe.maxDamage - 1
+            axe.damageValue = axe.maxDamage - 1
             // ★ 工作惩罚直接拉满: 铁砧成本一上来就 ≥ 40 级 → 永久"过于昂贵", 修不了也合不了。
             //   这是原版组件, 不显示在 tooltip 上, 也不需要额外 mixin。
-            axe.set(DataComponentTypes.REPAIR_COST, 40)
+            axe.set(DataComponents.REPAIR_COST, 40)
             PerkEffects.giveStack(ctx.player, axe)
 
             // 代价: 永久虚弱 I
-            PerkEffects.permanentEffect(ctx.player, StatusEffects.WEAKNESS, 0)
+            PerkEffects.permanentEffect(ctx.player, MobEffects.WEAKNESS, 0)
         }
 
         override fun onRespawn(ctx: PerkContext) =
-            PerkEffects.permanentEffect(ctx.player, StatusEffects.WEAKNESS, 0)
+            PerkEffects.permanentEffect(ctx.player, MobEffects.WEAKNESS, 0)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeEffect(ctx.player, StatusEffects.WEAKNESS)
+            PerkEffects.removeEffect(ctx.player, MobEffects.WEAKNESS)
     }
 
     /** 绿 · 匠造: **点石成金** —— 右键镶金黑石, 把它变成金块 (交互见 MidasTouchService) */
@@ -466,7 +465,7 @@ object ArtisanPerks {
         override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() =
-            PotionContentsComponent.createStack(Items.SPLASH_POTION, Potions.TURTLE_MASTER)
+            PotionContents.createItemStack(Items.SPLASH_POTION, Potions.TURTLE_MASTER)
 
         private const val COUNT = 3
 
@@ -474,7 +473,7 @@ object ArtisanPerks {
             repeat(COUNT) {
                 PerkEffects.giveStack(
                     ctx.player,
-                    PotionContentsComponent.createStack(Items.SPLASH_POTION, Potions.TURTLE_MASTER),
+                    PotionContents.createItemStack(Items.SPLASH_POTION, Potions.TURTLE_MASTER),
                 )
             }
         }
@@ -487,7 +486,7 @@ object ArtisanPerks {
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE)
 
-        private val MOD_HEALTH = Identifier.of("random-perks-bingo", "trimmed_armor_health")
+        private val MOD_HEALTH = Identifier.fromNamespaceAndPath("random-perks-bingo", "trimmed_armor_health")
 
         private val ARMOR_SLOTS = arrayOf(
             EquipmentSlot.HEAD,
@@ -507,24 +506,24 @@ object ArtisanPerks {
 
         private fun refresh(ctx: PerkContext) {
             val trimmed = ARMOR_SLOTS.count { slot ->
-                ctx.player.getEquippedStack(slot).get(DataComponentTypes.TRIM) != null
+                ctx.player.getItemBySlot(slot).get(DataComponents.TRIM) != null
             }
 
             if (trimmed == 0) {
-                PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_HEALTH)
+                PerkEffects.removeAttribute(ctx.player, Attributes.MAX_HEALTH, MOD_HEALTH)
             } else {
                 PerkEffects.setAttribute(
                     ctx.player,
-                    EntityAttributes.MAX_HEALTH,
+                    Attributes.MAX_HEALTH,
                     MOD_HEALTH,
                     HEALTH_PER_PIECE * trimmed,
-                    EntityAttributeModifier.Operation.ADD_VALUE,
+                    AttributeModifier.Operation.ADD_VALUE,
                 )
             }
         }
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, EntityAttributes.MAX_HEALTH, MOD_HEALTH)
+            PerkEffects.removeAttribute(ctx.player, Attributes.MAX_HEALTH, MOD_HEALTH)
     }
 
     /** 金 · 匠造: **不痛不痒** —— 最终伤害在 2~5 点时改为只受 1 点 (由 SmallDamageGuardMixin 实现) */

@@ -1,66 +1,76 @@
 package com.randomperks.client
 
 import com.randomperks.client.net.ClientPerkNetworking
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.client.option.KeyBinding
-import net.minecraft.client.util.InputUtil
-import org.lwjgl.glfw.GLFW
+import net.minecraft.client.KeyMapping
+import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.resources.Identifier
 
 object Keybinds {
 
-    private const val CATEGORY = "category.random-perks-bingo"
+    /** GLFW 键码。26.3 的客户端编译路径不再暴露 lwjgl，直接用键值。 */
+    private const val KEY_X = 88
+    private const val KEY_V = 86
+    private const val KEY_K = 75
 
-    lateinit var openChoices: KeyBinding
+    /**
+     * 分类翻译键是 key.category.<命名空间>.<路径>，即 key.category.random-perks-bingo.main。
+     */
+    private val CATEGORY = KeyMapping.Category.register(
+        Identifier.fromNamespaceAndPath("random-perks-bingo", "main"),
+    )
+
+    lateinit var openChoices: KeyMapping
         private set
 
-    lateinit var openPerkList: KeyBinding
+    lateinit var openPerkList: KeyMapping
         private set
 
-    lateinit var openCatalog: KeyBinding
+    lateinit var openCatalog: KeyMapping
         private set
 
     fun register() {
-        openChoices = KeyBindingHelper.registerKeyBinding(
-            KeyBinding(
+        openChoices = KeyMappingHelper.registerKeyMapping(
+            KeyMapping(
                 "key.random-perks-bingo.open_choices",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_X,
+                InputConstants.Type.KEYBOARD,
+                KEY_X,
                 CATEGORY,
             )
         )
 
-        openPerkList = KeyBindingHelper.registerKeyBinding(
-            KeyBinding(
+        openPerkList = KeyMappingHelper.registerKeyMapping(
+            KeyMapping(
                 "key.random-perks-bingo.open_perk_list",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_V,
+                InputConstants.Type.KEYBOARD,
+                KEY_V,
                 CATEGORY,
             )
         )
 
-        openCatalog = KeyBindingHelper.registerKeyBinding(
-            KeyBinding(
+        openCatalog = KeyMappingHelper.registerKeyMapping(
+            KeyMapping(
                 "key.random-perks-bingo.open_catalog",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_K,
+                InputConstants.Type.KEYBOARD,
+                KEY_K,
                 CATEGORY,
             )
         )
 
         ClientTickEvents.END_CLIENT_TICK.register { client ->
-            while (openChoices.wasPressed()) {
-                if (client.currentScreen == null && ClientPerkNetworking.pendingChoices > 0) {
+            while (openChoices.consumeClick()) {
+                if (client.gui.screen() == null && ClientPerkNetworking.pendingChoices > 0) {
                     ClientPerkNetworking.requestOffer()
                 }
             }
-            while (openPerkList.wasPressed()) {
-                if (client.currentScreen == null) {
+            while (openPerkList.consumeClick()) {
+                if (client.gui.screen() == null) {
                     ClientPerkNetworking.requestPerkList()
                 }
             }
-            while (openCatalog.wasPressed()) {
-                if (client.currentScreen == null) {
+            while (openCatalog.consumeClick()) {
+                if (client.gui.screen() == null) {
                     ClientPerkNetworking.requestCatalog()
                 }
             }

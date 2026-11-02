@@ -34,8 +34,8 @@ public final class BingoHook {
         if (team == null || objective == null) return;
 
         List<UUID> members = new ArrayList<>();
-        for (PlayerProfile profile : team.getPlayers()) {
-            members.add(profile.getUuid());
+        for (BingoTeam.Player member : team.getPlayers()) {
+            members.add(member.getUuid());
         }
 
         RandomPerksHooks.INSTANCE.onTeamScored(

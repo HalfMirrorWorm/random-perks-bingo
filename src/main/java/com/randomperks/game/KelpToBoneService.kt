@@ -1,14 +1,14 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
-import net.minecraft.block.Block
-import net.minecraft.block.Blocks
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.util.ActionResult
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.InteractionResult
+import net.minecraft.core.BlockPos
 
 /**
  * "海带成骨" —— 右键**干海带块**把它变成骨块。
@@ -20,20 +20,20 @@ object KelpToBoneService {
 
     const val PERK_ID = "harvest_kelp_to_bone"
 
-    fun handleUse(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos): ActionResult {
-        if (!PerkSession.isEnabled()) return ActionResult.PASS
+    fun handleUse(player: ServerPlayer, world: ServerLevel, pos: BlockPos): InteractionResult {
+        if (!PerkSession.isEnabled()) return InteractionResult.PASS
 
-        val state = PerkStateManager.get(player.uuid) ?: return ActionResult.PASS
-        if (!state.hasPerk(PERK_ID)) return ActionResult.PASS
-        if (!world.getBlockState(pos).isOf(Blocks.DRIED_KELP_BLOCK)) return ActionResult.PASS
+        val state = PerkStateManager.get(player.uuid) ?: return InteractionResult.PASS
+        if (!state.hasPerk(PERK_ID)) return InteractionResult.PASS
+        if (!world.getBlockState(pos).`is`(Blocks.DRIED_KELP_BLOCK)) return InteractionResult.PASS
 
-        world.setBlockState(pos, Blocks.BONE_BLOCK.defaultState, Block.NOTIFY_ALL)
+        world.setBlock(pos, Blocks.BONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL)
         world.playSound(
             null, pos,
-            SoundEvents.BLOCK_BONE_BLOCK_PLACE,
-            SoundCategory.BLOCKS,
+            SoundEvents.BONE_BLOCK_PLACE,
+            SoundSource.BLOCKS,
             0.8f, 1.0f,
         )
-        return ActionResult.SUCCESS
+        return InteractionResult.SUCCESS
     }
 }

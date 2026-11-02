@@ -1,18 +1,18 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.thrown.EggEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SpawnEggItem;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.phys.EntityHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,40 +26,40 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <ul>
  *   <li>玩家不会被收服 (否则就是 PvP 秒杀技能了);</li>
  *   <li>三大 Boss (末影龙/凋灵/监守者) 排除; 其余"没有刷怪蛋"的生物由
- *       {@link SpawnEggItem#forEntity} 返回 null 自然挡掉;</li>
+ *       {@link SpawnEggItem#byId} 返回 null 自然挡掉;</li>
  *   <li>用 {@code discard()} 而不是 {@code kill()}, 所以不会走原版掉落表。</li>
  * </ul>
  */
-@Mixin(EggEntity.class)
+@Mixin(ThrownEgg.class)
 public class PokemonEggMixin {
 
-    @Inject(method = "onEntityHit", at = @At("TAIL"))
+    @Inject(method = "onHitEntity", at = @At("TAIL"))
     private void randomperks$capture(EntityHitResult result, CallbackInfo ci) {
-        EggEntity self = (EggEntity) (Object) this;
-        if (!(self.getWorld() instanceof ServerWorld world)) return;
+        ThrownEgg self = (ThrownEgg) (Object) this;
+        if (!(self.level() instanceof ServerLevel world)) return;
 
         Entity owner = self.getOwner();
-        if (!(owner instanceof ServerPlayerEntity player)) return;
+        if (!(owner instanceof ServerPlayer player)) return;
         if (!PerkBoostQuery.INSTANCE.hasPokemon(player)) return;
 
         Entity target = result.getEntity();
         if (!(target instanceof LivingEntity living)) return;
-        if (living instanceof PlayerEntity) return;
+        if (living instanceof Player) return;
         if (isBoss(living)) return;
 
         // 没有刷怪蛋的生物 (末影龙之外还有不少) 无法收服
-        SpawnEggItem egg = SpawnEggItem.forEntity(living.getType());
-        if (egg == null) return;
+        var egg = SpawnEggItem.byId(living.getType());
+        if (egg.isEmpty()) return;
 
         // 先掉蛋再移除 (dropStack 需要实体还活着才能拿到位置)
-        living.dropStack(world, new ItemStack(egg));
+        living.spawnAtLocation(world, new ItemStack(egg.get().value()));
         living.discard();
     }
 
     /** 原版没有 BOSSES 标签, 手动列三大 Boss */
     private static boolean isBoss(LivingEntity entity) {
-        return entity instanceof EnderDragonEntity
-                || entity instanceof WitherEntity
-                || entity instanceof WardenEntity;
+        return entity instanceof EnderDragon
+                || entity instanceof WitherBoss
+                || entity instanceof Warden;
     }
 }

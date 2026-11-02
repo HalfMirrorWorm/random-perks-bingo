@@ -14,8 +14,8 @@ import com.randomperks.perk.content.SummonPerks
 import com.randomperks.perk.content.SwiftPerks
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.minecraft.item.ItemStack
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.server.level.ServerPlayer
 
 /**
  * 服务端网络层: 注册 payload 与接收器。
@@ -24,39 +24,39 @@ object PerkNetworking {
 
     /** 必须在 mod 初始化时调用 (PayloadTypeRegistry 只在启动期可注册) */
     fun registerServer() {
-        PayloadTypeRegistry.playS2C().register(PerkNotifyS2C.ID, PerkNotifyS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(PerkOfferS2C.ID, PerkOfferS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(PerkListS2C.ID, PerkListS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(PerkCatalogS2C.ID, PerkCatalogS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(PerkAbilitySyncS2C.ID, PerkAbilitySyncS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(GlowMarkS2C.ID, GlowMarkS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(WaterBucketTotemS2C.ID, WaterBucketTotemS2C.CODEC)
-        PayloadTypeRegistry.playC2S().register(PerkRequestC2S.ID, PerkRequestC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(PerkActivateC2S.ID, PerkActivateC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(DoubleJumpC2S.ID, DoubleJumpC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(DashC2S.ID, DashC2S.CODEC)
-        PayloadTypeRegistry.playS2C().register(StealOpenS2C.ID, StealOpenS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(ItemSelectOpenS2C.ID, ItemSelectOpenS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(StealTargetsS2C.ID, StealTargetsS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(ActionTargetsS2C.ID, ActionTargetsS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(EquipmentPickOpenS2C.ID, EquipmentPickOpenS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(DualTargetsS2C.ID, DualTargetsS2C.CODEC)
-        PayloadTypeRegistry.playC2S().register(StealRequestC2S.ID, StealRequestC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(StealPickC2S.ID, StealPickC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(ItemSelectC2S.ID, ItemSelectC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(StealTargetPickC2S.ID, StealTargetPickC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(EquipmentPickC2S.ID, EquipmentPickC2S.CODEC)
-        PayloadTypeRegistry.playC2S().register(DualTargetPickC2S.ID, DualTargetPickC2S.CODEC)
-        PayloadTypeRegistry.playS2C().register(MorphS2C.ID, MorphS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(SoulOutS2C.ID, SoulOutS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(WeatherSelectS2C.ID, WeatherSelectS2C.CODEC)
-        PayloadTypeRegistry.playS2C().register(RecapOpenS2C.ID, RecapOpenS2C.CODEC)
-        PayloadTypeRegistry.playC2S().register(WeatherPickC2S.ID, WeatherPickC2S.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(PerkNotifyS2C.ID, PerkNotifyS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(PerkOfferS2C.ID, PerkOfferS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(PerkListS2C.ID, PerkListS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(PerkCatalogS2C.ID, PerkCatalogS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(PerkAbilitySyncS2C.ID, PerkAbilitySyncS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(GlowMarkS2C.ID, GlowMarkS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(WaterBucketTotemS2C.ID, WaterBucketTotemS2C.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(PerkRequestC2S.ID, PerkRequestC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(PerkActivateC2S.ID, PerkActivateC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(DoubleJumpC2S.ID, DoubleJumpC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(DashC2S.ID, DashC2S.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(StealOpenS2C.ID, StealOpenS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(ItemSelectOpenS2C.ID, ItemSelectOpenS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(StealTargetsS2C.ID, StealTargetsS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(ActionTargetsS2C.ID, ActionTargetsS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(EquipmentPickOpenS2C.ID, EquipmentPickOpenS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(DualTargetsS2C.ID, DualTargetsS2C.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(StealRequestC2S.ID, StealRequestC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(StealPickC2S.ID, StealPickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(ItemSelectC2S.ID, ItemSelectC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(StealTargetPickC2S.ID, StealTargetPickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(ActionTargetPickC2S.ID, ActionTargetPickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(EquipmentPickC2S.ID, EquipmentPickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(DualTargetPickC2S.ID, DualTargetPickC2S.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(MorphS2C.ID, MorphS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(BigSnowballS2C.ID, BigSnowballS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(SoulOutS2C.ID, SoulOutS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(WeatherSelectS2C.ID, WeatherSelectS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(RecapOpenS2C.ID, RecapOpenS2C.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(WeatherPickC2S.ID, WeatherPickC2S.CODEC)
 
         ServerPlayNetworking.registerGlobalReceiver(PerkRequestC2S.ID) { _, context ->
             val player = context.player()
@@ -180,56 +180,56 @@ object PerkNetworking {
     }
 
     /** 通知玩家当前待选机会数 (客户端未安装本 mod 时静默跳过) */
-    fun sendNotify(player: ServerPlayerEntity, pendingCount: Int) {
+    fun sendNotify(player: ServerPlayer, pendingCount: Int) {
         if (!ServerPlayNetworking.canSend(player, PerkNotifyS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkNotifyS2C(pendingCount)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send notify: {}", it.toString()) }
     }
 
     /** 下发三选一候选 */
-    fun sendOffer(player: ServerPlayerEntity, options: List<PerkOptionData>) {
+    fun sendOffer(player: ServerPlayer, options: List<PerkOptionData>) {
         if (!ServerPlayNetworking.canSend(player, PerkOfferS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkOfferS2C(options)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send offer: {}", it.toString()) }
     }
 
     /** 下发所有在线玩家的词条列表 */
-    fun sendPerkList(player: ServerPlayerEntity, pendingCount: Int, players: List<PlayerPerkList>) {
+    fun sendPerkList(player: ServerPlayer, pendingCount: Int, players: List<PlayerPerkList>) {
         if (!ServerPlayNetworking.canSend(player, PerkListS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkListS2C(pendingCount, players)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send perk list: {}", it.toString()) }
     }
 
     /** 下发词条百科 (全部词条 + 已收集 id) */
-    fun sendCatalog(player: ServerPlayerEntity, ownedIds: List<String>, allPerks: List<PerkOptionData>) {
+    fun sendCatalog(player: ServerPlayer, ownedIds: List<String>, allPerks: List<PerkOptionData>) {
         if (!ServerPlayNetworking.canSend(player, PerkCatalogS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkCatalogS2C(ownedIds, allPerks)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send catalog: {}", it.toString()) }
     }
 
     /** 同步玩家的词条能力列表 (客户端用于启用矿透/偷窃等能力) */
-    fun sendAbilitySync(player: ServerPlayerEntity, perkIds: List<String>) {
+    fun sendAbilitySync(player: ServerPlayer, perkIds: List<String>) {
         if (!ServerPlayNetworking.canSend(player, PerkAbilitySyncS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkAbilitySyncS2C(perkIds)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send ability sync: {}", it.toString()) }
     }
 
     /** 下发上局回顾 (JSON 串, 由 RecapService 序列化) */
-    fun sendRecap(player: ServerPlayerEntity, json: String) {
+    fun sendRecap(player: ServerPlayer, json: String) {
         if (!ServerPlayNetworking.canSend(player, RecapOpenS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, RecapOpenS2C(json)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send recap: {}", it.toString()) }
     }
 
     /** 下发天气选择器 (词条「世界一直下雨」) */
-    fun sendWeatherSelect(player: ServerPlayerEntity) {
+    fun sendWeatherSelect(player: ServerPlayer) {
         if (!ServerPlayNetworking.canSend(player, WeatherSelectS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, WeatherSelectS2C()) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send weather select: {}", it.toString()) }
     }
 
     /** 下发偷窃目标信息与背包内容 */
-    fun sendStealOpen(player: ServerPlayerEntity, targetName: String, items: List<ItemStack>) {
+    fun sendStealOpen(player: ServerPlayer, targetName: String, items: List<ItemStack>) {
         if (!ServerPlayNetworking.canSend(player, StealOpenS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, StealOpenS2C(targetName, items)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send steal open: {}", it.toString()) }
@@ -237,7 +237,7 @@ object PerkNetworking {
 
     /** 下发"从自己背包挑选若干格物品"的界面数据 */
     fun sendItemSelectOpen(
-        player: ServerPlayerEntity,
+        player: ServerPlayer,
         purpose: String,
         items: List<ItemStack>,
         count: Int,
@@ -248,58 +248,58 @@ object PerkNetworking {
     }
 
     /** 下发"顺手牵羊"的候选目标列表 (客户端据此打开玩家选择器) */
-    fun sendStealTargets(player: ServerPlayerEntity, targets: List<PlayerTargetEntry>) {
+    fun sendStealTargets(player: ServerPlayer, targets: List<PlayerTargetEntry>) {
         if (!ServerPlayNetworking.canSend(player, StealTargetsS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, StealTargetsS2C(targets)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send steal targets: {}", it.toString()) }
     }
 
     /** 下发"选一名玩家后立即生效"类词条的候选列表 (purpose 区分词条: lightning / nuke) */
-    fun sendActionTargets(player: ServerPlayerEntity, purpose: String, targets: List<PlayerTargetEntry>) {
+    fun sendActionTargets(player: ServerPlayer, purpose: String, targets: List<PlayerTargetEntry>) {
         if (!ServerPlayNetworking.canSend(player, ActionTargetsS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, ActionTargetsS2C(purpose, targets)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send action targets: {}", it.toString()) }
     }
 
     /** 让客户端把指定实体显示为发光标记 (仅发给同队玩家) */
-    fun sendEquipmentPickOpen(player: ServerPlayerEntity, purpose: String) {
+    fun sendEquipmentPickOpen(player: ServerPlayer, purpose: String) {
         if (!ServerPlayNetworking.canSend(player, EquipmentPickOpenS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, EquipmentPickOpenS2C(purpose)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send equipment pick open: {}", it.toString()) }
     }
 
-    fun sendDualTargets(player: ServerPlayerEntity, purpose: String, targets: List<PlayerTargetEntry>) {
+    fun sendDualTargets(player: ServerPlayer, purpose: String, targets: List<PlayerTargetEntry>) {
         if (!ServerPlayNetworking.canSend(player, DualTargetsS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, DualTargetsS2C(purpose, targets)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send dual targets: {}", it.toString()) }
     }
 
-    fun sendGlowMark(player: ServerPlayerEntity, entityIds: List<Int>, durationMillis: Long) {
+    fun sendGlowMark(player: ServerPlayer, entityIds: List<Int>, durationMillis: Long) {
         if (!ServerPlayNetworking.canSend(player, GlowMarkS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, GlowMarkS2C(entityIds, durationMillis)) }
     }
 
     /** 通知客户端某个投掷物是"大雪球" (commandTag 不同步给客户端, 所以只能单独发) */
-    fun sendBigSnowball(player: ServerPlayerEntity, payload: BigSnowballS2C) {
+    fun sendBigSnowball(player: ServerPlayer, payload: BigSnowballS2C) {
         if (!ServerPlayNetworking.canSend(player, BigSnowballS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, payload) }
     }
 
     /** 同步某个玩家是否处于"变猪"状态 ("变群友") */
-    fun sendMorph(player: ServerPlayerEntity, payload: MorphS2C) {
+    fun sendMorph(player: ServerPlayer, payload: MorphS2C) {
         if (!ServerPlayNetworking.canSend(player, MorphS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, payload) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send morph: {}", it.toString()) }
     }
 
     /** 通知客户端播放"水桶演出" ("落地，水"救命的图腾式动画) */
-    fun sendWaterBucketTotem(player: ServerPlayerEntity) {
+    fun sendWaterBucketTotem(player: ServerPlayer) {
         if (!ServerPlayNetworking.canSend(player, WaterBucketTotemS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, WaterBucketTotemS2C()) }
     }
 
     /** 同步"灵魂出窍"状态 (客户端据此开启/关闭灵魂相机) */
-    fun sendSoulOut(player: ServerPlayerEntity, active: Boolean) {
+    fun sendSoulOut(player: ServerPlayer, active: Boolean) {
         if (!ServerPlayNetworking.canSend(player, SoulOutS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, SoulOutS2C(active)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send soul out: {}", it.toString()) }

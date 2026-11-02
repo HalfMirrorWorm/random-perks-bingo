@@ -4,21 +4,21 @@ import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
-import net.minecraft.block.ShulkerBoxBlock
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.ContainerComponent
-import net.minecraft.inventory.SimpleInventory
-import net.minecraft.item.BlockItem
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.screen.GenericContainerScreenHandler
-import net.minecraft.screen.ScreenHandler
-import net.minecraft.screen.ShulkerBoxScreenHandler
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
+import net.minecraft.world.level.block.ShulkerBoxBlock
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.component.ItemContainerContents
+import net.minecraft.world.SimpleContainer
+import net.minecraft.world.item.BlockItem
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.inventory.ChestMenu
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.inventory.ShulkerBoxMenu
+import net.minecraft.world.SimpleMenuProvider
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionHand
 import java.util.UUID
 
 /**
@@ -40,9 +40,9 @@ object ContainerOpenService {
 
     /** 正在开着的潜影盒会话: 玩家 → (界面, 物品, 临时库存) */
     private class ShulkerSession(
-        val handler: ScreenHandler,
+        val handler: AbstractContainerMenu,
         val stack: ItemStack,
-        val inventory: SimpleInventory,
+        val inventory: SimpleContainer,
     )
 
     private val sessions = mutableMapOf<UUID, ShulkerSession>()
@@ -50,28 +50,28 @@ object ContainerOpenService {
     fun register() {
         // 右键方块: 拦住"放置方块", 改为打开
         UseBlockCallback.EVENT.register { player, _, hand, _ ->
-            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
-            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
-            if (tryOpen(player)) ActionResult.SUCCESS else ActionResult.PASS
+            if (hand != InteractionHand.MAIN_HAND) return@register InteractionResult.PASS
+            if (player !is ServerPlayer) return@register InteractionResult.PASS
+            if (tryOpen(player)) InteractionResult.SUCCESS else InteractionResult.PASS
         }
 
         // 右键空气
         UseItemCallback.EVENT.register { player, _, hand ->
-            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
-            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
-            if (tryOpen(player)) ActionResult.SUCCESS else ActionResult.PASS
+            if (hand != InteractionHand.MAIN_HAND) return@register InteractionResult.PASS
+            if (player !is ServerPlayer) return@register InteractionResult.PASS
+            if (tryOpen(player)) InteractionResult.SUCCESS else InteractionResult.PASS
         }
 
         // 潜影盒界面关闭后把内容写回物品
         ServerTickEvents.END_SERVER_TICK.register { server ->
             if (sessions.isEmpty()) return@register
             for ((uuid, session) in sessions.toList()) {
-                val player = server.playerManager.getPlayer(uuid)
+                val player = server.playerList.getPlayer(uuid)
                 if (player == null) {
                     sessions.remove(uuid)
                     continue
                 }
-                if (player.currentScreenHandler !== session.handler) {
+                if (player.containerMenu !== session.handler) {
                     syncBack(session)
                     sessions.remove(uuid)
                 }
@@ -79,27 +79,27 @@ object ContainerOpenService {
         }
     }
 
-    private fun tryOpen(player: ServerPlayerEntity): Boolean {
+    private fun tryOpen(player: ServerPlayer): Boolean {
         if (!PerkSession.isEnabled()) return false
 
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk(PERK_ID)) return false
 
         // 潜行右键保留原版"放置方块"的行为
-        if (player.isSneaking) return false
+        if (player.isShiftKeyDown) return false
 
-        val stack = player.getStackInHand(Hand.MAIN_HAND)
+        val stack = player.getItemInHand(InteractionHand.MAIN_HAND)
         if (stack.isEmpty) return false
 
-        if (stack.isOf(Items.ENDER_CHEST)) {
-            player.openHandledScreen(
-                SimpleNamedScreenHandlerFactory(
+        if (stack.`is`(Items.ENDER_CHEST)) {
+            player.openMenu(
+                SimpleMenuProvider(
                     { syncId, playerInventory, _ ->
-                        GenericContainerScreenHandler.createGeneric9x3(
+                        ChestMenu.threeRows(
                             syncId, playerInventory, player.enderChestInventory,
                         )
                     },
-                    Text.translatable("block.minecraft.ender_chest"),
+                    Component.translatable("block.minecraft.ender_chest"),
                 ),
             )
             return true
@@ -113,29 +113,29 @@ object ContainerOpenService {
         return false
     }
 
-    private fun openShulker(player: ServerPlayerEntity, stack: ItemStack) {
-        val inventory = SimpleInventory(SHULKER_SLOTS)
-        stack.get(DataComponentTypes.CONTAINER)?.copyTo(inventory.heldStacks)
+    private fun openShulker(player: ServerPlayer, stack: ItemStack) {
+        val inventory = SimpleContainer(SHULKER_SLOTS)
+        stack.get(DataComponents.CONTAINER)?.copyInto(inventory.items)
 
-        val name = stack.name.copy()
+        val name = stack.hoverName.copy()
         sessions.remove(player.uuid)
-        player.openHandledScreen(
-            SimpleNamedScreenHandlerFactory(
+        player.openMenu(
+            SimpleMenuProvider(
                 { syncId, playerInventory, _ ->
-                    ShulkerBoxScreenHandler(syncId, playerInventory, inventory)
+                    ShulkerBoxMenu(syncId, playerInventory, inventory)
                 },
                 name,
             ),
         )
-        sessions[player.uuid] = ShulkerSession(player.currentScreenHandler, stack, inventory)
+        sessions[player.uuid] = ShulkerSession(player.containerMenu, stack, inventory)
     }
 
     /** 把临时库存写回物品的 CONTAINER 组件 */
     private fun syncBack(session: ShulkerSession) {
         if (session.stack.isEmpty) return
-        val stacks = session.inventory.heldStacks.map {
+        val stacks = session.inventory.items.map {
             if (it.isEmpty) ItemStack.EMPTY else it.copy()
         }
-        session.stack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(stacks))
+        session.stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(stacks))
     }
 }

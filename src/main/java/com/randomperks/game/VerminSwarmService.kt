@@ -1,11 +1,12 @@
 package com.randomperks.game
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.SpawnReason
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.EntityTypes
+import net.minecraft.world.entity.EntitySpawnReason
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.core.BlockPos
 import java.util.UUID
 
 /**
@@ -32,7 +33,7 @@ object VerminSwarmService {
     fun register() {
         ServerTickEvents.END_SERVER_TICK.register { server ->
             if (active.isEmpty()) return@register
-            val now = server.ticks.toLong()
+            val now = server.tickCount.toLong()
 
             for ((uuid, swarm) in active.toList()) {
                 if (now >= swarm.endTick) {
@@ -40,7 +41,7 @@ object VerminSwarmService {
                     continue
                 }
                 // 玩家掉线就停掉 (重新上线不恢复, 避免"离线期间攒一堆")
-                val player = server.playerManager.getPlayer(uuid) ?: run {
+                val player = server.playerList.getPlayer(uuid) ?: run {
                     active.remove(uuid)
                     null
                 } ?: continue
@@ -53,25 +54,25 @@ object VerminSwarmService {
     }
 
     /** 让 [target] 被蠹虫缠上 (重复施加会重置持续时间与计时) */
-    fun start(target: ServerPlayerEntity) {
-        val server = target.server ?: return
-        val now = server.ticks.toLong()
+    fun start(target: ServerPlayer) {
+        val server = target.level().getServer()
+        val now = server.tickCount.toLong()
         active[target.uuid] = Swarm(now + DURATION_TICKS, now)
     }
 
     /** 对局结束 / 重置时清理 */
     fun clear() = active.clear()
 
-    private fun spawnVermin(player: ServerPlayerEntity) {
-        val world = player.world as? ServerWorld ?: return
-        val pos = findSpawnPos(world, player.blockPos) ?: return
+    private fun spawnVermin(player: ServerPlayer) {
+        val world = player.level() as? ServerLevel ?: return
+        val pos = findSpawnPos(world, player.blockPosition()) ?: return
 
-        val vermin = EntityType.SILVERFISH.create(world, SpawnReason.EVENT) ?: return
-        vermin.refreshPositionAndAngles(
+        val vermin = EntityTypes.SILVERFISH.create(world, EntitySpawnReason.EVENT) ?: return
+        vermin.snapTo(
             pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5,
             world.random.nextFloat() * 360f, 0f,
         )
-        world.spawnEntity(vermin)
+        world.addFreshEntity(vermin)
     }
 
     /**
@@ -80,17 +81,17 @@ object VerminSwarmService {
      * 不用 getTopPosition —— 那样在洞穴/矿洞里会一路找到地表, 蠹虫会刷到头顶几百格之外。
      * 改为以玩家所在高度为基准上下各扫几格, 地面与洞穴都能覆盖。
      */
-    private fun findSpawnPos(world: ServerWorld, center: BlockPos): BlockPos? {
+    private fun findSpawnPos(world: ServerLevel, center: BlockPos): BlockPos? {
         val random = world.random
         for (attempt in 0 until 24) {
             val dx = random.nextInt(RADIUS * 2 + 1) - RADIUS
             val dz = random.nextInt(RADIUS * 2 + 1) - RADIUS
 
             for (dy in 2 downTo -2) {
-                val pos = center.add(dx, dy, dz)
+                val pos = center.offset(dx, dy, dz)
                 if (!world.getBlockState(pos).isAir) continue
-                val below = pos.down()
-                if (world.getBlockState(below).isSolidBlock(world, below)) return pos
+                val below = pos.below()
+                if (world.getBlockState(below).isCollisionShapeFullBlock(world, below)) return pos
             }
         }
         return null

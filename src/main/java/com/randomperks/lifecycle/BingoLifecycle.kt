@@ -67,7 +67,7 @@ object BingoLifecycle {
         }
 
         val server = ServerHolder.server ?: return
-        val players = server.playerManager.playerList
+        val players = server.playerList.players
         if (players.isEmpty()) {
             RewindService.startGame()
             return
@@ -77,8 +77,8 @@ object BingoLifecycle {
         val granted = PerkGrantService.grantOffer(players)
         if (granted) {
             for (player in players) {
-                player.sendMessage(
-                    net.minecraft.text.Text.translatable("random-perks-bingo.message.game_started"),
+                player.sendSystemMessage(
+                    net.minecraft.network.chat.Component.translatable("random-perks-bingo.message.game_started"),
                     false,
                 )
             }
@@ -104,7 +104,7 @@ object BingoLifecycle {
         val server = ServerHolder.server
         if (server != null) {
             for (state in PerkStateManager.all()) {
-                val player = server.playerManager.getPlayer(state.uuid) ?: continue
+                val player = server.playerList.getPlayer(state.uuid) ?: continue
                 val ctx = PerkContext(player, state)
                 // 先从列表移除再逐个 onRemove —— 与命令/偷窃路径的约定一致:
                 // onRemove 里的装备操作会同步触发"装备变化→词条回调"分发, 若此时词条仍在
@@ -121,6 +121,6 @@ object BingoLifecycle {
         RandomPerksMod.logger.info("[RandomPerks] perk state cleared")
 
         // 清空后同步能力状态 (客户端关闭矿透等)
-        server?.playerManager?.playerList?.forEach { PerkGrantService.syncAbilities(it) }
+        server?.playerList?.players?.forEach { PerkGrantService.syncAbilities(it) }
     }
 }

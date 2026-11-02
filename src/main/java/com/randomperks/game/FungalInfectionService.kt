@@ -1,10 +1,10 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.server.level.ServerPlayer
 
 /**
  * "苔藓侵蚀" ——
@@ -48,18 +48,18 @@ object FungalInfectionService {
         Items.GLOW_LICHEN,
     )
 
-    fun handleAttack(attacker: ServerPlayerEntity, victim: ServerPlayerEntity) {
+    fun handleAttack(attacker: ServerPlayer, victim: ServerPlayer) {
         if (!PerkSession.isEnabled()) return
         if (attacker.uuid == victim.uuid) return
         if (!PerkBoostQuery.hasFungalInfection(attacker)) return
         if (victim.isSpectator) return
 
         // 同队不感染 (未分队时视为敌方)
-        val team = attacker.scoreboardTeam?.name
-        if (team != null && victim.scoreboardTeam?.name == team) return
+        val team = attacker.team?.name
+        if (team != null && victim.team?.name == team) return
 
         val state = PerkStateManager.get(attacker.uuid) ?: return
-        val now = attacker.server?.ticks?.toLong() ?: return
+        val now = attacker.level().getServer().tickCount.toLong()
         if (now < (state.cooldowns[PERK_ID] ?: 0L)) return
 
         if (infect(victim)) {
@@ -68,37 +68,37 @@ object FungalInfectionService {
     }
 
     /** 自身感染: 把背包里 (不含快捷栏) 随机 1 格物品变成繁茂洞穴物品 */
-    fun corruptOwnBackpack(player: ServerPlayerEntity): Boolean {
+    fun corruptOwnBackpack(player: ServerPlayer): Boolean {
         if (!PerkSession.isEnabled()) return false
 
         val inventory = player.inventory
         val candidates = (HOTBAR_SIZE until MAIN_INVENTORY_SIZE)
-            .filter { !inventory.getStack(it).isEmpty }
+            .filter { !inventory.getItem(it).isEmpty }
         if (candidates.isEmpty()) return false
 
         val slot = candidates[player.random.nextInt(candidates.size)]
-        val original = inventory.getStack(slot)
+        val original = inventory.getItem(slot)
         val replacement = LUSH_ITEMS[player.random.nextInt(LUSH_ITEMS.size)]
-        inventory.setStack(slot, ItemStack(replacement, original.count))
-        inventory.markDirty()
+        inventory.setItem(slot, ItemStack(replacement, original.count))
+        inventory.setChanged()
         return true
     }
 
-    private fun infect(victim: ServerPlayerEntity): Boolean {
+    private fun infect(victim: ServerPlayer): Boolean {
         val inventory = victim.inventory
         val candidates = (0 until MAIN_INVENTORY_SIZE)
-            .filter { !inventory.getStack(it).isEmpty }
+            .filter { !inventory.getItem(it).isEmpty }
             .toMutableList()
         if (candidates.isEmpty()) return false
 
         repeat(minOf(SLOT_COUNT, candidates.size)) {
             val slot = candidates.removeAt(victim.random.nextInt(candidates.size))
-            val original = inventory.getStack(slot)
+            val original = inventory.getItem(slot)
             val replacement = LUSH_ITEMS[victim.random.nextInt(LUSH_ITEMS.size)]
             // 保持原堆叠数量 (数量本来就被原版限制在物品上限内)
-            inventory.setStack(slot, ItemStack(replacement, original.count))
+            inventory.setItem(slot, ItemStack(replacement, original.count))
         }
-        inventory.markDirty()
+        inventory.setChanged()
         return true
     }
 }

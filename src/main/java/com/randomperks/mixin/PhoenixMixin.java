@@ -1,11 +1,11 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,14 +26,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PhoenixMixin {
 
     @Inject(
-            method = "damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z",
+            method = "hurtServer(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z",
             at = @At("HEAD"),
             cancellable = true
     )
-    private void randomperks$phoenixFireImmunity(ServerWorld world, DamageSource source, float amount,
+    private void randomperks$phoenixFireImmunity(ServerLevel world, DamageSource source, float amount,
                                                  CallbackInfoReturnable<Boolean> cir) {
-        if (!((Object) this instanceof ServerPlayerEntity player)) return;
-        if (!source.isIn(DamageTypeTags.IS_FIRE)) return;
+        if (!((Object) this instanceof ServerPlayer player)) return;
+        if (!source.is(DamageTypeTags.IS_FIRE)) return;
         if (!PerkBoostQuery.INSTANCE.hasPhoenix(player)) return;
 
         cir.setReturnValue(false);

@@ -14,21 +14,21 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
-import net.minecraft.block.BlockState
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.math.BlockPos
-import net.minecraft.enchantment.Enchantments
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.registry.Registries
-import net.minecraft.registry.tag.BlockTags
-import net.minecraft.registry.tag.ItemTags
-import net.minecraft.util.Identifier
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.core.BlockPos
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.tags.BlockTags
+import net.minecraft.tags.ItemTags
+import net.minecraft.resources.Identifier
 
 /**
  * 丰饶 HARVEST —— 作物 / 树木 / 动物。
@@ -58,11 +58,11 @@ object HarvestPerks {
 
             val player = ctx.player
             for (slot in EQUIPMENT_SLOTS) {
-                val stack = player.getEquippedStack(slot)
-                if (stack.isEmpty || !stack.isDamageable) continue
-                val damage = stack.damage
+                val stack = player.getItemBySlot(slot)
+                if (stack.isEmpty || !stack.isDamageableItem) continue
+                val damage = stack.damageValue
                 if (damage <= 0) continue
-                stack.damage = (damage - 10).coerceAtLeast(0)
+                stack.damageValue = (damage - 10).coerceAtLeast(0)
             }
         }
     }
@@ -116,7 +116,7 @@ object HarvestPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             PerkEffects.giveStack(ctx.player, ItemStack(Items.SHEARS))
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.WHITE_WOOL, 32))
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.WOOL.white(), 32))
         }
     }
 
@@ -138,25 +138,25 @@ object HarvestPerks {
             Items.STRIPPED_CRIMSON_STEM, Items.STRIPPED_WARPED_STEM,
         )
 
-        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.util.math.BlockPos, blockState: net.minecraft.block.BlockState) {
-            if (!blockState.isIn(net.minecraft.registry.tag.BlockTags.LOGS)) return
+        override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.core.BlockPos, blockState: net.minecraft.world.level.block.state.BlockState) {
+            if (!blockState.`is`(net.minecraft.tags.BlockTags.LOGS)) return
 
             // 只认未去皮的。原版没有 stripped_logs 标签 (LOGS 把去皮和未去皮混在一起),
             // 所以直接看注册名有没有 stripped_ 前缀 —— 原木/木头/菌柄/菌核全都能覆盖。
             val chopped = blockState.block.asItem()
-            val choppedId = net.minecraft.registry.Registries.ITEM.getId(chopped)
+            val choppedId = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(chopped)
             if (choppedId.path.startsWith("stripped_")) return
 
             if (ctx.player.random.nextFloat() >= CHANCE) return
 
-            val world = ctx.player.world as? ServerWorld ?: return
+            val world = ctx.player.level() as? ServerLevel ?: return
             // 排除"被砍这一种"的去皮版本 (oak_log → stripped_oak_log), 剩下的里随机挑一种
-            val ownStripped = net.minecraft.registry.Registries.ITEM.get(
-                net.minecraft.util.Identifier.of(choppedId.namespace, "stripped_" + choppedId.path),
+            val ownStripped = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(
+                net.minecraft.resources.Identifier.fromNamespaceAndPath(choppedId.namespace, "stripped_" + choppedId.path),
             )
             val candidates = STRIPPED_LOGS.filter { it != ownStripped }
             val drop = candidates[ctx.player.random.nextInt(candidates.size)]
-            net.minecraft.block.Block.dropStack(world, pos, ItemStack(drop))
+            net.minecraft.world.level.block.Block.popResource(world, pos, ItemStack(drop))
         }
     }
 
@@ -179,10 +179,10 @@ object HarvestPerks {
 
         override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
             val player = ctx.player
-            val tool = player.mainHandStack
-            if (!tool.isIn(ItemTags.AXES)) return
-            if (!blockState.isIn(BlockTags.LOGS)) return
-            val world = player.world as? ServerWorld ?: return
+            val tool = player.mainHandItem
+            if (!tool.`is`(ItemTags.AXES)) return
+            if (!blockState.`is`(BlockTags.LOGS)) return
+            val world = player.level() as? ServerLevel ?: return
 
             val logBlock = blockState.block
             val visited = HashSet<BlockPos>()
@@ -194,19 +194,19 @@ object HarvestPerks {
             while (queue.isNotEmpty() && broken < MAX_LOGS) {
                 val cur = queue.removeFirst()
                 for ((dx, dy, dz) in NEIGHBORS) {
-                    val next = cur.add(dx, dy, dz)
+                    val next = cur.offset(dx, dy, dz)
                     if (!visited.add(next)) continue
 
                     val nextState = world.getBlockState(next)
                     if (nextState.block !== logBlock) continue
                     if (tool.isEmpty) return
 
-                    if (!world.breakBlock(next, false, player)) continue
+                    if (!world.destroyBlock(next, false, player)) continue
                     if (!player.isCreative) {
                         // 额外原木的掉落统一生成在主原木位置, 与主掉落堆在一起
                         PerkEffects.spawnBlockDrops(player, world, pos, nextState)
-                        nextState.onStacksDropped(world, next, tool, true)
-                        tool.damage(1, player, EquipmentSlot.MAINHAND)
+                        nextState.spawnAfterBreak(world, next, tool, true)
+                        tool.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
                     }
 
                     broken++
@@ -247,11 +247,11 @@ object HarvestPerks {
          *  饱和 7t(蒲公英/蓝兰花) / 抗火 60t(绒球葱) / 夜视 100t(虞美人/火把花)
          *  / 跳跃提升 100t(矢车菊) / 生命恢复 140t(滨菊); 原版并没有"统一 6 秒"这回事。 */
         private val STEW_EFFECTS = listOf(
-            StatusEffects.SATURATION to 7,
-            StatusEffects.FIRE_RESISTANCE to 60,
-            StatusEffects.NIGHT_VISION to 100,
-            StatusEffects.JUMP_BOOST to 100,
-            StatusEffects.REGENERATION to 140,
+            MobEffects.SATURATION to 7,
+            MobEffects.FIRE_RESISTANCE to 60,
+            MobEffects.NIGHT_VISION to 100,
+            MobEffects.JUMP_BOOST to 100,
+            MobEffects.REGENERATION to 140,
         )
 
         /** 时长倍率: 表格里存的是原版数值, 实际发放时统一乘这个数 */
@@ -261,8 +261,8 @@ object HarvestPerks {
             val player = ctx.player
             val (effect, duration) = STEW_EFFECTS[player.random.nextInt(STEW_EFFECTS.size)]
             // 显示方式与原版炖菜略有出入: 不显示粒子 (保留图标) —— 避免与"回满"瞬间的视觉叠加
-            player.addStatusEffect(
-                StatusEffectInstance(effect, duration * DURATION_MULTIPLIER, 0, true, false, true),
+            player.addEffect(
+                MobEffectInstance(effect, duration * DURATION_MULTIPLIER, 0, true, false, true),
             )
         }
     }
@@ -283,8 +283,8 @@ object HarvestPerks {
         override fun icon() = ItemStack(Items.EGG)
 
         override fun onAcquire(ctx: PerkContext) {
-            val eggs = Registries.ITEM
-                .filter { Registries.ITEM.getId(it).path.endsWith("_spawn_egg") }
+            val eggs = BuiltInRegistries.ITEM
+                .filter { BuiltInRegistries.ITEM.getKey(it).path.endsWith("_spawn_egg") }
                 .shuffled()
                 .take(4)
             eggs.forEach { PerkEffects.giveStack(ctx.player, ItemStack(it)) }
@@ -309,9 +309,9 @@ object HarvestPerks {
 
         override fun onTick(ctx: PerkContext) {
             val player = ctx.player
-            if (!player.isTouchingWater) return
+            if (!player.isInWater) return
 
-            val now = player.server?.ticks?.toLong() ?: return
+            val now = player.level().getServer().tickCount.toLong()
             if (now < (ctx.state.cooldowns[id] ?: 0L)) return
             ctx.state.cooldowns[id] = now + FISH_INTERVAL_TICKS
             PerkEffects.giveStack(player, ItemStack(FISHES[player.random.nextInt(FISHES.size)]))
@@ -330,43 +330,43 @@ object HarvestPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.level() as? ServerLevel ?: return
 
-            val horse = net.minecraft.entity.passive.HorseEntity(net.minecraft.entity.EntityType.HORSE, world)
+            val horse = net.minecraft.world.entity.animal.equine.Horse(net.minecraft.world.entity.EntityTypes.HORSE, world)
             // 位置 + 朝向都跟随玩家 (原版生成走 refreshPositionAndAngles)
-            horse.refreshPositionAndAngles(player.x, player.y, player.z, player.yaw, player.pitch)
+            horse.snapTo(player.x, player.y, player.z, player.yRot, player.xRot)
             horse.setOwner(player)
             // ★ 仅 setOwner 不会设置驯服标志 (Tame 是独立的 horseFlag 位):
             // 未驯服的马在原版会拒绝打开装备界面 (AbstractHorseEntity.openInventory 的 isTame 检查),
             // 表现为"骑着马按 E 没反应", 鞍也取不下来
-            horse.setTame(true)
-            horse.equipStack(net.minecraft.entity.EquipmentSlot.SADDLE, ItemStack(Items.SADDLE))
-            horse.addCommandTag(TAG)
-            horse.setPersistent()
+            horse.setTamed(true)
+            horse.setItemSlot(net.minecraft.world.entity.EquipmentSlot.SADDLE, ItemStack(Items.SADDLE))
+            horse.addTag(TAG)
+            horse.setPersistenceRequired()
             // ★ 必须走一遍原版生成初始化: 随机花色 + 随机属性
             // (15~30 血 / 0.4~1.0 跳跃力 / 0.1125~0.3375 速度)。
             // 原版把这两件事都放在 initialize → AbstractHorseEntity.initialize → initAttributes(random),
             // 而 initAttributes 只被 initialize 调用 (构造函数不调) —— 漏掉的话马会停在注册表默认值
             // (53 血 / 0.7 跳跃 / 0.225 速度 / 固定花色), 比自然生成的马强一倍以上且永远同款。
             // 参数与 /summon 完全同构 (SpawnReason.COMMAND 也传 null entityData)。
-            horse.initialize(
+            horse.finalizeSpawn(
                 world,
-                world.getLocalDifficulty(horse.blockPos),
-                net.minecraft.entity.SpawnReason.MOB_SUMMONED,
+                world.getCurrentDifficultyAt(horse.blockPosition()),
+                net.minecraft.world.entity.EntitySpawnReason.MOB_SUMMONED,
                 null,
             )
             // ★ 属性覆盖: initialize 随机出的值一律换成固定档 —— 血量 50 (超出原版 15~30),
             // 跳跃力与移动速度都取原版上限 (0.4~1.0 / 0.1125~0.3375), 即"属性全满的马"。
             // 必须放在 initialize **之后** (initialize 会重写这些属性); 血量还要同步补满 ——
             // 只提高属性上限不会回血, 否则马身上仍是随机出的初始血量。
-            horse.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.MAX_HEALTH)
+            horse.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH)
                 ?.baseValue = HORSE_HEALTH
-            horse.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.JUMP_STRENGTH)
+            horse.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH)
                 ?.baseValue = HORSE_JUMP
-            horse.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.MOVEMENT_SPEED)
+            horse.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)
                 ?.baseValue = HORSE_SPEED
             horse.health = HORSE_HEALTH.toFloat()
-            world.spawnEntity(horse)
+            world.addFreshEntity(horse)
         }
 
         /** 召唤马的固定属性: 血量 50 (超原版上限 30), 跳跃力/速度取原版上限 */
@@ -403,10 +403,10 @@ object HarvestPerks {
             Items.STRING to 10,
         )
 
-        override fun onKill(ctx: PerkContext, victim: net.minecraft.entity.LivingEntity) {
-            if (victim !is net.minecraft.entity.passive.CatEntity) return
-            val world = ctx.player.world as? ServerWorld ?: return
-            victim.dropStack(world, ItemStack(Items.STRING, 3))
+        override fun onKill(ctx: PerkContext, victim: net.minecraft.world.entity.LivingEntity) {
+            if (victim !is net.minecraft.world.entity.animal.feline.Cat) return
+            val world = ctx.player.level() as? ServerLevel ?: return
+            victim.spawnAtLocation(world, ItemStack(Items.STRING, 3))
 
             // 额外掉落 1 件猫的礼物 (幻翼膜高概率)
             val total = GIFT_ITEMS.sumOf { it.second }
@@ -414,7 +414,7 @@ object HarvestPerks {
             for ((item, weight) in GIFT_ITEMS) {
                 roll -= weight
                 if (roll < 0) {
-                    victim.dropStack(world, ItemStack(item))
+                    victim.spawnAtLocation(world, ItemStack(item))
                     return
                 }
             }
@@ -438,32 +438,32 @@ object HarvestPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.level() as? ServerLevel ?: return
 
             repeat(DOG_COUNT) { index ->
-                val wolf = net.minecraft.entity.passive.WolfEntity(
-                    net.minecraft.entity.EntityType.WOLF, world,
+                val wolf = net.minecraft.world.entity.animal.wolf.Wolf(
+                    net.minecraft.world.entity.EntityTypes.WOLF, world,
                 )
                 // 两只狗分列玩家左右, 朝向与玩家一致
                 val offset = if (index == 0) -1.0 else 1.0
-                wolf.refreshPositionAndAngles(
+                wolf.snapTo(
                     player.x + offset, player.y, player.z,
-                    player.yaw, player.pitch,
+                    player.yRot, player.xRot,
                 )
                 wolf.setOwner(player)
                 // ★ setTamed(true, true) 的第二个参数会让它顺便把属性改写成"驯服狼"的默认值
                 //   (20 血), 所以属性覆盖必须放在它**之后** —— 否则会被这一句覆盖掉。
-                wolf.setTamed(true, true)
-                wolf.setPersistent()
+                wolf.setTame(true, true)
+                wolf.setPersistenceRequired()
 
-                wolf.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.MAX_HEALTH)
+                wolf.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH)
                     ?.baseValue = DOG_HEALTH
-                wolf.getAttributeInstance(net.minecraft.entity.attribute.EntityAttributes.ATTACK_DAMAGE)
+                wolf.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
                     ?.baseValue = DOG_ATTACK
                 // 只提高上限不会回血, 要手动补满 (否则狗身上仍是驯服时的 20 血)
                 wolf.health = DOG_HEALTH.toFloat()
 
-                world.spawnEntity(wolf)
+                world.addFreshEntity(wolf)
             }
         }
     }
@@ -529,48 +529,43 @@ object HarvestPerks {
         override val id = "summon_happy_ghast"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SUMMON
-        override fun icon() = ItemStack(Items.WHITE_HARNESS)
+        override fun icon() = ItemStack(Items.HARNESS.white())
 
         override val isOneTime = true
         /** 16 色挽具, 随机挑一个 */
-        private val HARNESSES = listOf(
-            Items.WHITE_HARNESS, Items.ORANGE_HARNESS, Items.MAGENTA_HARNESS, Items.LIGHT_BLUE_HARNESS,
-            Items.YELLOW_HARNESS, Items.LIME_HARNESS, Items.PINK_HARNESS, Items.GRAY_HARNESS,
-            Items.LIGHT_GRAY_HARNESS, Items.CYAN_HARNESS, Items.PURPLE_HARNESS, Items.BLUE_HARNESS,
-            Items.BROWN_HARNESS, Items.GREEN_HARNESS, Items.RED_HARNESS, Items.BLACK_HARNESS,
-        )
+        private val HARNESSES = Items.HARNESS.asList()
 
         /** 赠送的拴绳数量 */
         private const val LEAD_COUNT = 2
 
         override fun onActivate(ctx: PerkContext) {
             val player = ctx.player
-            val world = player.world as? ServerWorld ?: return
+            val world = player.level() as? ServerLevel ?: return
 
-            val ghast = net.minecraft.entity.passive.HappyGhastEntity(
-                net.minecraft.entity.EntityType.HAPPY_GHAST, world,
+            val ghast = net.minecraft.world.entity.animal.happyghast.HappyGhast(
+                net.minecraft.world.entity.EntityTypes.HAPPY_GHAST, world,
             )
             // 恶魂体积大, 生成在头顶两格避免卡进方块
-            ghast.refreshPositionAndAngles(
+            ghast.snapTo(
                 player.x, player.y + 2.0, player.z,
-                player.yaw, player.pitch,
+                player.yRot, player.xRot,
             )
-            ghast.equipStack(
-                net.minecraft.entity.EquipmentSlot.BODY,
+            ghast.setItemSlot(
+                net.minecraft.world.entity.EquipmentSlot.BODY,
                 ItemStack(HARNESSES[player.random.nextInt(HARNESSES.size)]),
             )
-            ghast.setPersistent()
+            ghast.setPersistenceRequired()
             // 永久速度 I: 快乐恶魂飞得慢, 给个常驻加速 (不显示粒子, 免得一直冒烟)
-            ghast.addStatusEffect(
-                StatusEffectInstance(
-                    StatusEffects.SPEED,
-                    StatusEffectInstance.INFINITE,
+            ghast.addEffect(
+                MobEffectInstance(
+                    MobEffects.SPEED,
+                    MobEffectInstance.INFINITE_DURATION,
                     0,
                     false,
                     false,
                 )
             )
-            world.spawnEntity(ghast)
+            world.addFreshEntity(ghast)
 
             PerkEffects.giveStack(player, ItemStack(Items.LEAD, LEAD_COUNT))
 
@@ -606,8 +601,8 @@ object HarvestPerks {
                 return
             }
             ctx.state.memory[TIMER_KEY] = "0"
-            ctx.player.addStatusEffect(
-                StatusEffectInstance(StatusEffects.SATURATION, EFFECT_TICKS, 0)
+            ctx.player.addEffect(
+                MobEffectInstance(MobEffects.SATURATION, EFFECT_TICKS, 0)
             )
         }
     }
@@ -618,7 +613,7 @@ object HarvestPerks {
         override val id = WeatherService.PERK_ID
         override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
-        override fun icon() = ItemStack(Items.LIGHTNING_ROD)
+        override fun icon() = ItemStack(Items.LIGHTNING_ROD.weathering().unaffected())
 
         override val isOneTime = true
 
@@ -636,11 +631,11 @@ object HarvestPerks {
         private const val HONEY_BOTTLE_COUNT = 8
 
         override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
-            if (!blockState.isIn(net.minecraft.registry.tag.BlockTags.BEEHIVES)) return
-            val world = ctx.player.world as? ServerWorld ?: return
+            if (!blockState.`is`(net.minecraft.tags.BlockTags.BEEHIVES)) return
+            val world = ctx.player.level() as? ServerLevel ?: return
 
-            net.minecraft.block.Block.dropStack(world, pos, ItemStack(Items.HONEYCOMB, HONEYCOMB_COUNT))
-            net.minecraft.block.Block.dropStack(world, pos, ItemStack(Items.HONEY_BOTTLE, HONEY_BOTTLE_COUNT))
+            net.minecraft.world.level.block.Block.popResource(world, pos, ItemStack(Items.HONEYCOMB, HONEYCOMB_COUNT))
+            net.minecraft.world.level.block.Block.popResource(world, pos, ItemStack(Items.HONEY_BOTTLE, HONEY_BOTTLE_COUNT))
         }
     }
 

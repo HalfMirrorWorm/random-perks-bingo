@@ -1,12 +1,12 @@
 package com.randomperks.game
 
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.NbtComponent
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.GlobalPos
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.component.CustomData
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.core.BlockPos
+import net.minecraft.core.GlobalPos
 
 /**
  * "千锤百炼" 给的那把损坏的铁砧: **只能用一次**。
@@ -23,23 +23,23 @@ object TemperingAnvilService {
 
     /** 给词条发放的铁砧物品打标记 */
     fun markItem(stack: ItemStack) {
-        val nbt = NbtCompound()
+        val nbt = CompoundTag()
         nbt.putBoolean(MARKER_KEY, true)
-        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt))
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt))
     }
 
     /** 物品是否带有"一次性铁砧"标记 */
     fun isMarked(stack: ItemStack): Boolean =
-        stack.get(DataComponentTypes.CUSTOM_DATA)?.contains(MARKER_KEY) == true
+        stack.get(DataComponents.CUSTOM_DATA)?.copyTag()?.contains(MARKER_KEY) == true
 
     /** 记录已放置的一次性铁砧 */
-    fun markPlaced(world: ServerWorld, pos: BlockPos) {
-        marked.add(GlobalPos.create(world.registryKey, pos.toImmutable()))
+    fun markPlaced(world: ServerLevel, pos: BlockPos) {
+        marked.add(GlobalPos.of(world.dimension(), pos.immutable()))
     }
 
     /** 消耗某个坐标的一次性标记 (返回是否是词条铁砧) */
-    fun consume(world: ServerWorld, pos: BlockPos): Boolean =
-        marked.remove(GlobalPos.create(world.registryKey, pos.toImmutable()))
+    fun consume(world: ServerLevel, pos: BlockPos): Boolean =
+        marked.remove(GlobalPos.of(world.dimension(), pos.immutable()))
 
     fun clear() = marked.clear()
 }

@@ -1,7 +1,7 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 /**
  * "珠光护手" —— 每次攻击都暴击。
  *
- * 原版的暴击判定是 {@code PlayerEntity.attack} 里一长串条件:
+ * 原版的暴击判定是 {@code Player.canCriticalAttack} 里一长串条件:
  * {@code fallDistance > 0 && !onGround && !isClimbing() && !isTouchingWater()
  *  && !hasStatusEffect(BLINDNESS) && !hasVehicle() && target instanceof LivingEntity
  *  && !isSprinting()}
@@ -25,62 +25,62 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  *
  * 没有拦截的两项: 失明 (本来就是削弱攻击的 debuff) 和骑乘 (骑在别人身上挥不了剑)。
  */
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public class PearlGauntletMixin {
 
     @Unique
     private boolean randomperks$forceCrit() {
-        return PerkBoostQuery.INSTANCE.hasPearlGauntlet((PlayerEntity) (Object) this);
+        return PerkBoostQuery.INSTANCE.hasPearlGauntlet((Player) (Object) this);
     }
 
     /** fallDistance > 0 */
     @Redirect(
-            method = "attack",
+            method = "canCriticalAttack",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;fallDistance:D",
+                    target = "Lnet/minecraft/world/entity/player/Player;fallDistance:D",
                     opcode = Opcodes.GETFIELD))
-    private double randomperks$critFallDistance(PlayerEntity player) {
+    private double randomperks$critFallDistance(Player player) {
         return randomperks$forceCrit() ? 1.0 : player.fallDistance;
     }
 
     /** !isOnGround() */
     @Redirect(
-            method = "attack",
+            method = "canCriticalAttack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;isOnGround()Z"))
-    private boolean randomperks$critOnGround(PlayerEntity player) {
-        return !randomperks$forceCrit() && player.isOnGround();
+                    target = "Lnet/minecraft/world/entity/player/Player;onGround()Z"))
+    private boolean randomperks$critOnGround(Player player) {
+        return !randomperks$forceCrit() && player.onGround();
     }
 
     /** !isClimbing() */
     @Redirect(
-            method = "attack",
+            method = "canCriticalAttack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;isClimbing()Z"))
-    private boolean randomperks$critClimbing(PlayerEntity player) {
-        return !randomperks$forceCrit() && player.isClimbing();
+                    target = "Lnet/minecraft/world/entity/player/Player;onClimbable()Z"))
+    private boolean randomperks$critClimbing(Player player) {
+        return !randomperks$forceCrit() && player.onClimbable();
     }
 
     /** !isTouchingWater() */
     @Redirect(
-            method = "attack",
+            method = "canCriticalAttack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;isTouchingWater()Z"))
-    private boolean randomperks$critTouchingWater(PlayerEntity player) {
-        return !randomperks$forceCrit() && player.isTouchingWater();
+                    target = "Lnet/minecraft/world/entity/player/Player;isInWater()Z"))
+    private boolean randomperks$critTouchingWater(Player player) {
+        return !randomperks$forceCrit() && player.isInWater();
     }
 
     /** !isSprinting() */
     @Redirect(
-            method = "attack",
+            method = "canCriticalAttack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;isSprinting()Z"))
-    private boolean randomperks$critSprinting(PlayerEntity player) {
+                    target = "Lnet/minecraft/world/entity/player/Player;isSprinting()Z"))
+    private boolean randomperks$critSprinting(Player player) {
         return !randomperks$forceCrit() && player.isSprinting();
     }
 }

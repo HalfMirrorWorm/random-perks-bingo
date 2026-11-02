@@ -1,18 +1,18 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
-import net.minecraft.entity.passive.ChickenEntity
-import net.minecraft.entity.passive.ChickenVariant
-import net.minecraft.entity.passive.ChickenVariants
-import net.minecraft.item.DyeItem
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.util.ActionResult
-import net.minecraft.util.DyeColor
-import net.minecraft.util.Hand
+import net.minecraft.world.entity.animal.chicken.Chicken
+import net.minecraft.world.entity.animal.chicken.ChickenVariant
+import net.minecraft.world.entity.animal.chicken.ChickenVariants
+import net.minecraft.core.component.DataComponents
+import net.minecraft.resources.ResourceKey
+import net.minecraft.core.registries.Registries
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.DyeColor
+import net.minecraft.world.InteractionHand
 
 /**
  * "叮咚鸡" —— 用染料右键**任意**鸡给它染色。
@@ -40,32 +40,32 @@ object ChickenDyeService {
     )
 
     /** 手持染料右键鸡时调用; 返回 PASS 表示"这不是我管的事", 交还原版 */
-    fun tryDye(player: ServerPlayerEntity, target: ChickenEntity, hand: Hand): ActionResult {
-        if (!PerkSession.isEnabled()) return ActionResult.PASS
-        if (hand != Hand.MAIN_HAND) return ActionResult.PASS
+    fun tryDye(player: ServerPlayer, target: Chicken, hand: InteractionHand): InteractionResult {
+        if (!PerkSession.isEnabled()) return InteractionResult.PASS
+        if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS
 
-        val state = PerkStateManager.get(player.uuid) ?: return ActionResult.PASS
-        if (!state.hasPerk(PERK_ID)) return ActionResult.PASS
+        val state = PerkStateManager.get(player.uuid) ?: return InteractionResult.PASS
+        if (!state.hasPerk(PERK_ID)) return InteractionResult.PASS
 
-        val stack = player.getStackInHand(hand)
-        val dye = stack.item as? DyeItem ?: return ActionResult.PASS
+        val stack = player.getItemInHand(hand)
+        val dyeColor = stack.get(DataComponents.DYE) ?: return InteractionResult.PASS
 
         // 剩下的白 / 浅灰 / 灰 / 黑落到温带鸡
-        val variantKey: RegistryKey<ChickenVariant> = when (dye.color) {
+        val variantKey: ResourceKey<ChickenVariant> = when (dyeColor) {
             in WARM_DYES -> ChickenVariants.WARM
             in COLD_DYES -> ChickenVariants.COLD
             else -> ChickenVariants.TEMPERATE
         }
 
-        val registry = player.server?.registryManager?.getOrThrow(RegistryKeys.CHICKEN_VARIANT)
-            ?: return ActionResult.PASS
+        val registry = player.level().getServer().registryAccess().lookupOrThrow(Registries.CHICKEN_VARIANT)
+            ?: return InteractionResult.PASS
         target.variant = registry.getOrThrow(variantKey)
 
-        if (!player.abilities.creativeMode) stack.decrement(1)
-        player.world.playSound(
+        if (!player.abilities.instabuild) stack.shrink(1)
+        player.level().playSound(
             null, target.x, target.y, target.z,
-            SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS, 1.0f, 1.0f,
+            SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0f, 1.0f,
         )
-        return ActionResult.SUCCESS
+        return InteractionResult.SUCCESS
     }
 }

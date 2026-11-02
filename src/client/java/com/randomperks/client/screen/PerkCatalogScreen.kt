@@ -1,10 +1,11 @@
 package com.randomperks.client.screen
 
+import net.minecraft.client.input.MouseButtonEvent
 import com.randomperks.network.PerkOptionData
 import com.randomperks.perk.PerkArchetype
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.network.chat.Component
 
 /**
  * 词条百科 (按键 K 打开)。
@@ -14,7 +15,7 @@ import net.minecraft.text.Text
 class PerkCatalogScreen(
     private val ownedIds: Set<String>,
     private val allPerks: List<PerkOptionData>,
-) : Screen(Text.translatable("random-perks-bingo.screen.catalog")) {
+) : Screen(Component.translatable("random-perks-bingo.screen.catalog")) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -73,18 +74,18 @@ class PerkCatalogScreen(
 
     private fun listBottom() = height - LIST_BOTTOM_MARGIN
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         // 不调 renderBackground, 避免 1.21.6+ 的二次 blur 崩溃
         context.fill(0, 0, width, height, DIM_BACKGROUND)
 
         // 右上角的排序切换 (默认 / 名称↑↓ / 等级↑↓)
-        sortBoxes = drawPerkSortButtons(context, textRenderer, width - 8, 6, sortState, mouseX, mouseY)
+        sortBoxes = drawPerkSortButtons(context, font, width - 8, 6, sortState, mouseX, mouseY)
 
         // 标题 + 收集进度
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 14, ScreenStyle.TEXT_NAME)
-        context.drawCenteredTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.catalog.progress", ownedIds.size, allPerks.size),
+        context.centeredText(font, title, width / 2, 14, ScreenStyle.TEXT_NAME)
+        context.centeredText(
+            font,
+            Component.translatable("random-perks-bingo.catalog.progress", ownedIds.size, allPerks.size),
             width / 2, 27, ScreenStyle.TEXT_HIGHLIGHT,
         )
 
@@ -105,19 +106,19 @@ class PerkCatalogScreen(
                 else -> TAB_BG
             })
             val label = if (archetype == null) {
-                Text.translatable("random-perks-bingo.catalog.all")
+                Component.translatable("random-perks-bingo.catalog.all")
             } else {
-                Text.translatable("random-perks-bingo.archetype.${archetype.id}")
+                Component.translatable("random-perks-bingo.archetype.${archetype.id}")
             }
-            context.drawCenteredTextWithShadow(
-                textRenderer, label, x + w / 2, y + 3,
+            context.centeredText(
+                font, label, x + w / 2, y + 3,
                 if (isSelected) ScreenStyle.TEXT_NAME else ScreenStyle.TEXT_DESC,
             )
         }
 
         val perks = filtered()
         if (perks.isEmpty()) {
-            super.render(context, mouseX, mouseY, delta)
+            super.extractRenderState(context, mouseX, mouseY, delta)
             return
         }
 
@@ -158,19 +159,19 @@ class PerkCatalogScreen(
         // 悬停描述
         if (hovered in perks.indices) {
             val perk = perks[hovered]
-            val lines = textRenderer.wrapLines(Text.translatable("random-perks-bingo.perk.${perk.id}.desc"), width - 100)
+            val lines = font.split(Component.translatable("random-perks-bingo.perk.${perk.id}.desc"), width - 100)
             var textY = height - 12 - lines.size * 10
             context.fill(30, textY - 5, width - 30, height - 5, 0xC0000000.toInt())
             for (line in lines) {
-                context.drawCenteredTextWithShadow(textRenderer, line, width / 2, textY, ScreenStyle.TEXT_DESC)
+                context.centeredText(font, line, width / 2, textY, ScreenStyle.TEXT_DESC)
                 textY += 10
             }
         }
 
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 
-    private fun drawCard(context: DrawContext, perk: PerkOptionData, x: Int, y: Int, isHovered: Boolean) {
+    private fun drawCard(context: GuiGraphicsExtractor, perk: PerkOptionData, x: Int, y: Int, isHovered: Boolean) {
         val owned = perk.id in ownedIds
         val displayColor = ScreenStyle.rarityDisplayColor(perk.rarityOrdinal)
         val archetype = ScreenStyle.archetype(perk.archetypeOrdinal)
@@ -185,19 +186,19 @@ class PerkCatalogScreen(
         }
 
         // 图标 (未获得盖半透明黑)
-        context.drawItem(perk.icon, x + 7, y + 5)
+        context.item(perk.icon, x + 7, y + 5)
         if (!owned) context.fill(x + 7, y + 5, x + 23, y + 21, LOCKED_OVERLAY)
 
         // 名称 + 流派
-        context.drawTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.perk.${perk.id}.name"),
+        context.text(
+            font,
+            Component.translatable("random-perks-bingo.perk.${perk.id}.name"),
             x + 27, y + 5,
             if (owned) displayColor else LOCKED_NAME,
         )
-        context.drawTextWithShadow(
-            textRenderer,
-            Text.translatable("random-perks-bingo.archetype.${archetype.id}"),
+        context.text(
+            font,
+            Component.translatable("random-perks-bingo.archetype.${archetype.id}"),
             x + 27, y + 15,
             if (owned) ScreenStyle.TEXT_DIM else LOCKED_SUB,
         )
@@ -207,7 +208,10 @@ class PerkCatalogScreen(
     private fun dim(color: Int): Int =
         (color and 0xFF000000.toInt()) or ((color and 0x00FEFEFE.toInt()) shr 1)
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        val mouseX = event.x()
+        val mouseY = event.y()
+        val button = event.button()
         // 排序切换
         for ((mode, box) in sortBoxes) {
             if (mouseX in box[0].toDouble()..(box[0] + box[2]).toDouble() &&
@@ -223,7 +227,7 @@ class PerkCatalogScreen(
             scrollOffset = 0
             return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, doubleClick)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -234,5 +238,5 @@ class PerkCatalogScreen(
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 }

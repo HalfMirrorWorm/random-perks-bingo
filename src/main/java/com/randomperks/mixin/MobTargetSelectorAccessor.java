@@ -1,7 +1,7 @@
 package com.randomperks.mixin;
 
-import net.minecraft.entity.ai.goal.GoalSelector;
-import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.GoalSelector;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  * ("field_6185 was not located in the target class class_1451")。
  * 用声明类上的 @Accessor 取就没有这个问题。
  */
-@Mixin(MobEntity.class)
+@Mixin(Mob.class)
 public interface MobTargetSelectorAccessor {
 
     @Accessor("targetSelector")

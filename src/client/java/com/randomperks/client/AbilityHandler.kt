@@ -7,10 +7,10 @@ import com.randomperks.network.DashC2S
 import com.randomperks.network.DoubleJumpC2S
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.item.Items
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.item.Items
+import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket
+import net.minecraft.world.phys.Vec3
 
 /**
  * 客户端主动能力检测 (按键 → C2S 包)。
@@ -45,7 +45,7 @@ object AbilityHandler {
     fun register() {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val player = client.player
-            if (player == null || client.currentScreen != null) {
+            if (player == null || client.gui.screen() != null) {
                 jumpHeldLastTick = false
                 sneakHeldLastTick = false
                 DoubleJumpGlideGate.suppress = false
@@ -53,7 +53,7 @@ object AbilityHandler {
             }
 
             // 落地重置; 滑翔**不**重置 —— 与服务端"每段离地只允许一次"的 memory 标记保持一致
-            if (player.isOnGround) {
+            if (player.onGround()) {
                 doubleJumpUsedThisAirTime = false
                 dashUsedThisAirTime = false
                 airTicks = 0
@@ -61,15 +61,15 @@ object AbilityHandler {
                 airTicks++
             }
 
-            val jumpPressed = client.options.jumpKey.isPressed
+            val jumpPressed = client.options.keyJump.isDown
             val justPressed = jumpPressed && !jumpHeldLastTick
             jumpHeldLastTick = jumpPressed
             if (!jumpPressed) glideSuppressedUntilRelease = false
 
             val hasPerk = ClientPerkNetworking.hasPerk(DOUBLE_JUMP_PERK)
-            val airborne = !player.isOnGround && !player.isGliding && player.getVehicle() == null
+            val airborne = !player.onGround() && !player.isFallFlying && player.getVehicle() == null
             // 二段跳额外要求不在水中 (否则等于"水中跳跃"; 冲刺不受此限制)
-            val canDoubleJump = airborne && !player.isTouchingWater
+            val canDoubleJump = airborne && !player.isInWater
 
             if (justPressed && canDoubleJump && !doubleJumpUsedThisAirTime && airTicks >= 2 && hasPerk) {
                 // 二段跳 (装备鞘翅时同样优先于滑翔)
@@ -79,24 +79,24 @@ object AbilityHandler {
                 // 本地预测: 立即把垂直速度**置为**一次标准跳跃冲量 (移动由客户端结算, 不等服务端回包)。
                 // 置位而非叠加 —— 参考 Origins 等主流二段跳做法: 任何时机按下都得到一致的标准跳跃高度
                 val impulse = (player as LivingEntityJumpVelocityInvoker).invokeGetJumpVelocity()
-                player.velocity = Vec3d(player.velocity.x, impulse.toDouble(), player.velocity.z)
+                player.deltaMovement = Vec3(player.deltaMovement.x, impulse.toDouble(), player.deltaMovement.z)
 
                 if (ClientPlayNetworking.canSend(DoubleJumpC2S.ID)) {
                     ClientPlayNetworking.send(DoubleJumpC2S())
                 }
             } else if (justPressed && airborne && doubleJumpUsedThisAirTime && hasPerk &&
-                player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)
+                player.getItemBySlot(EquipmentSlot.CHEST).`is`(Items.ELYTRA)
             ) {
                 // 二段跳已用 → 这一次按跳让给鞘翅。
                 // 原版 tickMovement 也会自行判断, 但这里主动补发一次: 上升阶段同样能开滑翔
                 // (canGlide 只要求"不在落地/骑乘/漂浮 + 有鞘翅", 服务端也接受), 重复包无副作用。
-                player.networkHandler.sendPacket(
-                    ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.START_FALL_FLYING),
+                player.connection.send(
+                    ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING),
                 )
             }
 
             // 冲刺: 空中按潜行键 → 朝视线水平方向冲一次 (每次腾空限一次, 冷却 3 秒)
-            val sneakPressed = client.options.sneakKey.isPressed
+            val sneakPressed = client.options.keyShift.isDown
             val sneakJustPressed = sneakPressed && !sneakHeldLastTick
             sneakHeldLastTick = sneakPressed
 
@@ -108,11 +108,11 @@ object AbilityHandler {
                 dashCooldownUntilMillis = System.currentTimeMillis() + 3_000L
 
                 // 本地预测: 只改水平分量, 垂直速度保持不变
-                val look = player.rotationVector
-                val horizontal = Vec3d(look.x, 0.0, look.z)
+                val look = player.lookAngle
+                val horizontal = Vec3(look.x, 0.0, look.z)
                 val length = horizontal.length()
-                val dir = if (length < 1.0E-4) Vec3d.fromPolar(0.0f, player.yaw) else horizontal.multiply(1.0 / length)
-                player.velocity = Vec3d(dir.x * 0.9, player.velocity.y, dir.z * 0.9)
+                val dir = if (length < 1.0E-4) Vec3.directionFromRotation(0.0f, player.yRot) else horizontal.scale(1.0 / length)
+                player.deltaMovement = Vec3(dir.x * 0.9, player.deltaMovement.y, dir.z * 0.9)
 
                 if (ClientPlayNetworking.canSend(DashC2S.ID)) {
                     ClientPlayNetworking.send(DashC2S())

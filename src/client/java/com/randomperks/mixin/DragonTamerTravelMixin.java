@@ -5,13 +5,13 @@ import com.randomperks.game.DragonTamerMotion;
 import com.randomperks.game.DragonTamerService;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,35 +31,35 @@ public abstract class DragonTamerTravelMixin {
 
     private static final Map<Integer, Double> AIRBORNE_VERTICAL = new HashMap<>();
 
-    @Inject(method = "travelControlled", at = @At("HEAD"), cancellable = true)
-    private void randomperks$directDrive(PlayerEntity controllingPlayer, Vec3d movementInput, CallbackInfo ci) {
-        if (!((Object) this instanceof MobEntity mob)) return;
-        if (!(controllingPlayer instanceof ClientPlayerEntity player)) return;
-        if (player != MinecraftClient.getInstance().player) return;
+    @Inject(method = "travelRidden", at = @At("HEAD"), cancellable = true)
+    private void randomperks$directDrive(Player controllingPlayer, Vec3 movementInput, CallbackInfo ci) {
+        if (!((Object) this instanceof Mob mob)) return;
+        if (!(controllingPlayer instanceof LocalPlayer player)) return;
+        if (player != Minecraft.getInstance().player) return;
         if (!ClientPerkFlags.has(DragonTamerService.PERK_ID)) return;
         if (!DragonTamerService.INSTANCE.isManuallySteered(mob)) return;
 
-        if (mob.getInterpolator() != null) {
-            mob.getInterpolator().clear();
+        if (mob.getInterpolation() != null) {
+            mob.getInterpolation().cancel();
         }
 
         double previousVertical = AIRBORNE_VERTICAL.getOrDefault(mob.getId(), 0.0);
-        Vec3d velocity = DragonTamerMotion.INSTANCE.velocity(
-                mob, player.getYaw(), player.getPitch(), player.input.playerInput, previousVertical);
+        Vec3 velocity = DragonTamerMotion.INSTANCE.velocity(
+                mob, player.getYRot(), player.getXRot(), player.input.keyPresses, previousVertical);
         AIRBORNE_VERTICAL.put(mob.getId(), velocity.y);
 
-        mob.setVelocity(velocity);
-        mob.move(MovementType.SELF, velocity);
+        mob.setDeltaMovement(velocity);
+        mob.move(MoverType.SELF, velocity);
 
-        mob.setYaw(player.getYaw());
-        mob.setHeadYaw(player.getYaw());
-        mob.setBodyYaw(player.getYaw());
+        mob.setYRot(player.getYRot());
+        mob.setYHeadRot(player.getYRot());
+        mob.setYBodyRot(player.getYRot());
         if (DragonTamerService.INSTANCE.isFlyingMount(mob)) {
-            mob.setPitch(player.getPitch() * 0.5F);
+            mob.setXRot(player.getXRot() * 0.5F);
             mob.fallDistance = 0.0;
             player.fallDistance = 0.0;
         } else {
-            mob.setPitch(0.0F);
+            mob.setXRot(0.0F);
         }
         ci.cancel();
     }

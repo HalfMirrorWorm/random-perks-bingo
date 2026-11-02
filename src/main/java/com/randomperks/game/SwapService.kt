@@ -3,8 +3,8 @@ package com.randomperks.game
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
 import java.util.UUID
 
 /**
@@ -35,35 +35,35 @@ object SwapService {
      *
      * @return false 表示该施放者已经在倒计时中
      */
-    fun startCountdown(caster: ServerPlayerEntity, target: ServerPlayerEntity): Boolean {
+    fun startCountdown(caster: ServerPlayer, target: ServerPlayer): Boolean {
         if (pending.containsKey(caster.uuid)) return false
 
         pending[caster.uuid] = Pending(target.uuid, COUNTDOWN_TICKS)
         val seconds = COUNTDOWN_TICKS / 20
-        caster.sendMessage(
-            Text.translatable("random-perks-bingo.message.swap_started", seconds, target.name),
+        caster.sendSystemMessage(
+            Component.translatable("random-perks-bingo.message.swap_started", seconds, target.name),
             false,
         )
-        target.sendMessage(
-            Text.translatable("random-perks-bingo.message.swap_countdown_start", caster.name, seconds),
+        target.sendSystemMessage(
+            Component.translatable("random-perks-bingo.message.swap_countdown_start", caster.name, seconds),
             false,
         )
         return true
     }
 
     /** 该施放者是否正在倒计时中 */
-    fun isCountingDown(caster: ServerPlayerEntity): Boolean = pending.containsKey(caster.uuid)
+    fun isCountingDown(caster: ServerPlayer): Boolean = pending.containsKey(caster.uuid)
 
     private fun tick(server: MinecraftServer) {
         if (pending.isEmpty()) return
 
         for ((casterUuid, state) in pending.toList()) {
-            val caster = server.playerManager.getPlayer(casterUuid)
-            val target = server.playerManager.getPlayer(state.targetUuid)
+            val caster = server.playerList.getPlayer(casterUuid)
+            val target = server.playerList.getPlayer(state.targetUuid)
 
             // 任意一方离线 / 死亡 → 取消 (不消耗词条)
             if (caster == null || target == null || !caster.isAlive || !target.isAlive || target.isSpectator) {
-                caster?.sendMessage(Text.translatable("random-perks-bingo.message.swap_cancelled"), false)
+                caster?.sendSystemMessage(Component.translatable("random-perks-bingo.message.swap_cancelled"), false)
                 pending.remove(casterUuid)
                 continue
             }
@@ -74,7 +74,7 @@ object SwapService {
                 if (teleportTo(caster, target)) {
                     markUsed(caster)
                 } else {
-                    caster.sendMessage(Text.translatable("random-perks-bingo.message.swap_cancelled"), false)
+                    caster.sendSystemMessage(Component.translatable("random-perks-bingo.message.swap_cancelled"), false)
                 }
                 continue
             }
@@ -82,12 +82,12 @@ object SwapService {
             // 每秒刷新一次动作栏倒计时
             if (state.ticksLeft % 20 == 0) {
                 val seconds = state.ticksLeft / 20
-                caster.sendMessage(
-                    Text.translatable("random-perks-bingo.message.swap_countdown_caster", seconds, target.name),
+                caster.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.swap_countdown_caster", seconds, target.name),
                     true,
                 )
-                target.sendMessage(
-                    Text.translatable("random-perks-bingo.message.swap_countdown_target", seconds, caster.name),
+                target.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.swap_countdown_target", seconds, caster.name),
                     true,
                 )
             }
@@ -95,7 +95,7 @@ object SwapService {
     }
 
     /** 传送成功后才消耗一次性词条 */
-    private fun markUsed(caster: ServerPlayerEntity) {
+    private fun markUsed(caster: ServerPlayer) {
         val state = PerkStateManager.get(caster.uuid) ?: return
         state.markUsed(PERK_ID)
         PerkGrantService.notifyPerkListChanged(caster)
@@ -107,28 +107,28 @@ object SwapService {
      *
      * @return true 表示传送成功
      */
-    fun teleportTo(caster: ServerPlayerEntity, target: ServerPlayerEntity): Boolean {
+    fun teleportTo(caster: ServerPlayer, target: ServerPlayer): Boolean {
         if (caster === target) return false
         if (!target.isAlive || target.isRemoved || target.isSpectator) return false
 
         // 骑着东西的话先下来, 否则载具会留在原地
         caster.stopRiding()
 
-        caster.teleport(
-            target.world,
+        caster.teleportTo(
+            target.level(),
             target.x, target.y, target.z,
             emptySet(),
-            caster.yaw,
-            caster.pitch,
+            caster.yRot,
+            caster.xRot,
             true,
         )
 
-        caster.sendMessage(
-            Text.translatable("random-perks-bingo.message.swap_teleported", target.name),
+        caster.sendSystemMessage(
+            Component.translatable("random-perks-bingo.message.swap_teleported", target.name),
             false,
         )
-        target.sendMessage(
-            Text.translatable("random-perks-bingo.message.swap_arrived", caster.name),
+        target.sendSystemMessage(
+            Component.translatable("random-perks-bingo.message.swap_arrived", caster.name),
             false,
         )
         return true

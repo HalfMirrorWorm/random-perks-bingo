@@ -3,16 +3,16 @@ package com.randomperks.game
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.item.Items
-import net.minecraft.screen.CraftingScreenHandler
-import net.minecraft.screen.ScreenHandlerContext
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.item.Items
+import net.minecraft.world.inventory.CraftingMenu
+import net.minecraft.world.inventory.ContainerLevelAccess
+import net.minecraft.world.SimpleMenuProvider
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionHand
 
 /**
  * "便携工作台" 附带的**随身合成台**: 手持工作台右键直接打开 3×3 合成界面, 而不是放置方块。
@@ -27,38 +27,38 @@ object PortableCraftingService {
     fun register() {
         // 右键方块: 拦住"放置方块", 改为打开
         UseBlockCallback.EVENT.register { player, _, hand, _ ->
-            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
-            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
-            if (tryOpen(player)) ActionResult.SUCCESS else ActionResult.PASS
+            if (hand != InteractionHand.MAIN_HAND) return@register InteractionResult.PASS
+            if (player !is ServerPlayer) return@register InteractionResult.PASS
+            if (tryOpen(player)) InteractionResult.SUCCESS else InteractionResult.PASS
         }
 
         // 右键空气
         UseItemCallback.EVENT.register { player, _, hand ->
-            if (hand != Hand.MAIN_HAND) return@register ActionResult.PASS
-            if (player !is ServerPlayerEntity) return@register ActionResult.PASS
-            if (tryOpen(player)) ActionResult.SUCCESS else ActionResult.PASS
+            if (hand != InteractionHand.MAIN_HAND) return@register InteractionResult.PASS
+            if (player !is ServerPlayer) return@register InteractionResult.PASS
+            if (tryOpen(player)) InteractionResult.SUCCESS else InteractionResult.PASS
         }
     }
 
-    private fun tryOpen(player: ServerPlayerEntity): Boolean {
+    private fun tryOpen(player: ServerPlayer): Boolean {
         if (!PerkSession.isEnabled()) return false
 
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk(PERK_ID)) return false
 
         // 潜行右键保留原版"放置工作台"的行为
-        if (player.isSneaking) return false
-        if (!player.getStackInHand(Hand.MAIN_HAND).isOf(Items.CRAFTING_TABLE)) return false
+        if (player.isShiftKeyDown) return false
+        if (!player.getItemInHand(InteractionHand.MAIN_HAND).`is`(Items.CRAFTING_TABLE)) return false
 
-        player.openHandledScreen(
-            SimpleNamedScreenHandlerFactory(
+        player.openMenu(
+            SimpleMenuProvider(
                 { syncId, playerInventory, owner ->
                     PortableCraftingScreenHandler(
                         syncId, playerInventory,
-                        ScreenHandlerContext.create(owner.world, owner.blockPos),
+                        ContainerLevelAccess.create(owner.level(), owner.blockPosition()),
                     )
                 },
-                Text.translatable("container.crafting"),
+                Component.translatable("container.crafting"),
             ),
         )
         return true
@@ -73,9 +73,9 @@ object PortableCraftingService {
      */
     private class PortableCraftingScreenHandler(
         syncId: Int,
-        playerInventory: PlayerInventory,
-        context: ScreenHandlerContext,
-    ) : CraftingScreenHandler(syncId, playerInventory, context) {
-        override fun canUse(player: PlayerEntity): Boolean = true
+        playerInventory: Inventory,
+        context: ContainerLevelAccess,
+    ) : CraftingMenu(syncId, playerInventory, context) {
+        override fun stillValid(player: Player): Boolean = true
     }
 }

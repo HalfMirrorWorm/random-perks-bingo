@@ -1,12 +1,12 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.FleeEntityGoal;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.passive.CatEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.player.Player;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,42 +21,42 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * 苦力怕的"怕猫"goal 在本 tick 找不到真猫时 (targetEntity 仍为 null),
  * 把范围内最近的该玩家设为逃跑目标, 之后原版逻辑会照常计算逃跑路径并执行。
  */
-@Mixin(FleeEntityGoal.class)
+@Mixin(AvoidEntityGoal.class)
 public abstract class CatAuraMixin {
 
     @Shadow
     @Final
-    protected PathAwareEntity mob;
+    protected PathfinderMob mob;
 
     @Shadow
     @Final
-    protected float fleeDistance;
+    protected float maxDist;
 
     @Shadow
     @Final
-    protected Class<?> classToFleeFrom;
+    protected Class<?> avoidClass;
 
     @Shadow
-    protected LivingEntity targetEntity;
+    protected LivingEntity toAvoid;
 
     @Inject(
-            method = "canStart",
+            method = "canUse",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/ai/goal/FleeEntityGoal;targetEntity:Lnet/minecraft/entity/LivingEntity;",
+                    target = "Lnet/minecraft/world/entity/ai/goal/AvoidEntityGoal;toAvoid:Lnet/minecraft/world/entity/LivingEntity;",
                     opcode = Opcodes.PUTFIELD,
                     shift = At.Shift.AFTER
             )
     )
     private void randomperks$catAuraFlee(CallbackInfoReturnable<Boolean> cir) {
-        if (this.targetEntity != null) return;
-        if (!(this.mob instanceof CreeperEntity)) return;
-        if (this.classToFleeFrom != CatEntity.class) return;
+        if (this.toAvoid != null) return;
+        if (!(this.mob instanceof Creeper)) return;
+        if (this.avoidClass != Cat.class) return;
 
-        PlayerEntity nearest = this.mob.getWorld().getClosestPlayer(this.mob, this.fleeDistance);
+        Player nearest = this.mob.level().getNearestPlayer(this.mob, this.maxDist);
         if (nearest == null || !nearest.isAlive()) return;
         if (PerkBoostQuery.INSTANCE.hasCatAura(nearest)) {
-            this.targetEntity = nearest;
+            this.toAvoid = nearest;
         }
     }
 }

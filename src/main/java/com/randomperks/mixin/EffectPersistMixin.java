@@ -2,9 +2,9 @@ package com.randomperks.mixin;
 
 import com.randomperks.effect.PermanentEffects;
 import java.util.Collection;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,9 +23,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntity.class)
 public class EffectPersistMixin {
 
-    @Inject(method = "onStatusEffectsRemoved(Ljava/util/Collection;)V", at = @At("TAIL"))
-    private void randomperks$persistEffects(Collection<StatusEffectInstance> effects, CallbackInfo ci) {
-        if (!((Object) this instanceof ServerPlayerEntity player)) return;
+    @Inject(method = "onEffectsRemoved(Ljava/util/Collection;)V", at = @At("TAIL"))
+    private void randomperks$persistEffects(Collection<MobEffectInstance> effects, CallbackInfo ci) {
+        if (!((Object) this instanceof ServerPlayer player)) return;
         PermanentEffects.INSTANCE.onEffectsRemoved(player, effects);
     }
 }

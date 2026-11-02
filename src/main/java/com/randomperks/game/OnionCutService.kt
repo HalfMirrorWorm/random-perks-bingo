@@ -1,16 +1,16 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
-import net.minecraft.block.Block
-import net.minecraft.block.Blocks
-import net.minecraft.registry.tag.ItemTags
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.tags.ItemTags
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionHand
+import net.minecraft.core.BlockPos
 
 /**
  * "切洋葱" —— 手持**镐**右键黑曜石 / 哭泣的黑曜石, 在两者之间来回切换。
@@ -22,26 +22,26 @@ object OnionCutService {
 
     const val PERK_ID = "delver_onion_cut"
 
-    fun handleUse(player: ServerPlayerEntity, world: ServerWorld, pos: BlockPos): ActionResult {
-        if (!PerkSession.isEnabled()) return ActionResult.PASS
+    fun handleUse(player: ServerPlayer, world: ServerLevel, pos: BlockPos): InteractionResult {
+        if (!PerkSession.isEnabled()) return InteractionResult.PASS
 
-        val state = PerkStateManager.get(player.uuid) ?: return ActionResult.PASS
-        if (!state.hasPerk(PERK_ID)) return ActionResult.PASS
-        if (!player.getStackInHand(Hand.MAIN_HAND).isIn(ItemTags.PICKAXES)) return ActionResult.PASS
+        val state = PerkStateManager.get(player.uuid) ?: return InteractionResult.PASS
+        if (!state.hasPerk(PERK_ID)) return InteractionResult.PASS
+        if (!player.getItemInHand(InteractionHand.MAIN_HAND).`is`(ItemTags.PICKAXES)) return InteractionResult.PASS
 
         val target = when {
-            world.getBlockState(pos).isOf(Blocks.OBSIDIAN) -> Blocks.CRYING_OBSIDIAN
-            world.getBlockState(pos).isOf(Blocks.CRYING_OBSIDIAN) -> Blocks.OBSIDIAN
-            else -> return ActionResult.PASS
+            world.getBlockState(pos).`is`(Blocks.OBSIDIAN) -> Blocks.CRYING_OBSIDIAN
+            world.getBlockState(pos).`is`(Blocks.CRYING_OBSIDIAN) -> Blocks.OBSIDIAN
+            else -> return InteractionResult.PASS
         }
 
-        world.setBlockState(pos, target.defaultState, Block.NOTIFY_ALL)
+        world.setBlock(pos, target.defaultBlockState(), Block.UPDATE_ALL)
         world.playSound(
             null, pos,
-            SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN,
-            SoundCategory.BLOCKS,
+            SoundEvents.RESPAWN_ANCHOR_SET_SPAWN,
+            SoundSource.BLOCKS,
             0.7f, 1.2f,
         )
-        return ActionResult.SUCCESS
+        return InteractionResult.SUCCESS
     }
 }

@@ -10,41 +10,41 @@ import com.randomperks.state.PlayerPerkState
 import me.jfenn.bingo.api.BingoEvents
 import me.jfenn.bingo.api.IBingoApi
 import me.jfenn.bingo.common.card.objective.BingoObjectiveCapture
+import me.jfenn.bingo.api.state.GameState
 import me.jfenn.bingo.common.state.BingoState
-import me.jfenn.bingo.common.state.GameState
 import me.jfenn.bingo.common.team.BingoTeamKey
 import me.jfenn.bingo.common.team.TeamCompletedCard
 import me.jfenn.bingo.common.team.TeamScore
-import me.jfenn.bingo.common.team.TeamWinner
+import me.jfenn.bingo.common.team.TeamState
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.block.entity.BlockEntity
-import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.Leashable
-import net.minecraft.entity.boss.WitherEntity
-import net.minecraft.entity.boss.dragon.EnderDragonEntity
-import net.minecraft.entity.mob.ElderGuardianEntity
-import net.minecraft.entity.mob.WardenEntity
-import net.minecraft.entity.passive.TameableEntity
-import net.minecraft.entity.passive.VillagerEntity
-import net.minecraft.entity.passive.WanderingTraderEntity
-import net.minecraft.inventory.Inventory
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.registry.RegistryKey
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.entity.BlockEntityType
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.Leashable
+import net.minecraft.world.entity.boss.wither.WitherBoss
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon
+import net.minecraft.world.entity.monster.ElderGuardian
+import net.minecraft.world.entity.monster.warden.Warden
+import net.minecraft.world.entity.TamableAnimal
+import net.minecraft.world.entity.npc.villager.Villager
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader
+import net.minecraft.world.Container
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.resources.ResourceKey
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.storage.NbtReadView
-import net.minecraft.storage.NbtWriteView
-import net.minecraft.text.Text
-import net.minecraft.util.ErrorReporter
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.level.storage.TagValueInput
+import net.minecraft.world.level.storage.TagValueOutput
+import net.minecraft.network.chat.Component
+import net.minecraft.util.ProblemReporter
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import java.time.Duration
 import java.time.Instant
 import java.util.Collections
@@ -97,8 +97,8 @@ object RewindService {
      * 避免连锁反应, 也避免把"回溯后不该存在的容器"里的东西撒出来。
      */
     private const val RESTORE_FLAGS =
-        Block.NOTIFY_LISTENERS or Block.FORCE_STATE or Block.SKIP_DROPS or
-            Block.SKIP_BLOCK_ENTITY_REPLACED_CALLBACK or Block.SKIP_BLOCK_ADDED_CALLBACK
+        Block.UPDATE_CLIENTS or Block.UPDATE_KNOWN_SHAPE or Block.UPDATE_SUPPRESS_DROPS or
+            Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS or Block.UPDATE_SKIP_ON_PLACE
 
     // ------------------------------------------------------------------
     // checkpoint model
@@ -125,10 +125,9 @@ object RewindService {
     )
 
     private class TeamSnapshot(
-        val cardId: UUID?,
+        val state: TeamState,
         val currentScore: TeamScore,
         val persistentScore: TeamScore,
-        val winner: TeamWinner?,
         val completedCards: List<TeamCompletedCard>,
     )
 
@@ -159,26 +158,26 @@ object RewindService {
 
     private class PlayerSnapshot(
         val uuid: UUID,
-        val dimension: RegistryKey<World>,
-        val nbt: NbtCompound,
+        val dimension: ResourceKey<Level>,
+        val nbt: CompoundTag,
     )
 
     private class ContainerSnapshot(
-        val dimension: RegistryKey<World>,
+        val dimension: ResourceKey<Level>,
         val pos: Long,
         val type: BlockEntityType<*>,
-        val nbt: NbtCompound,
+        val nbt: CompoundTag,
     )
 
     private class EntitySnapshot(
-        val dimension: RegistryKey<World>,
+        val dimension: ResourceKey<Level>,
         val uuid: UUID,
         val type: EntityType<*>,
-        val nbt: NbtCompound,
+        val nbt: CompoundTag,
     )
 
     private class BlockEdit(
-        val dimension: RegistryKey<World>,
+        val dimension: ResourceKey<Level>,
         val pos: Long,
         val previous: BlockState,
     )
@@ -206,7 +205,7 @@ object RewindService {
         Collections.newSetFromMap(IdentityHashMap())
 
     /** dimension -> (packed pos -> 该坐标在检查点时的方块状态) */
-    private val blockEdits = HashMap<RegistryKey<World>, HashMap<Long, BlockState>>()
+    private val blockEdits = HashMap<ResourceKey<Level>, HashMap<Long, BlockState>>()
     private var blockEditCount = 0
     private var journalTruncated = false
 
@@ -242,7 +241,7 @@ object RewindService {
         ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             val uuid = handler.player.uuid
             if (pendingReapply.remove(uuid)) {
-                handler.player.server?.execute {
+                handler.player.level().getServer().execute {
                     val state = PerkStateManager.get(uuid) ?: return@execute
                     applyPerks(handler.player, state)
                 }
@@ -289,7 +288,7 @@ object RewindService {
         restoring = false
         restoreJob = null
         capturing = true
-        nextCheckpointTick = server.ticks + CHECKPOINT_INTERVAL_TICKS
+        nextCheckpointTick = server.tickCount + CHECKPOINT_INTERVAL_TICKS
         takeCheckpoint(server)
         RandomPerksMod.logger.info("[Rewind] started checkpoint capture (interval {} min)", CHECKPOINT_INTERVAL_TICKS / 1200)
     }
@@ -304,17 +303,17 @@ object RewindService {
     }
 
     /** Called by the mythic perk as soon as it is acquired. */
-    fun begin(player: ServerPlayerEntity, perkId: String) {
+    fun begin(player: ServerPlayer, perkId: String) {
         val server = ServerHolder.server ?: return
         if (!capturing || restoring || checkpoint == null) {
-            player.sendMessage(Text.literal("【逆转时间】当前无法回溯时间。"), true)
+            player.sendSystemMessage(Component.literal("【逆转时间】当前无法回溯时间。"), true)
             return
         }
         if (pending != null) {
             return
         }
 
-        pending = PendingRewind(player.uuid, perkId, server.ticks + COUNTDOWN_TICKS)
+        pending = PendingRewind(player.uuid, perkId, server.tickCount + COUNTDOWN_TICKS)
         broadcast(server, "【逆转时间】10 秒后，本局将回到最近一次记录点……")
     }
 
@@ -330,7 +329,7 @@ object RewindService {
             if (!capturing) {
                 pending = null
             } else {
-                val remaining = current.executeAtTick - server.ticks
+                val remaining = current.executeAtTick - server.tickCount
                 if (remaining <= 0) {
                     pending = null
                     execute(server, current)
@@ -345,8 +344,8 @@ object RewindService {
         }
 
         // 倒计时期间不刷新检查点, 否则恰好跨过记录点时触发会几乎不退
-        if (pending == null && server.ticks >= nextCheckpointTick) {
-            while (server.ticks >= nextCheckpointTick) {
+        if (pending == null && server.tickCount >= nextCheckpointTick) {
+            while (server.tickCount >= nextCheckpointTick) {
                 nextCheckpointTick += CHECKPOINT_INTERVAL_TICKS
             }
             takeCheckpoint(server)
@@ -359,8 +358,8 @@ object RewindService {
 
     fun shouldRecordBlockChange(): Boolean = capturing && !restoring && !journalTruncated
 
-    fun recordBlockChange(world: ServerWorld, pos: BlockPos, previous: BlockState) {
-        val edits = blockEdits.getOrPut(world.registryKey) { HashMap() }
+    fun recordBlockChange(world: ServerLevel, pos: BlockPos, previous: BlockState) {
+        val edits = blockEdits.getOrPut(world.dimension()) { HashMap() }
         // 同一坐标只保留间隔内第一次变更前的状态
         if (edits.putIfAbsent(pos.asLong(), previous) == null) {
             blockEditCount++
@@ -383,7 +382,7 @@ object RewindService {
         val now = System.currentTimeMillis()
         checkpoint = Checkpoint(
             time = now,
-            ticks = server.ticks,
+            ticks = server.tickCount,
             progress = captureProgress(live),
             perks = capturePerks(),
             players = capturePlayers(server),
@@ -405,10 +404,9 @@ object RewindService {
         isForfeit = live.isForfeit,
         teams = live.teams.values.associate { team ->
             team.id to TeamSnapshot(
-                cardId = team.cardId,
+                state = team.state,
                 currentScore = team.currentScore,
                 persistentScore = team.persistentScore,
-                winner = team.winner,
                 // TeamCompletedCard 是不可变 data class, 直接共享引用即可
                 completedCards = team.completedCards.toList(),
             )
@@ -444,11 +442,11 @@ object RewindService {
     }
 
     private fun capturePlayers(server: MinecraftServer): List<PlayerSnapshot> =
-        server.playerManager.playerList.mapNotNull { player ->
+        server.playerList.players.mapNotNull { player ->
             try {
-                val view = NbtWriteView.create(ErrorReporter.EMPTY, server.registryManager)
-                player.writeData(view)
-                PlayerSnapshot(player.uuid, player.world.registryKey, view.nbt)
+                val view = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, server.registryAccess())
+                player.saveWithoutId(view)
+                PlayerSnapshot(player.uuid, player.level().dimension(), view.buildResult())
             } catch (t: Throwable) {
                 RandomPerksMod.logger.warn("[Rewind] failed to snapshot player {}", player.name.string, t)
                 null
@@ -459,48 +457,48 @@ object RewindService {
         val result = ArrayList<ContainerSnapshot>()
         for (be in loadedBlockEntities.toList()) {
             if (be.isRemoved) continue
-            if (be !is Inventory) continue
-            val world = be.world as? ServerWorld ?: continue
+            if (be !is Container) continue
+            val world = be.getLevel() as? ServerLevel ?: continue
             val nbt = try {
-                be.createNbt(world.registryManager)
+                be.saveWithoutMetadata(world.registryAccess())
             } catch (t: Throwable) {
-                RandomPerksMod.logger.warn("[Rewind] failed to snapshot container at {}", be.pos, t)
+                RandomPerksMod.logger.warn("[Rewind] failed to snapshot container at {}", be.blockPos, t)
                 continue
             }
-            result.add(ContainerSnapshot(world.registryKey, be.pos.asLong(), be.type, nbt))
+            result.add(ContainerSnapshot(world.dimension(), be.blockPos.asLong(), be.type, nbt))
         }
         return result
     }
 
     private fun captureEntities(server: MinecraftServer): List<EntitySnapshot> {
         val result = ArrayList<EntitySnapshot>()
-        for (world in server.worlds) {
-            for (entity in world.iterateEntities()) {
+        for (world in server.allLevels) {
+            for (entity in world.getAllEntities()) {
                 if (!isImportant(entity)) continue
                 val nbt = try {
-                    val view = NbtWriteView.create(ErrorReporter.EMPTY, server.registryManager)
-                    entity.writeData(view)
-                    view.nbt
+                    val view = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, server.registryAccess())
+                    entity.saveWithoutId(view)
+                    view.buildResult()
                 } catch (t: Throwable) {
-                    RandomPerksMod.logger.warn("[Rewind] failed to snapshot entity {} at {}", entity.uuid, entity.pos, t)
+                    RandomPerksMod.logger.warn("[Rewind] failed to snapshot entity {} at {}", entity.uuid, entity.position(), t)
                     continue
                 }
-                result.add(EntitySnapshot(world.registryKey, entity.uuid, entity.type, nbt))
+                result.add(EntitySnapshot(world.dimension(), entity.uuid, entity.type, nbt))
             }
         }
         return result
     }
 
     private fun isImportant(entity: Entity): Boolean {
-        if (entity is ServerPlayerEntity) return false
-        if (entity is EnderDragonEntity || entity is WitherEntity ||
-            entity is WardenEntity || entity is ElderGuardianEntity
+        if (entity is ServerPlayer) return false
+        if (entity is EnderDragon || entity is WitherBoss ||
+            entity is Warden || entity is ElderGuardian
         ) {
             return true
         }
-        if (entity is VillagerEntity || entity is WanderingTraderEntity) return true
+        if (entity is Villager || entity is WanderingTrader) return true
         if (entity.hasCustomName()) return true
-        if (entity is TameableEntity && entity.isTamed) return true
+        if (entity is TamableAnimal && entity.isTame) return true
         if (entity is Leashable && entity.isLeashed) return true
         return false
     }
@@ -526,7 +524,7 @@ object RewindService {
 
         // 显示用游戏 tick (暂停的墙钟时间不算 "几分钟前");
         // 但 bingo 的计时器是从墙钟推导的 (暂停时间记在 timeOffline), 所以时间补偿要按墙钟退。
-        val elapsedTicks = (server.ticks - snap.ticks).coerceAtLeast(0)
+        val elapsedTicks = (server.tickCount - snap.ticks).coerceAtLeast(0)
         val minutes = elapsedTicks / 1200
         val rewindMillis = (System.currentTimeMillis() - snap.time).coerceAtLeast(0L)
         restoreJob = RestoreJob(snap, request.uuid, request.perkId, minutes, rewindMillis, edits, truncated)
@@ -552,11 +550,11 @@ object RewindService {
         while (job.index < job.edits.size && processed < BLOCKS_PER_TICK) {
             val edit = job.edits[job.index++]
             processed++
-            val world = server.getWorld(edit.dimension) ?: continue
+            val world = server.getLevel(edit.dimension) ?: continue
             try {
-                world.setBlockState(BlockPos.fromLong(edit.pos), edit.previous, RESTORE_FLAGS, 0)
+                world.setBlock(BlockPos.of(edit.pos), edit.previous, RESTORE_FLAGS, 0)
             } catch (t: Throwable) {
-                RandomPerksMod.logger.warn("[Rewind] failed to restore block at {}", BlockPos.fromLong(edit.pos), t)
+                RandomPerksMod.logger.warn("[Rewind] failed to restore block at {}", BlockPos.of(edit.pos), t)
             }
         }
 
@@ -600,15 +598,12 @@ object RewindService {
         live.isForfeit = progress.isForfeit
         live.updatedAt = Instant.now()
 
-        val liveCards = live.cards.associateBy { it.id }
-
-        // 队伍: 恢复分数/胜者/已完成卡片; 队伍成员与地图缓存保持当前值
+        // 队伍: 恢复分数、进行状态与已完成卡片; 队伍成员与地图缓存保持当前值
         for (team in live.teams.values) {
             val saved = progress.teams[team.id] ?: continue
             team.currentScore = saved.currentScore
             team.persistentScore = saved.persistentScore
-            team.winner = saved.winner
-            saved.cardId?.let { if (it in liveCards) team.cardId = it }
+            team.state = saved.state
 
             team.completedCards.clear()
             team.completedCards.addAll(saved.completedCards)
@@ -637,8 +632,8 @@ object RewindService {
     private fun restoreContainers(server: MinecraftServer, snap: Checkpoint) {
         var missing = 0
         for (container in snap.containers) {
-            val world = server.getWorld(container.dimension) ?: continue
-            val pos = BlockPos.fromLong(container.pos)
+            val world = server.getLevel(container.dimension) ?: continue
+            val pos = BlockPos.of(container.pos)
             val be = world.getBlockEntity(pos)
             if (be == null || be.type != container.type) {
                 // 区块未加载 / 方块已被别的东西取代 —— 伪回溯允许跳过
@@ -646,9 +641,9 @@ object RewindService {
                 continue
             }
             try {
-                be.read(NbtReadView.create(ErrorReporter.EMPTY, server.registryManager, container.nbt))
-                be.markDirty()
-                world.updateListeners(pos, be.cachedState, be.cachedState, Block.NOTIFY_LISTENERS)
+                be.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, server.registryAccess(), container.nbt))
+                be.setChanged()
+                world.sendBlockUpdated(pos, be.blockState, be.blockState, Block.UPDATE_CLIENTS)
             } catch (t: Throwable) {
                 RandomPerksMod.logger.warn("[Rewind] failed to restore container at {}", pos, t)
             }
@@ -660,26 +655,26 @@ object RewindService {
 
     private fun restorePlayers(server: MinecraftServer, snap: Checkpoint) {
         for (saved in snap.players) {
-            val player = server.playerManager.getPlayer(saved.uuid) ?: continue
+            val player = server.playerList.getPlayer(saved.uuid) ?: continue
             try {
-                player.closeHandledScreen()
+                player.closeContainer()
                 // 先走正常移除流程, 把客户端身上的旧效果清掉 (会发 RemoveEntityStatusEffect 包)
-                for (effect in player.statusEffects.toList()) {
-                    player.removeStatusEffect(effect.effectType)
+                for (effect in player.activeEffects.toList()) {
+                    player.removeEffect(effect.effect)
                 }
-                player.readData(NbtReadView.create(ErrorReporter.EMPTY, server.registryManager, saved.nbt))
+                player.load(TagValueInput.create(ProblemReporter.DISCARDING, server.registryAccess(), saved.nbt))
 
-                val world = server.getWorld(saved.dimension) ?: player.world
+                val world = server.getLevel(saved.dimension) ?: player.level()
                 player.stopRiding()
-                player.teleport(world, player.x, player.y, player.z, emptySet(), player.yaw, player.pitch, false)
-                player.markHealthDirty()
-                player.playerScreenHandler.syncState()
-                if (player.currentScreenHandler !== player.playerScreenHandler) {
-                    player.currentScreenHandler.syncState()
+                player.teleportTo(world, player.x, player.y, player.z, emptySet(), player.yRot, player.xRot, false)
+                player.resetSentInfo()
+                player.inventoryMenu.sendAllDataToRemote()
+                if (player.containerMenu !== player.inventoryMenu) {
+                    player.containerMenu.sendAllDataToRemote()
                 }
-                player.sendAbilitiesUpdate()
+                player.onUpdateAbilities()
                 // readData 直接改了 activeStatusEffects, 需要手动把恢复后的效果推给客户端
-                server.playerManager.sendStatusEffects(player)
+                server.playerList.sendActivePlayerEffects(player)
             } catch (t: Throwable) {
                 RandomPerksMod.logger.warn("[Rewind] failed to restore player {}", player.name.string, t)
             }
@@ -689,7 +684,7 @@ object RewindService {
     private fun restoreEntities(server: MinecraftServer, snap: Checkpoint) {
         var missing = 0
         for (saved in snap.entities) {
-            val world = server.getWorld(saved.dimension) ?: continue
+            val world = server.getLevel(saved.dimension) ?: continue
             val entity = world.getEntity(saved.uuid)
             if (entity == null || entity.type != saved.type) {
                 // 已死亡/未加载/被替换: 按约定不复活
@@ -697,7 +692,7 @@ object RewindService {
                 continue
             }
             try {
-                entity.readData(NbtReadView.create(ErrorReporter.EMPTY, server.registryManager, saved.nbt))
+                entity.load(TagValueInput.create(ProblemReporter.DISCARDING, server.registryAccess(), saved.nbt))
             } catch (t: Throwable) {
                 RandomPerksMod.logger.warn("[Rewind] failed to restore entity {}", saved.uuid, t)
             }
@@ -750,7 +745,7 @@ object RewindService {
     private fun reapplyPerks(server: MinecraftServer) {
         pendingReapply.clear()
         for (state in PerkStateManager.all()) {
-            val player = server.playerManager.getPlayer(state.uuid)
+            val player = server.playerList.getPlayer(state.uuid)
             if (player == null) {
                 pendingReapply.add(state.uuid)
                 continue
@@ -759,7 +754,7 @@ object RewindService {
         }
     }
 
-    private fun applyPerks(player: ServerPlayerEntity, state: PlayerPerkState) {
+    private fun applyPerks(player: ServerPlayer, state: PlayerPerkState) {
         val context = PerkContext(player, state)
         for (perk in state.ownedPerks.toList()) {
             runCatching { perk.onRespawn(context) }
@@ -784,8 +779,8 @@ object RewindService {
     }
 
     private fun broadcast(server: MinecraftServer, text: String, overlay: Boolean = false) {
-        for (player in server.playerManager.playerList) {
-            player.sendMessage(Text.literal(text), overlay)
+        for (player in server.playerList.players) {
+            player.sendSystemMessage(Component.literal(text), overlay)
         }
     }
 }

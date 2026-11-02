@@ -5,7 +5,7 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import com.randomperks.state.PlayerPerkState
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import java.util.UUID
 import kotlin.random.Random
 import kotlin.test.BeforeTest

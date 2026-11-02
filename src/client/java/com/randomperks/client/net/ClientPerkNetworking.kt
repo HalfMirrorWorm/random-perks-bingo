@@ -48,14 +48,14 @@ import com.randomperks.network.SoulOutS2C
 import com.randomperks.network.WaterBucketTotemS2C
 import com.randomperks.network.WeatherPickC2S
 import com.randomperks.network.WeatherSelectS2C
-import net.minecraft.client.MinecraftClient
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
+import net.minecraft.client.Minecraft
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
-import net.minecraft.text.Text
+import net.fabricmc.fabric.api.networking.v1.FriendlyByteBufs
+import net.minecraft.network.chat.Component
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
@@ -83,9 +83,8 @@ object ClientPerkNetworking {
             context.client().execute {
                 pendingChoices = payload.pendingCount
                 if (payload.pendingCount > 0) {
-                    context.client().player?.sendMessage(
-                        Text.translatable("random-perks-bingo.message.choices_available", payload.pendingCount),
-                        false,
+                    context.client().player?.sendSystemMessage(
+                        Component.translatable("random-perks-bingo.message.choices_available", payload.pendingCount),
                     )
                 }
             }
@@ -94,19 +93,19 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(PerkOfferS2C.ID) { payload, context ->
             context.client().execute {
                 currentOptions = payload.options
-                context.client().setScreen(PerkChoiceScreen(payload.options))
+                context.client().gui.setScreen(PerkChoiceScreen(payload.options))
             }
         }
 
         ClientPlayNetworking.registerGlobalReceiver(PerkListS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().setScreen(PerkListScreen(payload.pendingCount, payload.players))
+                context.client().gui.setScreen(PerkListScreen(payload.pendingCount, payload.players))
             }
         }
 
         ClientPlayNetworking.registerGlobalReceiver(PerkCatalogS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().setScreen(PerkCatalogScreen(payload.ownedIds.toSet(), payload.allPerks))
+                context.client().gui.setScreen(PerkCatalogScreen(payload.ownedIds.toSet(), payload.allPerks))
             }
         }
 
@@ -125,8 +124,8 @@ object ClientPerkNetworking {
                     SoulCameraClient.start()
                     // 灵魂状态下"有界面时不能移动": 如果还停在词条列表, 自动关掉,
                     // 否则 60 秒会白白流失 (与其他贮藏词条点击后立即进入使用流程一致)
-                    if (context.client().currentScreen is PerkListScreen) {
-                        context.client().setScreen(null)
+                    if (context.client().gui.screen() is PerkListScreen) {
+                        context.client().gui.setScreen(null)
                     }
                 } else {
                     SoulCameraClient.stop()
@@ -141,14 +140,14 @@ object ClientPerkNetworking {
                     .decodeFromString(RecapData.serializer(), payload.json)
             }.getOrNull() ?: RecapData()
             context.client().execute {
-                context.client().setScreen(LastGameRecapScreen(data))
+                context.client().gui.setScreen(LastGameRecapScreen(data))
             }
         }
 
         // "世界一直下雨": 服务端下发后弹出天气选择器, 选完回传
         ClientPlayNetworking.registerGlobalReceiver(WeatherSelectS2C.ID) { _, context ->
             context.client().execute {
-                context.client().setScreen(
+                context.client().gui.setScreen(
                     WeatherSelectScreen { weather -> ClientPlayNetworking.send(WeatherPickC2S(weather)) },
                 )
             }
@@ -156,7 +155,7 @@ object ClientPerkNetworking {
 
         ClientPlayNetworking.registerGlobalReceiver(StealTargetsS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().setScreen(
+                context.client().gui.setScreen(
                     TargetPickScreen(
                         "random-perks-bingo.screen.steal_target",
                         "random-perks-bingo.steal_target.hint",
@@ -178,7 +177,7 @@ object ClientPerkNetworking {
                     "swap" -> "random-perks-bingo.screen.swap_target" to "random-perks-bingo.swap_target.hint"
                     else -> "random-perks-bingo.screen.lightning_target" to "random-perks-bingo.lightning_target.hint"
                 }
-                context.client().setScreen(
+                context.client().gui.setScreen(
                     TargetPickScreen(titleKey, hintKey, payload.targets) { uuid ->
                         pickActionTarget(payload.purpose, uuid)
                     },
@@ -192,7 +191,7 @@ object ClientPerkNetworking {
                 val (titleKey, hintKey) = when (payload.purpose) {
                     else -> "random-perks-bingo.screen.quick_enchant" to "random-perks-bingo.quick_enchant.hint"
                 }
-                context.client().setScreen(
+                context.client().gui.setScreen(
                     EquipmentPickScreen(titleKey, hintKey) { key ->
                         ClientPlayNetworking.send(EquipmentPickC2S(payload.purpose, key))
                     },
@@ -209,14 +208,14 @@ object ClientPerkNetworking {
 
         ClientPlayNetworking.registerGlobalReceiver(StealOpenS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().setScreen(StealScreen(payload.targetName, payload.items))
+                context.client().gui.setScreen(StealScreen(payload.targetName, payload.items))
             }
         }
 
         // "远程传输": 打开自己的多格物品选择器
         ClientPlayNetworking.registerGlobalReceiver(ItemSelectOpenS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().setScreen(
+                context.client().gui.setScreen(
                     ItemSelectScreen(payload.items, payload.count) { slots ->
                         sendItemSelect(payload.purpose, slots)
                     },
@@ -233,14 +232,14 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(WaterBucketTotemS2C.ID) { _, context ->
             context.client().execute {
                 // "落地，水"救命的演出: 与图腾一致的上浮旋转动画, 物品换成水桶
-                context.client().gameRenderer.showFloatingItem(ItemStack(Items.WATER_BUCKET))
+                context.client().player?.displayItemActivation(ItemStack(Items.WATER_BUCKET))
             }
         }
 
         // 登录阶段: 响应服务端的版本查询 (走 LOGIN 阶段而不是 PLAY, 见 ModVersionService)
         ClientLoginNetworking.registerGlobalReceiver(ModVersionService.CHANNEL) { _, _, _, _ ->
-            val buf = PacketByteBufs.create()
-            buf.writeString(ModVersionService.currentVersion())
+            val buf = FriendlyByteBufs.create()
+            buf.writeUtf(ModVersionService.currentVersion())
             CompletableFuture.completedFuture(buf)
         }
 
@@ -257,9 +256,9 @@ object ClientPerkNetworking {
                 // 用 UUID 记录: 客户端重生会复用本地玩家的实体 id, 而服务端会换新 id
                 MorphState.setMorphed(payload.playerUuid, payload.morphed)
                 // 碰撞箱要主动重算 —— 改 getBaseDimensions 的返回值不会更新已缓存的 boundingBox
-                context.client().world?.getPlayers()
-                    ?.firstOrNull { it.uuid == payload.playerUuid }
-                    ?.calculateDimensions()
+                context.client().level?.players()
+                    ?.firstOrNull { it.getUUID() == payload.playerUuid }
+                    ?.refreshDimensions()
             }
         }
 
@@ -334,12 +333,12 @@ object ClientPerkNetworking {
      * "易位" 的两次选择。
      *
      * 用 closeOnPick = false: 第一次选完直接 setScreen 换到第二次的弹窗, 由 setScreen
-     * 负责移除旧屏。不能靠 client.execute 延迟 —— MinecraftClient.execute 在**主线程会
-     * 立即执行**, 紧接着 TargetPickScreen 的 close() 会把新屏幕一起清掉 (第二个选择器
+     * 负责移除旧屏。不能靠 client.execute 延迟 —— Minecraft.execute 在**主线程会
+     * 立即执行**, 紧接着 TargetPickScreen 的 onClose() 会把新屏幕一起清掉 (第二个选择器
      * 因此从来没出现过)。
      */
     private fun openDualTargetPicker(
-        client: MinecraftClient,
+        client: Minecraft,
         purpose: String,
         targets: List<PlayerTargetEntry>,
         first: UUID?,
@@ -354,13 +353,13 @@ object ClientPerkNetworking {
             if (first == null) "random-perks-bingo.swap_first.hint"
             else "random-perks-bingo.swap_second.hint"
 
-        client.setScreen(
+        client.gui.setScreen(
             TargetPickScreen(titleKey, hintKey, remaining, closeOnPick = false) { uuid ->
                 if (first == null) {
                     // 选中第一个 → 直接换成第二个选择器
                     openDualTargetPicker(client, purpose, targets, uuid)
                 } else {
-                    client.setScreen(null)
+                    client.gui.setScreen(null)
                     ClientPlayNetworking.send(DualTargetPickC2S(purpose, first, uuid))
                 }
             },
