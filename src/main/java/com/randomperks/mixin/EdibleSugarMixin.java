@@ -12,14 +12,18 @@ import net.minecraft.item.Items;
 import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
@@ -36,7 +40,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *   <li>{@code getMaxUseTime(LivingEntity)} —— 不返回 &gt;0 的话会被当成"瞬发使用",
  *       不会进入原版的进食倒计时;</li>
  *   <li>{@code finishUsing(World, LivingEntity)} —— 倒计时结束后由原版调用,
- *       这里走同一份定义的 {@code finishConsumption} (扣物品 / 音效 / 粒子 / 正面效果全在里头);</li>
+ *       这里走同一份定义的 {@code finishConsumption} (扣物品 / 收尾咀嚼 / 粒子 / 正面效果),
+ *       再补上原版食物吃完时的那声打嗝;</li>
+ *   <li>{@code usageTick(World, LivingEntity, int)} —— 进食中的咀嚼声和碎屑粒子。
+ *       原版只在物品堆带有 {@code CONSUMABLE} 组件时才播, 糖没有该组件,
+ *       所以要在这里按同一节奏调用 {@code spawnParticlesAndPlaySound};</li>
  *   <li>{@code getUseAction()} —— 只影响手臂姿势与进食动画 (该方法拿不到玩家, 但非持有者
  *       根本进不了"正在用糖"的状态, 所以无条件返回 EAT 是安全的)。</li>
  * </ul>
@@ -103,7 +111,34 @@ public class EdibleSugarMixin {
         ItemStack self = (ItemStack) (Object) this;
         if (!self.isOf(Items.SUGAR)) return;
         if (!(user instanceof PlayerEntity player) || !randomperks$hasPerk(player)) return;
-        cir.setReturnValue(randomperks$sugar().finishConsumption(world, user, self));
+        ItemStack finished = randomperks$sugar().finishConsumption(world, user, self);
+        // 原版食物的打嗝在 FoodComponent.onConsume 里, 糖没有食物组件, 这里按同样的音量和音高补上。
+        // 只在服务端播: playSound 的 source 为 null 时会发给周围所有人, 吃的人自己也能听到。
+        if (!world.isClient()) {
+            Random random = user.getRandom();
+            world.playSound(
+                    null,
+                    player.getX(),
+                    player.getY(),
+                    player.getZ(),
+                    SoundEvents.ENTITY_PLAYER_BURP,
+                    SoundCategory.PLAYERS,
+                    0.5F,
+                    MathHelper.nextBetween(random, 0.9F, 1.0F));
+        }
+        cir.setReturnValue(finished);
+    }
+
+    @Inject(method = "usageTick", at = @At("HEAD"))
+    private void randomperks$sugarUsageTick(World world, LivingEntity user, int remainingUseTicks,
+                                            CallbackInfo ci) {
+        ItemStack self = (ItemStack) (Object) this;
+        if (!self.isOf(Items.SUGAR)) return;
+        if (!(user instanceof PlayerEntity player) || !randomperks$hasPerk(player)) return;
+        ConsumableComponent sugar = randomperks$sugar();
+        if (sugar.shouldSpawnParticlesAndPlaySounds(remainingUseTicks)) {
+            sugar.spawnParticlesAndPlaySound(user.getRandom(), user, self, 5);
+        }
     }
 
     @Inject(method = "getUseAction", at = @At("HEAD"), cancellable = true)
