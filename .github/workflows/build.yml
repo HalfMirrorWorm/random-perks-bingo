@@ -2,7 +2,7 @@ name: Build & Release
 
 on:
   push:
-    branches: [ main, '26.3' ]
+    branches: [ master, '26.3' ]
     tags: [ 'v*' ]
   pull_request:
   workflow_dispatch:
