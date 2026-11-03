@@ -92,7 +92,7 @@ object SavageMagicService {
         villager.getOffers()
         for (level in 2..5) {
             villager.setVillagerData(villager.villagerData.withLevel(level))
-            (villager as VillagerFillRecipesInvoker).invokeFillRecipes()
+            (villager as VillagerFillRecipesInvoker).invokeFillRecipes(world)
         }
         villager.setVillagerXp(250)
 

@@ -29,7 +29,6 @@ public class PerkModeConflictMixin {
 
     @Inject(method = "toggleCardMode", at = @At("TAIL"))
     private void randomperks$enforceModeConflict(
-            OptionsService.Context ctx,
             BingoCard card,
             KMutableProperty1<BingoCardOptions, Boolean> prop,
             Boolean value,
