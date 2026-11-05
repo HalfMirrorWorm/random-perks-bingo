@@ -55,8 +55,8 @@ public abstract class HomingArrowMixin {
     /** 发射瞬间索敌的最大半径 (格) —— 只看准心角度, 穿墙 */
     private static final double ACQUIRE_RANGE = 64.0;
 
-    /** 索敌的最小视线夹角余弦: 约 30° 锥角, 准心附近没有生物就不锁定 */
-    private static final double MIN_AIM_DOT = Math.cos(Math.toRadians(30.0));
+    /** 索敌的角度下限: 描述是"夹角最小的敌人", 不设锥角限制 (用 -1 表示任意角度) */
+    private static final double MIN_AIM_DOT = -1.0;
 
     /**
      * 每 tick 向目标偏转的比例 (0 = 不转, 1 = 立刻对准)。
@@ -198,11 +198,17 @@ public abstract class HomingArrowMixin {
         Vec3 eye = shooter.getEyePosition();
         Vec3 look = shooter.getViewVector(1.0f);
 
+        // 只锁"敌人"(敌对生物或其他玩家), 牛/村民/盔甲架不再抢目标;
+        // 外扩的 AABB 在斜角上会超过 64 格, 再按真实距离过滤一次
+        double rangeSqr = ACQUIRE_RANGE * ACQUIRE_RANGE;
         List<LivingEntity> candidates = world.getEntitiesOfClass(
                 LivingEntity.class,
                 shooter.getBoundingBox().inflate(ACQUIRE_RANGE),
                 entity -> entity != shooter && entity.isAlive() && !entity.isRemoved()
-                        && !entity.isSpectator() && !isAlly(shooter, entity));
+                        && !entity.isSpectator() && !isAlly(shooter, entity)
+                        && (entity instanceof net.minecraft.world.entity.monster.Enemy
+                        || entity instanceof Player)
+                        && entity.distanceToSqr(shooter) <= rangeSqr);
 
         LivingEntity best = null;
         double bestDot = MIN_AIM_DOT;

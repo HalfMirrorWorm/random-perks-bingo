@@ -286,28 +286,39 @@ object PerkBoostQuery {
     /** "天启日"效果持续时间: 20 分钟 */
     private const val DOOMSDAY_DURATION_TICKS = 20L * 60L * 20L
 
-    /** 效果结束时刻 (server ticks); 不存在表示效果已结束 */
-    private const val DOOMSDAY_END_TICK_KEY = "doomsday_end_tick"
+    /** 剩余时长 (tick), 每 20 tick 扣一次; 不存在表示效果已结束。
+     *  用"剩余时长"而不是绝对 tickCount —— 后者在服务器重启 / 逆转时间回档后会算错 */
+    private const val DOOMSDAY_REMAINING_KEY = "doomsday_remaining"
 
     /** 获得词条时开始计时 */
     fun beginDoomsday(player: ServerPlayer) {
         val state = PerkStateManager.get(player.uuid) ?: return
-        val now = player.level().getServer().tickCount.toLong()
-        state.memory[DOOMSDAY_END_TICK_KEY] = (now + DOOMSDAY_DURATION_TICKS).toString()
+        state.memory[DOOMSDAY_REMAINING_KEY] = DOOMSDAY_DURATION_TICKS.toString()
     }
 
     /** 效果立即结束 (被敌方玩家击杀时调用) */
     fun endDoomsday(player: ServerPlayer) {
-        PerkStateManager.get(player.uuid)?.memory?.remove(DOOMSDAY_END_TICK_KEY)
+        PerkStateManager.get(player.uuid)?.memory?.remove(DOOMSDAY_REMAINING_KEY)
     }
 
-    /** 天启日效果是否仍在持续: 持有词条、未超时、未被击杀结束 */
+    /** 天启日效果是否仍在持续: 持有词条、剩余时间为正 */
     fun hasDoomsdayEffect(player: ServerPlayer): Boolean {
         val state = PerkStateManager.get(player.uuid) ?: return false
         if (!state.hasPerk("mythic_doomsday")) return false
-        val endTick = state.memory[DOOMSDAY_END_TICK_KEY]?.toLongOrNull() ?: return false
-        val now = player.level().getServer().tickCount.toLong()
-        return now < endTick
+        val remaining = state.memory[DOOMSDAY_REMAINING_KEY]?.toLongOrNull() ?: return false
+        return remaining > 0L
+    }
+
+    /** 每 20 tick 由词条的 onTick 调用一次 */
+    fun tickDoomsday(player: ServerPlayer) {
+        val state = PerkStateManager.get(player.uuid) ?: return
+        val remaining = state.memory[DOOMSDAY_REMAINING_KEY]?.toLongOrNull() ?: return
+        val next = remaining - 20L
+        if (next <= 0L) {
+            state.memory.remove(DOOMSDAY_REMAINING_KEY)
+        } else {
+            state.memory[DOOMSDAY_REMAINING_KEY] = next.toString()
+        }
     }
 
     /** "天启日"最多对几次击杀生效 */

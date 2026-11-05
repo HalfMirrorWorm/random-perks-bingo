@@ -56,8 +56,9 @@ public class DoomsdayMixin {
             return;
         }
 
-        // 被仍处于效果中的天启日持有者击杀
-        if (enemyKill && keepInventory
+        // 被仍处于效果中的天启日持有者击杀: 描述是"被你击杀的前 4 名玩家",
+        // 不再要求敌方 —— 队友同样掉落并计入次数
+        if (keepInventory
                 && PerkBoostQuery.INSTANCE.hasDoomsdayEffect(killer)
                 && PerkBoostQuery.INSTANCE.consumeDoomsdayKill(killer)) {
             dropBackpack(self);
@@ -82,10 +83,12 @@ public class DoomsdayMixin {
         }
     }
 
+    /** 只有**双方都在同一支队伍**时才算队友; 没有队伍时视为人人都是敌人
+     *  (以前两边都为 null 时返回 true, 无队伍的服务器上"被敌方击杀"永远不会触发) */
     private static boolean isSameTeam(ServerPlayer a, ServerPlayer b) {
         PlayerTeam teamA = a.getTeam();
         PlayerTeam teamB = b.getTeam();
-        if (teamA == null || teamB == null) return teamA == teamB;
+        if (teamA == null || teamB == null) return false;
         return teamA.getName().equals(teamB.getName());
     }
 }

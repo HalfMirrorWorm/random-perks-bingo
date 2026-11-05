@@ -433,7 +433,9 @@ object DelverPerks {
             val doubled = PerkBoostQuery.isExtraDropDoubled(player, pos)
             val dropCopies = if (doubled) 2 else 1
 
-            val ore = blockState.block
+            // 按"矿石家族"比较: coal_ore 与 deepslate_coal_ore 是同一矿脉的两截,
+            // 直接用方块实例比较会在深板岩交界处断开
+            val oreKey = oreKey(blockState.block)
             val visited = HashSet<BlockPos>()
             val queue = ArrayDeque<BlockPos>()
             visited.add(pos)
@@ -450,7 +452,7 @@ object DelverPerks {
                             if (!visited.add(next)) continue
 
                             val chainState = world.getBlockState(next)
-                            if (chainState.block !== ore) continue                   // 同种矿石
+                            if (oreKey(chainState.block) != oreKey) continue         // 同一矿脉 (含深板岩变种)
                             if (tool.isEmpty) return                                 // 挖断了就停
                             // 只移除方块, 不在这里生成掉落 —— 掉落统一在下面按主矿石的结算结果处理
                             if (!world.destroyBlock(next, false, player)) continue
@@ -470,6 +472,10 @@ object DelverPerks {
                 }
             }
         }
+
+        /** 矿石"家族"键: 去掉 deepslate_ 前缀, 让原矿与深板岩变种算同一种 */
+        private fun oreKey(block: net.minecraft.world.level.block.Block): String =
+            BuiltInRegistries.BLOCK.getKey(block).path.removePrefix("deepslate_")
     }
 
     /** 绿 · 深掘: **无忧的安眠** —— 在地狱 / 末地睡床时, 床的爆炸**范围翻倍、伤害 1.5 倍**

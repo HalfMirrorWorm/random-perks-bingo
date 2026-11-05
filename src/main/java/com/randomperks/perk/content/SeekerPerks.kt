@@ -380,10 +380,26 @@ object SeekerPerks {
             return true
         }
 
-        private fun standable(world: ServerLevel, pos: BlockPos): Boolean =
-            world.getBlockState(pos).isAir && world.getBlockState(pos.below()).isCollisionShapeFullBlock(world, pos.below())
+        /** 站得住: 脚下与头顶都是空气, 下方有碰撞箱。
+         *  不再要求下方是"完整方块" —— 半砖/楼梯/土径/耕地/灵魂沙/地毯下面也能刷出来 */
+        private fun standable(world: ServerLevel, pos: BlockPos): Boolean {
+            if (!world.getBlockState(pos).isAir) return false
+            if (!world.getBlockState(pos.above()).isAir) return false
+            val below = world.getBlockState(pos.below())
+            return !below.getCollisionShape(world, pos.below()).isEmpty
+        }
 
         private fun nearbyStandable(world: ServerLevel, center: BlockPos): BlockPos? {
+            // 先在玩家周围 (同高度 ±3 格) 做 3D 搜索 —— 人在洞穴里时也刷在身边, 不会跑到地表
+            for (i in 0 until 24) {
+                val candidate = center.offset(
+                    world.random.nextInt(17) - 8,
+                    world.random.nextInt(7) - 3,
+                    world.random.nextInt(17) - 8,
+                )
+                if (standable(world, candidate)) return candidate
+            }
+            // 兜底: 附近的地表高度图 (与原版 "找地面" 的行为一致)
             for (i in 0 until 12) {
                 val candidate = center.offset(world.random.nextInt(33) - 16, 0, world.random.nextInt(33) - 16)
                 val top = world.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, candidate)

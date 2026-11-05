@@ -60,6 +60,11 @@ object MythicPerks {
         override fun onAcquire(ctx: PerkContext) {
             PerkBoostQuery.beginDoomsday(ctx.player)
         }
+
+        /** 剩余时长每 20 tick 扣一次 (不再用绝对 tickCount, 重启/回档后也不会算错) */
+        override fun onTick(ctx: PerkContext) {
+            PerkBoostQuery.tickDoomsday(ctx.player)
+        }
     }
 
     /** 红 · 唤法: **游戏BUG** —— 获得时立即弹出玩家选择器, 选中一名玩家后,
