@@ -565,20 +565,15 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.IRON_SWORD)
 
-        private val MOD_SWEEP = Identifier.fromNamespaceAndPath("random-perks-bingo", "veteran_no_sweep")
+        // 横扫由 NoSweepMixin 直接让 isSweepAttack 返回 false 关掉。
+        // 以前改 SWEEPING_DAMAGE_RATIO 的写法无效: 它只影响横扫伤害, 而且会被夹到 0,
+        // 横扫判定本身照旧, 音效和周围生物那 1 点伤害都还在。
 
-        override fun onAcquire(ctx: PerkContext) = apply(ctx)
-        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+        override fun onAcquire(ctx: PerkContext) {}
 
-        /** 横扫伤害比例默认 1.0, -1.0 后为 0 (只影响剑的横扫, 对单体攻击无影响) */
-        private fun apply(ctx: PerkContext) =
-            PerkEffects.setAttribute(
-                ctx.player, Attributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP,
-                -1.0, AttributeModifier.Operation.ADD_VALUE,
-            )
+        override fun onRespawn(ctx: PerkContext) {}
 
-        override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeAttribute(ctx.player, Attributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
+        override fun onRemove(ctx: PerkContext) {}
     }
 
     /** 绿 · 猎杀: **不倒翁** —— 受到的击退效果降低 80% */
@@ -792,22 +787,13 @@ object HunterPerks {
         override val archetype = PerkArchetype.HUNTER
         override fun icon() = ItemStack(Items.DIAMOND_SWORD)
 
-        private val MOD_SWEEP = Identifier.fromNamespaceAndPath("random-perks-bingo", "pearl_gauntlet_no_sweep")
+        // 横扫由 NoSweepMixin 直接关掉 (改 SWEEPING_DAMAGE_RATIO 只会把伤害压到 1, 判定仍然触发)
 
-        override fun onAcquire(ctx: PerkContext) = apply(ctx)
-        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+        override fun onAcquire(ctx: PerkContext) {}
 
-        private fun apply(ctx: PerkContext) {
-            // 剑不再横扫 (与"老玩家"同一机制: 把横扫伤害比例压到 0)
-            PerkEffects.setAttribute(
-                ctx.player, Attributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP,
-                -1.0, AttributeModifier.Operation.ADD_VALUE,
-            )
-        }
+        override fun onRespawn(ctx: PerkContext) {}
 
-        override fun onRemove(ctx: PerkContext) {
-            PerkEffects.removeAttribute(ctx.player, Attributes.SWEEPING_DAMAGE_RATIO, MOD_SWEEP)
-        }
+        override fun onRemove(ctx: PerkContext) {}
     }
 
     /** 紫 · 猎杀: **良子冲击** —— 饱食度满 (饥饿值 20) 时, 你造成的伤害 +50%;

@@ -64,11 +64,13 @@ public class LivingEntityDamageMixin {
             amount *= 2.0f;
         }
 
-        // "老玩家": 剑格挡 —— 右键举剑 (1.9 以前的手感) 时受到的伤害减半。
+        // "老玩家": 剑格挡 —— 右键举剑 (1.9 以前的手感) 时受到的**攻击**伤害减半。
         // "使用中 + 手里是剑" 只有 OldSchoolBlockMixin 放过的那条路径能达成, 所以不必再查持有状态。
+        // 只挡有攻击者的伤害: 摔落/岩浆/溺水这类环境伤害和格挡无关, 不应该一起减半。
         if (PerkBoostQuery.INSTANCE.hasOldSchoolCombat(player)
                 && player.isUsingItem()
-                && player.getUseItem().is(ItemTags.SWORDS)) {
+                && player.getUseItem().is(ItemTags.SWORDS)
+                && source.getEntity() != null) {
             amount *= 0.5f;
         }
 

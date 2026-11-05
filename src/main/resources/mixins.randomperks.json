@@ -37,6 +37,7 @@
     "BigStomachMixin",
     "OldSchoolCombatMixin",
     "OldSchoolBlockMixin",
+    "NoSweepMixin",
     "OldSchoolBlockSlowMixin",
     "CatTargetMixin",
     "MobTargetSelectorAccessor",

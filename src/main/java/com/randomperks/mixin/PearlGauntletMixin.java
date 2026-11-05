@@ -83,4 +83,14 @@ public class PearlGauntletMixin {
     private boolean randomperks$critSprinting(Player player) {
         return !randomperks$forceCrit() && player.isSprinting();
     }
+
+    /** !isMobilityRestricted() —— 26.3 新增的条件 (骑乘/睡觉等), 同样要对持词条者放行 */
+    @Redirect(
+            method = "canCriticalAttack",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/player/Player;isMobilityRestricted()Z"))
+    private boolean randomperks$critMobility(Player player) {
+        return !randomperks$forceCrit() && player.isMobilityRestricted();
+    }
 }

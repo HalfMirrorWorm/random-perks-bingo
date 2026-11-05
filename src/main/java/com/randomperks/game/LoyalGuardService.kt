@@ -36,9 +36,10 @@ object LoyalGuardService {
         val pet = findPet(player) ?: return false
         val world = pet.level() as? ServerLevel ?: return false
 
-        // 宠物承受 2 倍伤害; 玩家本次伤害由调用方取消
-        pet.hurtServer(world, source, amount * 2.0f)
-        return true
+        // 宠物承受 2 倍伤害; 只有真的扣了血才算转嫁成功 ——
+        // 原版 damage 在受伤冷却前期、伤害不高于上次、火焰伤害遇到火焰抗性时会直接返回 false,
+        // 这时如果仍然返回 true, 玩家和宠物都不会掉血 (等于无限免疫)。
+        return pet.hurtServer(world, source, amount * 2.0f)
     }
 
     /** 最近的、属于该玩家的存活宠物 */

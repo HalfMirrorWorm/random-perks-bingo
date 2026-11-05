@@ -101,13 +101,16 @@ object PerkWorldEventService {
             FungalInfectionService.handleAttack(attacker, victim)
         }
 
-        // 受到玩家伤害 → "盘丝大仙": 蜘蛛获得 5 秒盘丝 (织网) 效果
-        ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
-            if (damageTaken <= 0.0f) return@register
-            val spider = entity as? Spider ?: return@register
-            val attacker = source.entity as? ServerPlayer ?: return@register
-            if (!PerkBoostQuery.hasSpiderWeaving(attacker)) return@register
+        // 受到玩家伤害 → "盘丝大仙": 蜘蛛获得 5 秒盘丝 (织网) 效果。
+        // 必须在结算**之前**挂上: AFTER_DAMAGE 在致死一击时不触发,
+        // 而盘丝的织网正是在死亡时结算的 —— 后挂就等于一击秒杀永远不出网。
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register { entity, source, amount ->
+            if (amount <= 0.0f) return@register true
+            val spider = entity as? Spider ?: return@register true
+            val attacker = source.entity as? ServerPlayer ?: return@register true
+            if (!PerkBoostQuery.hasSpiderWeaving(attacker)) return@register true
             spider.addEffect(MobEffectInstance(MobEffects.WEAVING, 5 * 20, 0))
+            true
         }
 
         // 受到伤害 → "忠心护主": 由附近属于该玩家的宠物承受 2 倍伤害
@@ -116,22 +119,24 @@ object PerkWorldEventService {
             !LoyalGuardService.tryRedirect(player, source, amount)
         }
 
-        // 受到生物伤害 → "刺猬": 把 75% 伤害反弹给攻击者
-        ServerLivingEntityEvents.AFTER_DAMAGE.register { entity, source, _, damageTaken, _ ->
-            if (damageTaken <= 0.0f) return@register
-            val player = entity as? ServerPlayer ?: return@register
-            if (!PerkBoostQuery.hasHedgehog(player)) return@register
+        // 受到生物伤害 → "刺猬": 把 75% 伤害反弹给攻击者。
+        // 用 ALLOW_DAMAGE 在结算前反弹: AFTER_DAMAGE 在致死一击时不触发, 否则最后一击白挨。
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register { entity, source, amount ->
+            if (amount <= 0.0f) return@register true
+            val player = entity as? ServerPlayer ?: return@register true
+            if (!PerkBoostQuery.hasHedgehog(player)) return@register true
             // 反弹本身也走 THORNS 伤害; 跳过它, 避免两个刺猬互相递归
-            if (source.`is`(DamageTypes.THORNS)) return@register
-            val attacker = source.entity as? LivingEntity ?: return@register
-            if (attacker === player) return@register
-            val attackerWorld = attacker.level() as? ServerLevel ?: return@register
+            if (source.`is`(DamageTypes.THORNS)) return@register true
+            val attacker = source.entity as? LivingEntity ?: return@register true
+            if (attacker === player) return@register true
+            val attackerWorld = attacker.level() as? ServerLevel ?: return@register true
 
             attacker.hurtServer(
                 attackerWorld,
                 attackerWorld.damageSources().thorns(player),
-                damageTaken * 0.75f,
+                amount * 0.75f,
             )
+            true
         }
 
         // 右键方块 → "切洋葱" / "海带成骨" / "点石成金"

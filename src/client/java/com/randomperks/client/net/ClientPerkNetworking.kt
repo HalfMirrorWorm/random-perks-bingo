@@ -57,6 +57,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.FriendlyByteBufs
 import net.minecraft.network.chat.Component
 import java.util.UUID
+import com.randomperks.client.WindStrideClient
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -114,6 +115,9 @@ object ClientPerkNetworking {
                 ownedPerkIds = payload.perkIds.toSet()
                 // 同步给 main 源集的镜像 —— mixin 那边引用不到 client 源集的类
                 ClientPerkFlags.ownedPerkIds = ownedPerkIds
+                // 词条增删会改变疾跑加成的归属: 正在疾跑时立刻按新列表重算,
+                // 否则"获得时已在疾跑"要松开再按、"移除时还在疾跑"会一直留着
+                context.client().player?.let { WindStrideClient.refresh(it) }
             }
         }
 
