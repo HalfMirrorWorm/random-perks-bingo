@@ -478,6 +478,15 @@ object DelverPerks {
             BuiltInRegistries.BLOCK.getKey(block).path.removePrefix("deepslate_")
     }
 
+    /** 蓝 · 深掘: **破壁人** —— 手持能挖黑曜石的镐时, 基岩可以像黑曜石一样被挖掉。
+     *  (由 BedrockBreakMixin 在 BlockState.getDestroyProgress 里实现) */
+    object Wallbreaker : PerkDefinition {
+        override val id = "delver_wallbreaker"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.DELVER
+        override fun icon() = ItemStack(Items.BEDROCK)
+    }
+
     /** 绿 · 深掘: **无忧的安眠** —— 在地狱 / 末地睡床时, 床的爆炸**范围翻倍、伤害 1.5 倍**
      *  (由 BedBombMixin 接管 BedBlock.onUse 里的 createExplosion 调用)。 */
     object CarefreeSleep : PerkDefinition {
@@ -551,6 +560,7 @@ object DelverPerks {
         PerkRegistry.register(Collector)
         PerkRegistry.register(Eighty)
         PerkRegistry.register(ChainMining)
+        PerkRegistry.register(Wallbreaker)
         PerkRegistry.register(CarefreeSleep)
         PerkRegistry.register(OnionCut)
         PerkRegistry.register(Phoenix)

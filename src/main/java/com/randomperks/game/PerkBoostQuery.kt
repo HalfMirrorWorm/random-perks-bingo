@@ -61,6 +61,10 @@ object PerkBoostQuery {
         return path == "ancient_debris" || path.endsWith("_ore")
     }
 
+    /** 玩家是否持有"破壁人" (基岩可挖, 由 BedrockBreakMixin 调用) */
+    fun hasWallbreaker(player: ServerPlayer): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("delver_wallbreaker") == true
+
     /** 玩家是否持有"哈基米" (对苦力怕等效于猫, 由 CatAuraMixin 调用) */
     fun hasCatAura(player: Player): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_cat_aura") == true

@@ -390,6 +390,8 @@
   "random-perks-bingo.perk.harvest_fungal_infection.desc": "Hitting an enemy player turns 2 random inventory items into lush cave items (5s cooldown); every 1m45s one of your own inventory slots is converted too.",
   "random-perks-bingo.perk.harvest_slow_chewing.name": "Slow Chewing",
   "random-perks-bingo.perk.harvest_slow_chewing.desc": "While eating food, you take 75% less damage.",
+  "random-perks-bingo.perk.delver_wallbreaker.name": "Wallbreaker",
+  "random-perks-bingo.perk.delver_wallbreaker.desc": "With a pickaxe that can mine obsidian, you can break bedrock just like obsidian.",
   "random-perks-bingo.perk.delver_carefree_sleep.name": "Carefree Sleep",
   "random-perks-bingo.perk.delver_carefree_sleep.desc": "Sleeping in a bed in the Nether or the End doubles the explosion radius and deals 1.5x damage.",
   "random-perks-bingo.message.version_mismatch": "Random Perks mod version mismatch!\nServer: %s\nClient: %s",
@@ -443,6 +445,7 @@
   "random-perks-bingo.recap.rank_row": "%s. %s (%s) · first capture %s · %s cell(s)",
   "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s"
 }
+
 
 
 

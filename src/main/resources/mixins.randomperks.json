@@ -38,6 +38,7 @@
     "OldSchoolCombatMixin",
     "OldSchoolBlockMixin",
     "NoSweepMixin",
+    "BedrockBreakMixin",
     "OldSchoolBlockSlowMixin",
     "CatTargetMixin",
     "MobTargetSelectorAccessor",
