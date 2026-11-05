@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <p>新规则:
  * <ul>
  *   <li>效果持续 20 分钟, 被敌方玩家击杀时立即结束;</li>
- *   <li>期间被持有者击杀的前 4 名玩家, 强制掉落**背包位**物品;</li>
+ *   <li>期间被持有者击杀的前 4 名**敌方玩家**, 强制掉落**背包位**物品 (队友不掉、不计数);</li>
  *   <li>持有者自己只有被敌方玩家击杀时才会强制掉落背包位物品 (随后效果结束);</li>
  *   <li>"背包位" = 主背包 27 格 (快捷栏 0~8 与护甲/副手不掉);</li>
  *   <li>仍然只在 keepInventory 开启时干预 (关闭时原版本来就会掉落)。</li>
@@ -56,9 +56,9 @@ public class DoomsdayMixin {
             return;
         }
 
-        // 被仍处于效果中的天启日持有者击杀: 描述是"被你击杀的前 4 名玩家",
-        // 不再要求敌方 —— 队友同样掉落并计入次数
-        if (keepInventory
+        // 被仍处于效果中的天启日持有者击杀: 只对**敌方玩家**生效,
+        // 击杀队友不掉背包、也不计入 4 次
+        if (enemyKill && keepInventory
                 && PerkBoostQuery.INSTANCE.hasDoomsdayEffect(killer)
                 && PerkBoostQuery.INSTANCE.consumeDoomsdayKill(killer)) {
             dropBackpack(self);
