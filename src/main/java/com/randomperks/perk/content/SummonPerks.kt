@@ -430,18 +430,11 @@ object SummonPerks {
             val player = ctx.player
             val world = player.level() as? ServerLevel ?: return
 
-            // 头顶 (脚上方 2 格) 开始向上找第一个空气方块, 最多找 8 格。
-            // 找不到就不放 —— 以前会退回起点直接覆盖原方块, 那块方块的掉落也没了
+            // 头顶 (脚上方 2 格) 开始向上找第一个空气方块, 最多找 8 格;
+            // 这一段全不是空气时直接覆盖脚下上方那格 (词条就是要生成一格传送门)
             val base = player.blockPosition().above(2)
-            val pos = (0..8).map { base.above(it) }.firstOrNull { world.getBlockState(it).isAir }
-            if (pos == null) {
-                player.sendSystemMessage(
-                    Component.translatable("random-perks-bingo.message.end_portal_no_space"),
-                    true,
-                )
-                return
-            }
-            // 越界时 setBlock 会返回 false, 不看返回值会向全服公告一个并不存在的传送门
+            val pos = (0..8).map { base.above(it) }.firstOrNull { world.getBlockState(it).isAir } ?: base
+            // 只有越界导致写入失败时才提示, 不向全服公告一个不存在的传送门
             if (!world.setBlockAndUpdate(pos, Blocks.END_PORTAL.defaultBlockState())) {
                 player.sendSystemMessage(
                     Component.translatable("random-perks-bingo.message.end_portal_no_space"),
