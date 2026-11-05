@@ -200,28 +200,21 @@ object SwiftPerks {
 
         private const val RIPTIDE_LEVEL = 2
 
-        /** 潮涌能量续期时长 (tick), 与原版导管方块一致 */
-        private const val CONDUIT_DURATION = 260
-
         override fun onAcquire(ctx: PerkContext) {
             val trident = ItemStack(Items.TRIDENT)
             PerkEffects.enchant(ctx.player, trident, Enchantments.RIPTIDE, RIPTIDE_LEVEL)
             PerkEffects.giveStack(ctx.player, trident)
-            applyDolphinsGrace(ctx)
+            applyPermanent(ctx)
         }
 
-        override fun onRespawn(ctx: PerkContext) = applyDolphinsGrace(ctx)
+        override fun onRespawn(ctx: PerkContext) = applyPermanent(ctx)
 
-        /** 每 20 tick 驱动一次: 在水里/雨中续潮涌能量 (与原版导管方块同一节奏) */
-        override fun onTick(ctx: PerkContext) {
-            if (!ctx.player.isInWaterOrRain) return
-            ctx.player.addEffect(
-                MobEffectInstance(MobEffects.CONDUIT_POWER, CONDUIT_DURATION, 0, true, true)
-            )
-        }
-
-        private fun applyDolphinsGrace(ctx: PerkContext) =
+        /** 描述写明海豚祝福与潮涌能量都是永久 —— 都挂无限时长,
+         *  不再"只在水里/雨里续 13 秒、上岸就掉" */
+        private fun applyPermanent(ctx: PerkContext) {
             PerkEffects.permanentEffect(ctx.player, MobEffects.DOLPHINS_GRACE, 0)
+            PerkEffects.permanentEffect(ctx.player, MobEffects.CONDUIT_POWER, 0)
+        }
 
         override fun onRemove(ctx: PerkContext) {
             PerkEffects.removeEffect(ctx.player, MobEffects.DOLPHINS_GRACE)

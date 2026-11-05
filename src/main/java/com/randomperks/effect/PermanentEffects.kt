@@ -29,8 +29,13 @@ object PermanentEffects {
         Entry(MobEffects.NIGHT_VISION, "delver_night_vision", 0),
         Entry(MobEffects.RESISTANCE, "delver_toughness", 0),
         Entry(MobEffects.HASTE, "delver_haste", 1),
-        Entry(MobEffects.JUMP_BOOST, "swift_jump", 0),
         Entry(MobEffects.DOLPHINS_GRACE, "swift_gura_shark", 0),
+        Entry(MobEffects.CONDUIT_POWER, "swift_gura_shark", 0),
+        // 深海之息 / 喵人斧 描述都是"永久", 被牛奶或有限时长覆盖后要自动补回
+        Entry(MobEffects.WATER_BREATHING, "swift_deep_breath", 0),
+        Entry(MobEffects.WEAKNESS, "artisan_nya_axe", 0),
+        // 注: "弹簧腿"只加 JUMP_STRENGTH 属性, 不再登记 JUMP_BOOST ——
+        // 两者叠加会让跳跃高度超过描述, 而且牛奶后补回的效果会一直留到词条移除
     )
 
     /** 效果被移除 (由 EffectPersistMixin 在所有移除路径的汇聚点调用) */

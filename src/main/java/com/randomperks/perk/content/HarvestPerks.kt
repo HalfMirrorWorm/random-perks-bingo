@@ -565,6 +565,17 @@ object HarvestPerks {
                     false,
                 )
             )
+            // 速度效果只加 MOVEMENT_SPEED, 而快乐恶魂的自主飞行和骑乘都读 FLYING_SPEED,
+            // 所以额外给飞行速度挂一份等量 (+20%) 的永久修饰符, 否则"永久速度 I"对飞行毫无作用
+            ghast.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.FLYING_SPEED)?.addPermanentModifier(
+                net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath(
+                        "random-perks-bingo", "happy_ghast_flying",
+                    ),
+                    0.2,
+                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_BASE,
+                )
+            )
             world.addFreshEntity(ghast)
 
             PerkEffects.giveStack(player, ItemStack(Items.LEAD, LEAD_COUNT))

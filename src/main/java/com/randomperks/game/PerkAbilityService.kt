@@ -83,7 +83,7 @@ object PerkAbilityService {
 
     /**
      * 处理客户端的冲刺请求。
-     * 服务端验证: 持有词条 / 在空中 / 未滑翔 / 未骑乘 / 本段离地未用过 / 冷却已结束。
+     * 服务端验证: 持有词条 / 在空中 / 未骑乘 / 冷却已结束 (与描述一致, 没有额外限制)。
      */
     fun handleDash(player: ServerPlayer) {
         if (!PerkSession.isEnabled()) return
@@ -91,26 +91,20 @@ object PerkAbilityService {
             clearDashUsed(player)
             return
         }
-        if (player.isFallFlying) return      // 滑翔中不可用
         if (player.getVehicle() != null) return
 
         val state = PerkStateManager.get(player.uuid) ?: return
         if (!state.hasPerk(DASH_PERK_ID)) return
-        if (state.memory[DASH_USED_KEY] == "1") return   // 每段离地只允许一次
 
+        // 描述只写了"冷却 3 秒": 不再额外限制"每段离地只能冲一次"或"滑翔中不可用"
         val now = player.level().getServer().tickCount.toLong()
         if (now < (state.cooldowns[DASH_PERK_ID] ?: 0L)) return   // 3 秒冷却
 
-        state.memory[DASH_USED_KEY] = "1"
         state.cooldowns[DASH_PERK_ID] = now + DASH_COOLDOWN_TICKS
 
-        // 只改水平分量: 垂直速度保持不变, 所以它不会变成"第二个二段跳"
-        val look = player.lookAngle
-        val horizontal = Vec3(look.x, 0.0, look.z)
-        val length = horizontal.length()
-        val dir = if (length < 1.0E-4) Vec3.directionFromRotation(0.0f, player.yRot) else horizontal.scale(1.0 / length)
-
-        player.deltaMovement = Vec3(dir.x * DASH_SPEED, player.deltaMovement.y, dir.z * DASH_SPEED)
+        // 朝**视线方向**冲刺 (含垂直分量), 不再只取水平分量
+        val dir = player.lookAngle
+        player.deltaMovement = Vec3(dir.x * DASH_SPEED, dir.y * DASH_SPEED, dir.z * DASH_SPEED)
         player.syncVelocity = true
 
         player.level().playSound(

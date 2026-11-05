@@ -332,7 +332,7 @@ object DelverPerks {
     private fun isOreBlock(state: BlockState): Boolean {
         if (ORE_CHECK_TAGS.any { state.`is`(it) }) return true
         val path = BuiltInRegistries.BLOCK.getKey(state.block).path
-        return path == "ancient_debris" || path.contains("ore")
+        return path == "ancient_debris" || path.endsWith("_ore")
     }
 
     /** "石头"判定: 自然石头 (石头/花岗岩/闪长岩/安山岩/凝灰岩/深板岩) +
@@ -551,3 +551,4 @@ object DelverPerks {
         PerkRegistry.register(SoulOut)
     }
 }
+

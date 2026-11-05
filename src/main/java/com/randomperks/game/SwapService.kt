@@ -61,8 +61,11 @@ object SwapService {
             val caster = server.playerList.getPlayer(casterUuid)
             val target = server.playerList.getPlayer(state.targetUuid)
 
-            // 任意一方离线 / 死亡 → 取消 (不消耗词条)
-            if (caster == null || target == null || !caster.isAlive || !target.isAlive || target.isSpectator) {
+            // 任意一方离线 / 死亡 / 词条已被移除 → 取消 (不消耗词条)。
+            // 词条被命令移除时只会走 onRemove, 不会碰这里的倒计时, 所以每 tick 重新确认一次持有状态
+            val stillOwns = PerkStateManager.get(casterUuid)?.hasPerk(PERK_ID) == true
+            if (caster == null || target == null || !caster.isAlive || !target.isAlive
+                || target.isSpectator || !stillOwns) {
                 caster?.sendSystemMessage(Component.translatable("random-perks-bingo.message.swap_cancelled"), false)
                 pending.remove(casterUuid)
                 continue

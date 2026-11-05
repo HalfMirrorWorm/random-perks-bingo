@@ -430,17 +430,25 @@ object SummonPerks {
             val player = ctx.player
             val world = player.level() as? ServerLevel ?: return
 
-            // 头顶 (脚上方 2 格) 开始向上找第一个空气方块, 最多找 8 格
+            // 头顶 (脚上方 2 格) 开始向上找第一个空气方块, 最多找 8 格。
+            // 找不到就不放 —— 以前会退回起点直接覆盖原方块, 那块方块的掉落也没了
             val base = player.blockPosition().above(2)
-            var pos = base
-            for (dy in 0..8) {
-                val candidate = base.above(dy)
-                if (world.getBlockState(candidate).isAir) {
-                    pos = candidate
-                    break
-                }
+            val pos = (0..8).map { base.above(it) }.firstOrNull { world.getBlockState(it).isAir }
+            if (pos == null) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.end_portal_no_space"),
+                    true,
+                )
+                return
             }
-            world.setBlockAndUpdate(pos, Blocks.END_PORTAL.defaultBlockState())
+            // 越界时 setBlock 会返回 false, 不看返回值会向全服公告一个并不存在的传送门
+            if (!world.setBlockAndUpdate(pos, Blocks.END_PORTAL.defaultBlockState())) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.end_portal_no_space"),
+                    true,
+                )
+                return
+            }
 
             val dimension = Component.translatable(
                 "dimension.${world.dimension().identifier().namespace}.${world.dimension().identifier().path}"

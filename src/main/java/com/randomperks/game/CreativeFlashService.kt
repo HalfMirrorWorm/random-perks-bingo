@@ -1,6 +1,7 @@
 package com.randomperks.game
 
 import com.randomperks.RandomPerksMod
+import com.randomperks.server.ServerHolder
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.server.level.ServerPlayer
@@ -46,11 +47,20 @@ object CreativeFlashService {
         }
     }
 
-    /** 恢复闪光前的状态 (游戏模式 + 飞行开关) */
+    /** 恢复闪光前的状态 (游戏模式 + 飞行开关)。
+     *  只有玩家**仍处于闪光期间的创造模式**才恢复 —— 期间被别人改过模式 (如对局结束切旁观) 就不要再覆盖。 */
     private fun restore(player: ServerPlayer, flash: Flash) {
+        if (player.gameMode.getGameModeForPlayer() != GameType.CREATIVE) return
         player.setGameMode(flash.originalMode)
         player.abilities.flying = flash.wasFlying
         player.onUpdateAbilities()
+    }
+
+    /** 词条被移除 / 对局结束时提前收掉闪光 (不等计时器) */
+    fun cancel(uuid: UUID) {
+        val flash = active.remove(uuid) ?: return
+        val player = ServerHolder.server?.playerList?.getPlayer(uuid) ?: return
+        restore(player, flash)
     }
 
     /** 给玩家 1.5 秒创造模式 (神话词条效果) */

@@ -58,7 +58,7 @@ object PerkBoostQuery {
     fun isOreBlock(state: net.minecraft.world.level.block.state.BlockState): Boolean {
         if (ORE_TAGS.any { state.`is`(it) }) return true
         val path = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.block).path
-        return path == "ancient_debris" || path.contains("ore")
+        return path == "ancient_debris" || path.endsWith("_ore")
     }
 
     /** 玩家是否持有"哈基米" (对苦力怕等效于猫, 由 CatAuraMixin 调用) */
@@ -468,3 +468,4 @@ object PerkBoostQuery {
     fun hasEdibleSugar(player: ServerPlayer): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("swift_edible_sugar") == true
 }
+

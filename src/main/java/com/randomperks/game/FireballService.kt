@@ -1,6 +1,7 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball
 import net.minecraft.world.item.Items
@@ -24,6 +25,16 @@ object FireballService {
     fun register() {
         UseItemCallback.EVENT.register { player, _, hand ->
             if (hand != InteractionHand.MAIN_HAND) return@register InteractionResult.PASS
+            if (player !is ServerPlayer) return@register InteractionResult.PASS
+            if (!player.mainHandItem.`is`(Items.FIRE_CHARGE)) return@register InteractionResult.PASS
+
+            if (launch(player)) InteractionResult.SUCCESS else InteractionResult.PASS
+        }
+
+        // 对着方块右键: 原版会走 FireChargeItem.useOn 点火并消耗火焰弹, 不会生成火球。
+        // 这里同样拦下来, 保证"像恶魂一样发射火球"在指着方块时也成立。
+        UseBlockCallback.EVENT.register { player, world, hand, _ ->
+            if (world.isClientSide || hand != InteractionHand.MAIN_HAND) return@register InteractionResult.PASS
             if (player !is ServerPlayer) return@register InteractionResult.PASS
             if (!player.mainHandItem.`is`(Items.FIRE_CHARGE)) return@register InteractionResult.PASS
 

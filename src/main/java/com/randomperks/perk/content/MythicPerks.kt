@@ -40,6 +40,11 @@ object MythicPerks {
         override fun onAcquire(ctx: PerkContext) {
             CreativeFlashService.flash(ctx.player)
         }
+
+        /** 对局结束 / 命令移除时不等计时器, 立刻把模式还回去 */
+        override fun onRemove(ctx: PerkContext) {
+            CreativeFlashService.cancel(ctx.player.uuid)
+        }
     }
 
     /** 红 · 猎杀: **天启日** —— 效果持续 20 分钟:

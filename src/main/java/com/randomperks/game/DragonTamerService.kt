@@ -143,14 +143,13 @@ object DragonTamerService {
         if (!mob.isAlive || mob.isRemoved) return false
         if (isForbidden(mob)) return false
 
-        // 没鞍的马 / 猪 / 炽足兽不允许骑乘 —— 交还原版交互 (喂食/开背包等)
-        if (usesVanillaControl(mob) && !mob.isSaddled()) return false
-
         if (!rider.startRiding(mob, true, true)) return false
 
-        // 马/猪/炽足兽, 以及套了挽具的快乐恶魂这类"玩家就是控制者"的生物,
+        // 有鞍的马/猪/炽足兽, 以及套了挽具的快乐恶魂这类"玩家就是控制者"的生物,
         // 原版已经用跳跃键上升, 不要再关掉 AI 跟它抢方向。
-        val manual = !usesVanillaControl(mob) && mob.controllingPassenger !== rider
+        // 没鞍的马/猪/炽足兽原版不给骑, 这里按手动驾驶处理 (描述是"任意生物都可骑乘")。
+        val vanillaSteered = usesVanillaControl(mob) && mob.isSaddled()
+        val manual = !vanillaSteered && mob.controllingPassenger !== rider
         val flying = manual && isFlyingMount(mob)
         val previousAi = mob.isNoAi
         val previousNoGravity = mob.isNoGravity()
@@ -323,8 +322,10 @@ object DragonTamerService {
         return best
     }
 
+    /** Boss 不可骑: 与"Boss 盲盒"的 Boss 名单一致 (含远古守卫者) */
     private fun isForbidden(mob: Mob): Boolean =
-        mob is EnderDragon || mob is WitherBoss || mob is Warden
+        mob is EnderDragon || mob is WitherBoss || mob is Warden ||
+            mob is net.minecraft.world.entity.monster.ElderGuardian
 
     private fun usesVanillaControl(mob: Mob): Boolean =
         mob is AbstractHorse || mob is Pig || mob is Strider

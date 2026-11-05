@@ -24,9 +24,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * </ul>
  * 所以在这里放行, 等价于"用高一级的镐挖掘": 有掉落, 也不会吃 100 倍的慢速惩罚。
  *
- * <p>等级以**材料**定义: 空手或任何非镐物品都视为木镐 (等级 1),
- * 手持镐则按材料 +1 —— 木/金 → 石, 石 → 铁, 铁 → 钻石, 钻石 → 下界合金。
- * 只对镐类方块生效。
+ * <p>等级以**材料**定义: 手持镐按材料 +1 —— 木/金 → 石, 石 → 铁, 铁 → 钻石, 钻石 → 下界合金。
+ * 空手或非镐物品不生效 (否则等于白送木镐)。只对镐类方块生效。
  */
 @Mixin(Player.class)
 public class OldMinerMixin {
@@ -48,6 +47,8 @@ public class OldMinerMixin {
         if (!state.is(BlockTags.MINEABLE_WITH_PICKAXE)) return;
 
         int heldTier = heldPickaxeTier(self.getInventory().getSelectedItem());
+        // 手里不是镐就不发动: 否则空手/剑/斧都能"+1 级"收获木镐级方块
+        if (heldTier < 0) return;
         int effectiveTier = Math.min(heldTier + 1, 5);  // 下界合金封顶
         int requiredTier = requiredTier(state);
         if (effectiveTier >= requiredTier) {
@@ -55,10 +56,10 @@ public class OldMinerMixin {
         }
     }
 
-    /** 手持物品的等级: 0=空手/非镐 (统一视为木镐), 1=木/金, 2=石, 3=铁, 4=钻石, 5=下界合金 */
+    /** 手持物品的等级: -1=空手/非镐 (不生效), 1=木/金, 2=石, 3=铁, 4=钻石, 5=下界合金 */
     private static int heldPickaxeTier(ItemStack stack) {
-        if (stack.isEmpty()) return 0;
-        if (!stack.is(ItemTags.PICKAXES)) return 0;   // 任何非镐物品都视为木镐
+        if (stack.isEmpty()) return -1;
+        if (!stack.is(ItemTags.PICKAXES)) return -1;
 
         if (stack.is(Items.NETHERITE_PICKAXE)) return 5;
         if (stack.is(Items.DIAMOND_PICKAXE)) return 4;

@@ -53,9 +53,20 @@ public abstract class CatAuraMixin {
         if (!(this.mob instanceof Creeper)) return;
         if (this.avoidClass != Cat.class) return;
 
-        Player nearest = this.mob.level().getNearestPlayer(this.mob, this.maxDist);
-        if (nearest == null || !nearest.isAlive()) return;
-        if (PerkBoostQuery.INSTANCE.hasCatAura(nearest)) {
+        // 找**范围内最近且持有词条**的玩家 —— 不能先取"最近的玩家"再看有没有词条,
+        // 否则旁边站着一个没词条的玩家时, 稍远一点的持有者永远不会被当成逃跑目标
+        double maxSqr = (double) this.maxDist * this.maxDist;
+        Player nearest = null;
+        double best = Double.MAX_VALUE;
+        for (Player player : this.mob.level().players()) {
+            if (!player.isAlive() || !PerkBoostQuery.INSTANCE.hasCatAura(player)) continue;
+            double dist = player.distanceToSqr(this.mob);
+            if (dist <= maxSqr && dist < best) {
+                best = dist;
+                nearest = player;
+            }
+        }
+        if (nearest != null) {
             this.toAvoid = nearest;
         }
     }

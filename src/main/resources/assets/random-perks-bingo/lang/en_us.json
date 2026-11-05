@@ -301,6 +301,7 @@
   "random-perks-bingo.perk.summon_remote_transfer.desc": "Activate from the perk list, choose a teammate, then pick 4 item slots from your inventory to send.",
   "random-perks-bingo.perk.summon_boss_egg.name": "Boss Blind Box",
   "random-perks-bingo.perk.summon_boss_egg.desc": "Gain a random boss spawn egg (Ender Dragon, Wither, Warden, or Elder Guardian).",
+    "random-perks-bingo.message.end_portal_no_space": "There is no room for the portal nearby.",
   "random-perks-bingo.perk.summon_end_portal.name": "End It",
   "random-perks-bingo.perk.summon_end_portal.desc": "Spawn an End portal block above your head and announce its coordinates to everyone.",
   "random-perks-bingo.perk.summon_loyal_guard.name": "Loyal Guardian",
@@ -442,5 +443,6 @@
   "random-perks-bingo.recap.rank_row": "%s. %s (%s) · first capture %s · %s cell(s)",
   "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s"
 }
+
 
 
