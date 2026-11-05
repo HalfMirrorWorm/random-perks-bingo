@@ -25,6 +25,8 @@ import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.ExperienceOrb
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.Leashable
 import net.minecraft.world.entity.boss.wither.WitherBoss
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon
@@ -112,6 +114,8 @@ object RewindService {
         val players: List<PlayerSnapshot>,
         val containers: List<ContainerSnapshot>,
         val entities: List<EntitySnapshot>,
+        /** 检查点存在时场上已有的掉落物/经验球; 回溯时不在这个集合里的都要清掉 */
+        val looseEntities: Set<UUID>,
     )
 
     private class ProgressSnapshot(
@@ -388,6 +392,7 @@ object RewindService {
             players = capturePlayers(server),
             containers = captureContainers(),
             entities = captureEntities(server),
+            looseEntities = captureLooseEntities(server),
         )
         // 检查点数据已经拿到, 从这里开始记录下一段间隔的方块变更
         blockEdits.clear()
@@ -489,6 +494,19 @@ object RewindService {
         return result
     }
 
+    /** 检查点时场上已有的掉落物与经验球 */
+    private fun captureLooseEntities(server: MinecraftServer): Set<UUID> {
+        val result = HashSet<UUID>()
+        for (world in server.allLevels) {
+            for (entity in world.getAllEntities()) {
+                if (entity is ItemEntity || entity is ExperienceOrb) {
+                    result.add(entity.uuid)
+                }
+            }
+        }
+        return result
+    }
+
     private fun isImportant(entity: Entity): Boolean {
         if (entity is ServerPlayer) return false
         if (entity is EnderDragon || entity is WitherBoss ||
@@ -566,11 +584,15 @@ object RewindService {
 
     private fun finishRestore(server: MinecraftServer, job: RestoreJob) {
         try {
-            restoreContainers(server, job.checkpoint)
-            restorePlayers(server, job.checkpoint)
-            restoreEntities(server, job.checkpoint)
+            // 顺序很重要: clearAllPerkState 会走 onRemove, 有些词条 (深海之息/古拉鲨鱼) 会清玩家身上的
+            // 药水效果。先恢复词条状态再装回玩家 NBT, 检查点里的药水才不会被"移除词条"那一步清掉。
             restoreProgress(job.checkpoint, job.rewindMillis)
             restorePerks(server, job.checkpoint, job.activatedBy, job.perkId)
+            restorePlayers(server, job.checkpoint)
+            restoreContainers(server, job.checkpoint)
+            restoreEntities(server, job.checkpoint)
+            discardLooseEntitiesSince(server, job.checkpoint)
+            reapplyPerks(server)
 
             val suffix = if (job.truncated) "（方块变更记录达到上限，部分方块未能还原）" else ""
             broadcast(server, "【逆转时间】本局已回到 ${job.minutes} 分钟前的记录点。$suffix")
@@ -634,9 +656,12 @@ object RewindService {
         for (container in snap.containers) {
             val world = server.getLevel(container.dimension) ?: continue
             val pos = BlockPos.of(container.pos)
+            // 区块没加载就拿不到方块实体。检查点只记录了当时已加载的容器, 数量有限,
+            // 这里直接同步加载回来, 否则"容器物品会被还原"的承诺在跨区块时失效。
+            world.getChunk(pos.x shr 4, pos.z shr 4)
             val be = world.getBlockEntity(pos)
             if (be == null || be.type != container.type) {
-                // 区块未加载 / 方块已被别的东西取代 —— 伪回溯允许跳过
+                // 方块已被别的东西取代 —— 伪回溯允许跳过
                 missing++
                 continue
             }
@@ -702,6 +727,22 @@ object RewindService {
         }
     }
 
+    /** 清掉这段时间新生成的掉落物与经验球, 否则回溯后地上的东西还在 */
+    private fun discardLooseEntitiesSince(server: MinecraftServer, snap: Checkpoint) {
+        var removed = 0
+        for (world in server.allLevels) {
+            for (entity in world.getAllEntities().toList()) {
+                if (entity !is ItemEntity && entity !is ExperienceOrb) continue
+                if (snap.looseEntities.contains(entity.uuid)) continue
+                entity.discard()
+                removed++
+            }
+        }
+        if (removed > 0) {
+            RandomPerksMod.logger.info("[Rewind] discarded {} loose entities created after the checkpoint", removed)
+        }
+    }
+
     // ------------------------------------------------------------------
     // perk state
     // ------------------------------------------------------------------
@@ -738,8 +779,7 @@ object RewindService {
             }
             activatorState.usedPerks.add(rewindPerk.id)
         }
-
-        reapplyPerks(server)
+        // 效果重挂放到玩家 NBT 恢复之后 (finishRestore 里), 否则会被检查点数据覆盖
     }
 
     private fun reapplyPerks(server: MinecraftServer) {

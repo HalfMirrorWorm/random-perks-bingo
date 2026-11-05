@@ -2,6 +2,7 @@ package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.world.level.block.ShulkerBoxBlock
@@ -43,7 +44,10 @@ object ContainerOpenService {
         val handler: AbstractContainerMenu,
         val stack: ItemStack,
         val inventory: SimpleContainer,
-    )
+    ) {
+        /** 上次写回的内容, 避免每 tick 都重建组件 */
+        var lastContents: List<ItemStack> = emptyList()
+    }
 
     private val sessions = mutableMapOf<UUID, ShulkerSession>()
 
@@ -62,20 +66,30 @@ object ContainerOpenService {
             if (tryOpen(player)) InteractionResult.SUCCESS else InteractionResult.PASS
         }
 
-        // 潜影盒界面关闭后把内容写回物品
+        // 开着界面时每 tick 把临时库存写回物品:
+        // 这样玩家随时掉线 / 服务器崩溃, 盒子的内容都和界面里看到的一致, 不会出现
+        // "拿出来的物品留在背包里、盒子组件还是旧的" 这种复制。
         ServerTickEvents.END_SERVER_TICK.register { server ->
             if (sessions.isEmpty()) return@register
             for ((uuid, session) in sessions.toList()) {
                 val player = server.playerList.getPlayer(uuid)
                 if (player == null) {
+                    // 玩家已经不在线: 尽力写回一次再丢弃会话
+                    syncBack(session)
                     sessions.remove(uuid)
                     continue
                 }
+                syncBack(session)
                 if (player.containerMenu !== session.handler) {
-                    syncBack(session)
                     sessions.remove(uuid)
                 }
             }
+        }
+
+        // 断开连接时补一次写回, 尽量赶在玩家存档落盘之前
+        ServerPlayConnectionEvents.DISCONNECT.register { handler, _ ->
+            val uuid = handler.player.uuid
+            sessions.remove(uuid)?.let { syncBack(it) }
         }
     }
 
@@ -127,15 +141,27 @@ object ContainerOpenService {
                 name,
             ),
         )
-        sessions[player.uuid] = ShulkerSession(player.containerMenu, stack, inventory)
+        val session = ShulkerSession(player.containerMenu, stack, inventory)
+        session.lastContents = inventory.items.map { if (it.isEmpty) ItemStack.EMPTY else it.copy() }
+        sessions[player.uuid] = session
     }
 
-    /** 把临时库存写回物品的 CONTAINER 组件 */
+    /** 把临时库存写回物品的 CONTAINER 组件 (内容没变就跳过) */
     private fun syncBack(session: ShulkerSession) {
         if (session.stack.isEmpty) return
         val stacks = session.inventory.items.map {
             if (it.isEmpty) ItemStack.EMPTY else it.copy()
         }
+        if (sameContents(stacks, session.lastContents)) return
         session.stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(stacks))
+        session.lastContents = stacks
+    }
+
+    private fun sameContents(a: List<ItemStack>, b: List<ItemStack>): Boolean {
+        if (a.size != b.size) return false
+        for (i in a.indices) {
+            if (!ItemStack.matches(a[i], b[i])) return false
+        }
+        return true
     }
 }

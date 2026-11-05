@@ -164,9 +164,15 @@ object SummonPerks {
             // 在插入背包前把物品名抄下来 —— insertStack 会把 stack 的数量清零
             val itemSummary = summarize(taken)
 
-            // 目标背包放不下时, 剩余部分显式掉在他脚下 —— 不允许静默吞掉
+            // 目标背包放不下时, 剩余部分显式掉在他脚下 —— 不允许静默吞掉。
+            // 创造模式下原版 Inventory.add 放不下时会把剩余数量直接清成 0, 所以先算空间,
+            // 放不下就整份掉出来, 不能依赖 add 之后的剩余数量。
             for (stack in taken) {
                 val remaining = stack.copy()
+                if (target.isCreative && freeSpaceFor(target, remaining) < remaining.count) {
+                    target.spawnAtLocation(target.level() as ServerLevel, remaining)
+                    continue
+                }
                 target.inventory.add(remaining)
                 if (!remaining.isEmpty) {
                     target.spawnAtLocation(target.level() as ServerLevel, remaining)
@@ -208,6 +214,21 @@ object SummonPerks {
             return text
         }
 
+        /** 目标背包还能放下多少个这种物品 (空格 + 可堆叠空间, 含副手) */
+        private fun freeSpaceFor(target: ServerPlayer, stack: ItemStack): Int {
+            val max = stack.maxStackSize
+            var space = 0
+            for (slot in (0 until SLOT_COUNT) + 40) {
+                val existing = target.inventory.getItem(slot)
+                if (existing.isEmpty) {
+                    space += max
+                } else if (ItemStack.isSameItemSameComponents(existing, stack)) {
+                    space += (max - existing.count).coerceAtLeast(0)
+                }
+            }
+            return space
+        }
+
         /** 主背包里所有非空格子 */
         private fun itemSlots(player: ServerPlayer): MutableList<Int> {
             val slots = mutableListOf<Int>()
@@ -217,14 +238,16 @@ object SummonPerks {
             return slots
         }
 
-        /** 候选: 与自己在同一支原版队伍里的其他在线玩家 (无队伍时没有候选) */
+        /** 候选: 与自己在同一支原版队伍里的其他在线且存活玩家 (无队伍时没有候选) */
         private fun candidates(player: ServerPlayer): List<ServerPlayer> {
             val myTeam = player.team?.name ?: return emptyList()
+            // 死亡界面上的队友仍留在玩家列表里, 物品塞进尸体会直接消失, 必须排除
             return player.level().getServer().playerList.players.filter {
                 it.getUUID() != player.uuid &&
+                    it.isAlive &&
                     !it.isSpectator &&
                     it.team?.name == myTeam
-            } ?: emptyList()
+            }
         }
     }
 

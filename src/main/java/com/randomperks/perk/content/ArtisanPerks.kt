@@ -551,13 +551,59 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.CRAFTING_TABLE)
     }
 
-    /** 蓝 · 匠造: **大背包** —— 背包内物品的堆叠上限 ×4 (64 → 256, 16 → 64; 不可堆叠物品保持 1)。
+    /** 蓝 · 匠造: **大背包** —— 背包内物品的堆叠上限 ×4, 上限 99 (原版存档能存的极限;
+     *  超过 99 的堆叠写不进玩家存档)。不可堆叠物品保持 1。
      *  只作用于玩家自己的背包, 箱子等容器保持原版 (BigBackpackInventoryMixin / BigBackpackSlotMixin)。 */
     object BigBackpack : PerkDefinition {
         override val id = "artisan_big_backpack"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.BUNDLE)
+
+        /** 移除词条后背包格子回到原版上限: 把超额堆叠拆开, 拆出来的进空位, 放不下就掉在脚下,
+         *  不能留下存不进存档的非法堆叠。 */
+        override fun onRemove(ctx: PerkContext) {
+            val player = ctx.player
+            val inventory = player.inventory
+            val excess = mutableListOf<ItemStack>()
+            for (slot in 0 until 36) {
+                val stack = inventory.getItem(slot)
+                if (stack.isEmpty) continue
+                val max = stack.maxStackSize
+                if (stack.count <= max) continue
+                val extra = stack.copy()
+                extra.count = stack.count - max
+                stack.count = max
+                excess += extra
+            }
+            if (excess.isEmpty()) return
+
+            for (extra in excess) {
+                var remaining = extra
+                for (slot in 0 until 36) {
+                    if (remaining.isEmpty) break
+                    val existing = inventory.getItem(slot)
+                    if (existing.isEmpty) {
+                        inventory.setItem(slot, remaining.copy())
+                        remaining = ItemStack.EMPTY
+                    } else if (ItemStack.isSameItemSameComponents(existing, remaining)) {
+                        val room = existing.maxStackSize - existing.count
+                        if (room > 0) {
+                            val move = minOf(room, remaining.count)
+                            existing.count += move
+                            remaining.count -= move
+                        }
+                    }
+                }
+                if (!remaining.isEmpty && player is net.minecraft.server.level.ServerPlayer) {
+                    player.drop(remaining, false, net.minecraft.util.Prediction.SERVER_ONLY)
+                }
+            }
+            inventory.setChanged()
+            if (player is net.minecraft.server.level.ServerPlayer) {
+                player.inventoryMenu.sendAllDataToRemote()
+            }
+        }
     }
 
     fun registerAll() {

@@ -288,7 +288,7 @@
   "random-perks-bingo.perk.artisan_portable_crafting.name": "便携工作台",
   "random-perks-bingo.perk.artisan_portable_crafting.desc": "手持工作台右键可直接打开合成界面; 潜行右键放置工作台。",
   "random-perks-bingo.perk.artisan_big_backpack.name": "大背包",
-  "random-perks-bingo.perk.artisan_big_backpack.desc": "背包内物品的堆叠上限变为 4 倍。",
+  "random-perks-bingo.perk.artisan_big_backpack.desc": "背包内物品的堆叠上限变为 4 倍（最多 99，原版存档上限）。",
   "random-perks-bingo.perk.seeker_village_hero.name": "村庄英雄",
   "random-perks-bingo.perk.seeker_village_hero.desc": "永久获得村庄英雄效果; 你的交易不会使村民缺货。",
   "random-perks-bingo.perk.seeker_savage_magic.name": "野人魔了",
@@ -400,7 +400,7 @@
   "random-perks-bingo.perk.mythic_doomsday.name": "天启日",
   "random-perks-bingo.perk.mythic_doomsday.desc": "效果持续 20 分钟：期间被你击杀的前 4 名玩家会掉落背包位物品；你被敌方玩家击杀时也会掉落背包位物品，随后效果结束。",
   "random-perks-bingo.perk.mythic_time_rewind.name": "逆转时间",
-  "random-perks-bingo.perk.mythic_time_rewind.desc": "获得后立即触发：本局回到最近一次记录点（开局与每 30 分钟各记录一次，最多回退 30 分钟）。玩家状态/背包/位置、容器物品、地形与重要生物会被还原，Bingo 棋盘进度与所有玩家的词条也会回退；「逆转时间」本身保留。新生成的地形、已死亡的重要生物与离线玩家不还原。",
+  "random-perks-bingo.perk.mythic_time_rewind.desc": "获得后倒数 10 秒，随后本局回到最近一次记录点（开局与每 30 分钟各记录一次，最多回退 30 分钟）。玩家状态/背包/位置、容器物品、地形与重要生物会被还原，Bingo 棋盘进度与所有玩家的词条也会回退；「逆转时间」本身保留。新生成的地形、已死亡的重要生物与离线玩家不还原。",
   "random-perks-bingo.perk.seeker_supply_line.name": "补给线",
   "random-perks-bingo.perk.seeker_supply_line.desc": "获得一份随机补给, 之后每 2 分钟再获得一份。",
   "random-perks-bingo.perk.seeker_ender_supply.name": "末影补给",
@@ -442,3 +442,4 @@
   "random-perks-bingo.recap.rank_row": "%s. %s (%s) · 首次完成 %s · 共 %s 格",
   "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s"
 }
+

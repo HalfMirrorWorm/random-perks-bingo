@@ -288,7 +288,7 @@
   "random-perks-bingo.perk.artisan_portable_crafting.name": "Portable Crafting Table",
   "random-perks-bingo.perk.artisan_portable_crafting.desc": "Right-click while holding a crafting table to open the crafting screen; sneak + right-click to place it.",
   "random-perks-bingo.perk.artisan_big_backpack.name": "Big Backpack",
-  "random-perks-bingo.perk.artisan_big_backpack.desc": "Items stack up to 4× their normal limit in your inventory.",
+  "random-perks-bingo.perk.artisan_big_backpack.desc": "Items stack up to 4× their normal limit in your inventory (capped at 99, the vanilla save limit).",
   "random-perks-bingo.perk.seeker_village_hero.name": "Hero of the Village",
   "random-perks-bingo.perk.seeker_village_hero.desc": "Permanently gain the Hero of the Village effect; your trades never cause villagers to run out of stock.",
   "random-perks-bingo.perk.seeker_savage_magic.name": "Savage Magic",
@@ -400,7 +400,7 @@
   "random-perks-bingo.perk.mythic_doomsday.name": "Doomsday",
   "random-perks-bingo.perk.mythic_doomsday.desc": "Lasts 20 minutes: the first 4 players you kill drop their backpack items; if an enemy player kills you, you also drop your backpack items and the effect ends.",
   "random-perks-bingo.perk.mythic_time_rewind.name": "Time Rewind",
-  "random-perks-bingo.perk.mythic_time_rewind.desc": "Triggers immediately: rewind the round to the most recent checkpoint (recorded at game start and every 30 minutes, up to 30 minutes back). Player state/inventory/position, container contents, terrain and important mobs are restored, along with Bingo board progress and every player's perks; this perk itself is kept. Newly generated terrain, dead important mobs and offline players are not restored.",
+  "random-perks-bingo.perk.mythic_time_rewind.desc": "After a 10-second countdown, rewind the round to the most recent checkpoint (recorded at game start and every 30 minutes, up to 30 minutes back). Player state/inventory/position, container contents, terrain and important mobs are restored, along with Bingo board progress and every player's perks; this perk itself is kept. Newly generated terrain, dead important mobs and offline players are not restored.",
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",
   "random-perks-bingo.perk.seeker_supply_line.desc": "Gain a random supply, then another every 2 minutes.",
   "random-perks-bingo.perk.seeker_ender_supply.name": "Ender Supply",
@@ -442,3 +442,4 @@
   "random-perks-bingo.recap.rank_row": "%s. %s (%s) · first capture %s · %s cell(s)",
   "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s"
 }
+

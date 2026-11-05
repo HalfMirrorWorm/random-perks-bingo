@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.Registries
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.network.chat.Component
 import java.util.UUID
@@ -66,7 +67,15 @@ object MythicPerks {
         override fun icon() = ItemStack(Items.BUNDLE)
 
         override fun onAcquire(ctx: PerkContext) {
-            val player = ctx.player
+            openPicker(ctx.player)
+        }
+
+        /** 选择器被 Esc 关掉、或者发包失败时, 玩家可以再从 V 界面点一次 */
+        override fun onActivate(ctx: PerkContext) {
+            openPicker(ctx.player)
+        }
+
+        private fun openPicker(player: ServerPlayer) {
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
                 player.sendSystemMessage(Component.translatable("random-perks-bingo.message.hodgepodge_no_target"), true)
@@ -96,8 +105,19 @@ object MythicPerks {
             for (index in 0 until main.size) {
                 val stack = main.get(index)
                 if (stack.isEmpty) continue
-                val replacement = randomItem(registry, target.random) ?: continue
-                main.set(index, ItemStack(replacement, stack.count))
+                val replacement = randomItem(registry, target.random, stack.count, stack.item) ?: continue
+
+                // 换成堆叠上限更低的物品时不能直接照抄数量 (64 个圆石 → 64 把剑是非法堆叠),
+                // 放得下的放进原格, 多出来的按上限分堆掉在脚下, 不允许凭空消失
+                val max = ItemStack(replacement).maxStackSize
+                val newCount = minOf(stack.count, max)
+                main.set(index, ItemStack(replacement, newCount))
+                var excess = stack.count - newCount
+                while (excess > 0) {
+                    val chunk = minOf(excess, max)
+                    target.spawnAtLocation(target.level() as ServerLevel, ItemStack(replacement, chunk))
+                    excess -= chunk
+                }
                 changed++
             }
             state.markUsed(id)
@@ -112,17 +132,27 @@ object MythicPerks {
             )
         }
 
-        /** 从物品注册表里随机挑一个非空气物品 (getRandom 有小概率给到 AIR, 重试几次) */
+        /**
+         * 从物品注册表里随机挑一个非空气物品:
+         * - 排除原来那个物品, 否则"变成另一种物品"可能什么都没变
+         * - 优先挑堆叠上限放得下当前数量的, 减少不必要的拆分掉落
+         */
         private fun randomItem(
             registry: Registry<Item>,
             random: net.minecraft.util.RandomSource,
+            count: Int,
+            avoid: Item,
         ): Item? {
-            repeat(16) {
-                val entry = registry.getRandom(random).orElse(null) ?: return null
+            val need = minOf(count, 64)
+            var fallback: Item? = null
+            repeat(32) {
+                val entry = registry.getRandom(random).orElse(null) ?: return fallback
                 val item = entry.value()
-                if (item != Items.AIR) return item
+                if (item == Items.AIR || item == avoid) return@repeat
+                if (ItemStack(item).maxStackSize >= need) return item
+                if (fallback == null) fallback = item
             }
-            return null
+            return fallback
         }
 
         /** 候选: 所有在线玩家 (不限队伍/维度), 不含旁观者 */
