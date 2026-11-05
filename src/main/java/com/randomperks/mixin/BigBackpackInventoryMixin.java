@@ -41,7 +41,8 @@ public interface BigBackpackInventoryMixin {
 
         int max = stack.getMaxStackSize();
         if (max <= 1) return;
-        cir.setReturnValue(Math.min(max * 4, 99));
+        cir.setReturnValue(Math.min(max * 4, 256));
     }
 }
+
 

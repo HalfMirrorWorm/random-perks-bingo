@@ -64,6 +64,7 @@
     "BigBackpackInventoryMixin",
     "BigBackpackSlotMixin",
     "BigBackpackPlayerInventoryMixin",
+    "BigBackpackCodecMixin",
     "VillageHeroTradeMixin",
     "BingoMenuPageMixin"
   ],

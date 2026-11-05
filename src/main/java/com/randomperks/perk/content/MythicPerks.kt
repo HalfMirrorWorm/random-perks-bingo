@@ -66,6 +66,9 @@ object MythicPerks {
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.BUNDLE)
 
+        /** 贮藏标记: 选择器被关掉之后, 可以再从 V 界面点一次 */
+        override val isOneTime = true
+
         override fun onAcquire(ctx: PerkContext) {
             openPicker(ctx.player)
         }

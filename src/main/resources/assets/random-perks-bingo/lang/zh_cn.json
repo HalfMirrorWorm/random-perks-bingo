@@ -288,7 +288,7 @@
   "random-perks-bingo.perk.artisan_portable_crafting.name": "便携工作台",
   "random-perks-bingo.perk.artisan_portable_crafting.desc": "手持工作台右键可直接打开合成界面; 潜行右键放置工作台。",
   "random-perks-bingo.perk.artisan_big_backpack.name": "大背包",
-  "random-perks-bingo.perk.artisan_big_backpack.desc": "背包内物品的堆叠上限变为 4 倍（最多 99，原版存档上限）。",
+  "random-perks-bingo.perk.artisan_big_backpack.desc": "背包内物品的堆叠上限变为 4 倍（64 → 256，16 → 64；不可堆叠物品保持 1）。",
   "random-perks-bingo.perk.seeker_village_hero.name": "村庄英雄",
   "random-perks-bingo.perk.seeker_village_hero.desc": "永久获得村庄英雄效果; 你的交易不会使村民缺货。",
   "random-perks-bingo.perk.seeker_savage_magic.name": "野人魔了",
@@ -442,4 +442,5 @@
   "random-perks-bingo.recap.rank_row": "%s. %s (%s) · 首次完成 %s · 共 %s 格",
   "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s"
 }
+
 

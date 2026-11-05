@@ -551,9 +551,10 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.CRAFTING_TABLE)
     }
 
-    /** 蓝 · 匠造: **大背包** —— 背包内物品的堆叠上限 ×4, 上限 99 (原版存档能存的极限;
-     *  超过 99 的堆叠写不进玩家存档)。不可堆叠物品保持 1。
-     *  只作用于玩家自己的背包, 箱子等容器保持原版 (BigBackpackInventoryMixin / BigBackpackSlotMixin)。 */
+    /** 蓝 · 匠造: **大背包** —— 背包内物品的堆叠上限 ×4 (64 → 256, 16 → 64; 不可堆叠物品保持 1)。
+     *  只作用于玩家自己的背包, 箱子等容器保持原版 (BigBackpackInventoryMixin / BigBackpackSlotMixin)。
+     *  原版 ItemStack 存档 codec 的 count 上限是 99, 超过就写不进存档 —— 由
+     *  BigBackpackCodecMixin 把这一个字段放宽到 256。 */
     object BigBackpack : PerkDefinition {
         override val id = "artisan_big_backpack"
         override val rarity = PerkRarity.BLUE
