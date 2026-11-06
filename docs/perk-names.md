@@ -11,8 +11,6 @@
 - **词条 id**：`<流派>_<英文短名>`（如 `hunter_soul_harvest`）；神话单独使用 `mythic_` 前缀
 - 少数词条后来换了流派，但 id 沿用旧前缀以免旧存档对不上（如 `seeker_ender_supply` 现属疾风）；
   分组与联动一律以代码里的 `archetype` 字段为准
-- 改 id 前缀时（如 `delver_toughness` → `artisan_toughness`）要在 `PerkRegistry.LEGACY_IDS`
-  里登记旧 id，保证旧存档的 owned / pending 还能解析回新词条
 - **语言 key**：`random-perks-bingo.perk.<id>.name` / `.desc`（中英各一份）
 - **稀有度与抽取权重**：`green` 300 / `blue` 800 / `purple` 315 / `gold` 62 / `red` 20 / `mythic` 3
   （合计 1500：绿 20% / 蓝 53.3% / 紫 21% / 金 4.1% / 红 1.3% / 神话 0.2%）

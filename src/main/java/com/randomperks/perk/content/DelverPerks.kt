@@ -215,10 +215,6 @@ object DelverPerks {
 
         private val MOD_IRON_SKIN = Identifier.fromNamespaceAndPath("random-perks-bingo", "artisan_iron_skin")
 
-        /** 旧 id 留下的属性修饰符: 换前缀后要顺手摘掉, 否则会一直挂在玩家身上 */
-        private val LEGACY_MOD_IRON_SKIN =
-            Identifier.fromNamespaceAndPath("random-perks-bingo", "delver_iron_skin")
-
         override fun onAcquire(ctx: PerkContext) = refresh(ctx)
         override fun onRespawn(ctx: PerkContext) = refresh(ctx)
 
@@ -226,8 +222,6 @@ object DelverPerks {
         override fun onEquipmentChange(ctx: PerkContext) = refresh(ctx)
 
         private fun refresh(ctx: PerkContext) {
-            // 迁移: 旧版本用 delver_iron_skin 作为修饰符 id
-            PerkEffects.removeAttribute(ctx.player, Attributes.ARMOR, LEGACY_MOD_IRON_SKIN)
             if (PerkEffects.hasNoArmor(ctx.player)) {
                 PerkEffects.setAttribute(
                     ctx.player, Attributes.ARMOR, MOD_IRON_SKIN,
@@ -238,10 +232,8 @@ object DelverPerks {
             }
         }
 
-        override fun onRemove(ctx: PerkContext) {
+        override fun onRemove(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, Attributes.ARMOR, MOD_IRON_SKIN)
-            PerkEffects.removeAttribute(ctx.player, Attributes.ARMOR, LEGACY_MOD_IRON_SKIN)
-        }
     }
 
     /** 金 · 深掘: 10 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 35% 概率消失
