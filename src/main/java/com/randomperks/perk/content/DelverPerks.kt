@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.effect.PermanentEffects
 import com.randomperks.game.OnionCutService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.SoulOutService
@@ -161,12 +162,13 @@ object DelverPerks {
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, MobEffects.NIGHT_VISION, 0)
 
-        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, MobEffects.NIGHT_VISION)
+        override fun onRemove(ctx: PerkContext) =
+            PermanentEffects.removePermanent(ctx.player, MobEffects.NIGHT_VISION, 0)
     }
 
     /** 蓝 · 匠造: 抗性提升 I */
     object Toughness : PerkDefinition {
-        override val id = "delver_toughness"
+        override val id = "artisan_toughness"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.SHIELD)
@@ -175,7 +177,8 @@ object DelverPerks {
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, MobEffects.RESISTANCE, 0)
 
-        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, MobEffects.RESISTANCE)
+        override fun onRemove(ctx: PerkContext) =
+            PermanentEffects.removePermanent(ctx.player, MobEffects.RESISTANCE, 0)
     }
 
     /** 紫 · 深层专注: 永久急迫 II */
@@ -189,7 +192,8 @@ object DelverPerks {
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
         private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, MobEffects.HASTE, 1)
 
-        override fun onRemove(ctx: PerkContext) = PerkEffects.removeEffect(ctx.player, MobEffects.HASTE)
+        override fun onRemove(ctx: PerkContext) =
+            PermanentEffects.removePermanent(ctx.player, MobEffects.HASTE, 1)
     }
 
     /** 蓝 · 矿脉嗅觉: 挖掘矿石时 18% 概率额外掉落一份, 每拥有一个其他深掘词条 +3%
@@ -204,12 +208,16 @@ object DelverPerks {
 
     /** 蓝 · 匠造: 未穿护甲时获得 +7 护甲值 (鞘翅不算护甲) */
     object IronSkin : PerkDefinition {
-        override val id = "delver_iron_skin"
+        override val id = "artisan_iron_skin"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.IRON_CHESTPLATE)
 
-        private val MOD_IRON_SKIN = Identifier.fromNamespaceAndPath("random-perks-bingo", "delver_iron_skin")
+        private val MOD_IRON_SKIN = Identifier.fromNamespaceAndPath("random-perks-bingo", "artisan_iron_skin")
+
+        /** 旧 id 留下的属性修饰符: 换前缀后要顺手摘掉, 否则会一直挂在玩家身上 */
+        private val LEGACY_MOD_IRON_SKIN =
+            Identifier.fromNamespaceAndPath("random-perks-bingo", "delver_iron_skin")
 
         override fun onAcquire(ctx: PerkContext) = refresh(ctx)
         override fun onRespawn(ctx: PerkContext) = refresh(ctx)
@@ -218,6 +226,8 @@ object DelverPerks {
         override fun onEquipmentChange(ctx: PerkContext) = refresh(ctx)
 
         private fun refresh(ctx: PerkContext) {
+            // 迁移: 旧版本用 delver_iron_skin 作为修饰符 id
+            PerkEffects.removeAttribute(ctx.player, Attributes.ARMOR, LEGACY_MOD_IRON_SKIN)
             if (PerkEffects.hasNoArmor(ctx.player)) {
                 PerkEffects.setAttribute(
                     ctx.player, Attributes.ARMOR, MOD_IRON_SKIN,
@@ -228,8 +238,10 @@ object DelverPerks {
             }
         }
 
-        override fun onRemove(ctx: PerkContext) =
+        override fun onRemove(ctx: PerkContext) {
             PerkEffects.removeAttribute(ctx.player, Attributes.ARMOR, MOD_IRON_SKIN)
+            PerkEffects.removeAttribute(ctx.player, Attributes.ARMOR, LEGACY_MOD_IRON_SKIN)
+        }
     }
 
     /** 金 · 深掘: 10 格内矿石透视 (客户端渲染); 代价: 用镐子挖到的物品 35% 概率消失

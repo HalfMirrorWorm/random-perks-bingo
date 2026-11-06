@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.RandomPerksMod
 import com.randomperks.effect.PerkEffects
+import com.randomperks.effect.PermanentEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkGrantService
@@ -763,7 +764,7 @@ object SeekerPerks {
             PerkEffects.permanentEffect(ctx.player, MobEffects.HERO_OF_THE_VILLAGE, 0)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeEffect(ctx.player, MobEffects.HERO_OF_THE_VILLAGE)
+            PermanentEffects.removePermanent(ctx.player, MobEffects.HERO_OF_THE_VILLAGE, 0)
     }
 
     fun registerAll() {

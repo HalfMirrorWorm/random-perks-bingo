@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.effect.PermanentEffects
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.perk.PerkArchetype
@@ -217,8 +218,8 @@ object SwiftPerks {
         }
 
         override fun onRemove(ctx: PerkContext) {
-            PerkEffects.removeEffect(ctx.player, MobEffects.DOLPHINS_GRACE)
-            PerkEffects.removeEffect(ctx.player, MobEffects.CONDUIT_POWER)
+            PermanentEffects.removePermanent(ctx.player, MobEffects.DOLPHINS_GRACE, 0)
+            PermanentEffects.removePermanent(ctx.player, MobEffects.CONDUIT_POWER, 0)
         }
     }
 
@@ -297,7 +298,7 @@ object SwiftPerks {
             PerkEffects.permanentEffect(ctx.player, MobEffects.WATER_BREATHING, 0)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeEffect(ctx.player, MobEffects.WATER_BREATHING)
+            PermanentEffects.removePermanent(ctx.player, MobEffects.WATER_BREATHING, 0)
     }
 
     /** 蓝 · 疾风: **逃跑计划** —— 受到生物伤害后, 自动获得速度 II 与抗性提升 I, 持续 10 秒。

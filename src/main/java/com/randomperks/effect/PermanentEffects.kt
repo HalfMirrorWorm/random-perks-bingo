@@ -6,6 +6,7 @@ import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.core.Holder
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.effect.MobEffectInstance.INFINITE_DURATION
 
 /**
  * "本局永久"状态效果的登记与**事件驱动**重挂 (无任何周期轮询)。
@@ -27,7 +28,7 @@ object PermanentEffects {
     /** 永久效果 → 授予它的词条 / 增幅等级 */
     private val ENTRIES = listOf(
         Entry(MobEffects.NIGHT_VISION, "delver_night_vision", 0),
-        Entry(MobEffects.RESISTANCE, "delver_toughness", 0),
+        Entry(MobEffects.RESISTANCE, "artisan_toughness", 0),
         Entry(MobEffects.HASTE, "delver_haste", 1),
         Entry(MobEffects.DOLPHINS_GRACE, "swift_gura_shark", 0),
         Entry(MobEffects.CONDUIT_POWER, "swift_gura_shark", 0),
@@ -54,5 +55,18 @@ object PermanentEffects {
         if (!player.isAlive) return
         if (PerkStateManager.get(player.uuid)?.hasPerk(entry.perkId) != true) return
         PerkEffects.permanentEffect(player, entry.effect, entry.amplifier)
+    }
+
+    /**
+     * 移除词条时只摘掉**我们自己挂的**永久效果。
+     *
+     * 当前实例必须同时满足"无限时长 + 增幅等级与词条登记一致"才移除；
+     * 玩家从药水 / 信标 / 其他来源获得的同类有限时长效果不会被误删。
+     */
+    fun removePermanent(player: ServerPlayer, effect: Holder<MobEffect>, amplifier: Int) {
+        val instance = player.getEffect(effect) ?: return
+        if (instance.duration != INFINITE_DURATION) return
+        if (instance.amplifier != amplifier) return
+        player.removeEffect(effect)
     }
 }

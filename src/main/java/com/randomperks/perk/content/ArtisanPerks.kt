@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.effect.PermanentEffects
 import com.randomperks.game.MidasTouchService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.ReviveArmorService
@@ -457,7 +458,7 @@ object ArtisanPerks {
             PerkEffects.permanentEffect(ctx.player, MobEffects.WEAKNESS, 0)
 
         override fun onRemove(ctx: PerkContext) =
-            PerkEffects.removeEffect(ctx.player, MobEffects.WEAKNESS)
+            PermanentEffects.removePermanent(ctx.player, MobEffects.WEAKNESS, 0)
     }
 
     /** 绿 · 匠造: **点石成金** —— 右键镶金黑石, 把它变成金块 (交互见 MidasTouchService) */
@@ -505,7 +506,7 @@ object ArtisanPerks {
         )
 
         /** 每件纹饰装备提供的生命上限 */
-        private const val HEALTH_PER_PIECE = 5.0
+        private const val HEALTH_PER_PIECE = 8.0
 
         override fun onAcquire(ctx: PerkContext) = refresh(ctx)
         override fun onRespawn(ctx: PerkContext) = refresh(ctx)
@@ -576,7 +577,8 @@ object ArtisanPerks {
             val player = ctx.player
             val inventory = player.inventory
             val excess = mutableListOf<ItemStack>()
-            for (slot in 0 until 36) {
+            // 遍历全部槽位: 副手槽 (40) 也能放可堆叠物品, 只扫 0~35 会漏掉它
+            for (slot in 0 until inventory.containerSize) {
                 val stack = inventory.getItem(slot)
                 if (stack.isEmpty) continue
                 val max = stack.maxStackSize
@@ -590,6 +592,7 @@ object ArtisanPerks {
 
             for (extra in excess) {
                 var remaining = extra
+                // 只往主背包/快捷栏放 (0~35): setItem 不走槽位校验, 不能把物品塞进护甲槽
                 for (slot in 0 until 36) {
                     if (remaining.isEmpty) break
                     val existing = inventory.getItem(slot)
