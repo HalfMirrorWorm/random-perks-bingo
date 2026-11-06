@@ -75,8 +75,15 @@ object DelverPerks {
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
 
         override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
-            if (ctx.player.isCreative) return
             if (!PerkBoostQuery.isOreBlock(blockState)) return
+            recordOreBreak(ctx)
+        }
+
+        /** 记一次矿石破坏并重算加成 —— 连锁挖矿额外挖掉的方块不走破坏事件,
+         *  由 [ChainMining] 对每一块单独调用这里。 */
+        fun recordOreBreak(ctx: PerkContext) {
+            if (ctx.player.isCreative) return
+            if (!ctx.state.hasPerk(id)) return
 
             ctx.state.memory[KEY_STACKS] = (stacks(ctx) + 1).toString()
             apply(ctx)
@@ -460,6 +467,8 @@ object DelverPerks {
                             if (tool.isEmpty) return                                 // 挖断了就停
                             // 只移除方块, 不在这里生成掉落 —— 掉落统一在下面按主矿石的结算结果处理
                             if (!world.destroyBlock(next, false, player)) continue
+                            // 连锁挖掉的矿石也要给"贪吃蛇"加层 (这些方块不走 PlayerBlockBreakEvents)
+                            GluttonousSnake.recordOreBreak(ctx)
                             // 创造模式不掉落 (与原版一致); 透视抑制时整批不掉落
                             if (!suppressed && !player.isCreative) {
                                 // 掉落在主矿石的位置生成 (自动含时运/精准采集), 与主矿石的掉落堆在一起
