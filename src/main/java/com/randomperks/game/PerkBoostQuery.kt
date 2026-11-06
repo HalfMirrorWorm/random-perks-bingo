@@ -46,7 +46,13 @@ object PerkBoostQuery {
         player: Player,
         state: net.minecraft.world.level.block.state.BlockState,
     ): Float {
-        if (PerkStateManager.get(player.uuid)?.hasPerk(MINER_WRIST_PERK) != true) return 1.0f
+        // 客户端也要算这 1.25 倍, 否则进度条会比服务端慢 (服务端先破坏, 方块"突然消失")
+        val hasPerk = if (player.level().isClientSide()) {
+            ClientPerkFlags.has(MINER_WRIST_PERK)
+        } else {
+            PerkStateManager.get(player.uuid)?.hasPerk(MINER_WRIST_PERK) == true
+        }
+        if (!hasPerk) return 1.0f
         return if (isOreBlock(state)) MINER_WRIST_ORE_MULTIPLIER else 1.0f
     }
 
