@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.core.BlockPos
 import net.minecraft.core.GlobalPos
+import net.minecraft.world.entity.item.FallingBlockEntity
 
 /**
  * "千锤百炼" 给的那把损坏的铁砧: **只能用一次**。
@@ -40,6 +41,21 @@ object TemperingAnvilService {
     /** 消耗某个坐标的一次性标记 (返回是否是词条铁砧) */
     fun consume(world: ServerLevel, pos: BlockPos): Boolean =
         marked.remove(GlobalPos.of(world.dimension(), pos.immutable()))
+
+    /**
+     * 铁砧下落时贴在下落实体上的临时标签 —— 铁砧落地走 `setBlockAndUpdate`,
+     * 既不走 `setPlacedBy` 也不走 `getDrops`, 必须在落地那一刻把标记转到落点。
+     */
+    const val FALLING_TAG = "randomperks_tempering_anvil_falling"
+
+    /** 把"一次性"标记交给正在下落的铁砧实体 */
+    fun markFalling(entity: FallingBlockEntity) {
+        entity.addTag(FALLING_TAG)
+    }
+
+    /** 该下落实体是否带着"一次性"标记 */
+    fun isMarkedFalling(entity: FallingBlockEntity): Boolean =
+        FALLING_TAG in entity.entityTags()
 
     fun clear() = marked.clear()
 }

@@ -58,6 +58,8 @@
     "BoneMealFlowerMixin",
     "TemperingAnvilBlockMixin",
     "TemperingAnvilUseMixin",
+    "TemperingAnvilFallMixin",
+    "TemperingAnvilLandMixin",
     "ForgingScreenHandlerAccessor",
     "WorldBlockChangeMixin",
     "MinerWristMixin",

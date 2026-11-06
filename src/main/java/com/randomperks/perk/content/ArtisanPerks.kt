@@ -350,7 +350,7 @@ object ArtisanPerks {
             player.level().getServer().playerList.players.filter { !it.isSpectator }
     }
 
-    /** 紫 · 匠造: **百宝箱** —— 随机开出 **1~5 件**盔甲或工具 (材质上限钻石, 白板不附魔) */
+    /** 紫 · 匠造: **百宝箱** —— 随机开出 **1~5 件**装备 (白板不附魔) */
     object TreasureChest : PerkDefinition {
         override val id = "artisan_treasure_chest"
         override val rarity = PerkRarity.PURPLE
@@ -360,7 +360,7 @@ object ArtisanPerks {
         private const val MIN_COUNT = 1
         private const val MAX_COUNT = 5
 
-        /** 可开出的装备池: 盔甲 (皮革→钻石) + 工具 (木→钻石) */
+        /** 可开出的装备池: 盔甲 (皮革→下界合金) + 工具 (木→下界合金) + 远程/特殊装备 + 功能工具 */
         private val POOL: List<Item> = listOf(
             // 盔甲
             Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS,
@@ -368,12 +368,20 @@ object ArtisanPerks {
             Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS,
             Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS,
             Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS,
+            Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS,
+            Items.TURTLE_HELMET,
             // 工具
             Items.WOODEN_SWORD, Items.WOODEN_PICKAXE, Items.WOODEN_AXE, Items.WOODEN_SHOVEL, Items.WOODEN_HOE,
             Items.STONE_SWORD, Items.STONE_PICKAXE, Items.STONE_AXE, Items.STONE_SHOVEL, Items.STONE_HOE,
             Items.IRON_SWORD, Items.IRON_PICKAXE, Items.IRON_AXE, Items.IRON_SHOVEL, Items.IRON_HOE,
             Items.GOLDEN_SWORD, Items.GOLDEN_PICKAXE, Items.GOLDEN_AXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_HOE,
             Items.DIAMOND_SWORD, Items.DIAMOND_PICKAXE, Items.DIAMOND_AXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_HOE,
+            Items.NETHERITE_SWORD, Items.NETHERITE_PICKAXE, Items.NETHERITE_AXE, Items.NETHERITE_SHOVEL, Items.NETHERITE_HOE,
+            // 远程 / 特殊装备
+            Items.BOW, Items.CROSSBOW, Items.TRIDENT, Items.MACE, Items.SHIELD, Items.ELYTRA,
+            // 功能工具
+            Items.FISHING_ROD, Items.SHEARS, Items.FLINT_AND_STEEL, Items.SPYGLASS,
+            Items.CARROT_ON_A_STICK, Items.WARPED_FUNGUS_ON_A_STICK,
         )
 
         override fun onAcquire(ctx: PerkContext) {

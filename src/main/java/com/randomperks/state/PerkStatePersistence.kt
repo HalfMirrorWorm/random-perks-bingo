@@ -53,6 +53,19 @@ object PerkStatePersistence {
     private const val KEY_VERSION = "version"
     private const val CURRENT_VERSION = 1
 
+    /** 写档时的服务器 tick。重启后 tickCount 从 0 重新计, 读档时用它把绝对 tick 换算回来。 */
+    private const val KEY_SAVED_AT_TICK = "saved_at_tick"
+
+    /**
+     * `state.memory` 里存"绝对 tick"的键 —— 读档时同样要换算到本次进程的 tick 轴。
+     * 只放绝对 tick (截止时间 / 上次触发时刻); "剩余量"类键 (如 doomsday_remaining)
+     * 千万不要放进来, 否则会被二次换算。
+     */
+    private val ABSOLUTE_TICK_MEMORY_KEYS = setOf(
+        "homing_quiver_tick",   // 这不是挂?: 上次补箭 tick
+        "soul_out_end",         // 灵魂出窍: 结束截止 tick
+    )
+
     /** 兜底自动保存间隔 (tick): 30 秒 */
     private const val AUTOSAVE_TICKS = 20 * 30
 
@@ -131,6 +144,7 @@ object PerkStatePersistence {
         val root = CompoundTag()
         root.putInt(KEY_VERSION, CURRENT_VERSION)
         root.putBoolean("enabled", PerkSession.isEnabled())
+        root.putLong(KEY_SAVED_AT_TICK, server.tickCount.toLong())
 
         val players = ListTag()
         for (state in PerkStateManager.all()) {
@@ -222,6 +236,9 @@ object PerkStatePersistence {
     private fun restore(server: MinecraftServer, root: CompoundTag) {
         PerkSession.restoreRound(root.getBooleanOr("enabled", false))
 
+        // 上一进程写档时的 tick; 老存档没有这个字段, -1 表示按原值使用 (不换算)
+        val savedAtTick = root.getLongOr(KEY_SAVED_AT_TICK, -1L)
+
         val players = root.getListOrEmpty("players")
         for (i in 0 until players.size) {
             val entry = players.getCompoundOrEmpty(i)
@@ -256,12 +273,21 @@ object PerkStatePersistence {
 
             val cooldowns = entry.getCompoundOrEmpty("cooldowns")
             for (key in cooldowns.keySet()) {
-                state.cooldowns[key] = cooldowns.getLongOr(key, 0L)
+                state.cooldowns[key] = remapAbsoluteTick(
+                    cooldowns.getLongOr(key, 0L), savedAtTick, server.tickCount,
+                )
             }
 
             val memory = entry.getCompoundOrEmpty("memory")
             for (key in memory.keySet()) {
-                state.memory[key] = memory.getStringOr(key, "")
+                val value = memory.getStringOr(key, "")
+                state.memory[key] = if (key in ABSOLUTE_TICK_MEMORY_KEYS) {
+                    val tick = value.toLongOrNull()
+                    if (tick == null) value
+                    else remapAbsoluteTick(tick, savedAtTick, server.tickCount).toString()
+                } else {
+                    value
+                }
             }
 
             if (state.ownedPerks.isNotEmpty() || state.pendingOffers.isNotEmpty()) {
@@ -306,6 +332,24 @@ object PerkStatePersistence {
     // ------------------------------------------------------------------
     // helpers
     // ------------------------------------------------------------------
+
+    /**
+     * 把上一进程存档里的绝对 tick 换算到本次进程的 tick 轴。
+     *
+     * `value` 既可以是**截止时间** (冷却), 也可以是**上次触发时刻**
+     * (如"这不是挂?"的补箭 tick) —— 两种语义用同一个公式都对:
+     * 偏移量 `value - savedAtTick` 就是"到写档那一刻为止的剩余/已流逝 tick",
+     * 加上本次进程的当前 tick 即可。
+     *
+     * 停机期间不计时: 服务器关闭多久, 冷却就原样保留多久。
+     * 换算结果为负说明早该到期了, 夹到 0 (立即就绪)。
+     *
+     * @param savedAtTick 上一进程写档时的 tick; -1 表示老存档没有该字段, 按原值使用
+     */
+    private fun remapAbsoluteTick(value: Long, savedAtTick: Long, currentTick: Int): Long {
+        if (savedAtTick < 0L) return value
+        return (currentTick.toLong() + (value - savedAtTick)).coerceAtLeast(0L)
+    }
 
     private fun statePath(server: MinecraftServer): Path? = try {
         server.getWorldPath(LevelResource.ROOT).resolve(FILE_NAME)
