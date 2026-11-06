@@ -255,9 +255,10 @@ object DelverPerks {
     }
 
     /** 蓝 · 深掘: 使用镐挖掘方块时, 按**方块所需的挖掘等级**概率掉落一件随机物品
-     *  (需求木/石/铁/钻石镐的方块分别为 1% / 2% / 5% / 30%); 奖品取自全部原版物品
+     *  (基岩 100% / 需求钻石镐 30% / 铁镐 5% / 石镐 2% / 木镐 1%); 奖品取自全部原版物品
      *  (**含刷怪蛋**), 只排除纯指令方块/工具与"无组件即废品"的模板物品。
-     *  以掉落物形态落地 —— 参与透视之眼的惩罚; 老矿工只复制方块本身的掉落, 不复制奖品。 */
+     *  以掉落物形态落地 —— 参与透视之眼的 35% 抑制; 与方块掉落共用"额外一份"判定,
+     *  命中矿脉嗅觉/老矿工时奖品也复制一份。创造模式不触发。 */
     object LuckyDigger : PerkDefinition {
         override val id = "delver_lucky_digger"
         override val rarity = PerkRarity.BLUE
@@ -287,12 +288,16 @@ object DelverPerks {
         }
 
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.core.BlockPos, blockState: BlockState) {
+            if (ctx.player.isCreative) return                             // 创造模式不触发
             if (!ctx.player.mainHandItem.`is`(ItemTags.PICKAXES)) return   // 用镐子挖
-            if (!ctx.player.hasCorrectToolForDrops(blockState)) return                   // 挖了也不掉落的方块不触发
 
             // 按"方块的需求镐等级"分档 (从高到低判; 1.21 没有"木镐"需求标签,
             // 以"掉落需要正确工具"兜底为木档 —— 石头/煤等)
             val chance = when {
+                // 基岩单独一档: 能挖掉它说明有"破壁人", 必出奖品
+                // (放在正确工具判定之前: 基岩本身没有"可收获"的掉落表)
+                blockState.`is`(Blocks.BEDROCK) -> 1.0f
+                !ctx.player.hasCorrectToolForDrops(blockState) -> return // 挖了也不掉落的方块不触发
                 blockState.`is`(BlockTags.NEEDS_DIAMOND_TOOL) -> 0.30f
                 blockState.`is`(BlockTags.NEEDS_IRON_TOOL) -> 0.05f
                 blockState.`is`(BlockTags.NEEDS_STONE_TOOL) -> 0.02f
@@ -306,9 +311,13 @@ object DelverPerks {
 
             val world = ctx.player.level() as? ServerLevel ?: return
             val prize = LOOT_POOL[ctx.player.random.nextInt(LOOT_POOL.size)]
-            val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, ItemStack(prize))
-            entity.setDefaultPickUpDelay()
-            world.addFreshEntity(entity)
+            // 与方块掉落共用"额外一份"判定: 命中矿脉嗅觉/老矿工时奖品也复制一份
+            val copies = if (PerkBoostQuery.isExtraDropDoubled(ctx.player, pos)) 2 else 1
+            repeat(copies) {
+                val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, ItemStack(prize))
+                entity.setDefaultPickUpDelay()
+                world.addFreshEntity(entity)
+            }
         }
     }
 
