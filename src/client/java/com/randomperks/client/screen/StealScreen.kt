@@ -92,7 +92,7 @@ class StealScreen(
         val mouseX = event.x()
         val mouseY = event.y()
         val button = event.button()
-        if (button == 0 && hovered >= 0) {
+        if (button == 1 && hovered >= 0) {
             ClientPerkNetworking.pickSteal(hovered)
             onClose()
             return true

@@ -434,7 +434,7 @@ class PerkListScreen(
 
         // 点击自己的一次性词条 → 触发使用流程
         val current = players.getOrNull(selected)
-        if (button == 0 && current != null && current.uuid == selfUuid() &&
+        if (button == 1 && current != null && current.uuid == selfUuid() &&
             mouseX >= listLeft && mouseX <= listLeft + listWidth &&
             mouseY >= listTop && mouseY <= listBottom()
         ) {

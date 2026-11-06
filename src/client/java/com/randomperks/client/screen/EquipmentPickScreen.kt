@@ -119,7 +119,7 @@ class EquipmentPickScreen(
         val mouseX = event.x()
         val mouseY = event.y()
         val button = event.button()
-        if (button == 0 && hovered >= 0) {
+        if (button == 1 && hovered >= 0) {
             val key = cells[hovered].key
             if (key != null) {
                 onPick(key)

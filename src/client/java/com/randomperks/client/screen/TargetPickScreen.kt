@@ -88,7 +88,7 @@ class TargetPickScreen(
         val mouseX = event.x()
         val mouseY = event.y()
         val button = event.button()
-        if (button == 0 && hovered >= 0) {
+        if (button == 1 && hovered >= 0) {
             onPick(targets[hovered].uuid)
             if (closeOnPick) onClose()
             return true

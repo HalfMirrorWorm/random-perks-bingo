@@ -177,7 +177,7 @@
   "random-perks-bingo.perk.delver_phoenix.name": "不死鸟",
   "random-perks-bingo.perk.delver_phoenix.desc": "免疫火焰伤害; 在岩浆中每秒恢复 2 点生命。",
   "random-perks-bingo.perk.delver_onion_cut.name": "切洋葱",
-  "random-perks-bingo.perk.delver_onion_cut.desc": "手持镐右键黑曜石可将其变成哭泣的黑曜石, 右键哭泣的黑曜石可将其变回黑曜石。",
+  "random-perks-bingo.perk.delver_onion_cut.desc": "镐右键可以切换黑曜石和哭泣的黑曜石。",
   "random-perks-bingo.perk.delver_eighty.name": "八十",
   "random-perks-bingo.perk.delver_eighty.desc": "用镐挖石头类方块（含下界岩/玄武岩/黑石）时，连带挖掉周围 3×3 的同种方块，掉落一起结算。",
   "random-perks-bingo.perk.delver_chain_mining.name": "连锁挖矿",

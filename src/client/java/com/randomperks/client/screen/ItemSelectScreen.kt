@@ -113,7 +113,7 @@ class ItemSelectScreen(
         val mouseX = event.x()
         val mouseY = event.y()
         val button = event.button()
-        if (button == 0 && hovered >= 0) {
+        if (button == 1 && hovered >= 0) {
             if (hovered in selected) {
                 selected.remove(hovered)
             } else if (selected.size < required) {

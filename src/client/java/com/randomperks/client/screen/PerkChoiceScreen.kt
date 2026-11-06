@@ -33,6 +33,19 @@ class PerkChoiceScreen(
 
     private fun cardX(index: Int) = startX + index * (cardWidth + gap)
 
+    /** 直接用点击坐标做命中检测, 不依赖上一帧渲染时记录的 hovered */
+    private fun cardAt(mouseX: Double, mouseY: Double): Int {
+        for (index in options.indices) {
+            val x = cardX(index)
+            if (mouseX >= x && mouseX <= x + cardWidth &&
+                mouseY >= cardY && mouseY <= cardY + cardHeight
+            ) {
+                return index
+            }
+        }
+        return -1
+    }
+
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         // 注意: 1.21.6+ 的渲染管线会自动模糊屏幕背景,
         // 这里不能再调 renderBackground() (会造成二次 blur 崩溃), 用自绘遮罩代替
@@ -118,8 +131,9 @@ class PerkChoiceScreen(
         val mouseX = event.x()
         val mouseY = event.y()
         val button = event.button()
-        if (button == 0 && hovered in options.indices) {
-            ClientPerkNetworking.pick(hovered)
+        val index = cardAt(mouseX, mouseY)
+        if (button == 1 && index in options.indices) {
+            ClientPerkNetworking.pick(index)
             onClose()
             return true
         }

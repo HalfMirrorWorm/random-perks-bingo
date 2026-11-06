@@ -72,6 +72,14 @@ class PerkCatalogScreen(
 
     private fun tabWidth() = listWidth / tabs.size
 
+    /** 直接用点击坐标做 tab 命中检测, 不依赖上一帧渲染时记录的 hoveredTab */
+    private fun tabAt(mouseX: Double, mouseY: Double): Int {
+        if (mouseY < TABS_TOP || mouseY > TABS_TOP + TAB_HEIGHT) return -1
+        val w = tabWidth()
+        if (mouseX < listLeft || mouseX >= listLeft + w * tabs.size) return -1
+        return ((mouseX - listLeft) / w).toInt().coerceIn(0, tabs.size - 1)
+    }
+
     private fun listBottom() = height - LIST_BOTTOM_MARGIN
 
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
@@ -222,8 +230,9 @@ class PerkCatalogScreen(
             }
         }
 
-        if (button == 0 && hoveredTab in tabs.indices) {
-            selectedArchetype = tabs[hoveredTab]
+        val tab = tabAt(mouseX, mouseY)
+        if (button == 1 && tab in tabs.indices) {
+            selectedArchetype = tabs[tab]
             scrollOffset = 0
             return true
         }
