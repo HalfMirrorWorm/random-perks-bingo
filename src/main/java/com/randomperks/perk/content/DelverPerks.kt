@@ -188,34 +188,20 @@ object DelverPerks {
             PermanentEffects.removePermanent(ctx.player, MobEffects.RESISTANCE, 0)
     }
 
-    /** 紫 · 深层专注: 永久急迫 II + 攻击速度 +20% */
+    /** 紫 · 深掘: 永久急迫 II
+     *  (26.3 的原版急迫自带 `ATTACK_SPEED +0.1/级`，急迫 II 本身就有 +20% 攻速) */
     object Haste : PerkDefinition {
         override val id = "delver_haste"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.DELVER
         override fun icon() = ItemStack(Items.DIAMOND_PICKAXE)
 
-        private val MOD_ATTACK_SPEED =
-            Identifier.fromNamespaceAndPath("random-perks-bingo", "delver_haste_attack_speed")
-
-        /** 原版急迫只加挖掘速度, 这里额外补一份攻击速度 (按总攻速乘算) */
-        private const val ATTACK_SPEED_BONUS = 0.20
-
         override fun onAcquire(ctx: PerkContext) = apply(ctx)
         override fun onRespawn(ctx: PerkContext) = apply(ctx)
+        private fun apply(ctx: PerkContext) = PerkEffects.permanentEffect(ctx.player, MobEffects.HASTE, 1)
 
-        private fun apply(ctx: PerkContext) {
-            PerkEffects.permanentEffect(ctx.player, MobEffects.HASTE, 1)
-            PerkEffects.setAttribute(
-                ctx.player, Attributes.ATTACK_SPEED, MOD_ATTACK_SPEED,
-                ATTACK_SPEED_BONUS, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
-            )
-        }
-
-        override fun onRemove(ctx: PerkContext) {
+        override fun onRemove(ctx: PerkContext) =
             PermanentEffects.removePermanent(ctx.player, MobEffects.HASTE, 1)
-            PerkEffects.removeAttribute(ctx.player, Attributes.ATTACK_SPEED, MOD_ATTACK_SPEED)
-        }
     }
 
     /** 蓝 · 矿脉嗅觉: 挖掘矿石时 18% 概率额外掉落一份, 每拥有一个其他深掘词条 +3%
