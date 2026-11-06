@@ -441,8 +441,9 @@ object ArtisanPerks {
         override fun onAcquire(ctx: PerkContext) {
             val axe = ItemStack(Items.GOLDEN_AXE)
             PerkEffects.enchant(ctx.player, axe, Enchantments.SHARPNESS, SHARPNESS_LEVEL)
-            // 只有 1 点耐久: 攻击一次由原版耐久结算自动损坏
-            axe.damageValue = axe.maxDamage - 1
+            // ★ 耐久上限直接压成 1 点: 无论用铁砧、经验修补还是任何手段"修回来"，
+            //   上限仍然只有 1 —— 这把斧头永远只有一次机会。
+            axe.set(DataComponents.MAX_DAMAGE, 1)
             // ★ 工作惩罚直接拉满: 铁砧成本一上来就 ≥ 40 级 → 永久"过于昂贵", 修不了也合不了。
             //   这是原版组件, 不显示在 tooltip 上, 也不需要额外 mixin。
             axe.set(DataComponents.REPAIR_COST, 40)
