@@ -99,7 +99,8 @@ object XrayRenderer {
         for ((tag, kind) in ORE_KIND_TAGS) if (state.`is`(tag)) return kind
         val path = BuiltInRegistries.BLOCK.getKey(state.block).path
         if (path == "ancient_debris") return "debris"
-        if (path.contains("ore")) return "id:$path" // modded: 同名矿石合并, 颜色用默认白
+        // 只认以 _ore 结尾的 id: heavy_core / spore_blossom 这类名称里含 "ore" 的方块不是矿石
+        if (path.endsWith("_ore")) return "id:$path" // modded: 同名矿石合并, 颜色用默认白
         return null
     }
 
