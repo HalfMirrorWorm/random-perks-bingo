@@ -52,6 +52,14 @@ class PerkCatalogScreen(
     private var listWidth = 0
     private var cardWidth = 0
 
+    // 滚动条拖动状态 (左键按住滑块/轨道上下拖动)
+    private var draggingScrollBar = false
+    private var dragGrabOffset = 0
+    private var scrollBarX = 0
+    private var scrollBarTop = 0
+    private var scrollBarBottom = 0
+    private var scrollThumbHeight = 0
+
     private val tabs: List<PerkArchetype?> = listOf(null) + PerkArchetype.entries
 
     override fun init() {
@@ -160,8 +168,14 @@ class PerkCatalogScreen(
             val barX = listLeft + listWidth + 8
             val barHeight = (listHeight * listHeight / contentHeight).coerceAtLeast(12)
             val barY = LIST_TOP + (listHeight - barHeight) * scrollOffset / maxScroll
+            scrollBarX = barX
+            scrollBarTop = LIST_TOP
+            scrollBarBottom = listBottom()
+            scrollThumbHeight = barHeight
             context.fill(barX, LIST_TOP, barX + 2, listBottom(), ScreenStyle.DIVIDER)
             context.fill(barX - 1, barY, barX + 3, barY + barHeight, 0x90FFFFFF.toInt())
+        } else {
+            draggingScrollBar = false
         }
 
         // 悬停描述
@@ -230,6 +244,12 @@ class PerkCatalogScreen(
             }
         }
 
+        // 左键点住滚动条/轨道开始拖动
+        if (button == 1 && isOverScrollBar(mouseX, mouseY)) {
+            beginScrollDrag(mouseY)
+            return true
+        }
+
         val tab = tabAt(mouseX, mouseY)
         if (button == 1 && tab in tabs.indices) {
             selectedArchetype = tabs[tab]
@@ -239,12 +259,55 @@ class PerkCatalogScreen(
         return super.mouseClicked(event, doubleClick)
     }
 
+    override fun mouseDragged(event: MouseButtonEvent, dragX: Double, dragY: Double): Boolean {
+        if (draggingScrollBar) {
+            updateScrollFromDrag(event.y())
+            return true
+        }
+        return super.mouseDragged(event, dragX, dragY)
+    }
+
+    override fun mouseReleased(event: MouseButtonEvent): Boolean {
+        if (draggingScrollBar) {
+            draggingScrollBar = false
+            return true
+        }
+        return super.mouseReleased(event)
+    }
+
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         if (maxScroll > 0) {
             scrollOffset = (scrollOffset - (verticalAmount * 16).toInt()).coerceIn(0, maxScroll)
             return true
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    }
+
+    /** 滚动条命中区域: 轨道 2px + 滑块 4px, 左右各放宽一点方便点击 */
+    private fun isOverScrollBar(mouseX: Double, mouseY: Double): Boolean =
+        maxScroll > 0 &&
+            mouseY >= scrollBarTop && mouseY <= scrollBarBottom &&
+            mouseX >= scrollBarX - 4 && mouseX <= scrollBarX + 6
+
+    private fun scrollThumbTop(): Int =
+        scrollBarTop + (scrollBarBottom - scrollBarTop - scrollThumbHeight) * scrollOffset / maxScroll
+
+    private fun beginScrollDrag(mouseY: Double) {
+        val thumbTop = scrollThumbTop()
+        // 点中滑块就按点中的位置拖; 点轨道则把滑块中心跳到鼠标位置
+        dragGrabOffset = if (mouseY >= thumbTop && mouseY <= thumbTop + scrollThumbHeight) {
+            (mouseY - thumbTop).toInt()
+        } else {
+            scrollThumbHeight / 2
+        }
+        draggingScrollBar = true
+        updateScrollFromDrag(mouseY)
+    }
+
+    private fun updateScrollFromDrag(mouseY: Double) {
+        val trackRange = (scrollBarBottom - scrollBarTop - scrollThumbHeight).coerceAtLeast(1)
+        val top = (mouseY - dragGrabOffset - scrollBarTop).coerceIn(0.0, trackRange.toDouble())
+        scrollOffset = (top / trackRange * maxScroll).toInt().coerceIn(0, maxScroll)
     }
 
     override fun isPauseScreen(): Boolean = false
