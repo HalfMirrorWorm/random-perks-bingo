@@ -375,13 +375,21 @@ class PerkListScreen(
             context.fill(x, y, x + 1, y + CARD_HEIGHT, glow)
             context.fill(x + cardWidth - 1, y, x + cardWidth, y + CARD_HEIGHT, glow)
         }
+        // 流派名称 + "贮藏"标签 (绿色方框, 画在流派名称右侧)
+        val archetypeLabel = Component.translatable("random-perks-bingo.archetype.${archetype.id}")
+        val tagLabel = if (perk.storable) {
+            Component.translatable("random-perks-bingo.tag.storable")
+        } else null
+        val tagX = x + 30 + font.width(archetypeLabel) + 4
+        val tagWidth = tagLabel?.let { PerkTagRenderer.width(font, it) } ?: 0
+
         if (pending) {
             val hint = Component.translatable("random-perks-bingo.list.click_to_use")
-            context.text(
-                font, hint,
-                x + cardWidth - 6 - font.width(hint), y + 15,
-                ScreenStyle.TEXT_HIGHLIGHT,
-            )
+            val hintX = x + cardWidth - 6 - font.width(hint)
+            // 窗口很窄时提示会和标签重叠, 这时只保留闪烁绿边
+            if (tagLabel == null || hintX > tagX + tagWidth + 4) {
+                context.text(font, hint, hintX, y + 15, ScreenStyle.TEXT_HIGHLIGHT)
+            }
         }
 
         // 图标 (16x16, 垂直居中)
@@ -393,11 +401,10 @@ class PerkListScreen(
             Component.translatable("random-perks-bingo.perk.${perk.id}.name"),
             x + 30, y + 5, displayColor,
         )
-        context.text(
-            font,
-            Component.translatable("random-perks-bingo.archetype.${archetype.id}"),
-            x + 30, y + 15, ScreenStyle.TEXT_DIM,
-        )
+        context.text(font, archetypeLabel, x + 30, y + 15, ScreenStyle.TEXT_DIM)
+        if (tagLabel != null) {
+            PerkTagRenderer.draw(context, font, tagLabel, tagX, y + 15)
+        }
     }
 
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {

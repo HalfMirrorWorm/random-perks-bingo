@@ -218,12 +218,21 @@ class PerkCatalogScreen(
             x + 27, y + 5,
             if (owned) displayColor else LOCKED_NAME,
         )
+        val archetypeLabel = Component.translatable("random-perks-bingo.archetype.${archetype.id}")
         context.text(
-            font,
-            Component.translatable("random-perks-bingo.archetype.${archetype.id}"),
-            x + 27, y + 15,
+            font, archetypeLabel, x + 27, y + 15,
             if (owned) ScreenStyle.TEXT_DIM else LOCKED_SUB,
         )
+        if (perk.storable) {
+            PerkTagRenderer.draw(
+                context,
+                font,
+                Component.translatable("random-perks-bingo.tag.storable"),
+                x + 27 + font.width(archetypeLabel) + 4,
+                y + 15,
+                dimmed = !owned,
+            )
+        }
     }
 
     /** 颜色减淡到约 50% 亮度 (保留 alpha) */

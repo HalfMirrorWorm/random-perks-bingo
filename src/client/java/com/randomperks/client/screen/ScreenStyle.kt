@@ -15,6 +15,14 @@ object ScreenStyle {
     const val SLOT_BG = 0x60000000
     const val DIVIDER = 0x40FFFFFF
 
+    // "贮藏"等属性标签 (绿色方框 + 绿色文字); *_DIM 用于未获得的词条
+    const val TAG_STORABLE_BG = 0x3320C020
+    const val TAG_STORABLE_BG_DIM = 0x22104010
+    const val TAG_STORABLE_BORDER = 0xFF55FF55.toInt()
+    const val TAG_STORABLE_BORDER_DIM = 0xFF3A7A3A.toInt()
+    const val TAG_STORABLE_TEXT = 0xFFAAFFAA.toInt()
+    const val TAG_STORABLE_TEXT_DIM = 0xFF5A8A5A.toInt()
+
     fun rarity(ordinal: Int): PerkRarity =
         PerkRarity.entries.getOrElse(ordinal) { PerkRarity.BLUE }
 
