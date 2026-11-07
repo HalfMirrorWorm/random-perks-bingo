@@ -214,6 +214,8 @@
   "random-perks-bingo.perk.hunter_vitality.desc": "最大生命 +4。",
   "random-perks-bingo.perk.hunter_vampire.name": "战地急救",
   "random-perks-bingo.perk.hunter_vampire.desc": "击杀生物回复 2 点生命。",
+  "random-perks-bingo.perk.hunter_first_aid_punch.name": "急救拳",
+  "random-perks-bingo.perk.hunter_first_aid_punch.desc": "攻击队友时, 伤害会变为治疗。",
   "random-perks-bingo.perk.hunter_scavenger.name": "剥皮专家",
   "random-perks-bingo.perk.hunter_scavenger.desc": "击杀怪物 30% 概率额外掉落战利品。",
   "random-perks-bingo.perk.hunter_soul_harvest.name": "灵魂收割",

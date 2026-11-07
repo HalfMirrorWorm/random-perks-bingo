@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **137** 条词条：绿 27 / 蓝 56 / 紫 27 / 金 22 / 红 3 / 神话 2。
+共 **138** 条词条：绿 27 / 蓝 56 / 紫 28 / 金 22 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -106,6 +106,7 @@
 | `hunter_strength` | 猎人直觉 | Hunter's Instinct | 蓝 |
 | `hunter_vitality` | 强壮体魄 | Vitality | 蓝 |
 | `hunter_vampire` | 战地急救 | Field Medic | 蓝 |
+| `hunter_first_aid_punch` | 急救拳 | First Aid Punch | 紫 |
 | `hunter_scavenger` | 剥皮专家 | Scavenger | 紫 |
 | `hunter_soul_harvest` | 灵魂收割 | Soul Harvest | 蓝 |
 | `hunter_bare_rage` | 玻璃小炮 | Glass Cannon | 蓝 |

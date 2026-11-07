@@ -447,6 +447,12 @@ object PerkBoostQuery {
     fun hasHedgehog(player: ServerPlayer): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("hunter_hedgehog") == true
 
+    // ---- "急救拳" (紫): 攻击队友时伤害转化为治疗 (由 PerkWorldEventService 的 ALLOW_DAMAGE 处理) ----
+
+    /** 玩家是否持有"急救拳" */
+    fun hasFirstAidPunch(player: ServerPlayer): Boolean =
+        PerkStateManager.get(player.uuid)?.hasPerk("hunter_first_aid_punch") == true
+
     // ---- "复活甲" (紫): 致命伤害时自动触发不死图腾 ----
 
     /** 玩家是否持有"复活甲" */

@@ -86,6 +86,15 @@ object HunterPerks {
             PerkEffects.removeAttribute(ctx.player, Attributes.MAX_HEALTH, MOD_HEALTH)
     }
 
+    /** 紫 · 急救拳: 攻击同队玩家时, 伤害不生效, 改为给对方回复等量生命
+     *  (结算在 PerkWorldEventService 的 ALLOW_DAMAGE, 取消伤害前先把 amount 转成治疗) */
+    object FirstAidPunch : PerkDefinition {
+        override val id = "hunter_first_aid_punch"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.HUNTER
+        override fun icon() = ItemStack(Items.GLISTERING_MELON_SLICE)
+    }
+
     /** 蓝 · 战地急救: 击杀生物回复 2 生命 */
     object Vampire : PerkDefinition {
         override val id = "hunter_vampire"
@@ -883,6 +892,7 @@ object HunterPerks {
     fun registerAll() {
         PerkRegistry.register(Strength)
         PerkRegistry.register(Vitality)
+        PerkRegistry.register(FirstAidPunch)
         PerkRegistry.register(Vampire)
         PerkRegistry.register(Scavenger)
         PerkRegistry.register(SoulHarvest)

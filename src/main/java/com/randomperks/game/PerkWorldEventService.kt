@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
+import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.CropBlock
@@ -99,6 +100,34 @@ object PerkWorldEventService {
             val victim = entity as? ServerPlayer ?: return@register
             val attacker = source.entity as? ServerPlayer ?: return@register
             FungalInfectionService.handleAttack(attacker, victim)
+        }
+
+        // 攻击队友 → "急救拳": 伤害不生效, 改为给对方回复等量生命
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register { entity, source, amount ->
+            if (amount <= 0.0f) return@register true
+            val victim = entity as? ServerPlayer ?: return@register true
+            val attacker = source.entity as? ServerPlayer ?: return@register true
+            if (attacker === victim) return@register true
+            if (!PerkBoostQuery.hasFirstAidPunch(attacker)) return@register true
+
+            // 只有同队玩家才算"队友": 无队伍 / 不同队时不转换
+            val team = attacker.team?.name ?: return@register true
+            if (victim.team?.name != team) return@register true
+
+            victim.heal(amount)
+            victim.level().sendParticles(
+                ParticleTypes.HEART,
+                victim.x,
+                victim.y + victim.bbHeight * 0.6,
+                victim.z,
+                3,
+                0.35,
+                0.35,
+                0.35,
+                0.0,
+            )
+            // 取消这次伤害
+            false
         }
 
         // 受到玩家伤害 → "盘丝大仙": 蜘蛛获得 5 秒盘丝 (织网) 效果。

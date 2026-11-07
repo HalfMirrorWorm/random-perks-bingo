@@ -214,6 +214,8 @@
   "random-perks-bingo.perk.hunter_vitality.desc": "+4 max health.",
   "random-perks-bingo.perk.hunter_vampire.name": "Field Medic",
   "random-perks-bingo.perk.hunter_vampire.desc": "Heal 2 HP per kill.",
+  "random-perks-bingo.perk.hunter_first_aid_punch.name": "First Aid Punch",
+  "random-perks-bingo.perk.hunter_first_aid_punch.desc": "Your attacks on teammates heal them instead of dealing damage.",
   "random-perks-bingo.perk.hunter_scavenger.name": "Scavenger",
   "random-perks-bingo.perk.hunter_scavenger.desc": "30% chance of extra loot from mobs.",
   "random-perks-bingo.perk.hunter_soul_harvest.name": "Soul Harvest",
