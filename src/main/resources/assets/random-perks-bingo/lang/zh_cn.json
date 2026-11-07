@@ -380,7 +380,7 @@
   "random-perks-bingo.perk.summon_swap.name": "何易位",
   "random-perks-bingo.perk.summon_swap.desc": "选择一名玩家, 5 秒后传送到他的位置 (可跨维度)。",
   "random-perks-bingo.perk.summon_resonance.name": "共鸣",
-  "random-perks-bingo.perk.summon_resonance.desc": "选择一名队友, 你们的生命值累加为共享血池并始终同步。",
+  "random-perks-bingo.perk.summon_resonance.desc": "获得时选择一名队友, 你们的生命值累加为共享血池并始终同步。",
   "random-perks-bingo.perk.seeker_old_priest.name": "老牧师",
   "random-perks-bingo.perk.seeker_old_priest.desc": "获得 16 个绿宝石, 并生成一只大师级牧师村民; 他的交易项会随机缺货 0~3 项。",
   "random-perks-bingo.perk.harvest_dingdong_chicken.name": "叮咚鸡",

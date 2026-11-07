@@ -301,20 +301,26 @@ object SummonPerks {
         }
     }
 
-    /** 金 · 唤法 · 贮藏: **共鸣** —— 选择一名队友, 双方生命值累加为共享血池并始终同步。
+    /** 紫 · 唤法: **共鸣** —— 获得时选择一名队友, 双方生命值累加为共享血池并始终同步。
      *  由 [ResonanceService] 维护 (每秒重算共享上限, 每 tick 同步当前生命, 一方死亡另一方同死)。 */
     object Resonance : PerkDefinition {
         override val id = ResonanceService.PERK_ID
-        override val rarity = PerkRarity.GOLD
+        override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.ECHO_SHARD)
 
-        override val isOneTime = true
-
         private const val PURPOSE = "resonance"
 
-        override fun onActivate(ctx: PerkContext) {
-            val player = ctx.player
+        override fun onAcquire(ctx: PerkContext) = openPicker(ctx.player)
+
+        override fun onRespawn(ctx: PerkContext) {
+            // 死亡/重启后链接已断开, 重生时再给一次选择机会
+            if (!ResonanceService.isLinked(ctx.player.uuid)) {
+                openPicker(ctx.player)
+            }
+        }
+
+        private fun openPicker(player: ServerPlayer) {
             val candidates = candidates(player)
             if (candidates.isEmpty()) {
                 player.sendSystemMessage(
@@ -335,7 +341,6 @@ object SummonPerks {
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
-            if (state.isUsed(id)) return
 
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
             if (!ResonanceService.link(player, target)) {
@@ -343,12 +348,7 @@ object SummonPerks {
                     Component.translatable("random-perks-bingo.message.resonance_busy"),
                     true,
                 )
-                return
             }
-
-            state.markUsed(id)
-            PerkGrantService.notifyPerkListChanged(player)
-            PerkGrantService.syncAbilities(player)
         }
 
         override fun onRemove(ctx: PerkContext) =
