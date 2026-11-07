@@ -162,6 +162,7 @@ object PerkNetworking {
                     "remote_transfer" -> SummonPerks.RemoteTransfer.handleTargetPick(player, uuid)
                     "hodgepodge" -> MythicPerks.Hodgepodge.handleTargetPick(player, uuid)
                     "swap" -> SummonPerks.Swap.handleTargetPick(player, uuid)
+                    "resonance" -> SummonPerks.Resonance.handleTargetPick(player, uuid)
                 }
             }
         }

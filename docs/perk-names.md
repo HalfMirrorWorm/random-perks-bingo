@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **136** 条词条：绿 27 / 蓝 56 / 紫 26 / 金 22 / 红 3 / 神话 2。
+共 **137** 条词条：绿 27 / 蓝 56 / 紫 26 / 金 23 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -182,6 +182,7 @@
 | `summon_big_snowball` | 打雪仗 | Snowball Fight | 绿 |
 | `summon_remote_transfer` | 远程传输 | Remote Transfer | 蓝 |
 | `summon_swap` | 何易位 | Swap | 金 |
+| `summon_resonance` | 共鸣 | Resonance | 金 |
 | `summon_boss_egg` | Boss盲盒 | Boss Blind Box | 紫 |
 | `summon_end_portal` | 结束吧 | End It | 金 |
 | `summon_loyal_guard` | 忠心护主 | Loyal Guardian | 金 |

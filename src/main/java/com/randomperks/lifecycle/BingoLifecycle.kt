@@ -6,6 +6,7 @@ import com.randomperks.game.PerkGrantService
 import com.randomperks.game.DragonTamerService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
+import com.randomperks.game.ResonanceService
 import com.randomperks.game.RewindService
 import com.randomperks.game.SoulOutService
 import com.randomperks.game.SwapService
@@ -51,6 +52,7 @@ object BingoLifecycle {
         LayFlatService.clear()
         DragonTamerService.clear()
         SwapService.clear()
+        ResonanceService.clear()
         TemperingAnvilService.clear()
         RandomPerksHooks.resetLineCounts()
     }

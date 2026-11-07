@@ -13,6 +13,7 @@ import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.PigMorphService
 import com.randomperks.game.PortableCraftingService
+import com.randomperks.game.ResonanceService
 import com.randomperks.game.RewindService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
@@ -114,6 +115,9 @@ object RandomPerksMod : ModInitializer {
 
         // "何易位": 5 秒倒计时后传送
         SwapService.register()
+
+        // "共鸣": 共享血池的生命上限/当前生命同步
+        ResonanceService.register()
 
         // "TNT 投手" 的右键抛射
         TntThrowService.register()

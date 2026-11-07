@@ -4,6 +4,7 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.game.LoyalGuardService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkGrantService
+import com.randomperks.game.ResonanceService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.SwapService
 import com.randomperks.network.PerkNetworking
@@ -300,6 +301,68 @@ object SummonPerks {
         }
     }
 
+    /** 金 · 唤法 · 贮藏: **共鸣** —— 选择一名队友, 双方生命值累加为共享血池并始终同步。
+     *  由 [ResonanceService] 维护 (每秒重算共享上限, 每 tick 同步当前生命, 一方死亡另一方同死)。 */
+    object Resonance : PerkDefinition {
+        override val id = ResonanceService.PERK_ID
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.SUMMON
+        override fun icon() = ItemStack(Items.ECHO_SHARD)
+
+        override val isOneTime = true
+
+        private const val PURPOSE = "resonance"
+
+        override fun onActivate(ctx: PerkContext) {
+            val player = ctx.player
+            val candidates = candidates(player)
+            if (candidates.isEmpty()) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.resonance_no_target"),
+                    true,
+                )
+                return
+            }
+            PerkNetworking.sendActionTargets(
+                player,
+                PURPOSE,
+                candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
+            )
+        }
+
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
+            if (!PerkSession.isEnabled()) return
+
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (!state.hasPerk(id)) return
+            if (state.isUsed(id)) return
+
+            val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            if (!ResonanceService.link(player, target)) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.resonance_busy"),
+                    true,
+                )
+                return
+            }
+
+            state.markUsed(id)
+            PerkGrantService.notifyPerkListChanged(player)
+            PerkGrantService.syncAbilities(player)
+        }
+
+        override fun onRemove(ctx: PerkContext) =
+            ResonanceService.unlinkPlayer(ctx.player.uuid, true)
+
+        /** 候选: 同队、在线、存活、非旁观, 且不含自己 */
+        private fun candidates(player: ServerPlayer): List<ServerPlayer> {
+            val team = player.team?.name ?: return emptyList()
+            return player.level().getServer().playerList.players.filter {
+                it !== player && it.isAlive && !it.isSpectator && it.team?.name == team
+            }
+        }
+    }
+
     /** 蓝 · 唤法 · 贮藏: **失眠** —— 点击使用并选择一名玩家, 在他附近生成 3 只幻翼 */
     object Insomnia : PerkDefinition {
         override val id = "summon_insomnia"
@@ -463,6 +526,7 @@ object SummonPerks {
         PerkRegistry.register(Insomnia)
         PerkRegistry.register(RemoteTransfer)
         PerkRegistry.register(Swap)
+        PerkRegistry.register(Resonance)
         PerkRegistry.register(BossEgg)
         PerkRegistry.register(EndPortal)
         PerkRegistry.register(LoyalGuard)
