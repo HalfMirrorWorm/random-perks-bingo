@@ -8,6 +8,7 @@ import com.randomperks.network.PerkOptionData
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkRarity
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -21,6 +22,8 @@ object RandomPerksClient : ClientModInitializer {
         logger.info("[RandomPerks] client initializing")
 
         ClientPerkNetworking.registerClient()
+        // 罗盘 HUD 默认在左上角, 会被 bingo 卡片完全盖住 → 客户端启动完成后强制放到右侧
+        ClientLifecycleEvents.CLIENT_STARTED.register { com.randomperks.client.compat.CompassHudCompat.forceRightSide() }
         // "自动搭路": 必须在客户端预测放置, 否则会先预测下落再被服务端纠正 (位置回弹)
         AutoBridgeClient.register()
         Keybinds.register()
