@@ -75,6 +75,9 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
     private final HumanoidArmorLayer<AvatarRenderState, PlayerModel,
             HumanoidModel<AvatarRenderState>> armorRenderer;
 
+    /** 26.3 的头盔渲染器不会再从上下文模型复制变换, 需要自己把它的头轴心对齐到猪头 */
+    private final HumanoidModel<AvatarRenderState> helmetModel;
+
     private final PigRenderState pigState = new PigRenderState();
 
     private PigMorphRenderer(EntityRendererProvider.Context context, boolean slimArms) {
@@ -86,13 +89,14 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
 
         this.headModel = new PlayerModel(context.bakeLayer(ModelLayers.PLAYER), false);
 
-        // 头盔渲染器的"上下文模型"指向**我们自己的** headModel, 而不是原版玩家渲染器的那个。
-        // 这样 renderArmor 内部 copyStateTo(armorModel) 时抄到的是我们已经对齐到猪头的姿势,
-        // 头盔才会跟着猪头走。
+        // 头盔模型: 26.3 的 HumanoidArmorLayer 直接把盔甲模型交给 EquipmentLayerRenderer,
+        // 不会再从上下文模型复制变换 (1.21.8 的 copyTransforms 那一步没了)。
+        // 因此这里保留头盔模型引用, 渲染前手动把它的头轴心对齐到猪头。
         ArmorModelSet<HumanoidModel<AvatarRenderState>> armorModels = ArmorModelSet.bake(
                 ModelLayers.PLAYER_ARMOR,
                 context.getModelSet(),
                 part -> new HumanoidModel<>(part));
+        this.helmetModel = armorModels.head();
         this.armorRenderer = new HumanoidArmorLayer<>(
                 new HeadFeatureContext(this.headModel),
                 armorModels,
@@ -221,7 +225,10 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
 
         matrices.pushPose();
         try {
-            matrices.translate(0.0f, 0.25f, 0.0f);
+            // 猪头: 轴心 z=-6, 立方体 z ∈ [-8, 0] (中心 -4)
+            // 玩家头: 立方体 z ∈ [-4, 4] (中心 0) —— 只对齐 Y 的话玩家头会整体靠后 4 单位。
+            // 所以 Y +4 单位 (+0.25 格)、Z -4 单位 (-0.25 格), 两个头的中心才真正重合。
+            matrices.translate(0.0f, 0.25f, -0.25f);
             collector.submitModelPart(
                     head,
                     matrices,
@@ -234,6 +241,12 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
 
             this.armorState.headEquipment = state.headEquipment;
             if (!state.headEquipment.isEmpty()) {
+                // 26.3 的盔甲层只从 armorState 复制旋转, 不会复制上下文模型的位置。
+                // 先把头盔模型的头轴心对齐到猪头, 再喂入玩家头的旋转; setupAnim 只会改旋转,
+                // 所以头盔会跟着玩家头一起移动。
+                this.armorState.xRot = state.xRot;
+                this.armorState.yRot = state.yRot;
+                this.helmetModel.head.loadPose(this.pigHead.storePose());
                 this.armorRenderer.submit(matrices, collector, state.lightCoords, this.armorState, 0.0f, 0.0f);
             }
         } finally {
