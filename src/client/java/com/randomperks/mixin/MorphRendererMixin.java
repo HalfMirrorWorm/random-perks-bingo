@@ -2,9 +2,13 @@ package com.randomperks.mixin;
 
 import com.randomperks.client.render.PigMorphRenderer;
 import com.randomperks.game.MorphState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.entity.Entity;
@@ -38,6 +42,30 @@ public class MorphRendererMixin {
         PlayerSkin skin = player.getSkin();
         boolean slim = skin != null && skin.model() == PlayerModelType.SLIM;
 
+        PigMorphRenderer renderer = PigMorphRenderer.get(slim);
+        if (renderer != null) {
+            cir.setReturnValue(renderer);
+        }
+    }
+
+    /**
+     * 26.3 的实际模型提交走 {@code EntityRenderDispatcher.submit}，它按
+     * {@link AvatarRenderState} 从原版玩家渲染器表里取渲染器，不再看实体。
+     * 这里同样按实体 id 找回玩家 UUID，变猪时返回猪渲染器。
+     */
+    @Inject(
+            method = "getRenderer(Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;)Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;",
+            at = @At("HEAD"),
+            cancellable = true)
+    private void randomperks$pigRendererState(AvatarRenderState state, CallbackInfoReturnable<AvatarRenderer> cir) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.level == null) return;
+
+        Entity entity = client.level.getEntity(state.id);
+        if (!(entity instanceof Player player)) return;
+        if (!MorphState.isMorphed(player.getUUID())) return;
+
+        boolean slim = state.skin != null && state.skin.model() == PlayerModelType.SLIM;
         PigMorphRenderer renderer = PigMorphRenderer.get(slim);
         if (renderer != null) {
             cir.setReturnValue(renderer);

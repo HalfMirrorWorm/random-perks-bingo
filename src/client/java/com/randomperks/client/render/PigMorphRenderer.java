@@ -52,6 +52,7 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
     /** 宽 / 细手臂两个实例 —— 第一人称手部渲染会用到玩家模型的臂宽 */
     private static PigMorphRenderer wideInstance;
     private static PigMorphRenderer slimInstance;
+    private static boolean warnedNoContext;
 
     /** 纯外观问题只记一次日志, 免得每帧刷屏 */
     private static boolean warnedHeadFailure;
@@ -112,7 +113,13 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
 
     /** 全局单例 (按手臂模型区分; Context 还没捕获到时返回 null) */
     public static PigMorphRenderer get(boolean slimArms) {
-        if (capturedContext == null) return null;
+        if (capturedContext == null) {
+            if (!warnedNoContext) {
+                warnedNoContext = true;
+                LOGGER.warn("[RandomPerks] pig morph: renderer context not captured");
+            }
+            return null;
+        }
 
         if (slimArms) {
             if (slimInstance == null) slimInstance = new PigMorphRenderer(capturedContext, true);
