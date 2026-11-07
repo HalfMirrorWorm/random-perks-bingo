@@ -455,7 +455,28 @@
   "random-perks-bingo.recap.hint.scroll": "Scroll to page (%s/%s) · ESC to close",
   "random-perks-bingo.recap.player_header": "%s · %s",
   "random-perks-bingo.recap.rank_row": "%s. %s (%s) · first capture %s · %s cell(s)",
-  "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s"
+  "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s",
+
+  "string.naturescompass.searchForNext": "Search for Next",
+  "structure.minecraft.trial_chambers": "Trial Chambers",
+  "structure.minecraft.abandoned_camp_bamboo_jungle": "Bamboo Jungle Abandoned Camp",
+  "structure.minecraft.abandoned_camp_birch_forest": "Birch Forest Abandoned Camp",
+  "structure.minecraft.abandoned_camp_cherry_grove": "Cherry Grove Abandoned Camp",
+  "structure.minecraft.abandoned_camp_dappled_forest": "Dappled Forest Abandoned Camp",
+  "structure.minecraft.abandoned_camp_flower_forest": "Flower Forest Abandoned Camp",
+  "structure.minecraft.abandoned_camp_forest": "Forest Abandoned Camp",
+  "structure.minecraft.abandoned_camp_meadow": "Meadow Abandoned Camp",
+  "structure.minecraft.abandoned_camp_old_growth_birch_forest": "Old Growth Birch Forest Abandoned Camp",
+  "structure.minecraft.abandoned_camp_old_growth_pine_taiga": "Old Growth Pine Taiga Abandoned Camp",
+  "structure.minecraft.abandoned_camp_old_growth_spruce_taiga": "Old Growth Spruce Taiga Abandoned Camp",
+  "structure.minecraft.abandoned_camp_pale_garden": "Pale Garden Abandoned Camp",
+  "structure.minecraft.abandoned_camp_savanna": "Savanna Abandoned Camp",
+  "structure.minecraft.abandoned_camp_snowy_taiga": "Snowy Taiga Abandoned Camp",
+  "structure.minecraft.abandoned_camp_sparse_jungle": "Sparse Jungle Abandoned Camp",
+  "structure.minecraft.abandoned_camp_swamp": "Swamp Abandoned Camp",
+  "structure.minecraft.abandoned_camp_taiga": "Taiga Abandoned Camp",
+  "structure.minecraft.abandoned_camp_windswept_forest": "Windswept Forest Abandoned Camp",
+  "structure.minecraft.abandoned_camp_wooded_badlands": "Wooded Badlands Abandoned Camp"
 }
 
 

@@ -25,42 +25,51 @@ object CompassSearchCompat {
 
     private var biomeNameMethod: Method? = null
     private var biomeNameFailed = false
-    private var biomeIdMethod: Method? = null
-    private var biomeIdFailed = false
 
     private var structureNameMethod: Method? = null
     private var structureNameFailed = false
 
+    // 两个 mod 的搜索框都是各自的 TransparentEditBox, 只能按字段名反射取。
+    // 26.3 版本字段名都是 searchBox; 旧版本是 searchTextField, 两个都试一次。
+    private var ncSearchField: Field? = null
+    private var ncSearchFieldFailed = false
     private var ecSearchField: Field? = null
     private var ecSearchFieldFailed = false
 
     // ---- 自然罗盘 (生物群系) ----
 
     fun addBiomePinyinMatches(
+        screen: Any?,
         world: Level?,
-        searchField: EditBox?,
         allowed: List<*>?,
         matching: List<*>?,
     ) {
-        if (world == null || searchField == null || allowed == null || matching == null) return
-        val query = searchField.value.trim().lowercase()
+        if (screen == null || world == null || allowed == null || matching == null) return
+        val query = ncSearchText(screen)?.trim()?.lowercase() ?: return
         if (!isPlainQuery(query)) return
         val target = matching as? MutableList<Any?> ?: return
 
         val added = ArrayList<Pair<String, Any?>>()
         for (biome in allowed) {
             if (biome == null || target.contains(biome)) continue
-            val display = biomeDisplayName(world, biome)
-            val localized = localizedBiomeName(world, biome)
+            // 26.3 的 allowedBiomes 已经是 Identifier 列表, 直接拿 id 做翻译/匹配
+            val id = biome as? Identifier ?: continue
+            val display = biomeDisplayName(world, id)
+            val localized = localizedBiomeName(id)
             if (!matchesAny(query, display, localized)) continue
-            added += (display ?: localized ?: "") to biome
+            added += (display ?: localized) to biome
         }
         appendSorted(target, added)
     }
 
-    private fun biomeDisplayName(world: Level, biome: Any): String? {
+    private fun biomeDisplayName(world: Level, id: Identifier): String? {
         if (biomeNameMethod == null && !biomeNameFailed) {
             biomeNameMethod = findStatic(
+                "com.chaosthedude.naturescompass.util.BiomeUtils",
+                "getBiomeNameForDisplay",
+                2,
+            ) ?: findStatic(
+                // 旧版本的包名是 utils
                 "com.chaosthedude.naturescompass.utils.BiomeUtils",
                 "getBiomeNameForDisplay",
                 2,
@@ -69,7 +78,7 @@ object CompassSearchCompat {
         }
         val method = biomeNameMethod ?: return null
         return try {
-            method.invoke(null, world, biome) as? String
+            method.invoke(null, world, id) as? String
         } catch (t: Throwable) {
             biomeNameFailed = true
             null
@@ -77,28 +86,8 @@ object CompassSearchCompat {
     }
 
     /** `biome.<namespace>.<path>` 的本地化名称 (显示名退化成 id 时用它兜底) */
-    private fun localizedBiomeName(world: Level, biome: Any): String? {
-        val id = biomeIdentifier(world, biome) ?: return null
-        return Component.translatable("biome.${id.namespace}.${id.path}").string
-    }
-
-    private fun biomeIdentifier(world: Level, biome: Any): Identifier? {
-        if (biomeIdMethod == null && !biomeIdFailed) {
-            biomeIdMethod = findStatic(
-                "com.chaosthedude.naturescompass.utils.BiomeUtils",
-                "getIdentifierForBiome",
-                2,
-            )
-            if (biomeIdMethod == null) biomeIdFailed = true
-        }
-        val method = biomeIdMethod ?: return null
-        return try {
-            method.invoke(null, world, biome) as? Identifier
-        } catch (t: Throwable) {
-            biomeIdFailed = true
-            null
-        }
-    }
+    private fun localizedBiomeName(id: Identifier): String =
+        Component.translatable("biome.${id.namespace}.${id.path}").string
 
     // ---- 结构罗盘 (结构) ----
 
@@ -117,27 +106,6 @@ object CompassSearchCompat {
             added += (display ?: localized ?: "") to id
         }
         appendSorted(target, added)
-    }
-
-    /** 结构罗盘的搜索框是它自己的 TextFieldWidget 子类, 只能按字段名反射取 */
-    private fun ecSearchText(screen: Any): String? {
-        if (ecSearchField == null && !ecSearchFieldFailed) {
-            ecSearchField = try {
-                screen.javaClass.declaredFields
-                    .firstOrNull { it.name == "searchTextField" }
-                    ?.apply { isAccessible = true }
-            } catch (t: Throwable) {
-                null
-            }
-            if (ecSearchField == null) ecSearchFieldFailed = true
-        }
-        val field = ecSearchField ?: return null
-        return try {
-            (field.get(screen) as? EditBox)?.value
-        } catch (t: Throwable) {
-            ecSearchFieldFailed = true
-            null
-        }
     }
 
     private fun structureDisplayName(id: Any): String? {
@@ -162,6 +130,36 @@ object CompassSearchCompat {
     private fun localizedStructureName(id: Any): String? {
         val identifier = id as? Identifier ?: return null
         return Component.translatable("structure.${identifier.namespace}.${identifier.path}").string
+    }
+
+    // ---- 搜索框反射 ----
+
+    private fun ncSearchText(screen: Any): String? {
+        if (ncSearchField == null && !ncSearchFieldFailed) {
+            ncSearchField = findField(screen.javaClass, "searchBox", "searchTextField")
+            if (ncSearchField == null) ncSearchFieldFailed = true
+        }
+        val field = ncSearchField ?: return null
+        return try {
+            (field.get(screen) as? EditBox)?.value
+        } catch (t: Throwable) {
+            ncSearchFieldFailed = true
+            null
+        }
+    }
+
+    private fun ecSearchText(screen: Any): String? {
+        if (ecSearchField == null && !ecSearchFieldFailed) {
+            ecSearchField = findField(screen.javaClass, "searchBox", "searchTextField")
+            if (ecSearchField == null) ecSearchFieldFailed = true
+        }
+        val field = ecSearchField ?: return null
+        return try {
+            (field.get(screen) as? EditBox)?.value
+        } catch (t: Throwable) {
+            ecSearchFieldFailed = true
+            null
+        }
     }
 
     // ---- 公共 ----
@@ -190,5 +188,16 @@ object CompassSearchCompat {
                 ?.apply { isAccessible = true }
         } catch (t: Throwable) {
             null
+        }
+
+    private fun findField(clazz: Class<*>, vararg names: String): Field? =
+        names.firstNotNullOfOrNull { name ->
+            try {
+                clazz.declaredFields
+                    .firstOrNull { it.name == name }
+                    ?.apply { isAccessible = true }
+            } catch (t: Throwable) {
+                null
+            }
         }
 }

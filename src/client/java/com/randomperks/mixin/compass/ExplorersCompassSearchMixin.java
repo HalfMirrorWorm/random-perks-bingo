@@ -18,12 +18,13 @@ import java.util.List;
 @Mixin(targets = "com.chaosthedude.explorerscompass.gui.ExplorersCompassScreen", remap = false)
 public abstract class ExplorersCompassSearchMixin {
 
+    /** 2.5.2 (26.3) 把 allowedStructureIDs 改名成了 allowedStructures */
     @Shadow
-    private List<?> allowedStructureIDs;
+    private List<?> allowedStructures;
 
     @Inject(method = "sortStructures", at = @At("RETURN"))
     private void randomperks$addPinyinMatches(CallbackInfoReturnable<List<?>> cir) {
         CompassSearchCompat.INSTANCE.addStructurePinyinMatches(
-                this, this.allowedStructureIDs, cir.getReturnValue());
+                this, this.allowedStructures, cir.getReturnValue());
     }
 }

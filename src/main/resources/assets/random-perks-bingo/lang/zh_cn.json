@@ -455,7 +455,28 @@
   "random-perks-bingo.recap.hint.scroll": "滚轮翻页 (%s/%s) · ESC 关闭",
   "random-perks-bingo.recap.player_header": "%s · %s",
   "random-perks-bingo.recap.rank_row": "%s. %s (%s) · 首次完成 %s · 共 %s 格",
-  "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s"
+  "random-perks-bingo.recap.timeline_row": "%s  %s · %s · %s",
+
+  "string.naturescompass.searchForNext": "搜索下一个",
+  "structure.minecraft.trial_chambers": "试炼密室",
+  "structure.minecraft.abandoned_camp_bamboo_jungle": "竹林废弃营地",
+  "structure.minecraft.abandoned_camp_birch_forest": "桦木森林废弃营地",
+  "structure.minecraft.abandoned_camp_cherry_grove": "樱花树林废弃营地",
+  "structure.minecraft.abandoned_camp_dappled_forest": "斑驳森林废弃营地",
+  "structure.minecraft.abandoned_camp_flower_forest": "繁花森林废弃营地",
+  "structure.minecraft.abandoned_camp_forest": "森林废弃营地",
+  "structure.minecraft.abandoned_camp_meadow": "草甸废弃营地",
+  "structure.minecraft.abandoned_camp_old_growth_birch_forest": "原始桦木森林废弃营地",
+  "structure.minecraft.abandoned_camp_old_growth_pine_taiga": "原始松木针叶林废弃营地",
+  "structure.minecraft.abandoned_camp_old_growth_spruce_taiga": "原始云杉针叶林废弃营地",
+  "structure.minecraft.abandoned_camp_pale_garden": "苍白之园废弃营地",
+  "structure.minecraft.abandoned_camp_savanna": "热带草原废弃营地",
+  "structure.minecraft.abandoned_camp_snowy_taiga": "积雪针叶林废弃营地",
+  "structure.minecraft.abandoned_camp_sparse_jungle": "稀疏丛林废弃营地",
+  "structure.minecraft.abandoned_camp_swamp": "沼泽废弃营地",
+  "structure.minecraft.abandoned_camp_taiga": "针叶林废弃营地",
+  "structure.minecraft.abandoned_camp_windswept_forest": "风袭森林废弃营地",
+  "structure.minecraft.abandoned_camp_wooded_badlands": "疏林恶地废弃营地"
 }
 
 
