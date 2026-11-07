@@ -41,9 +41,11 @@ import org.slf4j.LoggerFactory;
  */
 public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
 
-    /** 原版猪的默认 (温带) 纹理 */
+    /** 原版猪的默认 (温带) 纹理。
+     *  26.3 把文件从 1.21.8 的 temperate_pig.png 改名成了 pig_temperate.png;
+     *  路径写错会直接显示成紫黑格子的缺失纹理。 */
     private static final Identifier PIG_TEXTURE =
-            Identifier.withDefaultNamespace("textures/entity/pig/temperate_pig.png");
+            Identifier.withDefaultNamespace("textures/entity/pig/pig_temperate.png");
 
     private static final Logger LOGGER = LoggerFactory.getLogger("random-perks-bingo/client");
 
