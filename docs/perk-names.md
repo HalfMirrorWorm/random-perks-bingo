@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **134** 条词条：绿 27 / 蓝 55 / 紫 26 / 金 21 / 红 3 / 神话 2。
+共 **136** 条词条：绿 27 / 蓝 56 / 紫 26 / 金 22 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -33,6 +33,7 @@
 | `artisan_long_arms` | 手长 | Long Arms | 金 |
 | `artisan_fire_temper` | 火炼 | Smelting | 绿 |
 | `artisan_poisoner` | 绝命毒师 | Breaking Bad | 紫 |
+| `artisan_shared_fortune` | 有福同享 | Shared Fortune | 金 |
 | `artisan_treasure_chest` | 百宝箱 | Treasure Chest | 紫 |
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 绿 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
@@ -65,6 +66,7 @@
 | `delver_onion_cut` | 切洋葱 | Cutting Onions | 绿 |
 | `delver_eighty` | 八十 | Eighty | 蓝 |
 | `delver_chain_mining` | 连锁挖矿 | Chain Mining | 紫 |
+| `delver_wallbreaker` | 破壁人 | Wallbreaker | 蓝 |
 | `delver_carefree_sleep` | 无忧的安眠 | Carefree Sleep | 绿 |
 | `delver_soul_out` | 灵魂出窍 | Out of Body | 金 |
 

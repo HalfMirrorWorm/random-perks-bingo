@@ -235,6 +235,8 @@
   "random-perks-bingo.perk.artisan_quick_enchant.desc": "在词条列表点击使用：选一件装备，随机附加一个满级附魔。",
   "random-perks-bingo.perk.artisan_poisoner.name": "绝命毒师",
   "random-perks-bingo.perk.artisan_poisoner.desc": "选择任意一名玩家, 给他施加 1 分钟随机负面效果。",
+  "random-perks-bingo.perk.artisan_shared_fortune.name": "有福同享",
+  "random-perks-bingo.perk.artisan_shared_fortune.desc": "256 格内的队友会持续获得你身上的正面药水效果。",
   "random-perks-bingo.perk.artisan_treasure_chest.name": "百宝箱",
   "random-perks-bingo.perk.artisan_treasure_chest.desc": "随机开出 1~5 件装备。",
 

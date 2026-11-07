@@ -351,6 +351,60 @@ object ArtisanPerks {
             player.level().getServer().playerList.players.filter { !it.isSpectator }
     }
 
+    /**
+     * 金 · 匠造: **有福同享** —— 256 格内的队友持续获得你身上的正面药水效果。
+     *
+     * 只共享**有限时长**的 beneficial 效果: 药水 / 信标 / 潮涌等;
+     * 词条给的永久效果 (无限时长) 和负面效果不参与, 避免把整队变成永久词条叠加。
+     * 每 3 秒刷新一次, 队友离开范围或你失去效果后最多 3 秒自然结束 —— 是范围光环, 不是一次性复制。
+     */
+    object SharedFortune : PerkDefinition {
+        override val id = "artisan_shared_fortune"
+        override val rarity = PerkRarity.GOLD
+        override val archetype = PerkArchetype.ARTISAN
+        override fun icon() = PotionContents.createItemStack(Items.SPLASH_POTION, Potions.HEALING)
+
+        /** 共享半径 (格) */
+        private const val RANGE = 256.0
+
+        /** 光环刷新时长 (tick): onTick 每 20 tick 一次, 3 秒足够覆盖 */
+        private const val AURA_TICKS = 60
+
+        override fun onTick(ctx: PerkContext) {
+            val player = ctx.player
+            if (player.isSpectator) return
+
+            val team = player.team?.name ?: return
+            val effects = player.activeEffects.filter {
+                it.effect.value().isBeneficial() &&
+                    !it.isInfiniteDuration() &&
+                    it.duration > 0
+            }
+            if (effects.isEmpty()) return
+
+            val server = player.level().getServer()
+            for (other in server.playerList.players) {
+                if (other === player || other.isSpectator || !other.isAlive) continue
+                if (other.team?.name != team) continue
+                if (other.level() !== player.level()) continue
+                if (other.distanceToSqr(player) > RANGE * RANGE) continue
+
+                for (effect in effects) {
+                    other.addEffect(
+                        MobEffectInstance(
+                            effect.effect,
+                            minOf(effect.duration, AURA_TICKS),
+                            effect.amplifier,
+                            effect.isAmbient,
+                            effect.isVisible,
+                            effect.showIcon(),
+                        )
+                    )
+                }
+            }
+        }
+    }
+
     /** 紫 · 匠造: **百宝箱** —— 随机开出 **1~5 件**装备 (白板不附魔) */
     object TreasureChest : PerkDefinition {
         override val id = "artisan_treasure_chest"
@@ -629,6 +683,7 @@ object ArtisanPerks {
         PerkRegistry.register(LongArms)
         PerkRegistry.register(FireTemper)
         PerkRegistry.register(Poisoner)
+        PerkRegistry.register(SharedFortune)
         PerkRegistry.register(TreasureChest)
         PerkRegistry.register(ShulkerBox)
         PerkRegistry.register(Tempering)
