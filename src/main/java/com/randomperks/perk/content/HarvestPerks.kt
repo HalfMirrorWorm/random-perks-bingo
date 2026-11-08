@@ -7,6 +7,7 @@ import com.randomperks.game.FungalInfectionService
 import com.randomperks.game.KelpToBoneService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkGrantService
+import com.randomperks.game.PerkOfferService
 import com.randomperks.game.PigMorphService
 import com.randomperks.game.WeatherService
 import com.randomperks.perk.PerkArchetype
@@ -318,19 +319,35 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 唤法: 立即在脚下召唤一匹属于你的马 (自带鞍; 用剪刀右键可取下鞍) */
+    /** 蓝 · 唤法 · 贮藏: **马来** —— 在词条列表点击使用, 原地召唤一匹属于你的马
+     *  (自带鞍; 用剪刀右键可取下鞍); 可获得 3 次使用次数。 */
     object SummonHorse : PerkDefinition {
         override val id = "summon_horse"
         override val rarity = PerkRarity.BLUE
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.SADDLE)
 
+        override val isOneTime = true
+        override val maxUses = 3
+
         /** 词条召唤的马身上的命令标签 (供"剪刀取鞍"识别, 不影响其他马) */
         const val TAG = "randomperks_summoned_horse"
 
-        override fun onAcquire(ctx: PerkContext) {
+        override fun onActivate(ctx: PerkContext) {
+            if (!summon(ctx)) return
+            ctx.state.consumeUse(this)
+            PerkGrantService.notifyPerkListChanged(ctx.player)
+            // 前两次用完仍保留"点击使用"; 第三次用完时刷新一次列表把它移除
+            if (ctx.state.usesRemaining(this) <= 0) {
+                PerkOfferService.handleListRequest(ctx.player)
+            }
+        }
+
+        /** @return 是否成功召唤 */
+        private fun summon(ctx: PerkContext): Boolean {
             val player = ctx.player
-            val world = player.level() as? ServerLevel ?: return
+            if (!player.isAlive || player.isSpectator) return false
+            val world = player.level() as? ServerLevel ?: return false
 
             val horse = net.minecraft.world.entity.animal.equine.Horse(net.minecraft.world.entity.EntityTypes.HORSE, world)
             // 位置 + 朝向都跟随玩家 (原版生成走 refreshPositionAndAngles)
@@ -367,6 +384,7 @@ object HarvestPerks {
                 ?.baseValue = HORSE_SPEED
             horse.health = HORSE_HEALTH.toFloat()
             world.addFreshEntity(horse)
+            return true
         }
 
         /** 召唤马的固定属性: 血量 50 (超原版上限 30), 跳跃力/速度取原版上限 */

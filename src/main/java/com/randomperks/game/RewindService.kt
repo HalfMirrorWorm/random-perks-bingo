@@ -156,6 +156,7 @@ object RewindService {
         val pendingOffers: List<List<String>>,
         val owned: List<String>,
         val used: Set<String>,
+        val useCounts: Map<String, Int>,
         val cooldowns: Map<String, Long>,
         val memory: Map<String, String>,
     )
@@ -441,6 +442,7 @@ object RewindService {
             pendingOffers = state.pendingOffers.map { it.toList() },
             owned = state.ownedPerks.map { it.id },
             used = state.usedPerks.toSet(),
+            useCounts = state.useCounts.toMap(),
             cooldowns = state.cooldowns.toMap(),
             memory = state.memory.toMap(),
         )
@@ -760,12 +762,14 @@ object RewindService {
             state.pendingOffers.clear()
             state.ownedPerks.clear()
             state.usedPerks.clear()
+            state.useCounts.clear()
             state.cooldowns.clear()
             state.memory.clear()
 
             state.pendingOffers.addAll(entry.pendingOffers.map { it.toList() })
             state.ownedPerks.addAll(entry.owned.mapNotNull { PerkRegistry.byId(it) })
             state.usedPerks.addAll(entry.used)
+            state.useCounts.putAll(entry.useCounts)
             state.cooldowns.putAll(entry.cooldowns)
             state.memory.putAll(entry.memory)
         }

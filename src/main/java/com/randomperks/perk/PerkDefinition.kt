@@ -45,6 +45,12 @@ interface PerkDefinition {
      */
     val isOneTime: Boolean get() = false
 
+    /**
+     * 贮藏词条的总使用次数 (仅对 [isOneTime] 生效, 默认 1 次)。
+     * 大于 1 时, 在 V 界面点击使用后不会立刻从待使用列表消失, 直到次数用完。
+     */
+    val maxUses: Int get() = 1
+
     /** 一次性词条的触发入口 (由 V 界面点击调用; 普通词条不会走到这里) */
     fun onActivate(ctx: PerkContext) {}
 

@@ -358,6 +358,7 @@ object RandomPerksCommands {
 
         state.ownedPerks.remove(perk)
         state.usedPerks.remove(perk.id)
+        state.useCounts.remove(perk.id)
         runCatching { perk.onRemove(PerkContext(target, state)) }
             .onFailure { ctx.source.sendFailure(Component.literal("清理效果时出错: ${it.message}")) }
         PerkGrantService.notifyPerkListChanged(target)
@@ -377,6 +378,7 @@ object RandomPerksCommands {
         val perks = state.ownedPerks.toList()
         state.ownedPerks.clear()
         state.usedPerks.clear()
+        state.useCounts.clear()
         for (perk in perks) {
             runCatching { perk.onRemove(PerkContext(target, state)) }
         }

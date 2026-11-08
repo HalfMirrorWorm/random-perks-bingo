@@ -167,6 +167,10 @@ object PerkStatePersistence {
             state.usedPerks.forEach { used.add(StringTag.valueOf(it)) }
             entry.put("used", used)
 
+            val useCounts = CompoundTag()
+            state.useCounts.forEach { (id, count) -> useCounts.putInt(id, count) }
+            entry.put("useCounts", useCounts)
+
             val cooldowns = CompoundTag()
             state.cooldowns.forEach { (id, tick) -> cooldowns.putLong(id, tick) }
             entry.put("cooldowns", cooldowns)
@@ -269,6 +273,11 @@ object PerkStatePersistence {
             for (j in 0 until used.size) {
                 val id = used.getStringOr(j, "")
                 if (id.isNotEmpty()) state.usedPerks.add(id)
+            }
+
+            val useCounts = entry.getCompoundOrEmpty("useCounts")
+            for (key in useCounts.keySet()) {
+                state.useCounts[key] = useCounts.getIntOr(key, 0)
             }
 
             val cooldowns = entry.getCompoundOrEmpty("cooldowns")

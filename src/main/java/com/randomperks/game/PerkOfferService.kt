@@ -149,7 +149,7 @@ object PerkOfferService {
                     PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime)
                 },
                 visiblePerks
-                    .filter { it.isOneTime && otherState?.isUsed(it.id) == false }
+                    .filter { it.isOneTime && (otherState?.usesRemaining(it) ?: 0) > 0 }
                     .map { it.id },
                 team?.name ?: "",
                 team?.displayName?.string ?: "",
@@ -166,14 +166,15 @@ object PerkOfferService {
      * 玩家在 V 界面点击了一个一次性词条 → 触发它的使用流程。
      *
      * 这里只负责"打开使用流程"(目标选择器 / 装备选择器 / 偷窃目标);
-     * "已使用"标记由各词条在效果真正生效时自己写入, 所以中途取消选择不会浪费词条。
+     * 使用次数由各词条在效果真正生效时通过 [PlayerPerkState.consumeUse] 扣除,
+     * 所以中途取消选择不会浪费词条。
      */
     fun handleActivate(player: ServerPlayer, perkId: String) {
         if (!PerkSession.isEnabled()) return
 
         val state = PerkStateManager.get(player.uuid) ?: return
         val perk = state.ownedPerks.firstOrNull { it.id == perkId } ?: return
-        if (!perk.isOneTime || state.isUsed(perk.id)) return
+        if (!perk.isOneTime || state.usesRemaining(perk) <= 0) return
 
         perk.onActivate(PerkContext(player, state))
     }

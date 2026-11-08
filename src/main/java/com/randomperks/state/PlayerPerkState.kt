@@ -31,10 +31,34 @@ class PlayerPerkState(val uuid: UUID) {
      */
     val usedPerks: MutableSet<String> = mutableSetOf()
 
+    /**
+     * 多次使用的贮藏词条已使用次数 (仅 maxUses > 1 的词条)。
+     * 单次词条仍然只使用 [usedPerks], 旧存档语义保持不变。
+     */
+    val useCounts: MutableMap<String, Int> = mutableMapOf()
+
     fun isUsed(perkId: String): Boolean = perkId in usedPerks
 
     fun markUsed(perkId: String) {
         usedPerks.add(perkId)
+    }
+
+    /** 该贮藏词条还剩几次可用 */
+    fun usesRemaining(perk: PerkDefinition): Int {
+        if (!perk.isOneTime) return 0
+        val used = useCounts[perk.id] ?: if (perk.id in usedPerks) perk.maxUses else 0
+        return (perk.maxUses - used).coerceAtLeast(0)
+    }
+
+    /** 消费一次使用次数; 次数用完后自动记入 [usedPerks] */
+    fun consumeUse(perk: PerkDefinition) {
+        if (perk.maxUses <= 1) {
+            markUsed(perk.id)
+            return
+        }
+        val used = (useCounts[perk.id] ?: 0) + 1
+        useCounts[perk.id] = used
+        if (used >= perk.maxUses) markUsed(perk.id)
     }
 
     /** 主动技能/触发效果的冷却到期时间 (游戏 tick 时间) */
@@ -57,6 +81,7 @@ class PlayerPerkState(val uuid: UUID) {
         pendingOffers.clear()
         ownedPerks.clear()
         usedPerks.clear()
+        useCounts.clear()
         cooldowns.clear()
         memory.clear()
     }
