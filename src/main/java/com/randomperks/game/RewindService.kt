@@ -57,7 +57,7 @@ import java.util.UUID
  * 「逆转时间」的数据层: **检查点 + 变更日志** 的伪回溯。
  *
  * <h2>记录</h2>
- * 开局记录一次检查点, 之后每进行 30 分钟再记录一次。检查点包含:
+ * 开局记录一次检查点, 之后每进行 10 分钟再记录一次。检查点包含:
  * <ul>
  *   <li>Bingo 进度 (只拷贝会变的字段, 不序列化整份状态)</li>
  *   <li>每名在线玩家的完整 NBT (背包/生命/饥饿/效果/经验/位置)</li>
@@ -83,7 +83,7 @@ import java.util.UUID
 object RewindService {
 
     /** 每局进行多久记录一次检查点 */
-    private const val CHECKPOINT_INTERVAL_TICKS = 20 * 60 * 30
+    private const val CHECKPOINT_INTERVAL_TICKS = 20 * 60 * 10
 
     /** 触发后到真正回溯的倒计时 */
     private const val COUNTDOWN_TICKS = 20 * 10

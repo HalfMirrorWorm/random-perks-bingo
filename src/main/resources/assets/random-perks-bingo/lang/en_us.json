@@ -416,7 +416,7 @@
   "random-perks-bingo.perk.mythic_doomsday.name": "Doomsday",
   "random-perks-bingo.perk.mythic_doomsday.desc": "For 20 min, the first 4 enemy players you kill drop their backpack items; if an enemy kills you, you drop yours and the effect ends.",
   "random-perks-bingo.perk.mythic_time_rewind.name": "Time Rewind",
-  "random-perks-bingo.perk.mythic_time_rewind.desc": "After a 10s countdown, rewind to the last checkpoint (at most 30 min back): players, containers, terrain, important mobs, board and perks are restored; this perk is kept. New terrain, dead mobs and offline players are not restored.",
+  "random-perks-bingo.perk.mythic_time_rewind.desc": "After a 10s countdown, rewind to the last checkpoint (at most 10 min back): players, containers, terrain, important mobs, board and perks are restored; this perk is kept. New terrain, dead mobs and offline players are not restored.",
   "random-perks-bingo.perk.seeker_supply_line.name": "Supply Line",
   "random-perks-bingo.perk.seeker_supply_line.desc": "Gain a random supply, then another every 2 minutes.",
   "random-perks-bingo.perk.seeker_ender_supply.name": "Ender Supply",
