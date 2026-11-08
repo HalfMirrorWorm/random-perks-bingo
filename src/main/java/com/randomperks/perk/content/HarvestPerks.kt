@@ -421,7 +421,8 @@ object HarvestPerks {
         }
     }
 
-    /** 蓝 · 唤法: **大狗嚼** —— 立即召唤 **2 只属于你的狼**:
+    /** 蓝 · 唤法: **大狗嚼** —— 获得时召唤 **1 只属于你的狼**,
+     *  之后每 **3 分钟**再召唤 1 只:
      *  血量 50 (原版驯服狼 20)、攻击 6 (原版驯服狼 4), 已驯服且不会自然消失。 */
     object BigDog : PerkDefinition {
         override val id = "summon_big_dog"
@@ -429,42 +430,65 @@ object HarvestPerks {
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.BONE)
 
-        /** 召唤数量 */
-        private const val DOG_COUNT = 2
+        /** 召唤间隔: 3 分钟 (onTick 每 20 tick 驱动一次) */
+        private const val SUMMON_INTERVAL_TICKS = 3 * 60 * 20
+
+        /** 剩余 tick 存在 state.memory 里; 用倒计时而不是绝对 tick, 服务器重启也不会算错 */
+        private const val TIMER_KEY = "big_dog_timer"
 
         /** 固定属性: 血量 50 / 攻击 6 */
         private const val DOG_HEALTH = 50.0
         private const val DOG_ATTACK = 6.0
 
         override fun onAcquire(ctx: PerkContext) {
-            val player = ctx.player
-            val world = player.level() as? ServerLevel ?: return
+            summon(ctx)
+            ctx.state.memory[TIMER_KEY] = SUMMON_INTERVAL_TICKS.toString()
+        }
 
-            repeat(DOG_COUNT) { index ->
-                val wolf = net.minecraft.world.entity.animal.wolf.Wolf(
-                    net.minecraft.world.entity.EntityTypes.WOLF, world,
-                )
-                // 两只狗分列玩家左右, 朝向与玩家一致
-                val offset = if (index == 0) -1.0 else 1.0
-                wolf.snapTo(
-                    player.x + offset, player.y, player.z,
-                    player.yRot, player.xRot,
-                )
-                wolf.setOwner(player)
-                // ★ setTamed(true, true) 的第二个参数会让它顺便把属性改写成"驯服狼"的默认值
-                //   (20 血), 所以属性覆盖必须放在它**之后** —— 否则会被这一句覆盖掉。
-                wolf.setTame(true, true)
-                wolf.setPersistenceRequired()
-
-                wolf.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH)
-                    ?.baseValue = DOG_HEALTH
-                wolf.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
-                    ?.baseValue = DOG_ATTACK
-                // 只提高上限不会回血, 要手动补满 (否则狗身上仍是驯服时的 20 血)
-                wolf.health = DOG_HEALTH.toFloat()
-
-                world.addFreshEntity(wolf)
+        override fun onTick(ctx: PerkContext) {
+            val remaining = (ctx.state.memory[TIMER_KEY]?.toIntOrNull() ?: SUMMON_INTERVAL_TICKS) - 20
+            if (remaining <= 0) {
+                // 死亡/旁观时先不重置计时, 等能召唤了立刻补上
+                if (summon(ctx)) {
+                    ctx.state.memory[TIMER_KEY] = SUMMON_INTERVAL_TICKS.toString()
+                } else {
+                    ctx.state.memory[TIMER_KEY] = "0"
+                }
+            } else {
+                ctx.state.memory[TIMER_KEY] = remaining.toString()
             }
+        }
+
+        override fun onRemove(ctx: PerkContext) {
+            ctx.state.memory.remove(TIMER_KEY)
+        }
+
+        /** @return 是否成功召唤 (死亡/旁观/取不到世界时为 false) */
+        private fun summon(ctx: PerkContext): Boolean {
+            val player = ctx.player
+            if (!player.isAlive || player.isSpectator) return false
+            val world = player.level() as? ServerLevel ?: return false
+
+            val wolf = net.minecraft.world.entity.animal.wolf.Wolf(
+                net.minecraft.world.entity.EntityTypes.WOLF, world,
+            )
+            // 召唤在玩家右侧, 朝向与玩家一致
+            wolf.snapTo(player.x + 1.0, player.y, player.z, player.yRot, player.xRot)
+            wolf.setOwner(player)
+            // ★ setTamed(true, true) 的第二个参数会让它顺便把属性改写成"驯服狼"的默认值
+            //   (20 血), 所以属性覆盖必须放在它**之后** —— 否则会被这一句覆盖掉。
+            wolf.setTame(true, true)
+            wolf.setPersistenceRequired()
+
+            wolf.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH)
+                ?.baseValue = DOG_HEALTH
+            wolf.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
+                ?.baseValue = DOG_ATTACK
+            // 只提高上限不会回血, 要手动补满 (否则狗身上仍是驯服时的 20 血)
+            wolf.health = DOG_HEALTH.toFloat()
+
+            world.addFreshEntity(wolf)
+            return true
         }
     }
 
