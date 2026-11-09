@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.levelgen.Heightmap
 import kotlin.math.PI
@@ -32,6 +33,10 @@ object WaypointService {
 
     /** 最多尝试多少个随机列 */
     private const val MAX_ATTEMPTS = 32
+
+    /** 两次使用之间的冷却: 5 分钟 */
+    private const val COOLDOWN_KEY = "waypoint_clock_cooldown"
+    private const val COOLDOWN_TICKS = 5 * 60 * 20L
 
     /** 即使有碰撞也不能站上去的方块 */
     private val UNSAFE_BLOCKS = setOf(
@@ -63,6 +68,25 @@ object WaypointService {
         if (!state.hasPerk(PERK_ID)) return false
 
         val level = player.level()
+        if (level.dimension() != Level.OVERWORLD) {
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.waypoint_wrong_dimension"),
+                true,
+            )
+            return true
+        }
+
+        val now = level.getServer().tickCount.toLong()
+        val next = state.cooldowns[COOLDOWN_KEY] ?: 0L
+        if (now < next) {
+            val remainSeconds = ((next - now) / 20).toInt()
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.waypoint_cooldown", remainSeconds),
+                true,
+            )
+            return true
+        }
+
         val spot = findSafeSpot(player, level)
         if (spot == null) {
             player.sendSystemMessage(
@@ -83,6 +107,7 @@ object WaypointService {
             false,
         )
         consumeClock(player)
+        state.cooldowns[COOLDOWN_KEY] = now + COOLDOWN_TICKS
         player.sendSystemMessage(
             Component.translatable("random-perks-bingo.message.waypoint_teleport"),
             true,
