@@ -226,19 +226,6 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 匠造: 手持时钟右键 —— 传送到**上次死亡地点** (5 分钟冷却, 跨维度也可)。
-     *  死亡地点由 WaypointService 在 AFTER_DEATH 自动记录 (只记录持词条者, 再死一次覆盖旧点)。 */
-    object WaypointClock : PerkDefinition {
-        override val id = "artisan_waypoint_clock"
-        override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.ARTISAN
-        override fun icon() = ItemStack(Items.CLOCK)
-
-        /** 赠送一个时钟作为媒介 (右键逻辑由 WaypointService / UseItemCallback 处理) */
-        override fun onAcquire(ctx: PerkContext) =
-            PerkEffects.giveStack(ctx.player, ItemStack(Items.CLOCK))
-    }
-
     /** 金 · 匠造: 方块与实体交互距离 +4 格
      *  (注: `ENTITY_INTERACTION_RANGE` 同时决定近战攻击有效距离 —— 3.0 → 7.0) */
     object LongArms : PerkDefinition {
@@ -679,7 +666,6 @@ object ArtisanPerks {
         PerkRegistry.register(Builder)
         PerkRegistry.register(Enchanter)
         PerkRegistry.register(QuickEnchant)
-        PerkRegistry.register(WaypointClock)
         PerkRegistry.register(LongArms)
         PerkRegistry.register(FireTemper)
         PerkRegistry.register(Poisoner)

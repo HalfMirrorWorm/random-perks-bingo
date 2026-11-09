@@ -44,6 +44,20 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, Attributes.MOVEMENT_SPEED, MOD_SPEED)
     }
 
+    /** 紫 · 疾风: **传送时钟** —— 获得一个时钟; 手持右键消耗时钟,
+     *  随机传送到当前维度 2000 格以内的安全地面上。 */
+    object WaypointClock : PerkDefinition {
+        // 旧 id 保留, 分组/联动以 archetype 为准
+        override val id = "artisan_waypoint_clock"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.CLOCK)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.CLOCK))
+        }
+    }
+
     /** 蓝 · 柔软鞋底: 摔落伤害 -50% */
     object FeatherFall : PerkDefinition {
         override val id = "swift_feather_fall"
@@ -315,6 +329,7 @@ object SwiftPerks {
         com.randomperks.perk.PerkRegistry.register(DeepBreath)
         com.randomperks.perk.PerkRegistry.register(EscapePlan)
         com.randomperks.perk.PerkRegistry.register(Speed)
+        com.randomperks.perk.PerkRegistry.register(WaypointClock)
         com.randomperks.perk.PerkRegistry.register(FeatherFall)
         com.randomperks.perk.PerkRegistry.register(Jump)
         com.randomperks.perk.PerkRegistry.register(WindStride)

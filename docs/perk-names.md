@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **138** 条词条：绿 27 / 蓝 56 / 紫 28 / 金 22 / 红 3 / 神话 2。
+共 **138** 条词条：绿 27 / 蓝 55 / 紫 29 / 金 22 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -9,7 +9,7 @@
 ## 命名规则
 
 - **词条 id**：`<流派>_<英文短名>`（如 `hunter_soul_harvest`）；神话单独使用 `mythic_` 前缀
-- 少数词条后来换了流派，但 id 沿用旧前缀以免旧存档对不上（如 `seeker_ender_supply` 现属疾风）；
+- 少数词条后来换了流派，但 id 沿用旧前缀以免旧存档对不上（如 `seeker_ender_supply`、`artisan_waypoint_clock` 现属疾风）；
   分组与联动一律以代码里的 `archetype` 字段为准
 - **语言 key**：`random-perks-bingo.perk.<id>.name` / `.desc`（中英各一份）
 - **稀有度与抽取权重**：`green` 300 / `blue` 800 / `purple` 315 / `gold` 62 / `red` 20 / `mythic` 3
@@ -29,7 +29,6 @@
 | `artisan_builder` | 建筑师 | Builder | 绿 |
 | `artisan_enchanter` | 附魔学徒 | Apprentice Enchanter | 蓝 |
 | `artisan_quick_enchant` | 快速附魔 | Quick Enchant | 紫 |
-| `artisan_waypoint_clock` | 传送时钟 | Waypoint Clock | 蓝 |
 | `artisan_long_arms` | 手长 | Long Arms | 金 |
 | `artisan_fire_temper` | 火炼 | Smelting | 绿 |
 | `artisan_poisoner` | 绝命毒师 | Breaking Bad | 紫 |
@@ -150,6 +149,7 @@
 | id | 中文名 | 英文名 | 稀有度 |
 |---|---|---|---|
 | `swift_speed` | 轻装疾行 | Light Feet | 蓝 |
+| `artisan_waypoint_clock` | 传送时钟 | Waypoint Clock | 紫 |
 | `seeker_ender_supply` | 末影补给 | Ender Supply | 紫 |
 | `swift_feather_fall` | 柔软鞋底 | Soft Soles | 蓝 |
 | `swift_jump` | 弹簧腿 | Spring Legs | 绿 |
