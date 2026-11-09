@@ -15,6 +15,7 @@ import com.randomperks.game.PigMorphService
 import com.randomperks.game.PortableCraftingService
 import com.randomperks.game.ResonanceService
 import com.randomperks.game.RewindService
+import com.randomperks.game.SharedFortuneService
 import com.randomperks.game.WaypointService
 import com.randomperks.game.PerkWorldEventService
 import com.randomperks.game.SavageMagicService
@@ -91,6 +92,9 @@ object RandomPerksMod : ModInitializer {
 
         // 传送时钟的右键逻辑
         WaypointService.register()
+
+        // "有福同享"的范围光环
+        SharedFortuneService.register()
 
         // 烈焰喷射的右键逻辑
         FireballService.register()

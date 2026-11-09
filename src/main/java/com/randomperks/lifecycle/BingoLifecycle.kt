@@ -8,6 +8,7 @@ import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.ResonanceService
 import com.randomperks.game.RewindService
+import com.randomperks.game.SharedFortuneService
 import com.randomperks.game.SoulOutService
 import com.randomperks.game.SwapService
 import com.randomperks.game.TemperingAnvilService
@@ -119,6 +120,7 @@ object BingoLifecycle {
                 }
             }
         }
+        SharedFortuneService.clear()
         resetAll()
         RandomPerksMod.logger.info("[RandomPerks] perk state cleared")
 

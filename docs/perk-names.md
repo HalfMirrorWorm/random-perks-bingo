@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **138** 条词条：绿 27 / 蓝 55 / 紫 29 / 金 22 / 红 3 / 神话 2。
+共 **138** 条词条：绿 27 / 蓝 55 / 紫 30 / 金 21 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -32,7 +32,7 @@
 | `artisan_long_arms` | 手长 | Long Arms | 金 |
 | `artisan_fire_temper` | 火炼 | Smelting | 绿 |
 | `artisan_poisoner` | 绝命毒师 | Breaking Bad | 紫 |
-| `artisan_shared_fortune` | 有福同享 | Shared Fortune | 金 |
+| `artisan_shared_fortune` | 有福同享 | Shared Fortune | 紫 |
 | `artisan_treasure_chest` | 百宝箱 | Treasure Chest | 紫 |
 | `artisan_shulker_box` | 随身仓库 | Portable Storage | 绿 |
 | `artisan_tempering` | 千锤百炼 | Tempering | 蓝 |
