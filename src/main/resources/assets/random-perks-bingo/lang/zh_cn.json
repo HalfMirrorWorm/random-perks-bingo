@@ -241,7 +241,7 @@
   "random-perks-bingo.perk.artisan_enchanter.name": "附魔学徒",
   "random-perks-bingo.perk.artisan_enchanter.desc": "获得一本满级附魔书, 之后每 6 分钟再获得一本。",
   "random-perks-bingo.perk.artisan_quick_enchant.name": "快速附魔",
-  "random-perks-bingo.perk.artisan_quick_enchant.desc": "在词条列表点击使用：选一件装备，随机附加一个满级附魔。",
+  "random-perks-bingo.perk.artisan_quick_enchant.desc": "选一件装备，随机附加一个满级附魔。",
   "random-perks-bingo.perk.artisan_poisoner.name": "绝命毒师",
   "random-perks-bingo.perk.artisan_poisoner.desc": "选择任意一名玩家, 给他施加 1 分钟随机负面效果。",
   "random-perks-bingo.perk.artisan_shared_fortune.name": "有福同享",
