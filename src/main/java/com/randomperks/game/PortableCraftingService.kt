@@ -66,9 +66,9 @@ object PortableCraftingService {
 
     /**
      * 没有工作台方块可依托:
-     *  - 传真实 context 只是为了关闭界面时由原版 [CraftingScreenHandler.onClosed]
-     *    把合成格里的物品还给玩家 (空的 [ScreenHandlerContext.EMPTY] 会让物品直接消失);
-     *  - [canUse] 必须恒真 —— 原版每 tick 校验"上下文位置的方块是不是工作台",
+     *  - 传真实 context 只是为了关闭界面时由原版 [CraftingMenu.removed]
+     *    把合成格里的物品还给玩家 (空的 [ContainerLevelAccess.NULL] 会让返回逻辑不执行);
+     *  - [stillValid] 必须恒真 —— 原版每 tick 校验"上下文位置的方块是不是工作台",
      *    不覆盖的话界面下一秒就会被服务端关掉。
      */
     private class PortableCraftingScreenHandler(
