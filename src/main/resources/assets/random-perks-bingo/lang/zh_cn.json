@@ -123,7 +123,6 @@
   "random-perks-bingo.message.hodgepodge_no_target": "没有可选的目标。",
   "random-perks-bingo.message.hodgepodge_applied": "已把 %s 的 %s 格物品换成了随机物品!",
   "random-perks-bingo.message.hodgepodge_received": "你的物品被全部换成了随机物品!",
-  "random-perks-bingo.message.nya_axe_used": "⚡ 秒人斧: 一击必杀!",
   "random-perks-bingo.message.creative_flash": "⭐ 创造闪光! 获得 1.5 秒创造模式!",
   "random-perks-bingo.message.mythic_taken": "该神话词条已被其他玩家选走, 你的选项已刷新。",
   "random-perks-bingo.message.waypoint_teleport": "已随机传送到安全位置!",
@@ -285,7 +284,7 @@
   "random-perks-bingo.perk.summon_dragon_tamer.desc": "右键任意生物即可骑乘（玩家与 Boss 除外）：WASD 移动、跳跃键上升，飞行坐骑沿准星飞、松手悬停；右键让坐骑出招，潜行下马。",
   "random-perks-bingo.message.end_portal_announce": "「结束吧」%s 在 %s (%s, %s, %s) 生成了一格末地传送门！",
   "random-perks-bingo.perk.artisan_nya_axe.name": "喵人斧",
-  "random-perks-bingo.perk.artisan_nya_axe.desc": "获得一把一次机会的秒人斧，并且永久虚弱 I。",
+  "random-perks-bingo.perk.artisan_nya_axe.desc": "获得一把一次机会的秒人斧；使用后永久虚弱 I。",
   "random-perks-bingo.perk.artisan_midas_touch.name": "点石成金",
   "random-perks-bingo.perk.artisan_midas_touch.desc": "手持镐右键镶金黑石, 把它变成金块。",
   "random-perks-bingo.perk.artisan_revive_armor.name": "复活甲",
@@ -475,7 +474,8 @@
   "structure.minecraft.abandoned_camp_swamp": "沼泽废弃营地",
   "structure.minecraft.abandoned_camp_taiga": "针叶林废弃营地",
   "structure.minecraft.abandoned_camp_windswept_forest": "风袭森林废弃营地",
-  "structure.minecraft.abandoned_camp_wooded_badlands": "疏林恶地废弃营地"
+  "structure.minecraft.abandoned_camp_wooded_badlands": "疏林恶地废弃营地",
+  "enchantment.level.255": "255"
 }
 
 

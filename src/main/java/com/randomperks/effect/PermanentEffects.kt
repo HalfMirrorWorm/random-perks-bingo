@@ -1,5 +1,6 @@
 package com.randomperks.effect
 
+import com.randomperks.game.NyaAxeService
 import com.randomperks.state.PerkStateManager
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.effect.MobEffectInstance
@@ -23,6 +24,8 @@ object PermanentEffects {
         val effect: Holder<MobEffect>,
         val perkId: String,
         val amplifier: Int,
+        /** 额外的重挂条件 (默认总是重挂) */
+        val condition: (ServerPlayer) -> Boolean = { true },
     )
 
     /** 永久效果 → 授予它的词条 / 增幅等级 */
@@ -34,7 +37,8 @@ object PermanentEffects {
         Entry(MobEffects.CONDUIT_POWER, "swift_gura_shark", 0),
         // 深海之息 / 喵人斧 描述都是"永久", 被牛奶或有限时长覆盖后要自动补回
         Entry(MobEffects.WATER_BREATHING, "swift_deep_breath", 0),
-        Entry(MobEffects.WEAKNESS, "artisan_nya_axe", 0),
+        // 喵人斧的虚弱只在**使用后**才有, 没用过时不要把药水带来的虚弱补成永久
+        Entry(MobEffects.WEAKNESS, "artisan_nya_axe", 0) { NyaAxeService.hasUsed(it) },
         // 注: "弹簧腿"只加 JUMP_STRENGTH 属性, 不再登记 JUMP_BOOST ——
         // 两者叠加会让跳跃高度超过描述, 而且牛奶后补回的效果会一直留到词条移除
     )
@@ -54,6 +58,7 @@ object PermanentEffects {
     private fun applyIfOwned(player: ServerPlayer, entry: Entry) {
         if (!player.isAlive) return
         if (PerkStateManager.get(player.uuid)?.hasPerk(entry.perkId) != true) return
+        if (!entry.condition(player)) return
         PerkEffects.permanentEffect(player, entry.effect, entry.amplifier)
     }
 

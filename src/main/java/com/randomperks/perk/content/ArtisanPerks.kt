@@ -3,6 +3,7 @@ package com.randomperks.perk.content
 import com.randomperks.effect.PerkEffects
 import com.randomperks.effect.PermanentEffects
 import com.randomperks.game.MidasTouchService
+import com.randomperks.game.NyaAxeService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.SharedFortuneService
 import com.randomperks.game.ReviveArmorService
@@ -426,38 +427,44 @@ object ArtisanPerks {
         }
     }
 
-    /** 金 · 匠造: **喵人斧** —— 获得一把**秒人斧** —— **金斧 + 锋利 1145 + 1 点耐久**;
-     *  代价是**永久虚弱 I**。
+    /** 金 · 匠造: **喵人斧** —— 获得一把**秒人斧** —— **金斧 + 锋利 255 + 1 点耐久**;
+     *  **使用后**获得**永久虚弱 I**。
      *
-     *  与社区（EaseCation 服务器 / Funprops Killaxe）同款思路: 不靠自定义秒杀逻辑,
-     *  而是把锋利堆到荒谬的等级 —— 1145 级的单次附魔伤害 ≈ 1 + 0.5 × 1144 ≈ 573,
-     *  配上金斧基础伤害足以一击带走几乎任何生物 (含玩家); 代价是攻击一次斧头就坏。 */
+     *  不靠自定义秒杀逻辑, 而是把锋利堆到 255 级 (ItemEnchantments 的等级上限,
+     *  也是存档 codec 允许的最大值): 单次附魔伤害 ≈ 1 + 0.5 × 254 = 128,
+     *  配上金斧基础伤害足以一击带走普通玩家和绝大多数生物; 代价是攻击一次斧头就坏,
+     *  用过之后永久虚弱 I。 */
     object NyaAxe : PerkDefinition {
         override val id = "artisan_nya_axe"
         override val rarity = PerkRarity.GOLD
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.GOLDEN_AXE)
 
-        /** 锋利等级 (EaseCation 的经典数值) */
-        private const val SHARPNESS_LEVEL = 1145
+        /** 锋利等级 (255 是附魔等级与存档 codec 的上限) */
+        private const val SHARPNESS_LEVEL = 255
 
         override fun onAcquire(ctx: PerkContext) {
             val axe = ItemStack(Items.GOLDEN_AXE)
             PerkEffects.enchant(ctx.player, axe, Enchantments.SHARPNESS, SHARPNESS_LEVEL)
-            // ★ 耐久上限直接压成 1 点: 无论用铁砧、经验修补还是任何手段"修回来"，
-            //   上限仍然只有 1 —— 这把斧头永远只有一次机会。
+            // 耐久上限直接压成 1 点: 攻击一次斧头就坏
             axe.set(DataComponents.MAX_DAMAGE, 1)
-            // ★ 工作惩罚直接拉满: 铁砧成本一上来就 ≥ 40 级 → 永久"过于昂贵", 修不了也合不了。
-            //   这是原版组件, 不显示在 tooltip 上, 也不需要额外 mixin。
+            // 铁砧工作惩罚拉满: 成本一上来就 ≥ 40 级 → 修不了也合不了
             axe.set(DataComponents.REPAIR_COST, 40)
+            // 堵住附魔台: 去掉 ENCHANTABLE 后原版附魔台不再接受这把斧头,
+            // 不能再给它加耐久附魔来多打几下
+            axe.remove(DataComponents.ENCHANTABLE)
+            NyaAxeService.markItem(axe)
             PerkEffects.giveStack(ctx.player, axe)
 
-            // 代价: 永久虚弱 I
-            PerkEffects.permanentEffect(ctx.player, MobEffects.WEAKNESS, 0)
+            // 虚弱只在**使用后**出现, 见 NyaAxeService.onUsed
+            NyaAxeService.resetUsed(ctx.player)
         }
 
-        override fun onRespawn(ctx: PerkContext) =
-            PerkEffects.permanentEffect(ctx.player, MobEffects.WEAKNESS, 0)
+        override fun onRespawn(ctx: PerkContext) {
+            if (NyaAxeService.hasUsed(ctx.player)) {
+                PerkEffects.permanentEffect(ctx.player, MobEffects.WEAKNESS, 0)
+            }
+        }
 
         override fun onRemove(ctx: PerkContext) =
             PermanentEffects.removePermanent(ctx.player, MobEffects.WEAKNESS, 0)

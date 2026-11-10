@@ -50,6 +50,7 @@
     "BigSnowballMixin",
     "BigSnowballHitboxMixin",
     "PearlGauntletMixin",
+    "NyaAxeUseMixin",
     "PokemonEggMixin",
     "MorphDimensionsMixin",
     "MorphSoundMixin",
