@@ -3,6 +3,7 @@ package com.randomperks.lifecycle
 import com.randomperks.RandomPerksMod
 import com.randomperks.config.PerkConfig
 import com.randomperks.game.PerkGrantService
+import com.randomperks.game.PerkOrphanCleanup
 import com.randomperks.game.DragonTamerService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkSession
@@ -54,6 +55,9 @@ object BingoLifecycle {
         SwapService.clear()
         ResonanceService.clear()
         RandomPerksHooks.resetLineCounts()
+        // 状态已经清空: 在线玩家身上可能还留着上一局的属性 / 无限效果 (GAME_RESET / CLOSE
+        // 不走 onRemove); 离线玩家则由加入时的 PerkOrphanCleanup.onJoin 兜底
+        ServerHolder.server?.playerList?.players?.forEach { PerkOrphanCleanup.clean(it) }
     }
 
     private fun onGameStarted() {

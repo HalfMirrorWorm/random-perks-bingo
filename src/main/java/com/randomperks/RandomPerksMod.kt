@@ -9,6 +9,7 @@ import com.randomperks.game.FireballService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.ModVersionService
 import com.randomperks.game.PerkGrantService
+import com.randomperks.game.PerkOrphanCleanup
 import com.randomperks.game.PerkTickService
 import com.randomperks.game.PigMorphService
 import com.randomperks.game.PortableCraftingService
@@ -128,9 +129,12 @@ object RandomPerksMod : ModInitializer {
 
         // 玩家加入时同步词条能力状态 (断线重连后恢复)
         net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
-            PerkGrantService.syncAbilities(handler.player)
+            val player = handler.player
+            // 上一局结束时离线 → onRemove 没跑到, 先清掉玩家存档里残留的属性和无限效果
+            PerkOrphanCleanup.onJoin(player)
+            PerkGrantService.syncAbilities(player)
             // "灵魂出窍"进行中断线重连: 把灵魂相机状态补回去
-            SoulOutService.syncOnJoin(handler.player)
+            SoulOutService.syncOnJoin(player)
         }
 
         // 客户端/服务端 mod 版本一致性校验 (登录阶段, 不一致或客户端没装则拒绝进入)

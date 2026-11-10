@@ -498,7 +498,8 @@ object ArtisanPerks {
         }
     }
 
-    /** 蓝 · 匠造: **纹饰护体** —— 每穿戴一件带盔甲纹饰的装备, 生命上限 +5 (最多 4 件) */
+    /** 蓝 · 匠造: **纹饰护体** —— 获得一个随机盔甲纹饰; 每穿戴一件带盔甲纹饰的装备,
+     *  生命上限 +8 (最多 4 件) */
     object TrimmedArmor : PerkDefinition {
         override val id = "artisan_trimmed_armor"
         override val rarity = PerkRarity.BLUE
@@ -517,7 +518,36 @@ object ArtisanPerks {
         /** 每件纹饰装备提供的生命上限 */
         private const val HEALTH_PER_PIECE = 8.0
 
-        override fun onAcquire(ctx: PerkContext) = refresh(ctx)
+        /** 全部盔甲纹饰模板 (26.3 共 18 种) */
+        private val TRIM_TEMPLATES = arrayOf(
+            Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE,
+        )
+
+        override fun onAcquire(ctx: PerkContext) {
+            refresh(ctx)
+            PerkEffects.giveStack(
+                ctx.player,
+                ItemStack(TRIM_TEMPLATES[ctx.player.random.nextInt(TRIM_TEMPLATES.size)]),
+            )
+        }
+
         override fun onRespawn(ctx: PerkContext) = refresh(ctx)
 
         /** 穿/脱护甲的瞬间即时重算 (EquipmentChangeMixin + PlayerInventoryEquipMixin 分发) */

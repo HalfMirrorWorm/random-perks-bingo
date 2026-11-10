@@ -76,4 +76,21 @@ object PermanentEffects {
         if (instance.amplifier != amplifier) return
         player.removeEffect(effect)
     }
+
+    /**
+     * 玩家当前没有任何词条时, 清掉本 mod 留下的无限效果
+     * (对局结束时玩家离线 → onRemove 没跑到, 下一局加入/开局时兜底)。
+     *
+     * 只认我们自己挂的标志 (ambient=true, 不显示粒子, 显示图标),
+     * 避免把其它来源的同类无限效果误删。
+     */
+    fun removeAllOrphans(player: ServerPlayer) {
+        for (entry in ENTRIES) {
+            val instance = player.getEffect(entry.effect) ?: continue
+            if (instance.duration != INFINITE_DURATION) continue
+            if (instance.amplifier != entry.amplifier) continue
+            if (!instance.isAmbient || instance.isVisible || !instance.showIcon()) continue
+            player.removeEffect(entry.effect)
+        }
+    }
 }
