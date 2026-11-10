@@ -51,5 +51,7 @@ object PerkOrphanCleanup {
             }
         }
         PermanentEffects.removeAllOrphans(player)
+        // 大背包的 >64 堆叠同理: 离线跨局时 onRemove 没跑到, 加入时拆回合法数量
+        BigBackpackService.normalize(player)
     }
 }

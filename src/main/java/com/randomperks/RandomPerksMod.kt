@@ -130,8 +130,13 @@ object RandomPerksMod : ModInitializer {
         // 玩家加入时同步词条能力状态 (断线重连后恢复)
         net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
             val player = handler.player
-            // 上一局结束时离线 → onRemove 没跑到, 先清掉玩家存档里残留的属性和无限效果
-            PerkOrphanCleanup.onJoin(player)
+            // 延后一拍: 服务器重启时词条状态在首个 END_SERVER_TICK 才恢复,
+            // 立即检查会把"还没恢复"误判成"没有词条", 把大背包的 256 堆叠拆掉。
+            // 延时后仍是"没有词条"才清理上一局残留的属性 / 无限效果 / 超额堆叠。
+            player.level().getServer().execute {
+                val online = player.level().getServer().playerList.getPlayer(player.uuid) ?: return@execute
+                PerkOrphanCleanup.onJoin(online)
+            }
             PerkGrantService.syncAbilities(player)
             // "灵魂出窍"进行中断线重连: 把灵魂相机状态补回去
             SoulOutService.syncOnJoin(player)
