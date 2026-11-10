@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * "磁力升级" / "便携工作台" 的**客户端预测抑制**。
+ * "随身仓库" / "便携工作台" 的**客户端预测抑制**。
  *
  * <p>这两个词条原本只在服务端拦 (UseBlockCallback 返回 SUCCESS, 不放置方块)。
  * 但客户端在发包之前会先在 {@code interactBlockInternal} 里跑一遍原版物品使用
@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(MultiPlayerGameMode.class)
 public class PortableOpenClientMixin {
 
-    private static final String MAGNET_PERK = "seeker_magnet_upgrade";
+    private static final String SHULKER_PERK = "artisan_shulker_box";
     private static final String CRAFTING_PERK = "artisan_portable_crafting";
 
     @Inject(method = "performUseItemOn", at = @At("HEAD"), cancellable = true)
@@ -52,11 +52,11 @@ public class PortableOpenClientMixin {
     /** 这件物品在这名玩家手里是"打开界面"而不是"放置方块" */
     private static boolean randomperks$opensInsteadOfPlacing(ItemStack stack) {
         if (stack.is(Items.ENDER_CHEST)) {
-            return ClientPerkFlags.has(MAGNET_PERK);
+            return ClientPerkFlags.has(SHULKER_PERK);
         }
         if (stack.getItem() instanceof BlockItem blockItem
                 && blockItem.getBlock() instanceof ShulkerBoxBlock) {
-            return ClientPerkFlags.has(MAGNET_PERK);
+            return ClientPerkFlags.has(SHULKER_PERK);
         }
         if (stack.is(Items.CRAFTING_TABLE)) {
             return ClientPerkFlags.has(CRAFTING_PERK);

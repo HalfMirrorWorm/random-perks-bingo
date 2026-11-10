@@ -79,7 +79,7 @@
 
 目标是创造模式且背包塞不下时，原版 `PlayerInventory.insertStack` 会把剩余数量清成 0（`ItemStack.java` 的 `isInCreativeMode` 分支）。调用方看到剩余为空就不再掉在脚下，溢出部分消失。
 
-### 2. 便携潜影盒 `seeker_magnet_upgrade`
+### 2. 便携潜影盒 `artisan_shulker_box`
 
 `ContainerOpenService.kt` 把潜影盒内容复制进临时库存，只在界面关闭且玩家仍在线时写回 `CONTAINER` 组件。`END_SERVER_TICK` 里如果 `getPlayer` 已经是 null，会话被直接删掉，不写回。
 

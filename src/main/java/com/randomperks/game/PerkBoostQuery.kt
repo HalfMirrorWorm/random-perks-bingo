@@ -405,12 +405,6 @@ object PerkBoostQuery {
     fun hasPokemon(player: ServerPlayer): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("summon_pokemon") == true
 
-    // ---- "磁力升级" (蓝): 拾取范围 5 格 (由 MagnetService 定期扫描) ----
-
-    /** 玩家是否持有"磁力升级" */
-    fun hasMagnetUpgrade(player: ServerPlayer): Boolean =
-        PerkStateManager.get(player.uuid)?.hasPerk("seeker_magnet_upgrade") == true
-
     // ---- "拾穗" (蓝): 收获成熟作物时 50% 额外掉一个随机种子 (由 PerkWorldEventService 处理) ----
 
     /** 玩家是否持有"拾穗" */

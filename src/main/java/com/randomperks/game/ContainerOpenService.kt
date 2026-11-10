@@ -23,7 +23,7 @@ import net.minecraft.world.InteractionHand
 import java.util.UUID
 
 /**
- * "磁力升级" 附带的**便携容器**: 手持潜影盒 / 末影箱右键直接打开, 而不是放置方块。
+ * "随身仓库" 附带的**便携容器**: 手持潜影盒 / 末影箱右键直接打开, 而不是放置方块。
  *
  * <p>潜影盒的内容存在物品的 {@code CONTAINER} 组件里。打开时复制进一个临时的
  * [SimpleInventory] 交给 [ShulkerBoxScreenHandler]; 界面关闭时再写回物品 —— 全程不放置方块。
@@ -34,7 +34,7 @@ import java.util.UUID
  */
 object ContainerOpenService {
 
-    private const val PERK_ID = "seeker_magnet_upgrade"
+    private const val PERK_ID = "artisan_shulker_box"
 
     /** 潜影盒格数 */
     private const val SHULKER_SLOTS = 27

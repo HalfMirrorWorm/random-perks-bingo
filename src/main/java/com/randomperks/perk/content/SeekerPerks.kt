@@ -582,15 +582,6 @@ object SeekerPerks {
         override fun onAcquire(ctx: PerkContext) = LayFlatService.start(ctx.player)
     }
 
-    /** 绿 · 秘藏: **磁力升级** —— 拾取范围扩大到 5 格 (MagnetService 每 0.25 秒扫描一次);
-     *  手持潜影盒 / 末影箱右键可直接打开 (ContainerOpenService)。 */
-    object MagnetUpgrade : PerkDefinition {
-        override val id = "seeker_magnet_upgrade"
-        override val rarity = PerkRarity.GREEN
-        override val archetype = PerkArchetype.SEEKER
-        override fun icon() = ItemStack(Items.HOPPER)
-    }
-
     /** 蓝 · 秘藏 · 贮藏: **老牧师** —— 在词条列表点击使用, 获得 16 个绿宝石,
      *  并在玩家当前位置召唤一只**大师级牧师**村民; 但他的交易项会被随机标成 **缺货** 0~3 项
      *  (交易项还在, 只是点不了)。不往周围或地表另找落点。 */
@@ -781,7 +772,6 @@ object SeekerPerks {
         PerkRegistry.register(Puny)
         PerkRegistry.register(RandomGround)
         PerkRegistry.register(LayFlat)
-        PerkRegistry.register(MagnetUpgrade)
         PerkRegistry.register(WarmArchaeology)
         PerkRegistry.register(VillageHero)
         PerkRegistry.register(SavageMagic)

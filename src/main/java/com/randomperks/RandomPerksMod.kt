@@ -7,7 +7,6 @@ import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.DragonTamerService
 import com.randomperks.game.FireballService
 import com.randomperks.game.LayFlatService
-import com.randomperks.game.MagnetService
 import com.randomperks.game.ModVersionService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkTickService
@@ -105,13 +104,11 @@ object RandomPerksMod : ModInitializer {
         // "开摆" 的五分钟诅咒与结算
         LayFlatService.register()
 
-        // "磁力升级" 的 16 格拾取扫描
-        MagnetService.register()
 
         // "马来"召唤的马会像驯服的狼一样跟着主人
         SummonedHorseService.register()
 
-        // "磁力升级": 手持潜影盒 / 末影箱右键直接打开
+        // "随身仓库": 手持潜影盒 / 末影箱右键直接打开
         ContainerOpenService.register()
 
         // "便携工作台": 手持工作台右键直接打开合成界面

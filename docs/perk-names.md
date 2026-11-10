@@ -1,6 +1,6 @@
 # 词条命名与名称映射
 
-共 **138** 条词条：绿 27 / 蓝 55 / 紫 30 / 金 21 / 红 3 / 神话 2。
+共 **137** 条词条：绿 26 / 蓝 55 / 紫 30 / 金 21 / 红 3 / 神话 2。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -138,7 +138,6 @@
 | `seeker_puny` | !?区区!? | Puny!? | 蓝 |
 | `seeker_random_ground` | 随机地基 | Random Ground | 蓝 |
 | `seeker_lay_flat` | 开摆 | Lay Flat | 紫 |
-| `seeker_magnet_upgrade` | 磁力升级 | Magnet Upgrade | 绿 |
 | `seeker_old_priest` | 老牧师 | Old Priest | 蓝 |
 | `seeker_warm_archaeology` | 暖水考古 | Warm Water Archaeology | 蓝 |
 | `seeker_village_hero` | 村庄英雄 | Hero of the Village | 绿 |
