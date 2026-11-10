@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * "复活甲": 在 {@code LivingEntity.tryUseDeathProtector} 的 HEAD 拦截。
+ * "复活甲": 在 {@code LivingEntity.checkTotemDeathProtection} 的 HEAD 拦截。
  *
  * <p>原版只在生命值归零后调用这个方法 (随后决定是死亡还是被图腾救下),
  * 正好是"受到致命伤害"的时机。持有词条且冷却就绪时由

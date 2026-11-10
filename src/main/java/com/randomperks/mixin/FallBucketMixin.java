@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * "落地，水"词条: 受到**致命**摔落伤害时, **背包里任意位置**的水桶代替不死图腾救命。
  *
- * 挂钩原版 LivingEntity.tryUseDeathProtector —— 该方法只在"这一下会致死"时被调用
+ * 挂钩原版 LivingEntity.checkTotemDeathProtection —— 该方法只在"这一下会致死"时被调用
  * (且在护甲/减伤结算之后), 天然满足"仅致死触发"。
  * 演出与原版图腾一致, 仅把上浮旋转的物品换成水桶 (自定义 S2C → GameRenderer.showFloatingItem)。
  */

@@ -1,6 +1,7 @@
 package com.randomperks.game
 
 import com.randomperks.state.PerkStateManager
+import net.minecraft.advancements.triggers.CriteriaTriggers
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.component.DeathProtection
 import net.minecraft.world.entity.EntityEvent
@@ -8,8 +9,10 @@ import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.tags.DamageTypeTags
+import net.minecraft.stats.Stats
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.InteractionHand
+import net.minecraft.world.level.gameevent.GameEvent
 
 /**
  * "复活甲" (紫 · 匠造) 的服务端逻辑。
@@ -18,7 +21,7 @@ import net.minecraft.world.InteractionHand
  * 生命设为 1, 清空负面效果并给予生命恢复 II / 伤害吸收 II / 抗火, 播放图腾音效与粒子。
  * **整局只能触发一次** (没有冷却), 触发过后再受致命伤害就正常死亡。
  *
- * 触发点在原版 {@code LivingEntity.tryUseDeathProtector} 的 HEAD (见 ReviveArmorMixin) ——
+ * 触发点在原版 {@code LivingEntity.checkTotemDeathProtection} 的 HEAD (见 ReviveArmorMixin) ——
  * 原版只有在生命值归零后才会调用那个方法, 所以天然满足"致命伤害"的条件。
  */
 object ReviveArmorService {
@@ -48,12 +51,16 @@ object ReviveArmorService {
 
         state.memory[USED_KEY] = "1"
 
-        // 复刻原版 tryUseDeathProtector 的结算 (不消耗物品)
+        // 与原版 checkTotemDeathProtection 一致: 记"使用不死图腾"统计、
+        // 触发"死后余生"进度, 并发一条物品使用振动
+        val totem = ItemStack(Items.TOTEM_OF_UNDYING)
+        player.awardStat(Stats.ITEM_USED.get(Items.TOTEM_OF_UNDYING))
+        CriteriaTriggers.USED_TOTEM.trigger(player, totem)
+        totem.causeUseVibration(player, GameEvent.ITEM_INTERACT_FINISH)
+
+        // 复刻原版 checkTotemDeathProtection 的结算 (不消耗物品)
         player.setHealth(1.0f)
-        DeathProtection.TOTEM_OF_UNDYING.applyEffects(
-            ItemStack(Items.TOTEM_OF_UNDYING),
-            player,
-        )
+        DeathProtection.TOTEM_OF_UNDYING.applyEffects(totem, player)
         player.level().broadcastEntityEvent(player, EntityEvent.PROTECTED_FROM_DEATH)
         return true
     }

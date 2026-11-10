@@ -39,6 +39,8 @@ object PermanentEffects {
         Entry(MobEffects.WATER_BREATHING, "swift_deep_breath", 0),
         // 喵人斧的虚弱只在**使用后**才有, 没用过时不要把药水带来的虚弱补成永久
         Entry(MobEffects.WEAKNESS, "artisan_nya_axe", 0) { NyaAxeService.hasUsed(it) },
+        // 村庄英雄: 复活甲触发的图腾会"清除所有效果", 需要自动补回
+        Entry(MobEffects.HERO_OF_THE_VILLAGE, "seeker_village_hero", 0),
         // 注: "弹簧腿"只加 JUMP_STRENGTH 属性, 不再登记 JUMP_BOOST ——
         // 两者叠加会让跳跃高度超过描述, 而且牛奶后补回的效果会一直留到词条移除
     )
