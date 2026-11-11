@@ -10,7 +10,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
+import net.minecraft.tags.ItemTags
 import net.minecraft.resources.ResourceKey
 import net.minecraft.core.registries.Registries
 import net.minecraft.core.Holder
@@ -103,20 +103,22 @@ object PerkEffects {
 
     /**
      * 玩家是否**没有穿着任何护甲**。
-     * 以装备槽判断 (而非护甲值, 避免与"无甲给甲"类词条形成循环); 鞘翅不视为护甲。
+     *
+     * 按原版护甲物品标签判断 (HEAD_ARMOR / CHEST_ARMOR / LEG_ARMOR / FOOT_ARMOR)，
+     * 而不是护甲值 —— 后者会把"皇帝新衣"自己加的 ARMOR 修饰符算进去，形成循环。
+     * 南瓜、生物头颅、鞘翅都不在护甲标签里，不算穿甲；铜甲、海龟帽照常算。
      */
     fun hasNoArmor(player: ServerPlayer): Boolean {
-        for (slot in ARMOR_SLOTS) {
-            val stack = player.getItemBySlot(slot)
-            if (!stack.isEmpty && !stack.`is`(Items.ELYTRA)) return false
+        for ((slot, tag) in ARMOR_SLOTS) {
+            if (player.getItemBySlot(slot).`is`(tag)) return false
         }
         return true
     }
 
     private val ARMOR_SLOTS = listOf(
-        EquipmentSlot.HEAD,
-        EquipmentSlot.CHEST,
-        EquipmentSlot.LEGS,
-        EquipmentSlot.FEET,
+        EquipmentSlot.HEAD to ItemTags.HEAD_ARMOR,
+        EquipmentSlot.CHEST to ItemTags.CHEST_ARMOR,
+        EquipmentSlot.LEGS to ItemTags.LEG_ARMOR,
+        EquipmentSlot.FEET to ItemTags.FOOT_ARMOR,
     )
 }
