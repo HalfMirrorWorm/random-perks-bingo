@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * "矿工手腕"的"挖矿石额外提速"部分。
  *
- * <p>原版 {@code PlayerEntity.getBlockBreakingSpeed(BlockState)} 是挖速的最终结算点
+ * <p>原版 {@code Player.getDestroySpeed(BlockState)} 是挖速的最终结算点
  * (方块硬度、工具速度、急迫、疲劳、水下、悬空都在里面), 这里在 TAIL 乘一个额外倍率 ——
  * 只在目标是矿石时生效, 因此不影响挖土/砍树。
  *

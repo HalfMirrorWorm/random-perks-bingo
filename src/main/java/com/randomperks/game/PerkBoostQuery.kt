@@ -34,7 +34,7 @@ object PerkBoostQuery {
     fun hasFallBucket(player: ServerPlayer): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("swift_life_bucket") == true
 
-    // ---- "矿工手腕": 挖矿石时额外提速 (由 MinerWristMixin 在 PlayerEntity.getBlockBreakingSpeed 调用) ----
+    // ---- "矿工手腕": 挖矿石时额外提速 (由 MinerWristMixin 在 Player.getDestroySpeed 调用) ----
 
     private const val MINER_WRIST_PERK = "delver_mining"
 
