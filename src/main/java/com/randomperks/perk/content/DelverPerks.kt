@@ -345,17 +345,6 @@ object DelverPerks {
             PerkEffects.removeAttribute(ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_MINING)
     }
 
-    /** 矿石判定 (矿脉嗅觉/老矿工共用): 与原版矿石标签一致; 远古残骸与 modded 矿石按名称兜底 */
-    private val ORE_CHECK_TAGS = listOf(
-        BlockTags.ORES,
-    )
-
-    private fun isOreBlock(state: BlockState): Boolean {
-        if (ORE_CHECK_TAGS.any { state.`is`(it) }) return true
-        val path = BuiltInRegistries.BLOCK.getKey(state.block).path
-        return path == "ancient_debris" || path.endsWith("_ore")
-    }
-
     /** "石头"判定: 自然石头 (石头/花岗岩/闪长岩/安山岩/凝灰岩/深板岩) +
      *  下界石头 (下界岩/玄武岩/黑石) + 两种圆石 */
     private fun isStoneBlock(state: BlockState): Boolean =
@@ -445,7 +434,7 @@ object DelverPerks {
             val player = ctx.player
             val tool = player.mainHandItem
             if (!tool.`is`(ItemTags.PICKAXES)) return          // 只认镐
-            if (!isOreBlock(blockState)) return                // 只认矿石
+            if (!PerkBoostQuery.isOreBlock(blockState)) return                // 只认矿石
             if (!player.hasCorrectToolForDrops(blockState)) return         // 挖了也不掉落的矿石不触发
             val world = player.level() as? ServerLevel ?: return
 
