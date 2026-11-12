@@ -152,7 +152,7 @@ object DelverPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             val pickaxe = ItemStack(Items.GOLDEN_PICKAXE)
-            // 1.21.7 的 unbreakable 是无值组件 (Unit), 设置后耐久不再消耗
+            // 26.3 的 unbreakable 是无值组件 (Unit), 设置后耐久不再消耗
             pickaxe.set(DataComponents.UNBREAKABLE, Unit.INSTANCE)
             PerkEffects.giveStack(ctx.player, pickaxe)
         }
