@@ -187,7 +187,7 @@
   "random-perks-bingo.perk.delver_eighty.name": "Eighty",
   "random-perks-bingo.perk.delver_eighty.desc": "Mining stone blocks with a pickaxe breaks a 3×3 area of the same block centered on the targeted block.",
   "random-perks-bingo.perk.delver_chain_mining.name": "Chain Mining",
-  "random-perks-bingo.perk.delver_chain_mining.desc": "Mining an ore with a pickaxe also breaks connected ores of the same type (including deepslate variants), up to 64 blocks per break.",
+  "random-perks-bingo.perk.delver_chain_mining.desc": "Mining an ore with a pickaxe also breaks connected ores of the same type.",
 
   "random-perks-bingo.perk.harvest_field_mender.name": "Field Mender",
   "random-perks-bingo.perk.harvest_field_mender.desc": "Harvesting a mature crop repairs 10 durability on each equipped item.",

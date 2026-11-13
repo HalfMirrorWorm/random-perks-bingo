@@ -435,7 +435,8 @@ object DelverPerks {
      *  - 透视之眼与额外掉落的判定都由 BreakDecisionMixin 在流程开头掷一次, 整条矿脉共用;
      *  - 连锁块的掉落统一生成在主矿石的位置, 和主矿石的掉落堆在一起;
      *  - 连锁块不再走 Block.dropStacks, 避免每块单独掷骰、再触发其他联动;
-     *  - 命中额外掉落时整条矿脉一起翻倍; 创造模式不掉落。 */
+     *  - 命中额外掉落时整条矿脉一起翻倍; 创造模式不掉落;
+     *  - 额外矿石各自触发一次幸运矿工抽奖 (判定/翻倍仍共用主矿石的结果)。 */
     object ChainMining : PerkDefinition {
         override val id = "delver_chain_mining"
         override val rarity = PerkRarity.PURPLE
@@ -483,6 +484,8 @@ object DelverPerks {
                             if (!world.destroyBlock(next, false, player)) continue
                             // 连锁挖掉的矿石也要给"贪吃蛇"加层 (这些方块不走 PlayerBlockBreakEvents)
                             GluttonousSnake.recordOreBreak(ctx)
+                            // 额外矿石各自触发一次幸运矿工抽奖; 透视/额外掉落判定仍共用主矿石的 (tick, pos)
+                            LuckyDigger.rollPrize(ctx, chainState, next, pos)
                             // 创造模式不掉落 (与原版一致); 透视抑制时整批不掉落
                             if (!suppressed && !player.isCreative) {
                                 // 掉落在主矿石的位置生成 (自动含时运/精准采集), 与主矿石的掉落堆在一起
@@ -500,9 +503,11 @@ object DelverPerks {
             }
         }
 
-        /** 矿石"家族"键: 去掉 deepslate_ 前缀, 让原矿与深板岩变种算同一种 */
-        private fun oreKey(block: net.minecraft.world.level.block.Block): String =
-            BuiltInRegistries.BLOCK.getKey(block).path.removePrefix("deepslate_")
+        /** 矿石"家族"键: 同命名空间下去掉 deepslate_ 前缀, 让原矿与深板岩变种算同一种 */
+        private fun oreKey(block: net.minecraft.world.level.block.Block): String {
+            val id = BuiltInRegistries.BLOCK.getKey(block)
+            return "${id.namespace}:${id.path.removePrefix("deepslate_")}"
+        }
     }
 
     /** 蓝 · 深掘: **破壁人** —— 手持能挖黑曜石的镐时, 基岩可以像黑曜石一样被挖掉。

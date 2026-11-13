@@ -187,7 +187,7 @@
   "random-perks-bingo.perk.delver_eighty.name": "八十",
   "random-perks-bingo.perk.delver_eighty.desc": "用镐挖石头类方块时，以此为中心挖掘 3×3 的同种方块。",
   "random-perks-bingo.perk.delver_chain_mining.name": "连锁挖矿",
-  "random-perks-bingo.perk.delver_chain_mining.desc": "用镐挖掘矿石时, 会把相连的同种矿石（含深板岩变种）一并挖掘, 单次最多 64 块。",
+  "random-perks-bingo.perk.delver_chain_mining.desc": "用镐挖掘矿石时, 会把相连的同种矿石一并挖掘。",
 
   "random-perks-bingo.perk.harvest_field_mender.name": "田园修补",
   "random-perks-bingo.perk.harvest_field_mender.desc": "收获成熟作物时, 全身装备各修复 10 点耐久。",
