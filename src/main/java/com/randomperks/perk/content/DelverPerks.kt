@@ -288,6 +288,18 @@ object DelverPerks {
         }
 
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.core.BlockPos, blockState: BlockState) {
+            rollPrize(ctx, blockState, pos, pos)
+        }
+
+        /** 为一次方块破坏掷幸运奖品。
+         *  [spawnPos] 是奖品落点；[decisionPos] 是本次破坏的判定键（主方块位置）——
+         *  3×3/连锁的额外方块共用主方块的透视/额外掉落判定，但每块各自掷一次抽奖。 */
+        fun rollPrize(
+            ctx: PerkContext,
+            blockState: BlockState,
+            spawnPos: net.minecraft.core.BlockPos,
+            decisionPos: net.minecraft.core.BlockPos,
+        ) {
             if (ctx.player.isCreative) return                             // 创造模式不触发
             if (!ctx.player.mainHandItem.`is`(ItemTags.PICKAXES)) return   // 用镐子挖
 
@@ -307,14 +319,14 @@ object DelverPerks {
             if (ctx.player.random.nextFloat() >= chance) return
 
             // 联动"透视之眼"代价: 本次破坏被判定为不掉落 → 奖品一并抑制
-            if (PerkBoostQuery.isXraySuppressed(ctx.player, pos)) return
+            if (PerkBoostQuery.isXraySuppressed(ctx.player, decisionPos)) return
 
             val world = ctx.player.level() as? ServerLevel ?: return
             val prize = LOOT_POOL[ctx.player.random.nextInt(LOOT_POOL.size)]
             // 与方块掉落共用"额外一份"判定: 命中矿脉嗅觉/老矿工时奖品也复制一份
-            val copies = if (PerkBoostQuery.isExtraDropDoubled(ctx.player, pos)) 2 else 1
+            val copies = if (PerkBoostQuery.isExtraDropDoubled(ctx.player, decisionPos)) 2 else 1
             repeat(copies) {
-                val entity = ItemEntity(world, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, ItemStack(prize))
+                val entity = ItemEntity(world, spawnPos.x + 0.5, spawnPos.y + 0.5, spawnPos.z + 0.5, ItemStack(prize))
                 entity.setDefaultPickUpDelay()
                 world.addFreshEntity(entity)
             }
@@ -358,7 +370,8 @@ object DelverPerks {
      *
      *  支持主世界石头与下界石头 (下界岩/玄武岩/黑石)。
      *  掉落与主方块**共同结算**: 透视之眼与额外掉落的判定都由 BreakDecisionMixin
-     *  在破坏流程开头掷一次, 3×3 整批共用; 命中额外掉落时整批翻倍。 */
+     *  在破坏流程开头掷一次, 3×3 整批共用; 命中额外掉落时整批翻倍。
+     *  额外方块各自触发一次幸运矿工抽奖 (判定/翻倍仍共用主方块的结果)。 */
     object Eighty : PerkDefinition {
         override val id = "delver_eighty"
         override val rarity = PerkRarity.BLUE
@@ -400,6 +413,8 @@ object DelverPerks {
 
                     // 只移除方块, 掉落统一按主方块的结算结果处理
                     if (!world.destroyBlock(target, false, player)) continue
+                    // 额外方块各自触发一次幸运矿工抽奖; 透视/额外掉落判定仍共用主方块的 (tick, pos)
+                    LuckyDigger.rollPrize(ctx, targetState, target, pos)
                     // 创造模式不掉落 (与原版一致); 透视抑制时整批不掉落
                     if (!suppressed && !player.isCreative) {
                         // 掉落在主方块位置生成 (自动含时运/精准采集); 整批翻倍时按同一份结果生成两份

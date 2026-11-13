@@ -185,7 +185,7 @@
   "random-perks-bingo.perk.delver_onion_cut.name": "Cutting Onions",
   "random-perks-bingo.perk.delver_onion_cut.desc": "Right-click with a pickaxe to switch between obsidian and crying obsidian.",
   "random-perks-bingo.perk.delver_eighty.name": "Eighty",
-  "random-perks-bingo.perk.delver_eighty.desc": "Mining stone blocks (netherrack/basalt/blackstone included) with a pickaxe also breaks the surrounding 3x3 of the same block; drops are settled together.",
+  "random-perks-bingo.perk.delver_eighty.desc": "Mining stone blocks with a pickaxe breaks a 3×3 area of the same block centered on the targeted block.",
   "random-perks-bingo.perk.delver_chain_mining.name": "Chain Mining",
   "random-perks-bingo.perk.delver_chain_mining.desc": "Mining an ore with a pickaxe also breaks connected ores of the same type (including deepslate variants), up to 64 blocks per break.",
 
