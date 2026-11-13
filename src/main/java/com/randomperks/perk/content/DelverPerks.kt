@@ -510,8 +510,10 @@ object DelverPerks {
         }
     }
 
-    /** 蓝 · 深掘: **破壁人** —— 手持能挖黑曜石的镐时, 基岩可以像黑曜石一样被挖掉。
-     *  (由 BedrockBreakMixin 在 BlockState.getDestroyProgress 里实现) */
+    /** 蓝 · 深掘: **破壁人** —— 基岩可以像黑曜石一样被挖掘 (同样的工具等级/硬度/速度, 并掉落基岩)。
+     *  - 进度: BedrockBreakMixin 用黑曜石的硬度/速度计算;
+     *  - 收获: WallbreakerHarvestMixin 让"能挖黑曜石的镐"通过 hasCorrectToolForDrops;
+     *  - 掉落: WallbreakerDropMixin 在 Block.getDrops 里补一份基岩。 */
     object Wallbreaker : PerkDefinition {
         override val id = "delver_wallbreaker"
         override val rarity = PerkRarity.BLUE

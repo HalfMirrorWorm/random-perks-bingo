@@ -39,6 +39,8 @@
     "OldSchoolBlockMixin",
     "NoSweepMixin",
     "BedrockBreakMixin",
+    "WallbreakerHarvestMixin",
+    "WallbreakerDropMixin",
     "OldSchoolBlockSlowMixin",
     "CatTargetMixin",
     "MobTargetSelectorAccessor",
