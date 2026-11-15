@@ -119,6 +119,32 @@ class TraitPickC2S(val perkId: String) : CustomPacketPayload {
     override fun type() = ID
 }
 
+/** S2C: 打开"专精"流派的选型界面 */
+class ArchetypePickS2C : CustomPacketPayload {
+    companion object {
+        val ID = CustomPacketPayload.Type<ArchetypePickS2C>(Identifier.fromNamespaceAndPath("random-perks-bingo", "archetype_pick"))
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, ArchetypePickS2C> = StreamCodec.ofMember(
+            { _, _ -> },
+            { _ -> ArchetypePickS2C() },
+        )
+    }
+
+    override fun type() = ID
+}
+
+/** C2S: 专精选择的流派 ordinal */
+class ArchetypePickC2S(val archetypeOrdinal: Int) : CustomPacketPayload {
+    companion object {
+        val ID = CustomPacketPayload.Type<ArchetypePickC2S>(Identifier.fromNamespaceAndPath("random-perks-bingo", "archetype_pick_pick"))
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, ArchetypePickC2S> = StreamCodec.ofMember(
+            { value, buf -> buf.writeVarInt(value.archetypeOrdinal) },
+            { buf -> ArchetypePickC2S(buf.readVarInt()) },
+        )
+    }
+
+    override fun type() = ID
+}
+
 /** C2S: 玩家请求查看已获得的词条列表 */
 class PerkListRequestC2S : CustomPacketPayload {
     companion object {

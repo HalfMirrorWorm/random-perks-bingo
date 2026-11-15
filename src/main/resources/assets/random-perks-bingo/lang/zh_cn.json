@@ -65,6 +65,9 @@
   "random-perks-bingo.rarity.trait": "特质",
   "random-perks-bingo.screen.choose_trait": "选择特质",
   "random-perks-bingo.screen.choose_trait.hint": "灰色特质不参与流派联动 · Esc 稍后再选",
+  "random-perks-bingo.screen.choose_archetype": "选择词条类型",
+  "random-perks-bingo.screen.choose_archetype.hint": "点击一个类型 · Esc 稍后再选",
+  "random-perks-bingo.screen.choose_archetype.card": "词条类型",
 
   "random-perks-bingo.archetype.swift": "疾风",
   "random-perks-bingo.archetype.delver": "深掘",
@@ -77,6 +80,7 @@
 
   "random-perks-bingo.message.gained_choice": "★ 获得一次词条选择! (待选 %s 次) —— 按 X 打开",
   "random-perks-bingo.message.gained_trait_choice": "★ 获得一次特质选择! (待选 %s 次) —— 按 X 打开",
+  "random-perks-bingo.message.bias_chosen": "已专精 %s: 后续该类型词条的出现权重提高。",
   "random-perks-bingo.message.choices_available": "你有 %s 次选择待选。",
   "random-perks-bingo.message.game_started": "随机词条 Bingo: 开局先选择 1 个特质, 然后获得 1 次词条选择!",
   "random-perks-bingo.message.acquired": "获得 %s %s",
@@ -483,8 +487,8 @@
   "enchantment.level.255": "255",
   "random-perks-bingo.perk.trait_01.name": "回放",
   "random-perks-bingo.perk.trait_01.desc": "获得本局到现在为止所有其他玩家对你施加过的词条（神话除外）。",
-  "random-perks-bingo.perk.trait_02.name": "预留特质 2",
-  "random-perks-bingo.perk.trait_02.desc": "占位特质，效果待定。",
+  "random-perks-bingo.perk.trait_02.name": "专精",
+  "random-perks-bingo.perk.trait_02.desc": "选择一个词条类型，之后普通三选一里该类型的出现权重提高。",
   "random-perks-bingo.perk.trait_03.name": "预留特质 3",
   "random-perks-bingo.perk.trait_03.desc": "占位特质，效果待定。",
   "random-perks-bingo.perk.trait_04.name": "预留特质 4",

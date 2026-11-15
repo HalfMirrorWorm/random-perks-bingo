@@ -27,6 +27,7 @@ object PerkNetworking {
         PayloadTypeRegistry.clientboundPlay().register(PerkNotifyS2C.ID, PerkNotifyS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkOfferS2C.ID, PerkOfferS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(TraitOfferS2C.ID, TraitOfferS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(ArchetypePickS2C.ID, ArchetypePickS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkListS2C.ID, PerkListS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkCatalogS2C.ID, PerkCatalogS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkAbilitySyncS2C.ID, PerkAbilitySyncS2C.CODEC)
@@ -35,6 +36,7 @@ object PerkNetworking {
         PayloadTypeRegistry.serverboundPlay().register(PerkRequestC2S.ID, PerkRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(TraitPickC2S.ID, TraitPickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(ArchetypePickC2S.ID, ArchetypePickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkActivateC2S.ID, PerkActivateC2S.CODEC)
@@ -80,6 +82,14 @@ object PerkNetworking {
             val perkId = payload.perkId
             context.server().execute {
                 PerkOfferService.handleTraitPick(player, perkId)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(ArchetypePickC2S.ID) { payload, context ->
+            val player = context.player()
+            val ordinal = payload.archetypeOrdinal
+            context.server().execute {
+                com.randomperks.perk.content.TraitPerks.ArchetypeBias.handlePick(player, ordinal)
             }
         }
 
@@ -209,6 +219,13 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, TraitOfferS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, TraitOfferS2C(options)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send trait offer: {}", it.toString()) }
+    }
+
+    /** 打开"专精"流派选择器 */
+    fun sendArchetypePick(player: ServerPlayer) {
+        if (!ServerPlayNetworking.canSend(player, ArchetypePickS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, ArchetypePickS2C()) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send archetype picker: {}", it.toString()) }
     }
 
     /** 下发所有在线玩家的词条列表 */
