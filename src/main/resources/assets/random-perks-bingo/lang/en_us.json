@@ -83,7 +83,7 @@
 
   "random-perks-bingo.message.gained_choice": "★ Perk choice available! (%s pending) — press X",
   "random-perks-bingo.message.gained_trait_choice": "★ Trait choice available! (%s pending) — press X",
-  "random-perks-bingo.message.bias_chosen": "Specialized in %s: its perk offer weight is increased.",
+  "random-perks-bingo.message.bias_chosen": "Specialized in %s: every perk offer will now include at least one perk of this archetype.",
   "random-perks-bingo.message.refresh_empty": "No perks available to refresh.",
   "random-perks-bingo.message.downside_none": "You have no perk with a cleansable downside.",
   "random-perks-bingo.message.downside_suppressed": "Cleansed the downside of %s.",
@@ -497,7 +497,7 @@
   "random-perks-bingo.perk.trait_01.name": "Replay",
   "random-perks-bingo.perk.trait_01.desc": "Gain all perks other players have applied to you this game (mythic excluded).",
   "random-perks-bingo.perk.trait_02.name": "Specialization",
-  "random-perks-bingo.perk.trait_02.desc": "Choose a perk archetype; its weight in future perk offers is increased.",
+  "random-perks-bingo.perk.trait_02.desc": "Choose a perk archetype; every future perk offer will include at least one perk of that archetype.",
   "random-perks-bingo.perk.trait_03.name": "Refresh",
   "random-perks-bingo.perk.trait_03.desc": "Gain 5 perk refreshes: reroll the current perk offer in the choice screen.",
   "random-perks-bingo.perk.trait_04.name": "Cleanse",

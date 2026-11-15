@@ -65,6 +65,32 @@ class PerkRollServiceTest {
     }
 
     @Test
+    fun `specialization guarantees at least one perk of the chosen archetype`() {
+        val state = newState()
+        PerkRollBias.set(state, PerkArchetype.SWIFT)
+
+        repeat(200) { seed ->
+            val options = PerkRollService.rollOptions(state, 3, Random(seed))
+            assertEquals(3, options.size)
+            assertTrue(
+                options.any { it.archetype == PerkArchetype.SWIFT },
+                "seed=$seed options=${options.map { it.id }}",
+            )
+        }
+    }
+
+    @Test
+    fun `specialization skips the guarantee when the archetype pool is exhausted`() {
+        val state = newState()
+        state.ownedPerks.add(BlueA) // 池子里唯一的 SWIFT 词条
+        PerkRollBias.set(state, PerkArchetype.SWIFT)
+
+        val options = PerkRollService.rollOptions(state, 3, Random(1))
+        assertEquals(3, options.size)
+        assertTrue(options.none { it.archetype == PerkArchetype.SWIFT })
+    }
+
+    @Test
     fun `degrades gracefully when pool is smaller than requested`() {
         val state = newState()
         // 只留 2 个可用

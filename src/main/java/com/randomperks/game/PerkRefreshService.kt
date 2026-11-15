@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer
  * "刷新"特质: 重新抽取当前普通三选一的候选。
  *
  * <p>只替换队首的普通机会, 不消耗选择机会; 已有/待选/全局唯一神话仍会被排除,
- * "专精"的流派权重也会正常参与。
+ * "专精"的流派保底也会正常参与。
  */
 object PerkRefreshService {
 

@@ -8,7 +8,7 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
 
 /**
- * "专精"特质的流派选择器: 选择一个词条类型, 之后该类型在普通三选一里的权重提高。
+ * "专精"特质的流派选择器: 选择一个词条类型, 之后每次普通三选一都至少出现一个该类型的词条。
  *
  * Esc 关闭不会消耗选择机会; 可以之后在 V 界面点击该特质重新打开。
  */

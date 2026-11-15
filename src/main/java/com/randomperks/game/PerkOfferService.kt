@@ -9,6 +9,7 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.content.TraitPerks
+import com.randomperks.roll.PerkRollBias
 import com.randomperks.roll.PerkRollService
 import com.randomperks.state.ChoiceKind
 import com.randomperks.state.PerkStateManager
@@ -270,13 +271,25 @@ object PerkOfferService {
         offer.forEachIndexed { i, id -> if (i != index) excluded.add(id) }
         excluded.addAll(PerkStateManager.globallyOwnedMythicIds())
 
-        val replacement = PerkRollService.rollSingle(excluded)
-        if (replacement != null) {
-            offer[index] = replacement.id
-            state.pendingOffers[0] = offer
-            // 补位的词条也是玩家实际看到的候选, 计入统计
-            com.randomperks.stats.PerkStatsService.recordOffered(listOf(replacement.id))
+        val base = PerkRollService.rollSingle(excluded) ?: return true
+
+        // "专精"保底: 补位后如果整组候选不再有选定流派, 优先从该流派里补
+        val bias = PerkRollBias.bias(state)
+        val replacement = if (bias != null && base.archetype != bias) {
+            val others = offer.filterIndexed { i, _ -> i != index }.mapNotNull { PerkRegistry.byId(it) }
+            if (others.any { it.archetype == bias }) {
+                base
+            } else {
+                PerkRollService.rollSingleOfArchetype(excluded + base.id, bias) ?: base
+            }
+        } else {
+            base
         }
+
+        offer[index] = replacement.id
+        state.pendingOffers[0] = offer
+        // 补位的词条也是玩家实际看到的候选, 计入统计
+        com.randomperks.stats.PerkStatsService.recordOffered(listOf(replacement.id))
         return true
     }
 

@@ -83,7 +83,7 @@
 
   "random-perks-bingo.message.gained_choice": "★ 获得一次词条选择! (待选 %s 次) —— 按 X 打开",
   "random-perks-bingo.message.gained_trait_choice": "★ 获得一次特质选择! (待选 %s 次) —— 按 X 打开",
-  "random-perks-bingo.message.bias_chosen": "已专精 %s: 后续该类型词条的出现权重提高。",
+  "random-perks-bingo.message.bias_chosen": "已专精 %s：之后每次词条三选一都至少出现一个该类型词条。",
   "random-perks-bingo.message.refresh_empty": "词条池已空, 无法刷新。",
   "random-perks-bingo.message.downside_none": "你没有带有可净化负面效果的词条。",
   "random-perks-bingo.message.downside_suppressed": "已净化 %s 的负面效果。",
@@ -497,7 +497,7 @@
   "random-perks-bingo.perk.trait_01.name": "回放",
   "random-perks-bingo.perk.trait_01.desc": "获得本局到现在为止所有其他玩家对你施加过的词条（神话除外）。",
   "random-perks-bingo.perk.trait_02.name": "专精",
-  "random-perks-bingo.perk.trait_02.desc": "选择一个词条类型，之后普通三选一里该类型的出现权重提高。",
+  "random-perks-bingo.perk.trait_02.desc": "选择一个词条类型，之后每次普通三选一都至少出现一个该类型的词条。",
   "random-perks-bingo.perk.trait_03.name": "刷新",
   "random-perks-bingo.perk.trait_03.desc": "获得 5 次词条刷新机会：在三选一界面可以刷新当前候选。",
   "random-perks-bingo.perk.trait_04.name": "净化",

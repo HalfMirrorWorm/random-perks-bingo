@@ -27,18 +27,45 @@ object PerkRollService {
         val excluded = state.ownedPerks.mapTo(mutableSetOf()) { it.id }
         excluded.addAll(extraExcluded)
         state.pendingOffers.forEach { excluded.addAll(it) }
-        return rollOptionsExcluding(excluded, count, random, PerkRollBias.bias(state))
+
+        val options = rollOptionsExcluding(excluded, count, random).toMutableList()
+        // "专精": 每次普通三选一至少出现一个选定流派的词条;
+        // 该流派已经没有可选词条时退化为普通抽取
+        val bias = PerkRollBias.bias(state)
+        if (bias != null && options.isNotEmpty() && options.none { it.archetype == bias }) {
+            val replacement = rollSingleOfArchetype(excluded + options.map { it.id }, bias, random)
+            if (replacement != null) options[options.lastIndex] = replacement
+        }
+        return options
     }
 
     /** 从排除集合之外随机抽一个词条 (用于"神话被抢后刷新选项位"等场景) */
     fun rollSingle(excluded: Set<String>, random: Random = Random.Default): PerkDefinition? =
-        rollOptionsExcluding(excluded, 1, random, null).firstOrNull()
+        rollOptionsExcluding(excluded, 1, random).firstOrNull()
+
+    /**
+     * 从指定流派里按品质权重抽一个词条 (用于"专精"保底)。
+     * 该流派没有可选词条时返回 null。
+     */
+    fun rollSingleOfArchetype(
+        excluded: Set<String>,
+        archetype: PerkArchetype,
+        random: Random = Random.Default,
+    ): PerkDefinition? {
+        if (archetype == PerkArchetype.TRAIT) return null
+
+        val pool = PerkRegistry.all.filter { it.archetype == archetype && it.id !in excluded }
+        if (pool.isEmpty()) return null
+
+        val rarity = rollRarity(pool.map { it.rarity }.distinct(), random)
+        val candidates = pool.filter { it.rarity == rarity }.ifEmpty { pool }
+        return candidates[random.nextInt(candidates.size)]
+    }
 
     private fun rollOptionsExcluding(
         excluded: Set<String>,
         count: Int,
         random: Random,
-        bias: PerkArchetype?,
     ): List<PerkDefinition> {
         // 特质只能通过"特质选择"获得, 不进入普通三选一池
         val pool = PerkRegistry.all
@@ -54,31 +81,12 @@ object PerkRollService {
 
             val candidates = pool.filter { it.rarity == rarity }.ifEmpty { pool }
             if (candidates.isEmpty()) return@repeat
-            val pick = if (bias != null) {
-                pickWeighted(candidates, bias, random)
-            } else {
-                candidates[random.nextInt(candidates.size)]
-            }
+            val pick = candidates[random.nextInt(candidates.size)]
             pool.remove(pick)
             result.add(pick)
         }
 
         return result
-    }
-
-    /** 在候选里按流派加权抽取 (选定的"专精"流派权重更高) */
-    private fun pickWeighted(
-        candidates: List<PerkDefinition>,
-        bias: PerkArchetype,
-        random: Random,
-    ): PerkDefinition {
-        val total = candidates.sumOf { if (it.archetype == bias) PerkRollBias.WEIGHT else 1.0 }
-        var roll = random.nextDouble() * total
-        for (perk in candidates) {
-            roll -= if (perk.archetype == bias) PerkRollBias.WEIGHT else 1.0
-            if (roll < 0.0) return perk
-        }
-        return candidates.last()
     }
 
     /**
