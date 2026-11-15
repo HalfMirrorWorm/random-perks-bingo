@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.effect.PermanentEffects
+import com.randomperks.game.PerkDownsideSuppression
 import com.randomperks.game.OnionCutService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.SoulOutService
@@ -71,8 +72,8 @@ object DelverPerks {
         private const val BASE_PENALTY = -0.20
         private const val PER_ORE = 0.01
 
-        override fun onAcquire(ctx: PerkContext) = apply(ctx)
-        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+        override fun onAcquire(ctx: PerkContext) = refresh(ctx)
+        override fun onRespawn(ctx: PerkContext) = refresh(ctx)
 
         override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
             if (!PerkBoostQuery.isOreBlock(blockState)) return
@@ -86,13 +87,14 @@ object DelverPerks {
             if (!ctx.state.hasPerk(id)) return
 
             ctx.state.memory[KEY_STACKS] = (stacks(ctx) + 1).toString()
-            apply(ctx)
+            refresh(ctx)
         }
 
-        private fun apply(ctx: PerkContext) {
+        fun refresh(ctx: PerkContext) {
+            val penalty = if (PerkDownsideSuppression.isSuppressed(ctx.state, id)) 0.0 else BASE_PENALTY
             PerkEffects.setAttribute(
                 ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_SPEED,
-                BASE_PENALTY + PER_ORE * stacks(ctx), AttributeModifier.Operation.ADD_VALUE,
+                penalty + PER_ORE * stacks(ctx), AttributeModifier.Operation.ADD_VALUE,
             )
         }
 
@@ -345,13 +347,19 @@ object DelverPerks {
 
         private val MOD_MINING = Identifier.fromNamespaceAndPath("random-perks-bingo", "collector_mining")
 
-        override fun onAcquire(ctx: PerkContext) = apply(ctx)
-        override fun onRespawn(ctx: PerkContext) = apply(ctx)
+        override fun onAcquire(ctx: PerkContext) = refresh(ctx.player, ctx.state)
+        override fun onRespawn(ctx: PerkContext) = refresh(ctx.player, ctx.state)
 
-        private fun apply(ctx: PerkContext) = PerkEffects.setAttribute(
-            ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_MINING,
-            -0.5, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
-        )
+        fun refresh(player: ServerPlayer, state: com.randomperks.state.PlayerPerkState) {
+            if (PerkDownsideSuppression.isSuppressed(state, id)) {
+                PerkEffects.removeAttribute(player, Attributes.BLOCK_BREAK_SPEED, MOD_MINING)
+            } else {
+                PerkEffects.setAttribute(
+                    player, Attributes.BLOCK_BREAK_SPEED, MOD_MINING,
+                    -0.5, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+                )
+            }
+        }
 
         override fun onRemove(ctx: PerkContext) =
             PerkEffects.removeAttribute(ctx.player, Attributes.BLOCK_BREAK_SPEED, MOD_MINING)

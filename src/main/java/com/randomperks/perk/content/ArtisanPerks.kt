@@ -6,6 +6,7 @@ import com.randomperks.game.BigBackpackService
 import com.randomperks.game.MidasTouchService
 import com.randomperks.game.NyaAxeService
 import com.randomperks.game.PerkApplicationHistory
+import com.randomperks.game.PerkDownsideSuppression
 import com.randomperks.game.PerkSession
 import com.randomperks.game.SharedFortuneService
 import com.randomperks.game.ReviveArmorService
@@ -463,11 +464,16 @@ object ArtisanPerks {
             NyaAxeService.resetUsed(ctx.player)
         }
 
-        override fun onRespawn(ctx: PerkContext) {
-            if (NyaAxeService.hasUsed(ctx.player)) {
-                PerkEffects.permanentEffect(ctx.player, MobEffects.WEAKNESS, 0)
+        fun refresh(player: ServerPlayer, state: com.randomperks.state.PlayerPerkState) {
+            if (NyaAxeService.hasUsed(player) && !PerkDownsideSuppression.isSuppressed(state, id)) {
+                PerkEffects.permanentEffect(player, MobEffects.WEAKNESS, 0)
+            } else {
+                // 净化了"使用后永久虚弱" (或还没用过斧头): 摘掉我们自己挂的无限虚弱
+                PermanentEffects.removePermanent(player, MobEffects.WEAKNESS, 0)
             }
         }
+
+        override fun onRespawn(ctx: PerkContext) = refresh(ctx.player, ctx.state)
 
         override fun onRemove(ctx: PerkContext) =
             PermanentEffects.removePermanent(ctx.player, MobEffects.WEAKNESS, 0)

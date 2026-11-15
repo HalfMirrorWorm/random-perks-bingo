@@ -2,6 +2,7 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.game.PerkBoostQuery;
+import com.randomperks.game.PerkDownsideSuppression;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,11 +32,19 @@ public class NoSweepMixin {
 
         boolean hasPerk;
         if (self.level().isClientSide()) {
-            hasPerk = ClientPerkFlags.has(VETERAN) || ClientPerkFlags.has(PEARL_GAUNTLET);
+            boolean veteran = ClientPerkFlags.has(VETERAN)
+                && !ClientPerkFlags.isDownsideSuppressed(VETERAN);
+            boolean pearl = ClientPerkFlags.has(PEARL_GAUNTLET)
+                && !ClientPerkFlags.isDownsideSuppressed(PEARL_GAUNTLET);
+            hasPerk = veteran || pearl;
+        } else if (self instanceof ServerPlayer player) {
+            boolean veteran = PerkBoostQuery.INSTANCE.hasOldSchoolCombat(player)
+                && !PerkDownsideSuppression.INSTANCE.isSuppressed(player, VETERAN);
+            boolean pearl = PerkBoostQuery.INSTANCE.hasPearlGauntlet(player)
+                && !PerkDownsideSuppression.INSTANCE.isSuppressed(player, PEARL_GAUNTLET);
+            hasPerk = veteran || pearl;
         } else {
-            hasPerk = self instanceof ServerPlayer player
-                && (PerkBoostQuery.INSTANCE.hasOldSchoolCombat(player)
-                || PerkBoostQuery.INSTANCE.hasPearlGauntlet(player));
+            hasPerk = false;
         }
         if (hasPerk) {
             cir.setReturnValue(false);

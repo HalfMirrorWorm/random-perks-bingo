@@ -1,9 +1,12 @@
 package com.randomperks.perk.content
 
 import com.randomperks.game.PerkApplicationHistory
+import com.randomperks.game.PerkDownsideSuppression
+import com.randomperks.game.PerkDownsides
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkRefreshCharges
 import com.randomperks.network.PerkNetworking
+import com.randomperks.network.PerkOptionData
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
@@ -21,8 +24,8 @@ import net.minecraft.world.item.Items
  * 特质 (灰): 只能通过"特质选择"获得的特殊词条。
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
- * 13 条中 `trait_01` 是「回放」, `trait_02` 是「专精」, `trait_03` 是「刷新」,
- * 其余 10 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
+ * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化,
+ * 其余 9 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
  */
 object TraitPerks {
 
@@ -33,7 +36,8 @@ object TraitPerks {
         add(Replay)
         add(ArchetypeBias)
         add(Refresh)
-        for (i in 4..COUNT) add(Trait(i))
+        add(Cleanse)
+        for (i in 5..COUNT) add(Trait(i))
     }
 
     /**
@@ -131,6 +135,69 @@ object TraitPerks {
 
         override fun onRemove(ctx: PerkContext) {
             PerkRefreshCharges.clear(ctx.state)
+        }
+    }
+
+    /**
+     * 净化: 选择一个自己已拥有的词条, 使其**自身的负面效果**无效。
+     *
+     * <p>可选择范围见 [PerkDownsideSuppression.ELIGIBLE]:
+     * 喵人斧的永久虚弱、开摆的失明/缓慢、老矿工/贪吃蛇的挖掘减速、
+     * 珠光护手/老玩家的不能横扫、古拉鲨鱼的陆地不能疾跑。
+     * 选择器可以 Esc 关掉, 之后在 V 界面点击特质重新打开。
+     */
+    object Cleanse : PerkDefinition {
+        override val id = "trait_04"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override val isOneTime = true
+        override fun icon(): ItemStack = ItemStack(Items.MILK_BUCKET)
+
+        override fun onAcquire(ctx: PerkContext) = openPicker(ctx.player)
+
+        override fun onActivate(ctx: PerkContext) = openPicker(ctx.player)
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkDownsideSuppression.clear(ctx.state)
+            PerkDownsides.refresh(ctx.player, ctx.state)
+        }
+
+        private fun openPicker(player: ServerPlayer) {
+            val state = PerkStateManager.get(player.uuid) ?: return
+            val options = PerkDownsideSuppression.eligibleOwned(state)
+            if (options.isEmpty()) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.downside_none"),
+                    true,
+                )
+                return
+            }
+            PerkNetworking.sendDownsideOpen(
+                player,
+                options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
+            )
+        }
+
+        /** 客户端选择了要净化的词条 id */
+        fun handlePick(player: ServerPlayer, perkId: String) {
+            val state = PerkStateManager.get(player.uuid) ?: return
+            val perk = state.ownedPerks.firstOrNull { it.id == id } ?: return
+            if (state.usesRemaining(perk) <= 0) return
+            if (perkId !in PerkDownsideSuppression.ELIGIBLE) return
+            if (!state.hasPerk(perkId)) return
+
+            PerkDownsideSuppression.set(state, perkId)
+            state.consumeUse(perk)
+            PerkDownsides.refresh(player, state)
+            PerkGrantService.notifyPerkListChanged(player)
+            PerkGrantService.syncAbilities(player)
+            player.sendSystemMessage(
+                Component.translatable(
+                    "random-perks-bingo.message.downside_suppressed",
+                    Component.translatable("random-perks-bingo.perk.$perkId.name"),
+                ),
+                false,
+            )
         }
     }
 

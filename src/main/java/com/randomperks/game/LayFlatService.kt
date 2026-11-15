@@ -1,6 +1,7 @@
 package com.randomperks.game
 
 import com.randomperks.effect.PerkEffects
+import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
@@ -27,6 +28,8 @@ import java.util.UUID
  * 石斧在**重生时**发而不是死亡瞬间发 —— 死亡瞬间给的东西会随着背包一起掉在死亡点。
  */
 object LayFlatService {
+
+    const val PERK_ID = "seeker_lay_flat"
 
     /** 折磨时长: 5 分钟 */
     private const val DURATION_TICKS = 5 * 60 * 20
@@ -90,8 +93,24 @@ object LayFlatService {
         val server = player.level().getServer()
         active[player.uuid] = server.tickCount.toLong() + DURATION_TICKS
 
+        if (PerkDownsideSuppression.isSuppressed(player, PERK_ID)) return
         player.addEffect(MobEffectInstance(MobEffects.BLINDNESS, DURATION_TICKS, 0))
         player.addEffect(MobEffectInstance(MobEffects.SLOWNESS, DURATION_TICKS, SLOWNESS_AMPLIFIER))
+    }
+
+    /** "净化"选中/取消选中开摆时, 立刻补上或摘掉失明/缓慢; 计时与罗盘奖励不受影响 */
+    fun refreshSuppression(player: ServerPlayer) {
+        val state = PerkStateManager.get(player.uuid) ?: return
+        if (PerkDownsideSuppression.isSuppressed(state, PERK_ID)) {
+            player.removeEffect(MobEffects.BLINDNESS)
+            player.removeEffect(MobEffects.SLOWNESS)
+            return
+        }
+
+        val end = active[player.uuid] ?: return
+        val remaining = (end - player.level().getServer().tickCount).toInt().coerceAtLeast(1)
+        player.addEffect(MobEffectInstance(MobEffects.BLINDNESS, remaining, 0))
+        player.addEffect(MobEffectInstance(MobEffects.SLOWNESS, remaining, SLOWNESS_AMPLIFIER))
     }
 
     /** 对局结束 / 重置时清理 */

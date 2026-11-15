@@ -12,6 +12,7 @@ import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
 import com.randomperks.client.screen.TraitChoiceScreen
 import com.randomperks.client.screen.ArchetypePickScreen
+import com.randomperks.client.screen.DownsidePickScreen
 import com.randomperks.client.screen.StealScreen
 import com.randomperks.client.screen.TargetPickScreen
 import com.randomperks.client.screen.LastGameRecapScreen
@@ -38,6 +39,8 @@ import com.randomperks.network.TraitOfferS2C
 import com.randomperks.network.TraitPickC2S
 import com.randomperks.network.ArchetypePickS2C
 import com.randomperks.network.ArchetypePickC2S
+import com.randomperks.network.DownsideOpenS2C
+import com.randomperks.network.DownsidePickC2S
 import com.randomperks.network.ActionTargetPickC2S
 import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.BigSnowballS2C
@@ -117,6 +120,12 @@ object ClientPerkNetworking {
             }
         }
 
+        ClientPlayNetworking.registerGlobalReceiver(DownsideOpenS2C.ID) { payload, context ->
+            context.client().execute {
+                context.client().gui.setScreen(DownsidePickScreen(payload.options))
+            }
+        }
+
         ClientPlayNetworking.registerGlobalReceiver(PerkListS2C.ID) { payload, context ->
             context.client().execute {
                 context.client().gui.setScreen(PerkListScreen(payload.pendingCount, payload.players))
@@ -134,6 +143,7 @@ object ClientPerkNetworking {
                 ownedPerkIds = payload.perkIds.toSet()
                 // 同步给 main 源集的镜像 —— mixin 那边引用不到 client 源集的类
                 ClientPerkFlags.ownedPerkIds = ownedPerkIds
+                ClientPerkFlags.suppressedDownside = payload.suppressedDownside
                 // 词条增删会改变疾跑加成的归属: 正在疾跑时立刻按新列表重算,
                 // 否则"获得时已在疾跑"要松开再按、"移除时还在疾跑"会一直留着
                 context.client().player?.let { WindStrideClient.refresh(it) }
@@ -364,6 +374,12 @@ object ClientPerkNetworking {
     fun pickArchetype(ordinal: Int) {
         if (!ClientPlayNetworking.canSend(ArchetypePickC2S.ID)) return
         ClientPlayNetworking.send(ArchetypePickC2S(ordinal))
+    }
+
+    /** 提交"净化"选择的词条 */
+    fun pickDownside(perkId: String) {
+        if (!ClientPlayNetworking.canSend(DownsidePickC2S.ID)) return
+        ClientPlayNetworking.send(DownsidePickC2S(perkId))
     }
 
     /** 界面被关闭 (未选择) */

@@ -43,6 +43,9 @@ object NyaAxeService {
     /** 斧头真正命中目标、消耗耐久后调用 */
     fun onUsed(player: ServerPlayer) {
         PerkStateManager.get(player.uuid)?.memory?.put(USED_MEMORY_KEY, "1")
-        PerkEffects.permanentEffect(player, MobEffects.WEAKNESS, 0)
+        // "净化"屏蔽了永久虚弱时不再施加
+        if (!PerkDownsideSuppression.isSuppressed(player, "artisan_nya_axe")) {
+            PerkEffects.permanentEffect(player, MobEffects.WEAKNESS, 0)
+        }
     }
 }

@@ -14,6 +14,13 @@ object ClientPerkFlags {
     @JvmField
     var ownedPerkIds: Set<String> = emptySet()
 
+    /** 被"净化"屏蔽了负面效果的词条 id (空串 = 没有) */
+    @JvmField
+    var suppressedDownside: String = ""
+
     @JvmStatic
     fun has(id: String): Boolean = id in ownedPerkIds
+
+    @JvmStatic
+    fun isDownsideSuppressed(id: String): Boolean = suppressedDownside == id
 }

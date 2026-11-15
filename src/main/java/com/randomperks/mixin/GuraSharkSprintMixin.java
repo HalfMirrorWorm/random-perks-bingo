@@ -2,6 +2,7 @@ package com.randomperks.mixin;
 
 import com.randomperks.game.ClientPerkFlags;
 import com.randomperks.game.PerkBoostQuery;
+import com.randomperks.game.PerkDownsideSuppression;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -40,10 +41,12 @@ public class GuraSharkSprintMixin {
 
         boolean hasPerk;
         if (player.level().isClientSide()) {
-            hasPerk = ClientPerkFlags.has(PERK_ID);
+            hasPerk = ClientPerkFlags.has(PERK_ID)
+                && !ClientPerkFlags.isDownsideSuppressed(PERK_ID);
         } else {
             hasPerk = player instanceof ServerPlayer serverPlayer
-                && PerkBoostQuery.INSTANCE.hasGuraShark(serverPlayer);
+                && PerkBoostQuery.INSTANCE.hasGuraShark(serverPlayer)
+                && !PerkDownsideSuppression.INSTANCE.isSuppressed(serverPlayer, PERK_ID);
         }
         if (hasPerk) ci.cancel();
     }

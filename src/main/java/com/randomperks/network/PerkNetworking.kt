@@ -29,6 +29,7 @@ object PerkNetworking {
         PayloadTypeRegistry.clientboundPlay().register(PerkOfferS2C.ID, PerkOfferS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(TraitOfferS2C.ID, TraitOfferS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(ArchetypePickS2C.ID, ArchetypePickS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(DownsideOpenS2C.ID, DownsideOpenS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkListS2C.ID, PerkListS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkCatalogS2C.ID, PerkCatalogS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkAbilitySyncS2C.ID, PerkAbilitySyncS2C.CODEC)
@@ -39,6 +40,7 @@ object PerkNetworking {
         PayloadTypeRegistry.serverboundPlay().register(PerkRefreshC2S.ID, PerkRefreshC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(TraitPickC2S.ID, TraitPickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(ArchetypePickC2S.ID, ArchetypePickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(DownsidePickC2S.ID, DownsidePickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkActivateC2S.ID, PerkActivateC2S.CODEC)
@@ -99,6 +101,14 @@ object PerkNetworking {
             val ordinal = payload.archetypeOrdinal
             context.server().execute {
                 com.randomperks.perk.content.TraitPerks.ArchetypeBias.handlePick(player, ordinal)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(DownsidePickC2S.ID) { payload, context ->
+            val player = context.player()
+            val perkId = payload.perkId
+            context.server().execute {
+                com.randomperks.perk.content.TraitPerks.Cleanse.handlePick(player, perkId)
             }
         }
 
@@ -237,6 +247,13 @@ object PerkNetworking {
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send archetype picker: {}", it.toString()) }
     }
 
+    /** 打开"净化"的已拥有词条选择器 */
+    fun sendDownsideOpen(player: ServerPlayer, options: List<PerkOptionData>) {
+        if (!ServerPlayNetworking.canSend(player, DownsideOpenS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, DownsideOpenS2C(options)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send downside picker: {}", it.toString()) }
+    }
+
     /** 下发所有在线玩家的词条列表 */
     fun sendPerkList(player: ServerPlayer, pendingCount: Int, players: List<PlayerPerkList>) {
         if (!ServerPlayNetworking.canSend(player, PerkListS2C.ID)) return
@@ -252,9 +269,9 @@ object PerkNetworking {
     }
 
     /** 同步玩家的词条能力列表 (客户端用于启用矿透/偷窃等能力) */
-    fun sendAbilitySync(player: ServerPlayer, perkIds: List<String>) {
+    fun sendAbilitySync(player: ServerPlayer, perkIds: List<String>, suppressedDownside: String = "") {
         if (!ServerPlayNetworking.canSend(player, PerkAbilitySyncS2C.ID)) return
-        runCatching { ServerPlayNetworking.send(player, PerkAbilitySyncS2C(perkIds)) }
+        runCatching { ServerPlayNetworking.send(player, PerkAbilitySyncS2C(perkIds, suppressedDownside)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send ability sync: {}", it.toString()) }
     }
 

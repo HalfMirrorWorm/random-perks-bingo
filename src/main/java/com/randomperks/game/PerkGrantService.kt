@@ -178,7 +178,11 @@ object PerkGrantService {
     /** 把玩家的词条能力列表同步给其客户端 (矿透渲染/偷窃按键等客户端能力依赖它) */
     fun syncAbilities(player: ServerPlayer) {
         val state = PerkStateManager.getOrCreate(player.uuid)
-        PerkNetworking.sendAbilitySync(player, state.ownedPerks.map { it.id })
+        PerkNetworking.sendAbilitySync(
+            player,
+            state.ownedPerks.map { it.id },
+            com.randomperks.game.PerkDownsideSuppression.suppressedFor(state) ?: "",
+        )
     }
 
     /** 词条列表变化后调用: 让已拥有的词条即时重算联动效果 (替代定时轮询) */

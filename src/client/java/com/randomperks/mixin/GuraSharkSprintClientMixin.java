@@ -26,6 +26,7 @@ public class GuraSharkSprintClientMixin {
         if (!player.isSprinting()) return;
         if (player.isInWater() || player.getAbilities().flying) return;
         if (!ClientPerkFlags.has(PERK_ID)) return;
+        if (ClientPerkFlags.isDownsideSuppressed(PERK_ID)) return;
         player.setSprinting(false);
     }
 }

@@ -1,6 +1,7 @@
 package com.randomperks.effect
 
 import com.randomperks.game.NyaAxeService
+import com.randomperks.game.PerkDownsideSuppression
 import com.randomperks.state.PerkStateManager
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.effect.MobEffectInstance
@@ -60,6 +61,7 @@ object PermanentEffects {
     private fun applyIfOwned(player: ServerPlayer, entry: Entry) {
         if (!player.isAlive) return
         if (PerkStateManager.get(player.uuid)?.hasPerk(entry.perkId) != true) return
+        if (PerkDownsideSuppression.isSuppressed(player, entry.perkId)) return
         if (!entry.condition(player)) return
         PerkEffects.permanentEffect(player, entry.effect, entry.amplifier)
     }

@@ -164,6 +164,32 @@ class ArchetypePickC2S(val archetypeOrdinal: Int) : CustomPacketPayload {
     override fun type() = ID
 }
 
+/** S2C: 打开"净化"的已拥有词条选择器 */
+class DownsideOpenS2C(val options: List<PerkOptionData>) : CustomPacketPayload {
+    companion object {
+        val ID = CustomPacketPayload.Type<DownsideOpenS2C>(Identifier.fromNamespaceAndPath("random-perks-bingo", "downside_open"))
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, DownsideOpenS2C> = StreamCodec.ofMember(
+            { value, buf -> writeCards(buf, value.options) },
+            { buf -> DownsideOpenS2C(readCards(buf)) },
+        )
+    }
+
+    override fun type() = ID
+}
+
+/** C2S: 净化选择的词条 id */
+class DownsidePickC2S(val perkId: String) : CustomPacketPayload {
+    companion object {
+        val ID = CustomPacketPayload.Type<DownsidePickC2S>(Identifier.fromNamespaceAndPath("random-perks-bingo", "downside_pick"))
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, DownsidePickC2S> = StreamCodec.ofMember(
+            { value, buf -> buf.writeUtf(value.perkId) },
+            { buf -> DownsidePickC2S(buf.readUtf()) },
+        )
+    }
+
+    override fun type() = ID
+}
+
 /** C2S: 玩家请求查看已获得的词条列表 */
 class PerkListRequestC2S : CustomPacketPayload {
     companion object {
@@ -295,19 +321,24 @@ class GlowMarkS2C(
 }
 
 /** S2C: 同步玩家当前拥有的词条 id 列表 (客户端据此启用能力: 矿透渲染 / 偷窃按键等) */
-class PerkAbilitySyncS2C(val perkIds: List<String>) : CustomPacketPayload {
+class PerkAbilitySyncS2C(
+    val perkIds: List<String>,
+    /** "净化"抑制了负面效果的词条 id (空串 = 没有) */
+    val suppressedDownside: String = "",
+) : CustomPacketPayload {
     companion object {
         val ID = CustomPacketPayload.Type<PerkAbilitySyncS2C>(Identifier.fromNamespaceAndPath("random-perks-bingo", "ability_sync"))
         val CODEC: StreamCodec<RegistryFriendlyByteBuf, PerkAbilitySyncS2C> = StreamCodec.ofMember(
             { value, buf ->
                 buf.writeVarInt(value.perkIds.size)
                 for (id in value.perkIds) buf.writeUtf(id)
+                buf.writeUtf(value.suppressedDownside)
             },
             { buf ->
                 val size = buf.readVarInt()
                 val list = ArrayList<String>(size)
                 repeat(size) { list.add(buf.readUtf()) }
-                PerkAbilitySyncS2C(list)
+                PerkAbilitySyncS2C(list, buf.readUtf())
             },
         )
     }
