@@ -232,11 +232,15 @@ object XrayRenderer {
         val ny = end[1] - start[1]
         val nz = end[2] - start[2]
 
+        // 26.3 的 LINES 管线格式是 POSITION_COLOR_NORMAL_LINE_WIDTH,
+        // 每个顶点都必须补上 LineWidth, 否则 BufferBuilder 会抛 Missing elements in vertex
         buffer.addVertex(cx + (start[0] - 0.5f), cy + (start[1] - 0.5f), cz + (start[2] - 0.5f))
             .setColor(r, g, b, 255)
             .setNormal(nx, ny, nz)
+            .setLineWidth(1.0f)
         buffer.addVertex(cx + (end[0] - 0.5f), cy + (end[1] - 0.5f), cz + (end[2] - 0.5f))
             .setColor(r, g, b, 255)
             .setNormal(nx, ny, nz)
+            .setLineWidth(1.0f)
     }
 }
