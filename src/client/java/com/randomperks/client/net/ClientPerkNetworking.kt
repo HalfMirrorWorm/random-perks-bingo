@@ -32,6 +32,7 @@ import com.randomperks.network.PerkNotifyS2C
 import com.randomperks.network.PerkOfferS2C
 import com.randomperks.network.PerkOptionData
 import com.randomperks.network.PerkPickC2S
+import com.randomperks.network.PerkRefreshC2S
 import com.randomperks.network.PerkRequestC2S
 import com.randomperks.network.TraitOfferS2C
 import com.randomperks.network.TraitPickC2S
@@ -100,7 +101,7 @@ object ClientPerkNetworking {
         ClientPlayNetworking.registerGlobalReceiver(PerkOfferS2C.ID) { payload, context ->
             context.client().execute {
                 currentOptions = payload.options
-                context.client().gui.setScreen(PerkChoiceScreen(payload.options))
+                context.client().gui.setScreen(PerkChoiceScreen(payload.options, payload.refreshCharges))
             }
         }
 
@@ -351,6 +352,12 @@ object ClientPerkNetworking {
     fun pickTrait(perkId: String) {
         if (!ClientPlayNetworking.canSend(TraitPickC2S.ID)) return
         ClientPlayNetworking.send(TraitPickC2S(perkId))
+    }
+
+    /** 使用一次词条刷新机会 */
+    fun refreshOffer() {
+        if (!ClientPlayNetworking.canSend(PerkRefreshC2S.ID)) return
+        ClientPlayNetworking.send(PerkRefreshC2S())
     }
 
     /** 提交"专精"选择的流派 */

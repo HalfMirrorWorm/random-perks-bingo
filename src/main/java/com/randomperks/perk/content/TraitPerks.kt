@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkGrantService
+import com.randomperks.game.PerkRefreshCharges
 import com.randomperks.network.PerkNetworking
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
@@ -20,8 +21,8 @@ import net.minecraft.world.item.Items
  * 特质 (灰): 只能通过"特质选择"获得的特殊词条。
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
- * 13 条中 `trait_01` 是「回放」, `trait_02` 是「专精」, 其余 11 条仍是预留占位
- * (名称/描述在语言文件里, 效果待填充)。
+ * 13 条中 `trait_01` 是「回放」, `trait_02` 是「专精」, `trait_03` 是「刷新」,
+ * 其余 10 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
  */
 object TraitPerks {
 
@@ -31,7 +32,8 @@ object TraitPerks {
     val ALL: List<PerkDefinition> = buildList {
         add(Replay)
         add(ArchetypeBias)
-        for (i in 3..COUNT) add(Trait(i))
+        add(Refresh)
+        for (i in 4..COUNT) add(Trait(i))
     }
 
     /**
@@ -111,6 +113,24 @@ object TraitPerks {
                 ),
                 false,
             )
+        }
+    }
+
+    /**
+     * 刷新: 获得 5 次词条刷新机会; 在普通三选一界面点击刷新, 重新抽取当前候选。
+     */
+    object Refresh : PerkDefinition {
+        override val id = "trait_03"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override fun icon(): ItemStack = ItemStack(Items.CLOCK)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkRefreshCharges.grant(ctx.state)
+        }
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkRefreshCharges.clear(ctx.state)
         }
     }
 

@@ -4,6 +4,7 @@ import com.randomperks.RandomPerksMod
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkOfferService
+import com.randomperks.game.PerkRefreshService
 import com.randomperks.game.StealService
 import com.randomperks.game.WeatherService
 import com.randomperks.perk.content.ArtisanPerks
@@ -35,6 +36,7 @@ object PerkNetworking {
         PayloadTypeRegistry.clientboundPlay().register(WaterBucketTotemS2C.ID, WaterBucketTotemS2C.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkRequestC2S.ID, PerkRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(PerkRefreshC2S.ID, PerkRefreshC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(TraitPickC2S.ID, TraitPickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(ArchetypePickC2S.ID, ArchetypePickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
@@ -74,6 +76,13 @@ object PerkNetworking {
             val index = payload.index
             context.server().execute {
                 PerkOfferService.handlePick(player, index)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(PerkRefreshC2S.ID) { _, context ->
+            val player = context.player()
+            context.server().execute {
+                PerkRefreshService.handle(player)
             }
         }
 
@@ -207,10 +216,10 @@ object PerkNetworking {
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send notify: {}", it.toString()) }
     }
 
-    /** 下发三选一候选 */
-    fun sendOffer(player: ServerPlayer, options: List<PerkOptionData>) {
+    /** 下发三选一候选 (附带剩余刷新次数) */
+    fun sendOffer(player: ServerPlayer, options: List<PerkOptionData>, refreshCharges: Int = 0) {
         if (!ServerPlayNetworking.canSend(player, PerkOfferS2C.ID)) return
-        runCatching { ServerPlayNetworking.send(player, PerkOfferS2C(options)) }
+        runCatching { ServerPlayNetworking.send(player, PerkOfferS2C(options, refreshCharges)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send offer: {}", it.toString()) }
     }
 

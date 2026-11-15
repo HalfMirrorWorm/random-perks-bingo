@@ -54,13 +54,32 @@ class PerkNotifyS2C(val pendingCount: Int) : CustomPacketPayload {
     override fun type() = ID
 }
 
-/** S2C: 下发一次三选一的候选项 */
-class PerkOfferS2C(val options: List<PerkOptionData>) : CustomPacketPayload {
+/** S2C: 下发一次三选一的候选项 (附带剩余刷新次数) */
+class PerkOfferS2C(
+    val options: List<PerkOptionData>,
+    val refreshCharges: Int = 0,
+) : CustomPacketPayload {
     companion object {
         val ID = CustomPacketPayload.Type<PerkOfferS2C>(Identifier.fromNamespaceAndPath("random-perks-bingo", "perk_offer"))
         val CODEC: StreamCodec<RegistryFriendlyByteBuf, PerkOfferS2C> = StreamCodec.ofMember(
-            { value, buf -> writeCards(buf, value.options) },
-            { buf -> PerkOfferS2C(readCards(buf)) },
+            { value, buf ->
+                writeCards(buf, value.options)
+                buf.writeVarInt(value.refreshCharges)
+            },
+            { buf -> PerkOfferS2C(readCards(buf), buf.readVarInt()) },
+        )
+    }
+
+    override fun type() = ID
+}
+
+/** C2S: 使用一次"刷新"机会, 重新抽取当前三选一 */
+class PerkRefreshC2S : CustomPacketPayload {
+    companion object {
+        val ID = CustomPacketPayload.Type<PerkRefreshC2S>(Identifier.fromNamespaceAndPath("random-perks-bingo", "perk_refresh"))
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, PerkRefreshC2S> = StreamCodec.ofMember(
+            { _, _ -> },
+            { _ -> PerkRefreshC2S() },
         )
     }
 

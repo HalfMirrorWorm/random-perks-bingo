@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component
  */
 class PerkChoiceScreen(
     private val options: List<PerkOptionData>,
+    private val refreshCharges: Int = 0,
 ) : Screen(Component.translatable("random-perks-bingo.screen.choose_perk")) {
 
     private companion object {
@@ -25,10 +26,17 @@ class PerkChoiceScreen(
     private var cardY = 0
     private var hovered = -1
 
+    private val refreshButtonWidth = 120
+    private val refreshButtonHeight = 20
+    private var refreshButtonX = 0
+    private var refreshButtonY = 0
+
     override fun init() {
         val total = options.size * cardWidth + (options.size - 1) * gap
         startX = (width - total) / 2
         cardY = (height - cardHeight) / 2 + 10
+        refreshButtonX = (width - refreshButtonWidth) / 2
+        refreshButtonY = (cardY + cardHeight + 14).coerceAtMost(height - refreshButtonHeight - 6)
     }
 
     private fun cardX(index: Int) = startX + index * (cardWidth + gap)
@@ -64,6 +72,27 @@ class PerkChoiceScreen(
             val y = cardY
             if (mouseX in x..(x + cardWidth) && mouseY in y..(y + cardHeight)) hovered = index
             drawCard(context, option, x, y, hovered == index)
+        }
+
+        if (refreshCharges > 0) {
+            val hover = mouseX in refreshButtonX..(refreshButtonX + refreshButtonWidth) &&
+                mouseY in refreshButtonY..(refreshButtonY + refreshButtonHeight)
+            context.fill(
+                refreshButtonX, refreshButtonY,
+                refreshButtonX + refreshButtonWidth, refreshButtonY + refreshButtonHeight,
+                if (hover) ScreenStyle.CARD_BG_HOVER else ScreenStyle.CARD_BG,
+            )
+            val border = if (hover) ScreenStyle.BORDER_HOVER else ScreenStyle.TEXT_DIM
+            context.fill(refreshButtonX, refreshButtonY, refreshButtonX + refreshButtonWidth, refreshButtonY + 1, border)
+            context.fill(refreshButtonX, refreshButtonY + refreshButtonHeight - 1, refreshButtonX + refreshButtonWidth, refreshButtonY + refreshButtonHeight, border)
+            context.fill(refreshButtonX, refreshButtonY, refreshButtonX + 1, refreshButtonY + refreshButtonHeight, border)
+            context.fill(refreshButtonX + refreshButtonWidth - 1, refreshButtonY, refreshButtonX + refreshButtonWidth, refreshButtonY + refreshButtonHeight, border)
+            context.centeredText(
+                font,
+                Component.translatable("random-perks-bingo.screen.refresh", refreshCharges),
+                refreshButtonX + refreshButtonWidth / 2, refreshButtonY + 6,
+                if (hover) ScreenStyle.TEXT_NAME else ScreenStyle.TEXT_DESC,
+            )
         }
 
         super.extractRenderState(context, mouseX, mouseY, delta)
@@ -131,6 +160,17 @@ class PerkChoiceScreen(
         val mouseX = event.x()
         val mouseY = event.y()
         val button = event.button()
+
+        if (button == 1 && refreshCharges > 0 &&
+            mouseX >= refreshButtonX && mouseX <= refreshButtonX + refreshButtonWidth &&
+            mouseY >= refreshButtonY && mouseY <= refreshButtonY + refreshButtonHeight
+        ) {
+            ClientPerkNetworking.refreshOffer()
+            // 立刻关掉旧界面, 等服务端的新候选重新打开; 避免旧卡牌在新候选到达前被点击
+            onClose()
+            return true
+        }
+
         val index = cardAt(mouseX, mouseY)
         if (button == 1 && index in options.indices) {
             ClientPerkNetworking.pick(index)
