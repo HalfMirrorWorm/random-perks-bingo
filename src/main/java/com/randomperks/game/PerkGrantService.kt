@@ -6,6 +6,7 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.content.TraitPerks
 import com.randomperks.roll.PerkRollService
 import com.randomperks.server.ServerHolder
+import com.randomperks.state.ChoiceKind
 import com.randomperks.state.PerkStateManager
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
@@ -52,7 +53,7 @@ object PerkGrantService {
     /**
      * 团队完成了 [lineCount] 条新连线: 每位在线队员获得对应次数的**特质选择**机会。
      * 连线不再发普通词条机会; 同一格的普通词条机会仍由 [onTeamScored] 发放,
-     * 客户端会先处理普通词条机会, 再处理特质机会。
+     * 两类机会按获得顺序进入同一条队列。
      */
     fun onTeamLines(memberUuids: List<UUID>, lineCount: Int) {
         if (lineCount <= 0) return
@@ -90,6 +91,7 @@ object PerkGrantService {
                 if (offer.isEmpty()) break
 
                 state.pendingOffers.add(offer)
+                state.pendingOrder.add(ChoiceKind.PERK)
                 com.randomperks.stats.PerkStatsService.recordOffered(offer)
                 added++
             }
@@ -120,7 +122,7 @@ object PerkGrantService {
             val grant = minOf(count, remaining)
             if (grant <= 0) continue
 
-            state.pendingTraitChoices += grant
+            repeat(grant) { state.pendingOrder.add(ChoiceKind.TRAIT) }
             notifyChoices(player)
             anyGranted = true
         }
@@ -129,22 +131,23 @@ object PerkGrantService {
     }
 
     /**
-     * 开局: 先发一次特质选择机会; 选完特质后再补发开局的普通词条机会
-     * (见 [PerkOfferService.handleTraitPick])。特质池没有剩余时直接发普通机会。
+     * 开局: 按获得顺序先放一次特质选择, 紧接着放开局的普通词条机会。
+     * 队列是 [TRAIT, PERK], 所以玩家先选特质, 再选开局词条。
+     * 特质池没有剩余时只放普通机会。
      */
     fun grantStartingTrait(players: List<ServerPlayer>): Boolean {
         var anyGranted = false
         for (player in players) {
             val state = PerkStateManager.getOrCreate(player.uuid)
-            if (TraitPerks.available(state).isEmpty()) {
-                if (grantOffer(listOf(player), 1)) anyGranted = true
-                continue
+            if (TraitPerks.available(state).isNotEmpty()) {
+                state.pendingOrder.add(ChoiceKind.TRAIT)
             }
-
-            state.pendingStartTrait = true
-            state.pendingTraitChoices += 1
-            notifyChoices(player)
-            anyGranted = true
+            // 普通开局机会紧跟在开局特质之后 (按获得顺序)
+            if (grantOffer(listOf(player), 1)) anyGranted = true
+            else if (state.nextChoiceKind() == ChoiceKind.TRAIT) {
+                notifyChoices(player)
+                anyGranted = true
+            }
         }
         return anyGranted
     }
@@ -159,6 +162,7 @@ object PerkGrantService {
             ).map { it.id }
             if (offer.isNotEmpty()) {
                 state.pendingOffers.add(offer)
+                state.pendingOrder.add(ChoiceKind.PERK)
                 com.randomperks.stats.PerkStatsService.recordOffered(offer)
             }
         }
@@ -194,7 +198,7 @@ object PerkGrantService {
         if (pending <= 0) return
 
         val state = PerkStateManager.get(player.uuid)
-        val key = if (state != null && state.pendingOffers.isEmpty() && state.pendingTraitChoices > 0) {
+        val key = if (state != null && state.nextChoiceKind() == ChoiceKind.TRAIT) {
             "random-perks-bingo.message.gained_trait_choice"
         } else {
             "random-perks-bingo.message.gained_choice"

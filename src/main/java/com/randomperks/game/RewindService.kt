@@ -154,8 +154,7 @@ object RewindService {
     private class PerkSnapshot(
         val uuid: UUID,
         val pendingOffers: List<List<String>>,
-        val pendingTraitChoices: Int,
-        val pendingStartTrait: Boolean,
+        val pendingOrder: List<com.randomperks.state.ChoiceKind>,
         val owned: List<String>,
         val used: Set<String>,
         val useCounts: Map<String, Int>,
@@ -442,8 +441,7 @@ object RewindService {
         PerkSnapshot(
             uuid = state.uuid,
             pendingOffers = state.pendingOffers.map { it.toList() },
-            pendingTraitChoices = state.pendingTraitChoices,
-            pendingStartTrait = state.pendingStartTrait,
+            pendingOrder = state.pendingOrder.toList(),
             owned = state.ownedPerks.map { it.id },
             used = state.usedPerks.toSet(),
             useCounts = state.useCounts.toMap(),
@@ -764,17 +762,15 @@ object RewindService {
         for (entry in snap.perks) {
             val state = PerkStateManager.getOrCreate(entry.uuid)
             state.pendingOffers.clear()
+            state.pendingOrder.clear()
             state.ownedPerks.clear()
             state.usedPerks.clear()
             state.useCounts.clear()
             state.cooldowns.clear()
             state.memory.clear()
-            state.pendingTraitChoices = 0
-            state.pendingStartTrait = false
 
             state.pendingOffers.addAll(entry.pendingOffers.map { it.toList() })
-            state.pendingTraitChoices = entry.pendingTraitChoices
-            state.pendingStartTrait = entry.pendingStartTrait
+            state.pendingOrder.addAll(entry.pendingOrder)
             state.ownedPerks.addAll(entry.owned.mapNotNull { PerkRegistry.byId(it) })
             state.usedPerks.addAll(entry.used)
             state.useCounts.putAll(entry.useCounts)

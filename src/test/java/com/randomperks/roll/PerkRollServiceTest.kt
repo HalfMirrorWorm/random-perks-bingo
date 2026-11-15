@@ -4,6 +4,7 @@ import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
+import com.randomperks.state.ChoiceKind
 import com.randomperks.state.PlayerPerkState
 import net.minecraft.world.item.ItemStack
 import java.util.UUID
@@ -133,6 +134,7 @@ class PerkRollServiceTest {
             }
             seen.addAll(offer)
             state.pendingOffers.add(offer)
+            state.pendingOrder.add(ChoiceKind.PERK)
         }
 
         // 池子已被队列耗尽 -> 无法再发放
@@ -144,6 +146,7 @@ class PerkRollServiceTest {
         val state = newState()
         state.ownedPerks.add(BlueA)
         state.pendingOffers.add(listOf("blue_a", "blue_b", "blue_c"))
+        state.pendingOrder.add(ChoiceKind.PERK)
         state.cooldowns["x"] = 1L
 
         state.reset()
@@ -158,7 +161,9 @@ class PerkRollServiceTest {
     fun `consuming an offer keeps the remaining queue in order`() {
         val state = newState()
         state.pendingOffers.add(listOf("a"))
+        state.pendingOrder.add(ChoiceKind.PERK)
         state.pendingOffers.add(listOf("b"))
+        state.pendingOrder.add(ChoiceKind.PERK)
 
         assertEquals(2, state.pendingChoices)
         assertEquals(listOf("a"), state.currentOffer())

@@ -53,7 +53,7 @@ object RandomPerksCommands {
                                 ctx.source.sendSuccess({
                                     Component.literal(
                                         "  ${s.uuid}: owned=${s.ownedPerks.joinToString { it.id }}, " +
-                                            "pending=${s.totalPending} (normal=${s.pendingChoices}, trait=${s.pendingTraitChoices}), current=${s.currentOffer()}"
+                                            "pending=${s.totalPending} (normal=${s.pendingOffers.size}, trait=${s.pendingOrder.count { it == com.randomperks.state.ChoiceKind.TRAIT }}), current=${s.currentOffer()}"
                                     )
                                 }, false)
                             }

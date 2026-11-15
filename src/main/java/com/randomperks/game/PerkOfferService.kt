@@ -10,6 +10,7 @@ import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.content.TraitPerks
 import com.randomperks.roll.PerkRollService
+import com.randomperks.state.ChoiceKind
 import com.randomperks.state.PerkStateManager
 import com.randomperks.state.PlayerPerkState
 import net.minecraft.server.level.ServerPlayer
@@ -24,51 +25,45 @@ import net.minecraft.ChatFormatting
  */
 object PerkOfferService {
 
-    /** 玩家请求打开选择界面 → 普通词条优先; 开局特质在普通机会之前 */
+    /** 玩家请求打开选择界面 → 严格按获得的先后顺序处理队首 */
     fun handleRequest(player: ServerPlayer) {
         val state = PerkStateManager.getOrCreate(player.uuid)
 
-        // 开局: 特质机会必须先于任何普通词条机会
-        if (state.pendingStartTrait && state.pendingTraitChoices > 0) {
-            sendTraitOffer(player, state)
-            return
-        }
-
-        val offer = state.currentOffer()
-        if (offer != null) {
-            val options = offer.mapNotNull { PerkRegistry.byId(it) }
-            if (options.isEmpty()) {
-                // 数据异常: 丢弃该组, 避免卡住队列
-                RandomPerksMod.logger.warn("[RandomPerks] offer for {} contains no valid perks", player.name.string)
-                state.consumeOffer()
+        when (state.nextChoiceKind()) {
+            ChoiceKind.TRAIT -> {
+                sendTraitOffer(player, state)
                 return
             }
+            ChoiceKind.PERK -> {
+                val offer = state.currentOffer()
+                if (offer == null) {
+                    RandomPerksMod.logger.warn("[RandomPerks] pending PERK for {} has no offer", player.name.string)
+                    return
+                }
+                val options = offer.mapNotNull { PerkRegistry.byId(it) }
+                if (options.isEmpty()) {
+                    // 数据异常: 丢弃该组, 避免卡住队列
+                    RandomPerksMod.logger.warn("[RandomPerks] offer for {} contains no valid perks", player.name.string)
+                    state.consumeOffer()
+                    return
+                }
 
-            PerkNetworking.sendOffer(
-                player,
-                options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
-            )
-            return
+                PerkNetworking.sendOffer(
+                    player,
+                    options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
+                )
+                return
+            }
+            null -> RandomPerksMod.logger.info("[RandomPerks] {} requested offer but has no pending choices", player.name.string)
         }
-
-        if (state.pendingTraitChoices > 0) {
-            sendTraitOffer(player, state)
-            return
-        }
-
-        RandomPerksMod.logger.info("[RandomPerks] {} requested offer but has no pending choices", player.name.string)
     }
 
     /** 下发剩余特质列表 (每次特质选择都从 13 条里挑一条, 已拥有的不再出现) */
     private fun sendTraitOffer(player: ServerPlayer, state: PlayerPerkState) {
         val options = TraitPerks.available(state)
         if (options.isEmpty()) {
-            // 特质池已经抽完: 消耗掉剩余机会; 开局特质则补发普通机会
-            state.pendingTraitChoices = 0
-            if (state.pendingStartTrait) {
-                state.pendingStartTrait = false
-                PerkGrantService.grantOffer(listOf(player), 1)
-            }
+            // 特质池已经抽完: 丢掉队首连续的特质机会, 继续后面的机会
+            while (state.nextChoiceKind() == ChoiceKind.TRAIT) state.consumeTraitChoice()
             PerkGrantService.notifyChoices(player)
             return
         }
@@ -83,15 +78,13 @@ object PerkOfferService {
     fun handleTraitPick(player: ServerPlayer, perkId: String) {
         if (!PerkSession.isEnabled()) return
         val state = PerkStateManager.getOrCreate(player.uuid)
-        if (state.pendingTraitChoices <= 0) return
-        // 连线特质要等普通词条机会先用完; 开局特质例外 (它本来就在普通机会之前)
-        if (state.pendingOffers.isNotEmpty() && !state.pendingStartTrait) return
+        if (state.nextChoiceKind() != ChoiceKind.TRAIT) return
 
         val perk = PerkRegistry.byId(perkId) ?: return
         if (perk.archetype != PerkArchetype.TRAIT) return
         if (state.hasPerk(perk.id)) return
 
-        state.pendingTraitChoices -= 1
+        state.consumeTraitChoice()
         state.ownedPerks.add(perk)
         com.randomperks.stats.PerkStatsService.recordPicked(perk.id)
         com.randomperks.recap.RecapService.recordPerkPick(player, perk.id)
@@ -106,12 +99,6 @@ object PerkOfferService {
 
         PerkGrantService.notifyChoices(player)
         PerkGrantService.syncAbilities(player)
-
-        // 开局特质选完 → 补发开局的普通词条机会
-        if (state.pendingStartTrait) {
-            state.pendingStartTrait = false
-            PerkGrantService.grantOffer(listOf(player), 1)
-        }
     }
 
     /** 玩家选择了第 index 项 */

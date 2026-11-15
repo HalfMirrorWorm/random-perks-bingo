@@ -167,8 +167,10 @@ object PerkStatePersistence {
             state.usedPerks.forEach { used.add(StringTag.valueOf(it)) }
             entry.put("used", used)
 
-            entry.putInt("pendingTraits", state.pendingTraitChoices)
-            entry.putBoolean("pendingStartTrait", state.pendingStartTrait)
+            // 普通机会与特质机会的获得顺序 (PERK 对应 pending 里的第 N 组)
+            val order = ListTag()
+            state.pendingOrder.forEach { order.add(StringTag.valueOf(it.name)) }
+            entry.put("pendingOrder", order)
 
             val useCounts = CompoundTag()
             state.useCounts.forEach { (id, count) -> useCounts.putInt(id, count) }
@@ -278,9 +280,32 @@ object PerkStatePersistence {
                 if (id.isNotEmpty()) state.usedPerks.add(id)
             }
 
-            state.pendingTraitChoices = entry.getIntOr("pendingTraits", 0)
-            state.pendingStartTrait = entry.getBooleanOr("pendingStartTrait", false)
-
+            // 新格式: 按获得顺序保存 PERK/TRAIT; 旧存档没有该字段 → 全是普通机会
+            val order = entry.getListOrEmpty("pendingOrder")
+            if (order.size > 0) {
+                for (j in 0 until order.size) {
+                    runCatching { ChoiceKind.valueOf(order.getStringOr(j, "")) }
+                        .getOrNull()?.let { state.pendingOrder.add(it) }
+                }
+            } else {
+                repeat(state.pendingOffers.size) { state.pendingOrder.add(ChoiceKind.PERK) }
+            }
+            // 上一版临时格式的 pendingTraits: 追加为特质机会
+            repeat(entry.getIntOr("pendingTraits", 0)) { state.pendingOrder.add(ChoiceKind.TRAIT) }
+            // 保证 PERK 数量和 pendingOffers 对齐
+            val perkOrderCount = state.pendingOrder.count { it == ChoiceKind.PERK }
+            if (perkOrderCount < state.pendingOffers.size) {
+                repeat(state.pendingOffers.size - perkOrderCount) { state.pendingOrder.add(ChoiceKind.PERK) }
+            } else if (perkOrderCount > state.pendingOffers.size) {
+                var remove = perkOrderCount - state.pendingOffers.size
+                for (i in state.pendingOrder.indices.reversed()) {
+                    if (remove <= 0) break
+                    if (state.pendingOrder[i] == ChoiceKind.PERK) {
+                        state.pendingOrder.removeAt(i)
+                        remove--
+                    }
+                }
+            }
             val useCounts = entry.getCompoundOrEmpty("useCounts")
             for (key in useCounts.keySet()) {
                 state.useCounts[key] = useCounts.getIntOr(key, 0)
@@ -305,7 +330,7 @@ object PerkStatePersistence {
                 }
             }
 
-            if (state.ownedPerks.isNotEmpty() || state.pendingOffers.isNotEmpty() || state.pendingTraitChoices > 0) {
+            if (state.ownedPerks.isNotEmpty() || state.pendingOrder.isNotEmpty()) {
                 pendingApply.add(uuid)
             }
         }

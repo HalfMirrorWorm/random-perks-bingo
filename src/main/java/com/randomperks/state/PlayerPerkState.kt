@@ -4,6 +4,14 @@ import com.randomperks.perk.PerkDefinition
 import java.util.UUID
 
 /**
+ * 一个待选机会的类型。
+ *
+ * 普通词条机会与特质机会放进同一条**按获得顺序**排列的队列:
+ * 先获得的先选, 不再按"普通优先/特质优先"分类。
+ */
+enum class ChoiceKind { PERK, TRAIT }
+
+/**
  * 单个玩家在"本局"中的词条状态。
  */
 class PlayerPerkState(val uuid: UUID) {
@@ -17,17 +25,20 @@ class PlayerPerkState(val uuid: UUID) {
      */
     val pendingOffers: MutableList<List<String>> = mutableListOf()
 
-    /** 当前累积的待选机会次数 = 队列长度 */
-    val pendingChoices: Int get() = pendingOffers.size
+    /**
+     * 待选机会的**获得顺序**: PERK 对应 [pendingOffers] 的队首, TRAIT 对应一次特质选择。
+     * 普通机会和特质机会混排, 严格按获得先后处理。
+     */
+    val pendingOrder: MutableList<ChoiceKind> = mutableListOf()
+
+    /** 当前累积的待选机会次数 (普通 + 特质) */
+    val pendingChoices: Int get() = pendingOrder.size
+
+    /** 队首的待选类型 (没有待选时为 null) */
+    fun nextChoiceKind(): ChoiceKind? = pendingOrder.firstOrNull()
 
     /** 已获得的词条 (本局内不可重复; 局内**不会**被移出) */
     val ownedPerks: MutableList<PerkDefinition> = mutableListOf()
-
-    /** 待选的特质机会次数 (特质独立于普通词条池, 只从 13 条特质里选) */
-    var pendingTraitChoices: Int = 0
-
-    /** 开局那条特质还没选完: 选完后补发开局的普通词条机会 */
-    var pendingStartTrait: Boolean = false
 
     /**
      * 已经使用过的一次性词条 id。
@@ -75,25 +86,32 @@ class PlayerPerkState(val uuid: UUID) {
 
     fun hasPerk(id: String): Boolean = ownedPerks.any { it.id == id }
 
-    /** 当前应展示的候选 (队列第一个, 未选择前不变) */
-    fun currentOffer(): List<String>? = pendingOffers.firstOrNull()
+    /** 当前应展示的普通候选 (只有队首是 PERK 时才有) */
+    fun currentOffer(): List<String>? =
+        if (pendingOrder.firstOrNull() == ChoiceKind.PERK) pendingOffers.firstOrNull() else null
 
     /** 普通词条 + 特质的总待选数 (给通知/列表显示用) */
-    val totalPending: Int get() = pendingOffers.size + pendingTraitChoices
+    val totalPending: Int get() = pendingOrder.size
 
-    /** 消费最前面的机会 */
+    /** 消费队首的普通机会 */
     fun consumeOffer() {
+        if (pendingOrder.firstOrNull() != ChoiceKind.PERK) return
+        pendingOrder.removeAt(0)
         if (pendingOffers.isNotEmpty()) pendingOffers.removeAt(0)
+    }
+
+    /** 消费队首的特质机会 */
+    fun consumeTraitChoice() {
+        if (pendingOrder.firstOrNull() == ChoiceKind.TRAIT) pendingOrder.removeAt(0)
     }
 
     fun reset() {
         pendingOffers.clear()
+        pendingOrder.clear()
         ownedPerks.clear()
         usedPerks.clear()
         useCounts.clear()
         cooldowns.clear()
         memory.clear()
-        pendingTraitChoices = 0
-        pendingStartTrait = false
     }
 }
