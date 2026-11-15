@@ -25,8 +25,8 @@ import net.minecraft.world.item.Items
  * 特质 (灰): 只能通过"特质选择"获得的特殊词条。
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
- * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄、`trait_06` 精选,
- * 其余 7 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
+ * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄、`trait_06` 精选、
+ * `trait_07` 蔚蓝, 其余 6 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
  */
 object TraitPerks {
 
@@ -40,7 +40,8 @@ object TraitPerks {
         add(Cleanse)
         add(Recharge)
         add(HighRoll)
-        for (i in 7..COUNT) add(Trait(i))
+        add(BlueChoice)
+        for (i in 8..COUNT) add(Trait(i))
     }
 
     /**
@@ -187,6 +188,20 @@ object TraitPerks {
         override fun onRemove(ctx: PerkContext) {
             PerkHighRarityOffer.clearNext(ctx.state)
             PerkHighRarityOffer.clearCurrent(ctx.state)
+        }
+    }
+
+    /**
+     * 蔚蓝: 额外获得一次普通词条选择, 候选全部为蓝色品质。
+     */
+    object BlueChoice : PerkDefinition {
+        override val id = "trait_07"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override fun icon(): ItemStack = ItemStack(Items.LAPIS_LAZULI)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkGrantService.grantBlueChoice(ctx.player)
         }
     }
 

@@ -7,6 +7,7 @@ import com.randomperks.perk.content.TraitPerks
 import com.randomperks.roll.PerkRollService
 import com.randomperks.server.ServerHolder
 import com.randomperks.state.ChoiceKind
+import com.randomperks.state.OfferKind
 import com.randomperks.state.PerkStateManager
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
@@ -91,6 +92,7 @@ object PerkGrantService {
                 if (offer.isEmpty()) break
 
                 state.pendingOffers.add(offer)
+                state.pendingOfferKinds.add(OfferKind.NORMAL)
                 state.pendingOrder.add(ChoiceKind.PERK)
                 com.randomperks.stats.PerkStatsService.recordOffered(offer)
                 added++
@@ -162,11 +164,35 @@ object PerkGrantService {
             ).map { it.id }
             if (offer.isNotEmpty()) {
                 state.pendingOffers.add(offer)
+                state.pendingOfferKinds.add(OfferKind.NORMAL)
                 state.pendingOrder.add(ChoiceKind.PERK)
                 com.randomperks.stats.PerkStatsService.recordOffered(offer)
             }
         }
         notifyChoices(player)
+    }
+
+    /** "蔚蓝"特质: 追加一次只有蓝色品质候选的普通选择机会 */
+    fun grantBlueChoice(player: ServerPlayer): Boolean {
+        val state = PerkStateManager.getOrCreate(player.uuid)
+        val offer = PerkRollService.rollBlueOptions(
+            state,
+            extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
+        ).map { it.id }
+        if (offer.isEmpty()) {
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.blue_offer_empty"),
+                true,
+            )
+            return false
+        }
+
+        state.pendingOffers.add(offer)
+        state.pendingOfferKinds.add(OfferKind.BLUE)
+        state.pendingOrder.add(ChoiceKind.PERK)
+        com.randomperks.stats.PerkStatsService.recordOffered(offer)
+        notifyChoices(player)
+        return true
     }
 
     /** 把普通词条 + 特质的总待选数同步给客户端 */

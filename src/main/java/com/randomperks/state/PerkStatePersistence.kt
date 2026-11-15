@@ -159,6 +159,11 @@ object PerkStatePersistence {
             }
             entry.put("pending", pending)
 
+            // 与 pending 一一对应的候选规则 (NORMAL / BLUE)
+            val offerKinds = ListTag()
+            state.pendingOfferKinds.forEach { offerKinds.add(StringTag.valueOf(it.name)) }
+            entry.put("pendingOfferKinds", offerKinds)
+
             val owned = ListTag()
             state.ownedPerks.forEach { owned.add(StringTag.valueOf(it.id)) }
             entry.put("owned", owned)
@@ -265,6 +270,20 @@ object PerkStatePersistence {
                     if (id.isNotEmpty()) offer.add(id)
                 }
                 if (offer.isNotEmpty()) state.pendingOffers.add(offer)
+            }
+
+            // 候选规则与 pendingOffers 对齐; 旧存档没有该字段 → 全部按普通机会处理
+            val kinds = entry.getListOrEmpty("pendingOfferKinds")
+            for (j in 0 until kinds.size) {
+                val kind = runCatching { OfferKind.valueOf(kinds.getStringOr(j, "")) }
+                    .getOrNull() ?: OfferKind.NORMAL
+                state.pendingOfferKinds.add(kind)
+            }
+            while (state.pendingOfferKinds.size < state.pendingOffers.size) {
+                state.pendingOfferKinds.add(OfferKind.NORMAL)
+            }
+            while (state.pendingOfferKinds.size > state.pendingOffers.size) {
+                state.pendingOfferKinds.removeAt(state.pendingOfferKinds.lastIndex)
             }
 
             val owned = entry.getListOrEmpty("owned")

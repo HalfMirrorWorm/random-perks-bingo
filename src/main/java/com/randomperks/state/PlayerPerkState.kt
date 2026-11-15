@@ -12,6 +12,14 @@ import java.util.UUID
 enum class ChoiceKind { PERK, TRAIT }
 
 /**
+ * 普通词条机会的候选规则。
+ *
+ * - [NORMAL]: 常规三选一, 按品质权重抽取
+ * - [BLUE]: "蔚蓝"特质发放的额外机会, 候选全部为蓝色品质
+ */
+enum class OfferKind { NORMAL, BLUE }
+
+/**
  * 单个玩家在"本局"中的词条状态。
  */
 class PlayerPerkState(val uuid: UUID) {
@@ -24,6 +32,12 @@ class PlayerPerkState(val uuid: UUID) {
      * - 未做出选择前, 反复打开界面看到的始终是同一组 (队列第一个)
      */
     val pendingOffers: MutableList<List<String>> = mutableListOf()
+
+    /**
+     * 与 [pendingOffers] 一一对应的候选规则 (长度保持一致)。
+     * 旧存档没有该字段时按 [OfferKind.NORMAL] 处理。
+     */
+    val pendingOfferKinds: MutableList<OfferKind> = mutableListOf()
 
     /**
      * 待选机会的**获得顺序**: PERK 对应 [pendingOffers] 的队首, TRAIT 对应一次特质选择。
@@ -90,6 +104,14 @@ class PlayerPerkState(val uuid: UUID) {
     fun currentOffer(): List<String>? =
         if (pendingOrder.firstOrNull() == ChoiceKind.PERK) pendingOffers.firstOrNull() else null
 
+    /** 队首普通候选的规则 (没有记录时按普通处理) */
+    fun currentOfferKind(): OfferKind =
+        if (pendingOrder.firstOrNull() == ChoiceKind.PERK) {
+            pendingOfferKinds.firstOrNull() ?: OfferKind.NORMAL
+        } else {
+            OfferKind.NORMAL
+        }
+
     /** 普通词条 + 特质的总待选数 (给通知/列表显示用) */
     val totalPending: Int get() = pendingOrder.size
 
@@ -98,6 +120,7 @@ class PlayerPerkState(val uuid: UUID) {
         if (pendingOrder.firstOrNull() != ChoiceKind.PERK) return
         pendingOrder.removeAt(0)
         if (pendingOffers.isNotEmpty()) pendingOffers.removeAt(0)
+        if (pendingOfferKinds.isNotEmpty()) pendingOfferKinds.removeAt(0)
     }
 
     /** 消费队首的特质机会 */
@@ -107,6 +130,7 @@ class PlayerPerkState(val uuid: UUID) {
 
     fun reset() {
         pendingOffers.clear()
+        pendingOfferKinds.clear()
         pendingOrder.clear()
         ownedPerks.clear()
         usedPerks.clear()

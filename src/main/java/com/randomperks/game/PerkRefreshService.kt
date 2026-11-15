@@ -5,6 +5,7 @@ import com.randomperks.network.PerkOptionData
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.roll.PerkRollService
 import com.randomperks.state.ChoiceKind
+import com.randomperks.state.OfferKind
 import com.randomperks.state.PerkStateManager
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
@@ -13,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer
  * "刷新"特质: 重新抽取当前普通三选一的候选。
  *
  * <p>只替换队首的普通机会, 不消耗选择机会; 已有/待选/全局唯一神话仍会被排除,
- * "专精"的流派保底也会正常参与。
+ * "专精"的流派保底也会正常参与。"蔚蓝"机会刷新后仍然是蓝色候选。
  */
 object PerkRefreshService {
 
@@ -27,20 +28,26 @@ object PerkRefreshService {
         if (state.currentOffer() == null) return
         if (PerkRefreshCharges.charges(state) <= 0) return
 
-        val options = if (PerkHighRarityOffer.isCurrentHigh(state)) {
-            val high = PerkHighRarityOffer.roll(state, PerkStateManager.globallyOwnedMythicIds())
-            if (high.isNotEmpty()) {
-                high
-            } else {
-                // 金/红池也用完了: 这次刷新回退普通池, 并结束精选状态
-                PerkHighRarityOffer.clearCurrent(state)
-                PerkRollService.rollOptions(
-                    state,
-                    extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
-                )
+        val options = when {
+            // "蔚蓝"机会: 重抽时仍然只从蓝色词条里选
+            state.currentOfferKind() == OfferKind.BLUE -> PerkRollService.rollBlueOptions(
+                state,
+                extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
+            )
+            PerkHighRarityOffer.isCurrentHigh(state) -> {
+                val high = PerkHighRarityOffer.roll(state, PerkStateManager.globallyOwnedMythicIds())
+                if (high.isNotEmpty()) {
+                    high
+                } else {
+                    // 金/红池也用完了: 这次刷新回退普通池, 并结束精选状态
+                    PerkHighRarityOffer.clearCurrent(state)
+                    PerkRollService.rollOptions(
+                        state,
+                        extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
+                    )
+                }
             }
-        } else {
-            PerkRollService.rollOptions(
+            else -> PerkRollService.rollOptions(
                 state,
                 extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
             )

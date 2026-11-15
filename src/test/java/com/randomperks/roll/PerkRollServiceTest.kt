@@ -91,6 +91,43 @@ class PerkRollServiceTest {
     }
 
     @Test
+    fun `blue roll only returns blue perks`() {
+        val state = newState()
+        repeat(100) { seed ->
+            val options = PerkRollService.rollBlueOptions(state, 3, Random(seed))
+            assertEquals(3, options.size)
+            assertTrue(
+                options.all { it.rarity == PerkRarity.BLUE },
+                "seed=$seed options=${options.map { it.id }}",
+            )
+        }
+    }
+
+    @Test
+    fun `blue roll excludes owned and pending blue perks`() {
+        val state = newState()
+        state.ownedPerks.add(BlueA)
+        state.pendingOffers.add(listOf(BlueB.id))
+
+        val options = PerkRollService.rollBlueOptions(state, 3, Random(1))
+        assertEquals(setOf(BlueC.id, BlueD.id), options.map { it.id }.toSet())
+    }
+
+    @Test
+    fun `blue roll keeps specialization guarantee inside the blue pool`() {
+        val state = newState()
+        PerkRollBias.set(state, PerkArchetype.SWIFT) // 蓝色池里唯一的 SWIFT 词条是 BlueA
+
+        repeat(100) { seed ->
+            val options = PerkRollService.rollBlueOptions(state, 3, Random(seed))
+            assertTrue(
+                options.any { it.id == BlueA.id },
+                "seed=$seed options=${options.map { it.id }}",
+            )
+        }
+    }
+
+    @Test
     fun `degrades gracefully when pool is smaller than requested`() {
         val state = newState()
         // 只留 2 个可用

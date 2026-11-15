@@ -154,6 +154,7 @@ object RewindService {
     private class PerkSnapshot(
         val uuid: UUID,
         val pendingOffers: List<List<String>>,
+        val pendingOfferKinds: List<com.randomperks.state.OfferKind>,
         val pendingOrder: List<com.randomperks.state.ChoiceKind>,
         val owned: List<String>,
         val used: Set<String>,
@@ -441,6 +442,7 @@ object RewindService {
         PerkSnapshot(
             uuid = state.uuid,
             pendingOffers = state.pendingOffers.map { it.toList() },
+            pendingOfferKinds = state.pendingOfferKinds.toList(),
             pendingOrder = state.pendingOrder.toList(),
             owned = state.ownedPerks.map { it.id },
             used = state.usedPerks.toSet(),
@@ -762,6 +764,7 @@ object RewindService {
         for (entry in snap.perks) {
             val state = PerkStateManager.getOrCreate(entry.uuid)
             state.pendingOffers.clear()
+            state.pendingOfferKinds.clear()
             state.pendingOrder.clear()
             state.ownedPerks.clear()
             state.usedPerks.clear()
@@ -770,6 +773,7 @@ object RewindService {
             state.memory.clear()
 
             state.pendingOffers.addAll(entry.pendingOffers.map { it.toList() })
+            state.pendingOfferKinds.addAll(entry.pendingOfferKinds)
             state.pendingOrder.addAll(entry.pendingOrder)
             state.ownedPerks.addAll(entry.owned.mapNotNull { PerkRegistry.byId(it) })
             state.usedPerks.addAll(entry.used)

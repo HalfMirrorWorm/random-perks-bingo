@@ -39,6 +39,35 @@ object PerkRollService {
         return options
     }
 
+    /**
+     * 抽取一组**只有蓝色品质**的候选 (用于"蔚蓝"特质)。
+     *
+     * <p>同样排除已获得、待选队列和 [extraExcluded]; 蓝色池为空时返回空列表。
+     * "专精"保底在这个蓝色池里继续生效。
+     */
+    fun rollBlueOptions(
+        state: PlayerPerkState,
+        count: Int = 3,
+        random: Random = Random.Default,
+        extraExcluded: Set<String> = emptySet(),
+    ): List<PerkDefinition> {
+        val excluded = state.ownedPerks.mapTo(mutableSetOf()) { it.id }
+        excluded.addAll(extraExcluded)
+        state.pendingOffers.forEach { excluded.addAll(it) }
+
+        val pool = PerkRegistry.all.filter {
+            it.rarity == PerkRarity.BLUE && it.archetype != PerkArchetype.TRAIT && it.id !in excluded
+        }.toMutableList()
+        val options = pool.shuffled(random).take(count).toMutableList()
+
+        val bias = PerkRollBias.bias(state)
+        if (bias != null && options.isNotEmpty() && options.none { it.archetype == bias }) {
+            val replacement = pool.firstOrNull { it.archetype == bias && it !in options }
+            if (replacement != null) options[options.lastIndex] = replacement
+        }
+        return options
+    }
+
     /** 从排除集合之外随机抽一个词条 (用于"神话被抢后刷新选项位"等场景) */
     fun rollSingle(excluded: Set<String>, random: Random = Random.Default): PerkDefinition? =
         rollOptionsExcluding(excluded, 1, random).firstOrNull()

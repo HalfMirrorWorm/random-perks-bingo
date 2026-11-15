@@ -12,6 +12,7 @@ import com.randomperks.perk.content.TraitPerks
 import com.randomperks.roll.PerkRollBias
 import com.randomperks.roll.PerkRollService
 import com.randomperks.state.ChoiceKind
+import com.randomperks.state.OfferKind
 import com.randomperks.state.PerkStateManager
 import com.randomperks.state.PlayerPerkState
 import net.minecraft.server.level.ServerPlayer
@@ -42,8 +43,9 @@ object PerkOfferService {
                     return
                 }
 
-                // "精选": 把队首普通机会换成 3 个金/红候选 (只兑换一次)
-                if (PerkHighRarityOffer.isNextPending(state)) {
+                // "精选": 把队首普通机会换成 3 个金/红候选 (只兑换一次)。
+                // "蔚蓝"机会是固定蓝色候选, 不消耗精选, 精选留给之后的下一次普通机会。
+                if (state.currentOfferKind() == OfferKind.NORMAL && PerkHighRarityOffer.isNextPending(state)) {
                     val high = PerkHighRarityOffer.roll(state, PerkStateManager.globallyOwnedMythicIds())
                     if (high.isNotEmpty()) {
                         state.pendingOffers[0] = high.map { it.id }
