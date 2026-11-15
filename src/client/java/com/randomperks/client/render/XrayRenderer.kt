@@ -2,6 +2,7 @@ package com.randomperks.client.render
 
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
+import com.mojang.renderpearl.api.pipeline.ColorTargetState
 import com.mojang.renderpearl.api.pipeline.CompareOp
 import com.mojang.renderpearl.api.pipeline.DepthStencilState
 import com.mojang.renderpearl.api.pipeline.RenderPipeline
@@ -73,10 +74,14 @@ object XrayRenderer {
 
     /**
      * 穿墙线框: 原版 LINES 管线的副本, 深度测试改为始终通过且不写深度。
+     *
+     * <p>LINES_SNIPPET 本身不含颜色目标, 必须像 RenderPipelines.LINES 一样补上
+     * [ColorTargetState.DEFAULT], 否则绘制时颜色附件数量与渲染通道不一致。
      */
     private val XRAY_LINE_PIPELINE: RenderPipeline = RenderPipelines.register(
         RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation("pipeline/randomperks_xray_ore_lines")
+            .withColorTargetState(ColorTargetState.DEFAULT)
             .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .build(),
     )
