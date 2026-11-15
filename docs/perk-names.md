@@ -216,7 +216,7 @@ id 是机制名，中文名是风味名，排查问题时留意对应关系：
 ## 特质 TRAIT（预留，不参与普通抽取）
 
 共 13 条，稀有度为灰色「特质」；只能通过特质选择获得，不计入流派联动。
-其中 `trait_01`–`trait_07` 已实现，其余 6 条为占位（名称/描述在语言文件里，效果待填充）。
+其中 `trait_01`–`trait_08` 已实现，其余 5 条为占位（名称/描述在语言文件里，效果待填充）。
 
 | id | 中文名 | 英文名 |
 |---|---|---|
@@ -227,7 +227,7 @@ id 是机制名，中文名是风味名，排查问题时留意对应关系：
 | `trait_05` | 再蓄 | Recharge |
 | `trait_06` | 精选 | Handpicked |
 | `trait_07` | 蔚蓝 | Azure |
-| `trait_08` | 预留特质 8 | Reserved Trait 8 |
+| `trait_08` | 天赐 | Windfall |
 | `trait_09` | 预留特质 9 | Reserved Trait 9 |
 | `trait_10` | 预留特质 10 | Reserved Trait 10 |
 | `trait_11` | 预留特质 11 | Reserved Trait 11 |

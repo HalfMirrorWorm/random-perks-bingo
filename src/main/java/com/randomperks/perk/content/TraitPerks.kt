@@ -26,7 +26,7 @@ import net.minecraft.world.item.Items
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
  * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄、`trait_06` 精选、
- * `trait_07` 蔚蓝, 其余 6 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
+ * `trait_07` 蔚蓝、`trait_08` 天赐, 其余 5 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
  */
 object TraitPerks {
 
@@ -41,7 +41,8 @@ object TraitPerks {
         add(Recharge)
         add(HighRoll)
         add(BlueChoice)
-        for (i in 8..COUNT) add(Trait(i))
+        add(Windfall)
+        for (i in 9..COUNT) add(Trait(i))
     }
 
     /**
@@ -202,6 +203,20 @@ object TraitPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             PerkGrantService.grantBlueChoice(ctx.player)
+        }
+    }
+
+    /**
+     * 天赐: 随机获得两个随机词条 (品质按普通抽取权重, 不重复)。
+     */
+    object Windfall : PerkDefinition {
+        override val id = "trait_08"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override fun icon(): ItemStack = ItemStack(Items.CHEST)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkGrantService.grantRandomPerks(ctx.player, 2)
         }
     }
 

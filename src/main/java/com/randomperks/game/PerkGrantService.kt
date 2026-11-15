@@ -3,6 +3,7 @@ package com.randomperks.game
 import com.randomperks.RandomPerksMod
 import com.randomperks.network.PerkNetworking
 import com.randomperks.perk.PerkContext
+import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.content.TraitPerks
 import com.randomperks.roll.PerkRollService
 import com.randomperks.server.ServerHolder
@@ -193,6 +194,54 @@ object PerkGrantService {
         com.randomperks.stats.PerkStatsService.recordOffered(offer)
         notifyChoices(player)
         return true
+    }
+
+    /**
+     * "天赐"特质: 直接随机获得 [count] 个普通词条 (不重复)。
+     *
+     * <p>品质按普通抽取权重, 排除已拥有、待选队列、全局唯一神话和特质;
+     * 不会触发"专精"保底, 因为这不是一个三选一机会。
+     */
+    fun grantRandomPerks(player: ServerPlayer, count: Int): List<PerkDefinition> {
+        if (count <= 0) return emptyList()
+        val state = PerkStateManager.getOrCreate(player.uuid)
+        val excluded = state.ownedPerks.mapTo(mutableSetOf()) { it.id }
+        excluded.addAll(PerkStateManager.globallyOwnedMythicIds())
+        state.pendingOffers.forEach { excluded.addAll(it) }
+
+        val granted = mutableListOf<PerkDefinition>()
+        repeat(count) {
+            val perk = PerkRollService.rollSingle(excluded) ?: return@repeat
+            excluded.add(perk.id)
+            state.ownedPerks.add(perk)
+            runCatching { perk.onAcquire(PerkContext(player, state)) }
+                .onFailure {
+                    RandomPerksMod.logger.error("[RandomPerks] perk {} onAcquire failed", perk.id, it)
+                }
+            granted.add(perk)
+        }
+
+        if (granted.isEmpty()) {
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.random_perks_empty"),
+                true,
+            )
+            return emptyList()
+        }
+
+        var names = Component.empty()
+        granted.forEachIndexed { index, perk ->
+            if (index > 0) names = names.append(Component.literal(", "))
+            names = names.append(Component.translatable("random-perks-bingo.perk.${perk.id}.name"))
+        }
+        player.sendSystemMessage(
+            Component.translatable("random-perks-bingo.message.random_perks_gained", names),
+            false,
+        )
+
+        notifyPerkListChanged(player)
+        syncAbilities(player)
+        return granted
     }
 
     /** 把普通词条 + 特质的总待选数同步给客户端 */
