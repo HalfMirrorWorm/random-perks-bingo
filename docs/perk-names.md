@@ -224,7 +224,7 @@ id 是机制名，中文名是风味名，排查问题时留意对应关系：
 | `trait_02` | 专精 | Specialization |
 | `trait_03` | 刷新 | Refresh |
 | `trait_04` | 净化 | Cleanse |
-| `trait_05` | 预留特质 5 | Reserved Trait 5 |
+| `trait_05` | 再蓄 | Recharge |
 | `trait_06` | 预留特质 6 | Reserved Trait 6 |
 | `trait_07` | 预留特质 7 | Reserved Trait 7 |
 | `trait_08` | 预留特质 8 | Reserved Trait 8 |

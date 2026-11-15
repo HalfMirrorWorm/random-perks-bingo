@@ -24,8 +24,8 @@ import net.minecraft.world.item.Items
  * 特质 (灰): 只能通过"特质选择"获得的特殊词条。
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
- * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化,
- * 其余 9 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
+ * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄,
+ * 其余 8 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
  */
 object TraitPerks {
 
@@ -37,7 +37,8 @@ object TraitPerks {
         add(ArchetypeBias)
         add(Refresh)
         add(Cleanse)
-        for (i in 5..COUNT) add(Trait(i))
+        add(Recharge)
+        for (i in 6..COUNT) add(Trait(i))
     }
 
     /**
@@ -138,6 +139,34 @@ object TraitPerks {
         }
     }
 
+    /**
+     * 再蓄: 获得时, 把自己**当前拥有**的所有贮藏词条的可用次数全部刷新
+     * (包括单次使用和多次使用的贮藏词条)。
+     */
+    object Recharge : PerkDefinition {
+        override val id = "trait_05"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override fun icon(): ItemStack = ItemStack(Items.EXPERIENCE_BOTTLE)
+
+        override fun onAcquire(ctx: PerkContext) {
+            var refreshed = 0
+            for (perk in ctx.state.ownedPerks.toList()) {
+                if (!perk.isOneTime) continue
+                val hadUsed = ctx.state.usedPerks.remove(perk.id)
+                val hadCount = ctx.state.useCounts.remove(perk.id) != null
+                if (hadUsed || hadCount) refreshed++
+            }
+            ctx.player.sendSystemMessage(
+                Component.translatable(
+                    if (refreshed > 0) "random-perks-bingo.message.recharge_done"
+                    else "random-perks-bingo.message.recharge_none",
+                    refreshed,
+                ),
+                false,
+            )
+        }
+    }
     /**
      * 净化: 选择一个自己已拥有的词条, 使其**自身的负面效果**无效。
      *
