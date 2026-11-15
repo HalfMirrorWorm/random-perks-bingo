@@ -153,6 +153,8 @@ object TraitPerks {
             var refreshed = 0
             for (perk in ctx.state.ownedPerks.toList()) {
                 if (!perk.isOneTime) continue
+                // 只刷新普通贮藏词条, 不刷新灰色特质 (专精/净化等)
+                if (perk.archetype == PerkArchetype.TRAIT) continue
                 val hadUsed = ctx.state.usedPerks.remove(perk.id)
                 val hadCount = ctx.state.useCounts.remove(perk.id) != null
                 if (hadUsed || hadCount) refreshed++

@@ -502,7 +502,7 @@
   "random-perks-bingo.perk.trait_04.name": "Cleanse",
   "random-perks-bingo.perk.trait_04.desc": "Choose one of your perks to nullify its downside.",
   "random-perks-bingo.perk.trait_05.name": "Recharge",
-  "random-perks-bingo.perk.trait_05.desc": "Refresh all uses of every storable perk you currently own.",
+  "random-perks-bingo.perk.trait_05.desc": "Refresh all uses of every non-trait storable perk you currently own.",
   "random-perks-bingo.perk.trait_06.name": "Reserved Trait 6",
   "random-perks-bingo.perk.trait_06.desc": "Placeholder trait; effect TBD.",
   "random-perks-bingo.perk.trait_07.name": "Reserved Trait 7",

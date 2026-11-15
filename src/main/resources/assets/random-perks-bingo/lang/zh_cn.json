@@ -502,7 +502,7 @@
   "random-perks-bingo.perk.trait_04.name": "净化",
   "random-perks-bingo.perk.trait_04.desc": "选择一个自己已拥有的词条，使其负面效果无效。",
   "random-perks-bingo.perk.trait_05.name": "再蓄",
-  "random-perks-bingo.perk.trait_05.desc": "刷新你目前拥有的所有贮藏词条的可用次数。",
+  "random-perks-bingo.perk.trait_05.desc": "刷新你目前拥有的所有非特质贮藏词条的可用次数。",
   "random-perks-bingo.perk.trait_06.name": "预留特质 6",
   "random-perks-bingo.perk.trait_06.desc": "占位特质，效果待定。",
   "random-perks-bingo.perk.trait_07.name": "预留特质 7",
