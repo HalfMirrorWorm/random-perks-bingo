@@ -13,5 +13,6 @@ object PerkContent {
         SeekerPerks.registerAll()
         SummonPerks.registerAll()
         MythicPerks.registerAll()
+        TraitPerks.registerAll()
     }
 }

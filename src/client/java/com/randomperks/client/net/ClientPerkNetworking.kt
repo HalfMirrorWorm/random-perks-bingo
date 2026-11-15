@@ -10,6 +10,7 @@ import com.randomperks.client.screen.ItemSelectScreen
 import com.randomperks.client.screen.PerkCatalogScreen
 import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
+import com.randomperks.client.screen.TraitChoiceScreen
 import com.randomperks.client.screen.StealScreen
 import com.randomperks.client.screen.TargetPickScreen
 import com.randomperks.client.screen.LastGameRecapScreen
@@ -31,6 +32,8 @@ import com.randomperks.network.PerkOfferS2C
 import com.randomperks.network.PerkOptionData
 import com.randomperks.network.PerkPickC2S
 import com.randomperks.network.PerkRequestC2S
+import com.randomperks.network.TraitOfferS2C
+import com.randomperks.network.TraitPickC2S
 import com.randomperks.network.ActionTargetPickC2S
 import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.BigSnowballS2C
@@ -95,6 +98,12 @@ object ClientPerkNetworking {
             context.client().execute {
                 currentOptions = payload.options
                 context.client().gui.setScreen(PerkChoiceScreen(payload.options))
+            }
+        }
+
+        ClientPlayNetworking.registerGlobalReceiver(TraitOfferS2C.ID) { payload, context ->
+            context.client().execute {
+                context.client().gui.setScreen(TraitChoiceScreen(payload.options))
             }
         }
 
@@ -327,6 +336,12 @@ object ClientPerkNetworking {
         currentOptions = null
         if (!ClientPlayNetworking.canSend(PerkPickC2S.ID)) return
         ClientPlayNetworking.send(PerkPickC2S(index))
+    }
+
+    /** 提交一个特质选择 (按 id) */
+    fun pickTrait(perkId: String) {
+        if (!ClientPlayNetworking.canSend(TraitPickC2S.ID)) return
+        ClientPlayNetworking.send(TraitPickC2S(perkId))
     }
 
     /** 界面被关闭 (未选择) */

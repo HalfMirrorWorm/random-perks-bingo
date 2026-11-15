@@ -138,6 +138,8 @@ object RandomPerksMod : ModInitializer {
                 PerkOrphanCleanup.onJoin(online)
             }
             PerkGrantService.syncAbilities(player)
+            // 断线重连/中途加入: 把待选数量 (普通 + 特质) 重新告诉客户端
+            PerkGrantService.notifyChoices(player)
             // "灵魂出窍"进行中断线重连: 把灵魂相机状态补回去
             SoulOutService.syncOnJoin(player)
         }

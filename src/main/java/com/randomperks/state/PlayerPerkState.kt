@@ -23,6 +23,12 @@ class PlayerPerkState(val uuid: UUID) {
     /** 已获得的词条 (本局内不可重复; 局内**不会**被移出) */
     val ownedPerks: MutableList<PerkDefinition> = mutableListOf()
 
+    /** 待选的特质机会次数 (特质独立于普通词条池, 只从 13 条特质里选) */
+    var pendingTraitChoices: Int = 0
+
+    /** 开局那条特质还没选完: 选完后补发开局的普通词条机会 */
+    var pendingStartTrait: Boolean = false
+
     /**
      * 已经使用过的一次性词条 id。
      *
@@ -72,6 +78,9 @@ class PlayerPerkState(val uuid: UUID) {
     /** 当前应展示的候选 (队列第一个, 未选择前不变) */
     fun currentOffer(): List<String>? = pendingOffers.firstOrNull()
 
+    /** 普通词条 + 特质的总待选数 (给通知/列表显示用) */
+    val totalPending: Int get() = pendingOffers.size + pendingTraitChoices
+
     /** 消费最前面的机会 */
     fun consumeOffer() {
         if (pendingOffers.isNotEmpty()) pendingOffers.removeAt(0)
@@ -84,5 +93,7 @@ class PlayerPerkState(val uuid: UUID) {
         useCounts.clear()
         cooldowns.clear()
         memory.clear()
+        pendingTraitChoices = 0
+        pendingStartTrait = false
     }
 }

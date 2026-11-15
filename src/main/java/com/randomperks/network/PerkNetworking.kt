@@ -26,6 +26,7 @@ object PerkNetworking {
     fun registerServer() {
         PayloadTypeRegistry.clientboundPlay().register(PerkNotifyS2C.ID, PerkNotifyS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkOfferS2C.ID, PerkOfferS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(TraitOfferS2C.ID, TraitOfferS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkListS2C.ID, PerkListS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkCatalogS2C.ID, PerkCatalogS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkAbilitySyncS2C.ID, PerkAbilitySyncS2C.CODEC)
@@ -33,6 +34,7 @@ object PerkNetworking {
         PayloadTypeRegistry.clientboundPlay().register(WaterBucketTotemS2C.ID, WaterBucketTotemS2C.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkRequestC2S.ID, PerkRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkPickC2S.ID, PerkPickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(TraitPickC2S.ID, TraitPickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkActivateC2S.ID, PerkActivateC2S.CODEC)
@@ -70,6 +72,14 @@ object PerkNetworking {
             val index = payload.index
             context.server().execute {
                 PerkOfferService.handlePick(player, index)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(TraitPickC2S.ID) { payload, context ->
+            val player = context.player()
+            val perkId = payload.perkId
+            context.server().execute {
+                PerkOfferService.handleTraitPick(player, perkId)
             }
         }
 
@@ -192,6 +202,13 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, PerkOfferS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, PerkOfferS2C(options)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send offer: {}", it.toString()) }
+    }
+
+    /** 下发特质选择候选 */
+    fun sendTraitOffer(player: ServerPlayer, options: List<PerkOptionData>) {
+        if (!ServerPlayNetworking.canSend(player, TraitOfferS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, TraitOfferS2C(options)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send trait offer: {}", it.toString()) }
     }
 
     /** 下发所有在线玩家的词条列表 */

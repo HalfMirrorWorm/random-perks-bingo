@@ -78,8 +78,8 @@ object BingoLifecycle {
             return
         }
 
-        // 开局赠送: 每位玩家一次选择机会 (各自独立随机)
-        val granted = PerkGrantService.grantOffer(players)
+        // 开局: 先给一次"特质选择"机会; 选完特质后再补发开局的普通词条机会
+        val granted = PerkGrantService.grantStartingTrait(players)
         if (granted) {
             for (player in players) {
                 player.sendSystemMessage(

@@ -24,4 +24,7 @@ enum class PerkRarity(val color: Int, val weight: Int) {
      * 颜色由客户端动态渲染 (彩虹渐变), 此处的值是回退色。
      */
     MYTHIC(0xFFFF55FF.toInt(), 3),
+
+    /** 特质 (灰): 只能通过"特质选择"获得, 不参与普通三选一 */
+    TRAIT(0xFF9E9E9E.toInt(), 0),
 }

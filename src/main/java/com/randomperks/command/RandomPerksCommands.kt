@@ -41,7 +41,7 @@ object RandomPerksCommands {
                         literal("status").executes { ctx ->
                             val states = PerkStateManager.all()
                             val owned = states.sumOf { it.ownedPerks.size }
-                            val pending = states.sumOf { it.pendingChoices }
+                            val pending = states.sumOf { it.totalPending }
                             ctx.source.sendSuccess({
                                 Component.literal(
                                     "[RandomPerks] 本局=${if (PerkSession.isEnabled()) "启用" else "禁用"}, " +
@@ -53,7 +53,7 @@ object RandomPerksCommands {
                                 ctx.source.sendSuccess({
                                     Component.literal(
                                         "  ${s.uuid}: owned=${s.ownedPerks.joinToString { it.id }}, " +
-                                            "pending=${s.pendingChoices}, current=${s.currentOffer()}"
+                                            "pending=${s.totalPending} (normal=${s.pendingChoices}, trait=${s.pendingTraitChoices}), current=${s.currentOffer()}"
                                     )
                                 }, false)
                             }

@@ -34,7 +34,10 @@ object PerkRollService {
         rollOptionsExcluding(excluded, 1, random).firstOrNull()
 
     private fun rollOptionsExcluding(excluded: Set<String>, count: Int, random: Random): List<PerkDefinition> {
-        val pool = PerkRegistry.all.filterNot { it.id in excluded }.toMutableList()
+        // 特质只能通过"特质选择"获得, 不进入普通三选一池
+        val pool = PerkRegistry.all
+            .filterNot { it.id in excluded || it.archetype == com.randomperks.perk.PerkArchetype.TRAIT }
+            .toMutableList()
         val result = mutableListOf<PerkDefinition>()
 
         repeat(minOf(count, pool.size)) {

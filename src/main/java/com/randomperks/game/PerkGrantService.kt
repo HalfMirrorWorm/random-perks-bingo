@@ -3,6 +3,7 @@ package com.randomperks.game
 import com.randomperks.RandomPerksMod
 import com.randomperks.network.PerkNetworking
 import com.randomperks.perk.PerkContext
+import com.randomperks.perk.content.TraitPerks
 import com.randomperks.roll.PerkRollService
 import com.randomperks.server.ServerHolder
 import com.randomperks.state.PerkStateManager
@@ -49,8 +50,9 @@ object PerkGrantService {
     }
 
     /**
-     * 团队完成了 [lineCount] 条新连线: 每位在线队员额外获得对应次数的选择机会。
-     * 不影响格子计分的 [onTeamScored] 回调, 避免同一次捕获触发两次词条联动。
+     * 团队完成了 [lineCount] 条新连线: 每位在线队员获得对应次数的**特质选择**机会。
+     * 连线不再发普通词条机会; 同一格的普通词条机会仍由 [onTeamScored] 发放,
+     * 客户端会先处理普通词条机会, 再处理特质机会。
      */
     fun onTeamLines(memberUuids: List<UUID>, lineCount: Int) {
         if (lineCount <= 0) return
@@ -59,9 +61,9 @@ object PerkGrantService {
         val players = memberUuids.mapNotNull { server.playerList.getPlayer(it) }
         if (players.isEmpty()) return
 
-        grantOffer(players, lineCount)
+        grantTraitChoices(players, lineCount)
         RandomPerksMod.logger.info(
-            "[RandomPerks] bingo {} line(s) completed by team with {} member(s) → +{} choice each",
+            "[RandomPerks] bingo {} line(s) completed by team with {} member(s) → +{} trait choice each",
             lineCount, players.size, lineCount,
         )
     }
@@ -93,13 +95,56 @@ object PerkGrantService {
             }
 
             if (added > 0) {
-                notifyChoicesAvailable(player, state.pendingChoices)
+                notifyChoices(player)
                 anyGranted = true
             }
         }
 
         if (!anyGranted && players.isNotEmpty()) {
             RandomPerksMod.logger.warn("[RandomPerks] perk pool exhausted — no offer granted")
+        }
+        return anyGranted
+    }
+
+    /**
+     * 发放特质选择机会 (每点一次从剩余的 13 条特质里选一条)。
+     * 特质池已经抽完时不再增加机会。
+     */
+    fun grantTraitChoices(players: List<ServerPlayer>, count: Int = 1): Boolean {
+        if (count <= 0) return false
+        var anyGranted = false
+
+        for (player in players) {
+            val state = PerkStateManager.getOrCreate(player.uuid)
+            val remaining = TraitPerks.available(state).size
+            val grant = minOf(count, remaining)
+            if (grant <= 0) continue
+
+            state.pendingTraitChoices += grant
+            notifyChoices(player)
+            anyGranted = true
+        }
+
+        return anyGranted
+    }
+
+    /**
+     * 开局: 先发一次特质选择机会; 选完特质后再补发开局的普通词条机会
+     * (见 [PerkOfferService.handleTraitPick])。特质池没有剩余时直接发普通机会。
+     */
+    fun grantStartingTrait(players: List<ServerPlayer>): Boolean {
+        var anyGranted = false
+        for (player in players) {
+            val state = PerkStateManager.getOrCreate(player.uuid)
+            if (TraitPerks.available(state).isEmpty()) {
+                if (grantOffer(listOf(player), 1)) anyGranted = true
+                continue
+            }
+
+            state.pendingStartTrait = true
+            state.pendingTraitChoices += 1
+            notifyChoices(player)
+            anyGranted = true
         }
         return anyGranted
     }
@@ -117,7 +162,13 @@ object PerkGrantService {
                 com.randomperks.stats.PerkStatsService.recordOffered(offer)
             }
         }
-        notifyChoicesAvailable(player, state.pendingChoices)
+        notifyChoices(player)
+    }
+
+    /** 把普通词条 + 特质的总待选数同步给客户端 */
+    fun notifyChoices(player: ServerPlayer) {
+        val state = PerkStateManager.getOrCreate(player.uuid)
+        notifyChoicesAvailable(player, state.totalPending)
     }
 
     /** 把玩家的词条能力列表同步给其客户端 (矿透渲染/偷窃按键等客户端能力依赖它) */
@@ -140,8 +191,16 @@ object PerkGrantService {
 
     private fun notifyChoicesAvailable(player: ServerPlayer, pending: Int) {
         PerkNetworking.sendNotify(player, pending)
+        if (pending <= 0) return
+
+        val state = PerkStateManager.get(player.uuid)
+        val key = if (state != null && state.pendingOffers.isEmpty() && state.pendingTraitChoices > 0) {
+            "random-perks-bingo.message.gained_trait_choice"
+        } else {
+            "random-perks-bingo.message.gained_choice"
+        }
         player.sendSystemMessage(
-            Component.translatable("random-perks-bingo.message.gained_choice", pending),
+            Component.translatable(key, pending),
             true, // actionbar
         )
         player.level().playSound(

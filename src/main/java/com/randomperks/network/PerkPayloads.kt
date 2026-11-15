@@ -93,6 +93,32 @@ class PerkPickC2S(val index: Int) : CustomPacketPayload {
     override fun type() = ID
 }
 
+/** S2C: 下发一次特质选择的候选 (从剩余特质里挑一条) */
+class TraitOfferS2C(val options: List<PerkOptionData>) : CustomPacketPayload {
+    companion object {
+        val ID = CustomPacketPayload.Type<TraitOfferS2C>(Identifier.fromNamespaceAndPath("random-perks-bingo", "trait_offer"))
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, TraitOfferS2C> = StreamCodec.ofMember(
+            { value, buf -> writeCards(buf, value.options) },
+            { buf -> TraitOfferS2C(readCards(buf)) },
+        )
+    }
+
+    override fun type() = ID
+}
+
+/** C2S: 玩家选择了一个特质 (按 id, 避免界面顺序变化导致错位) */
+class TraitPickC2S(val perkId: String) : CustomPacketPayload {
+    companion object {
+        val ID = CustomPacketPayload.Type<TraitPickC2S>(Identifier.fromNamespaceAndPath("random-perks-bingo", "trait_pick"))
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, TraitPickC2S> = StreamCodec.ofMember(
+            { value, buf -> buf.writeUtf(value.perkId) },
+            { buf -> TraitPickC2S(buf.readUtf()) },
+        )
+    }
+
+    override fun type() = ID
+}
+
 /** C2S: 玩家请求查看已获得的词条列表 */
 class PerkListRequestC2S : CustomPacketPayload {
     companion object {

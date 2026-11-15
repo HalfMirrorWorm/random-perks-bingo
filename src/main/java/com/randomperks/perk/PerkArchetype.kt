@@ -27,4 +27,7 @@ enum class PerkArchetype(val id: String) {
 
     /** 唤法: 召唤 / 随从 */
     SUMMON("summon"),
+
+    /** 特质: 灰色特殊词条, 只能通过特质选择获得, 不参与流派联动 */
+    TRAIT("trait"),
 }

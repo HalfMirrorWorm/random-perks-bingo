@@ -167,6 +167,9 @@ object PerkStatePersistence {
             state.usedPerks.forEach { used.add(StringTag.valueOf(it)) }
             entry.put("used", used)
 
+            entry.putInt("pendingTraits", state.pendingTraitChoices)
+            entry.putBoolean("pendingStartTrait", state.pendingStartTrait)
+
             val useCounts = CompoundTag()
             state.useCounts.forEach { (id, count) -> useCounts.putInt(id, count) }
             entry.put("useCounts", useCounts)
@@ -275,6 +278,9 @@ object PerkStatePersistence {
                 if (id.isNotEmpty()) state.usedPerks.add(id)
             }
 
+            state.pendingTraitChoices = entry.getIntOr("pendingTraits", 0)
+            state.pendingStartTrait = entry.getBooleanOr("pendingStartTrait", false)
+
             val useCounts = entry.getCompoundOrEmpty("useCounts")
             for (key in useCounts.keySet()) {
                 state.useCounts[key] = useCounts.getIntOr(key, 0)
@@ -299,7 +305,7 @@ object PerkStatePersistence {
                 }
             }
 
-            if (state.ownedPerks.isNotEmpty() || state.pendingOffers.isNotEmpty()) {
+            if (state.ownedPerks.isNotEmpty() || state.pendingOffers.isNotEmpty() || state.pendingTraitChoices > 0) {
                 pendingApply.add(uuid)
             }
         }
@@ -321,6 +327,8 @@ object PerkStatePersistence {
      */
     private fun applyPerks(player: ServerPlayer) {
         val state = PerkStateManager.get(player.uuid) ?: return
+        // 重连/重启后把待选数量重新告诉客户端 (普通词条 + 特质)
+        PerkGrantService.notifyChoices(player)
         if (state.ownedPerks.isEmpty()) {
             PerkGrantService.syncAbilities(player)
             return

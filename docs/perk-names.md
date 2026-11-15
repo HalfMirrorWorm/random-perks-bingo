@@ -1,6 +1,7 @@
 # 词条命名与名称映射
 
-共 **137** 条词条：绿 26 / 蓝 54 / 紫 31 / 金 21 / 红 3 / 神话 2。
+共 **137** 条普通词条：绿 26 / 蓝 54 / 紫 31 / 金 21 / 红 3 / 神话 2；
+另有 **13** 条预留特质（灰色，不参与普通三选一，只能通过特质选择获得）。
 
 数据来源：`src/main/java/com/randomperks/perk/content/*.kt`（id / 稀有度 / 流派）+
 `src/main/resources/assets/random-perks-bingo/lang/{zh_cn,en_us}.json`（名称）。
@@ -211,3 +212,24 @@ id 是机制名，中文名是风味名，排查问题时留意对应关系：
 | `seeker_village_compass` | 回村的诱惑 |
 | `swift_life_bucket` | 落地，水 |
 | `harvest_yowl` | 老吴!?（猫叫拟声） |
+
+## 特质 TRAIT（预留，不参与普通抽取）
+
+共 13 条，稀有度为灰色「特质」；只能通过特质选择获得，不计入流派联动。
+当前全部为占位条目，名称/描述在语言文件里，效果待填充。
+
+| id | 中文名 | 英文名 |
+|---|---|---|
+| `trait_01` | 预留特质 1 | Reserved Trait 1 |
+| `trait_02` | 预留特质 2 | Reserved Trait 2 |
+| `trait_03` | 预留特质 3 | Reserved Trait 3 |
+| `trait_04` | 预留特质 4 | Reserved Trait 4 |
+| `trait_05` | 预留特质 5 | Reserved Trait 5 |
+| `trait_06` | 预留特质 6 | Reserved Trait 6 |
+| `trait_07` | 预留特质 7 | Reserved Trait 7 |
+| `trait_08` | 预留特质 8 | Reserved Trait 8 |
+| `trait_09` | 预留特质 9 | Reserved Trait 9 |
+| `trait_10` | 预留特质 10 | Reserved Trait 10 |
+| `trait_11` | 预留特质 11 | Reserved Trait 11 |
+| `trait_12` | 预留特质 12 | Reserved Trait 12 |
+| `trait_13` | 预留特质 13 | Reserved Trait 13 |
