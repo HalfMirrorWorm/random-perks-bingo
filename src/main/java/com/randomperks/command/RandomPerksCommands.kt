@@ -25,6 +25,7 @@ import net.minecraft.network.chat.Component
  *
  * - status   查看词条注册与玩家状态概况
  * - grant [n]  给自己发放 n 次选择机会 (默认 1)
+ * - trait [n]  给自己发放 n 次特质选择机会 (默认 1)
  * - simulate   模拟"本队完成一个格子"的完整触发链路
  */
 object RandomPerksCommands {
@@ -86,6 +87,14 @@ object RandomPerksCommands {
                                     com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 20),
                                 ).executes { ctx ->
                                     grantSelf(ctx, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "count"))
+                                }
+                            )
+                    )
+                    .then(
+                        literal("trait").executes { ctx -> grantTraitSelf(ctx, 1) }
+                            .then(
+                                argument("count", IntegerArgumentType.integer(1, 20)).executes { ctx ->
+                                    grantTraitSelf(ctx, IntegerArgumentType.getInteger(ctx, "count"))
                                 }
                             )
                     )
@@ -308,6 +317,23 @@ object RandomPerksCommands {
         val player = ctx.source.player ?: return 0
         PerkGrantService.grantChoice(player, count)
         return count
+    }
+
+    private fun grantTraitSelf(ctx: CommandContext<CommandSourceStack>, count: Int): Int {
+        val player = ctx.source.player ?: return 0
+        val state = PerkStateManager.getOrCreate(player.uuid)
+        val before = state.pendingOrder.count { it == com.randomperks.state.ChoiceKind.TRAIT }
+        PerkGrantService.grantTraitChoices(listOf(player), count)
+        val granted = state.pendingOrder.count { it == com.randomperks.state.ChoiceKind.TRAIT } - before
+
+        if (granted <= 0) {
+            ctx.source.sendFailure(Component.literal("[RandomPerks] 没有可获得的特质选择机会 (特质已全部拥有)"))
+            return 0
+        }
+        ctx.source.sendSuccess({
+            Component.literal("[RandomPerks] 已发放 $granted 次特质选择机会 (总待选 ${state.totalPending} 次)")
+        }, false)
+        return granted
     }
 
     // ---- 词条编辑 (调试) ----
