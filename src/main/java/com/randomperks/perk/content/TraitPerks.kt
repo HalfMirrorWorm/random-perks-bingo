@@ -4,6 +4,7 @@ import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkDownsideSuppression
 import com.randomperks.game.PerkDownsides
 import com.randomperks.game.PerkGrantService
+import com.randomperks.game.PerkHighRarityOffer
 import com.randomperks.game.PerkRefreshCharges
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PerkOptionData
@@ -24,8 +25,8 @@ import net.minecraft.world.item.Items
  * 特质 (灰): 只能通过"特质选择"获得的特殊词条。
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
- * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄,
- * 其余 8 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
+ * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄、`trait_06` 精选,
+ * 其余 7 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
  */
 object TraitPerks {
 
@@ -38,7 +39,8 @@ object TraitPerks {
         add(Refresh)
         add(Cleanse)
         add(Recharge)
-        for (i in 6..COUNT) add(Trait(i))
+        add(HighRoll)
+        for (i in 7..COUNT) add(Trait(i))
     }
 
     /**
@@ -169,6 +171,25 @@ object TraitPerks {
             )
         }
     }
+    /**
+     * 精选: 你接下来的一次普通词条选择只从 3 个金/红品质里挑。
+     */
+    object HighRoll : PerkDefinition {
+        override val id = "trait_06"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override fun icon(): ItemStack = ItemStack(Items.GOLD_INGOT)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkHighRarityOffer.markNext(ctx.state)
+        }
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkHighRarityOffer.clearNext(ctx.state)
+            PerkHighRarityOffer.clearCurrent(ctx.state)
+        }
+    }
+
     /**
      * 净化: 选择一个自己已拥有的词条, 使其**自身的负面效果**无效。
      *

@@ -40,7 +40,26 @@ object PerkOfferService {
                     RandomPerksMod.logger.warn("[RandomPerks] pending PERK for {} has no offer", player.name.string)
                     return
                 }
-                val options = offer.mapNotNull { PerkRegistry.byId(it) }
+
+                // "精选": 把队首普通机会换成 3 个金/红候选 (只兑换一次)
+                if (PerkHighRarityOffer.isNextPending(state)) {
+                    val high = PerkHighRarityOffer.roll(state, PerkStateManager.globallyOwnedMythicIds())
+                    if (high.isNotEmpty()) {
+                        state.pendingOffers[0] = high.map { it.id }
+                        PerkHighRarityOffer.clearNext(state)
+                        PerkHighRarityOffer.markCurrent(state)
+                        com.randomperks.stats.PerkStatsService.recordOffered(high.map { it.id })
+                    } else {
+                        PerkHighRarityOffer.clearNext(state)
+                        player.sendSystemMessage(
+                            Component.translatable("random-perks-bingo.message.high_offer_empty"),
+                            true,
+                        )
+                    }
+                }
+
+                val finalOffer = state.currentOffer() ?: return
+                val options = finalOffer.mapNotNull { PerkRegistry.byId(it) }
                 if (options.isEmpty()) {
                     // 数据异常: 丢弃该组, 避免卡住队列
                     RandomPerksMod.logger.warn("[RandomPerks] offer for {} contains no valid perks", player.name.string)
@@ -132,6 +151,7 @@ object PerkOfferService {
         }
 
         state.consumeOffer()
+        PerkHighRarityOffer.clearCurrent(state)
         state.ownedPerks.add(perk)
         com.randomperks.stats.PerkStatsService.recordPicked(perk.id)
         com.randomperks.recap.RecapService.recordPerkPick(player, perk.id)

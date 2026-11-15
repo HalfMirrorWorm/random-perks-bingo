@@ -27,10 +27,24 @@ object PerkRefreshService {
         if (state.currentOffer() == null) return
         if (PerkRefreshCharges.charges(state) <= 0) return
 
-        val options = PerkRollService.rollOptions(
-            state,
-            extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
-        )
+        val options = if (PerkHighRarityOffer.isCurrentHigh(state)) {
+            val high = PerkHighRarityOffer.roll(state, PerkStateManager.globallyOwnedMythicIds())
+            if (high.isNotEmpty()) {
+                high
+            } else {
+                // 金/红池也用完了: 这次刷新回退普通池, 并结束精选状态
+                PerkHighRarityOffer.clearCurrent(state)
+                PerkRollService.rollOptions(
+                    state,
+                    extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
+                )
+            }
+        } else {
+            PerkRollService.rollOptions(
+                state,
+                extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
+            )
+        }
         if (options.isEmpty()) {
             player.sendSystemMessage(
                 Component.translatable("random-perks-bingo.message.refresh_empty"),
