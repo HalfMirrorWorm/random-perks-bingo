@@ -76,6 +76,7 @@ object SwapService {
                 pending.remove(casterUuid)
                 if (teleportTo(caster, target)) {
                     markUsed(caster)
+                    PerkApplicationHistory.record(target, PERK_ID, caster)
                 } else {
                     caster.sendSystemMessage(Component.translatable("random-perks-bingo.message.swap_cancelled"), false)
                 }

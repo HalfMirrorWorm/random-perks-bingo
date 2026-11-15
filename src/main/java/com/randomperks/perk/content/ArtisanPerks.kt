@@ -5,6 +5,7 @@ import com.randomperks.effect.PermanentEffects
 import com.randomperks.game.BigBackpackService
 import com.randomperks.game.MidasTouchService
 import com.randomperks.game.NyaAxeService
+import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkSession
 import com.randomperks.game.SharedFortuneService
 import com.randomperks.game.ReviveArmorService
@@ -323,6 +324,7 @@ object ArtisanPerks {
             val effect = DEBUFFS[target.random.nextInt(DEBUFFS.size)]
             target.addEffect(MobEffectInstance(effect, DURATION_TICKS, 0))
             state.markUsed(id)
+            PerkApplicationHistory.record(target, id, player)
 
             val effectName = Component.translatable(effect.value().descriptionId)
             player.sendSystemMessage(

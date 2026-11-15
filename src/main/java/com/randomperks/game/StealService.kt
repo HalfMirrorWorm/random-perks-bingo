@@ -108,6 +108,7 @@ object StealService {
         // 所以同一局不会再次获得 (也就不需要"局内移出词条"这件事)
         state.markUsed(PERK_ID)
         state.memory.remove(TARGET_KEY)
+        PerkApplicationHistory.record(target, PERK_ID, player)
         PerkGrantService.notifyPerkListChanged(player)
         PerkGrantService.syncAbilities(player)
 

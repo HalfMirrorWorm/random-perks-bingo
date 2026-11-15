@@ -5,6 +5,7 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.effect.PermanentEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.LayFlatService
+import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.SavageMagicService
@@ -514,6 +515,7 @@ object SeekerPerks {
             PerkEffects.giveStack(target, ItemStack(mineral, GIFT_COUNT))
             VerminSwarmService.start(target)
             state.markUsed(id)
+            PerkApplicationHistory.record(target, id, player)
 
             player.sendSystemMessage(
                 Component.translatable("random-perks-bingo.message.puny_given", target.name, ItemStack(mineral).hoverName),

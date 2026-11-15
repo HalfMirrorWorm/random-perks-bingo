@@ -2,7 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
-import com.randomperks.game.PerkBoostQuery
+import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkSession
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
@@ -506,7 +506,10 @@ object HunterPerks {
 
             // 校验: 必须是当下的合法候选 —— 否则客户端伪造 uuid 就能劈任意人 (含队友)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
-            if (strike(target)) state.markUsed(id)
+            if (strike(target)) {
+                state.markUsed(id)
+                PerkApplicationHistory.record(target, id, player)
+            }
         }
 
         /** 候选: **所有在线玩家** —— 不限队伍、不限维度, 也包括自己 (跨维度劈雷对目标依然有效,
@@ -638,6 +641,7 @@ object HunterPerks {
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
             if (!spawnChargedCreeper(target)) return
             state.markUsed(id)
+            PerkApplicationHistory.record(target, id, player)
             player.sendSystemMessage(
                 Component.translatable("random-perks-bingo.message.nuke_spawned", target.name),
                 false,

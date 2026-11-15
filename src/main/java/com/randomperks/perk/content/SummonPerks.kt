@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.LoyalGuardService
+import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.ResonanceService
@@ -183,6 +184,7 @@ object SummonPerks {
 
             state.markUsed(id)
             state.memory.remove(TARGET_KEY)
+            PerkApplicationHistory.record(target, id, player)
             PerkGrantService.notifyPerkListChanged(player)
             PerkGrantService.syncAbilities(player)
 
@@ -343,7 +345,9 @@ object SummonPerks {
             if (!state.hasPerk(id)) return
 
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
-            if (!ResonanceService.link(player, target)) {
+            if (ResonanceService.link(player, target)) {
+                PerkApplicationHistory.record(target, id, player)
+            } else {
                 player.sendSystemMessage(
                     Component.translatable("random-perks-bingo.message.resonance_busy"),
                     true,
@@ -437,6 +441,7 @@ object SummonPerks {
             if (spawned <= 0) return
 
             state.markUsed(id)
+            PerkApplicationHistory.record(target, id, player)
             PerkGrantService.notifyPerkListChanged(player)
             PerkGrantService.syncAbilities(player)
 

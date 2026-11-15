@@ -220,7 +220,7 @@ id 是机制名，中文名是风味名，排查问题时留意对应关系：
 
 | id | 中文名 | 英文名 |
 |---|---|---|
-| `trait_01` | 预留特质 1 | Reserved Trait 1 |
+| `trait_01` | 回放 | Replay |
 | `trait_02` | 预留特质 2 | Reserved Trait 2 |
 | `trait_03` | 预留特质 3 | Reserved Trait 3 |
 | `trait_04` | 预留特质 4 | Reserved Trait 4 |

@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.PerkBoostQuery
+import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkSession
 import com.randomperks.game.RewindService
 import com.randomperks.network.PerkNetworking
@@ -134,6 +135,7 @@ object MythicPerks {
                 changed++
             }
             state.markUsed(id)
+            PerkApplicationHistory.record(target, id, player)
 
             player.sendSystemMessage(
                 Component.translatable("random-perks-bingo.message.hodgepodge_applied", target.name, changed),
