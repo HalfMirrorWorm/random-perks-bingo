@@ -448,7 +448,7 @@
   "random-perks-bingo.perk.delver_wallbreaker.name": "Wallbreaker",
   "random-perks-bingo.perk.delver_wallbreaker.desc": "Bedrock can be mined just like obsidian.",
   "random-perks-bingo.perk.delver_carefree_sleep.name": "Carefree Sleep",
-  "random-perks-bingo.perk.delver_carefree_sleep.desc": "Sleeping in a bed in the Nether or the End doubles the explosion radius and deals 1.5x damage.",
+  "random-perks-bingo.perk.delver_carefree_sleep.desc": "Your bed's explosion radius is doubled and its damage is increased to 1.5x.",
   "random-perks-bingo.message.version_mismatch": "Random Perks mod version mismatch!\nServer: %s\nClient: %s",
   "random-perks-bingo.message.version_missing": "Random Perks mod not detected — please install the same version as the server and reconnect.",
   "random-perks-bingo.perk.artisan_waypoint_clock.name": "Waypoint Clock",

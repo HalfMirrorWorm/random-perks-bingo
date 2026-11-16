@@ -14,17 +14,30 @@ import kotlin.math.sqrt
  * power 从 5 提到 10 后伤害会变成约 2 倍且衰减更慢 —— 想做到"范围 2 倍、伤害 1.5 倍"，
  * 就得用原来的半径重新算一遍伤害。
  *
- * <p>超出原版半径 (10 格) 的目标伤害为 0（原版本来也打不到），但依然会被击退、
- * 方块也依然会被炸掉 —— 这正是"范围翻倍"的部分。
+ * <p>原版半径内 (10 格) 保持 1.5 倍原版伤害; 10~20 格补一段**递减伤害**,
+ * 从 10 格处的 1.5 点平滑降到 20 格处的 0, 并保留视线遮挡系数。
+ * 这样"范围翻倍"不仅是炸方块/击退, 伤害范围也真正覆盖到 20 格。
  */
 class BedBombBehavior : ExplosionDamageCalculator() {
 
     override fun getEntityDamageAmount(explosion: Explosion, entity: Entity, amount: Float): Float {
         val vanillaRadius = VANILLA_POWER * 2.0
-        val distance = sqrt(entity.distanceToSqr(explosion.center())) / vanillaRadius
-        val e = (1.0 - distance) * amount
-        val vanillaDamage = (e * e + e) / 2.0 * 7.0 * vanillaRadius + 1.0
-        return maxOf(0.0, vanillaDamage * DAMAGE_MULTIPLIER).toFloat()
+        val distance = sqrt(entity.distanceToSqr(explosion.center()))
+
+        // 原版 power 5 半径内: 完全沿用原版公式, 再乘 1.5
+        if (distance <= vanillaRadius) {
+            val e = (1.0 - distance / vanillaRadius) * amount
+            val vanillaDamage = (e * e + e) / 2.0 * 7.0 * vanillaRadius + 1.0
+            return maxOf(0.0, vanillaDamage * DAMAGE_MULTIPLIER).toFloat()
+        }
+
+        // 原版半径外 ~ 翻倍半径: 从 1.5 递减到 0。
+        // 乘以"距离衰减 × 视线遮挡"的组合系数: 无遮挡时线性衰减,
+        // 完全被遮挡时按距离平方衰减, 保证 10 格处仍与内圈连续。
+        val t = ((distance - vanillaRadius) / vanillaRadius).coerceIn(0.0, 1.0)
+        val visibility = amount.coerceIn(0f, 1f).toDouble()
+        val falloff = (1.0 - t) * (visibility + (1.0 - visibility) * (1.0 - t))
+        return (DAMAGE_MULTIPLIER * falloff).toFloat()
     }
 
     companion object {

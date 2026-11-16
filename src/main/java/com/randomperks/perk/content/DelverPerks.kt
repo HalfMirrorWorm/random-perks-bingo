@@ -533,7 +533,8 @@ object DelverPerks {
     }
 
     /** 绿 · 深掘: **无忧的安眠** —— 在地狱 / 末地睡床时, 床的爆炸**范围翻倍、伤害 1.5 倍**
-     *  (由 BedBombMixin 接管 BedBlock.onUse 里的 createExplosion 调用)。 */
+     *  (由 BedBombMixin 接管 BedBlock.onUse 里的 createExplosion 调用)。
+     *  10~20 格之间保留一段递减伤害, 不再只有方块破坏和击退。 */
     object CarefreeSleep : PerkDefinition {
         override val id = "delver_carefree_sleep"
         override val rarity = PerkRarity.GREEN
