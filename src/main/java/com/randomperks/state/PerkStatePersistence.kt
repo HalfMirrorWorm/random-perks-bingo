@@ -73,6 +73,9 @@ object PerkStatePersistence {
     @Volatile
     private var gameActive = false
 
+    /** 当前局 id; 同一个 id 再次收到 GAME_STARTED 说明是"继续游戏", 不删存档 */
+    private var currentGameId: UUID? = null
+
     private var nextAutosaveTick = 0
 
     /** 服务器启动后还没做首次检查 (INIT 只做标记, 真正恢复放到第一 tick, 见 [restoreIfGameRunning]) */
@@ -88,13 +91,20 @@ object PerkStatePersistence {
         // ★ 必须注册在 RewindService 之后: 它先反射拿到 BingoState, 本类要靠它判断对局是否还在进行
         BingoEvents.INIT.register { pendingRestoreCheck = true }
 
-        BingoEvents.GAME_STARTED.register {
+        BingoEvents.GAME_STARTED.register { event ->
+            // 同一局再次进入 PLAYING = 玩家选择了"继续游戏": 保留状态文件并继续自动保存
+            if (gameActive && currentGameId == event.id) return@register
+
+            currentGameId = event.id
             gameActive = true
             nextAutosaveTick = 0
             deleteFile(ServerHolder.server)   // 新的一局: 丢掉上一局可能残留的文件
         }
-        BingoEvents.GAME_ENDED.register { onGameFinished() }
-        BingoEvents.GAME_RESET.register { onGameFinished() }
+        // GAME_ENDED 不清理: 玩家可能选择"继续游戏"; 真正的结束在 GAME_RESET / CLOSE
+        BingoEvents.GAME_RESET.register {
+            currentGameId = null
+            onGameFinished()
+        }
         // 注意: CLOSE 在服务器停止时也会触发 (SERVER_STOPPED), 比 SERVER_STOPPING 晚 ——
         // 不能在这里删文件, 否则刚存下来的状态会被清掉
 
