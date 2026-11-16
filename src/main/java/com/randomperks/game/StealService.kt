@@ -91,6 +91,7 @@ object StealService {
             player.sendSystemMessage(Component.translatable("random-perks-bingo.message.steal_no_target"), true)
             return
         }
+        if (PerkCounterService.tryCounter(target, player, PERK_ID)) return
         val taken = target.inventory.removeItemNoUpdate(index)
         if (taken.isEmpty) return
 

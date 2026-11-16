@@ -74,6 +74,8 @@ object SwapService {
             state.ticksLeft--
             if (state.ticksLeft <= 0) {
                 pending.remove(casterUuid)
+                // "反制": 目标在传送真正发生前反制, 本次传送取消 (施放者的词条不消耗)
+                if (PerkCounterService.tryCounter(target, caster, PERK_ID)) continue
                 if (teleportTo(caster, target)) {
                     markUsed(caster)
                     PerkApplicationHistory.record(target, PERK_ID, caster)

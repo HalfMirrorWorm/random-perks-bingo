@@ -6,6 +6,7 @@ import com.randomperks.game.BigBackpackService
 import com.randomperks.game.MidasTouchService
 import com.randomperks.game.NyaAxeService
 import com.randomperks.game.PerkApplicationHistory
+import com.randomperks.game.PerkCounterService
 import com.randomperks.game.PerkDownsideSuppression
 import com.randomperks.game.PerkSession
 import com.randomperks.game.SharedFortuneService
@@ -321,6 +322,8 @@ object ArtisanPerks {
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+
+            if (PerkCounterService.tryCounter(target, player, id)) return
 
             val effect = DEBUFFS[target.random.nextInt(DEBUFFS.size)]
             target.addEffect(MobEffectInstance(effect, DURATION_TICKS, 0))

@@ -3,6 +3,7 @@ package com.randomperks.perk.content
 import com.randomperks.game.CreativeFlashService
 import com.randomperks.game.PerkBoostQuery
 import com.randomperks.game.PerkApplicationHistory
+import com.randomperks.game.PerkCounterService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.RewindService
 import com.randomperks.network.PerkNetworking
@@ -112,6 +113,7 @@ object MythicPerks {
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            if (PerkCounterService.tryCounter(target, player, id)) return
             val registry = target.level().getServer().registryAccess().lookupOrThrow(Registries.ITEM) ?: return
 
             var changed = 0

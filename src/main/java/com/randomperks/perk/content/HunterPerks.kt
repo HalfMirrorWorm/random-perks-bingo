@@ -3,6 +3,7 @@ package com.randomperks.perk.content
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.PerkApplicationHistory
+import com.randomperks.game.PerkCounterService
 import com.randomperks.game.PerkSession
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
@@ -506,6 +507,7 @@ object HunterPerks {
 
             // 校验: 必须是当下的合法候选 —— 否则客户端伪造 uuid 就能劈任意人 (含队友)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            if (PerkCounterService.tryCounter(target, player, id)) return
             if (strike(target)) {
                 state.markUsed(id)
                 PerkApplicationHistory.record(target, id, player)
@@ -639,6 +641,7 @@ object HunterPerks {
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            if (PerkCounterService.tryCounter(target, player, id)) return
             if (!spawnChargedCreeper(target)) return
             state.markUsed(id)
             PerkApplicationHistory.record(target, id, player)

@@ -4,6 +4,7 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.game.LoyalGuardService
 import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkBoostQuery
+import com.randomperks.game.PerkCounterService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.ResonanceService
 import com.randomperks.game.PerkSession
@@ -404,6 +405,7 @@ object SummonPerks {
             if (state.isUsed(id)) return
 
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            if (PerkCounterService.tryCounter(target, player, id)) return
             val world = target.level() as? ServerLevel ?: return
 
             var spawned = 0

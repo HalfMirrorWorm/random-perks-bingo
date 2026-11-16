@@ -6,6 +6,7 @@ import com.randomperks.effect.PermanentEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.LayFlatService
 import com.randomperks.game.PerkApplicationHistory
+import com.randomperks.game.PerkCounterService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.SavageMagicService
@@ -510,6 +511,8 @@ object SeekerPerks {
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+
+            if (PerkCounterService.tryCounter(target, player, id)) return
 
             val mineral = MINERALS[target.random.nextInt(MINERALS.size)]
             PerkEffects.giveStack(target, ItemStack(mineral, GIFT_COUNT))

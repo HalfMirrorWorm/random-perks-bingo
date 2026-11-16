@@ -1,6 +1,7 @@
 package com.randomperks.perk.content
 
 import com.randomperks.game.PerkApplicationHistory
+import com.randomperks.game.PerkCounterService
 import com.randomperks.game.PerkDownsideSuppression
 import com.randomperks.game.PerkDownsides
 import com.randomperks.game.PerkGrantService
@@ -26,7 +27,7 @@ import net.minecraft.world.item.Items
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
  * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄、`trait_06` 精选、
- * `trait_07` 蔚蓝、`trait_08` 天赐, 其余 5 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
+ * `trait_07` 蔚蓝、`trait_08` 天赐、`trait_09` 反制, 其余 4 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
  */
 object TraitPerks {
 
@@ -42,7 +43,8 @@ object TraitPerks {
         add(HighRoll)
         add(BlueChoice)
         add(Windfall)
-        for (i in 9..COUNT) add(Trait(i))
+        add(Counter)
+        for (i in 10..COUNT) add(Trait(i))
     }
 
     /**
@@ -217,6 +219,28 @@ object TraitPerks {
 
         override fun onAcquire(ctx: PerkContext) {
             PerkGrantService.grantRandomPerks(ctx.player, 2)
+        }
+    }
+
+    /**
+     * 反制: 消耗一次充能, 无效化其他玩家下一次对你施加的负面词条效果。
+     */
+    object Counter : PerkDefinition {
+        override val id = "trait_09"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override fun icon(): ItemStack = ItemStack(Items.SHIELD)
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkCounterService.arm(ctx.state)
+            ctx.player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.counter_armed"),
+                true,
+            )
+        }
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkCounterService.disarm(ctx.state)
         }
     }
 
