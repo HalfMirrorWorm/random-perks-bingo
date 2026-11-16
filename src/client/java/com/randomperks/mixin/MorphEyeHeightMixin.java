@@ -27,6 +27,8 @@ public class MorphEyeHeightMixin {
             at = @At("HEAD"),
             cancellable = true)
     private void randomperks$pigEyeHeight(Pose pose, CallbackInfoReturnable<Float> cir) {
+        // 与碰撞箱保持一致: 睡姿/死亡姿势不覆盖, 否则躺下时相机高度会异常
+        if (pose == Pose.SLEEPING || pose == Pose.DYING) return;
         Entity self = (Entity) (Object) this;
         // 只对玩家生效 (词条效果是玩家变猪), 且用 UUID —— 客户端重生会复用实体 id
         if (!(self instanceof Player player)) return;
