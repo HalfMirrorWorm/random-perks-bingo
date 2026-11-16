@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.client.model.animal.pig.PigModel;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -54,23 +56,29 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
     private static boolean warnedNoContext;
 
     /** 纯外观问题只记一次日志, 免得每帧刷屏 */
-    private static boolean warnedHeadFailure;
     private static boolean warnedRenderFailure;
 
     private final PigModel pigModel;
     private final ModelPart pigHead;
-    private final PlayerModel headModel;
 
-    private final PigRenderState pigState = new PigRenderState();
+    /**
+     * 每个玩家实体一份独立的玩家头模型。
+     *
+     * <p>26.3 的模型提交是延迟执行的: submitModelPart 只保存 ModelPart 引用, 真正渲染时
+     * 才读取它的位置/旋转/visible。如果所有变猪玩家共用同一个 headModel, 一帧里后提交的
+     * 玩家会覆盖前一个人的头部姿势, 导致多个变猪玩家时头部位置/朝向错乱。这里按实体 id
+     * 缓存独立的模型实例, 让每次提交读到自己那份姿势。
+     */
+    private final EntityRendererProvider.Context context;
+    private final Map<Integer, PlayerModel> headModels = new HashMap<>();
 
     private PigMorphRenderer(EntityRendererProvider.Context context, boolean slimArms) {
         super(context, slimArms);
 
+        this.context = context;
         ModelPart pigRoot = context.bakeLayer(ModelLayers.PIG);
         this.pigModel = new PigModel(pigRoot);
         this.pigHead = pigRoot.getChild("head");
-
-        this.headModel = new PlayerModel(context.bakeLayer(ModelLayers.PLAYER), false);
     }
 
     /** 由 RendererContextMixin 在 Context 构造完成后调用 */
@@ -104,9 +112,15 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
                        CameraRenderState camera) {
         // 这个渲染器只会被 MorphRendererMixin 交给"变猪中"的玩家
         // (它按 UUID 判断), 所以这里直接按猪渲染即可。
+        // 皮肤还没加载时没有玩家头可画, 退回普通玩家模型 (至少不会出现无头猪)。
+        if (state.skin == null) {
+            super.submit(state, matrices, collector, camera);
+            return;
+        }
+
         boolean renderedAsPig = false;
         try {
-            renderAsPig(state, matrices, collector);
+            renderAsPig(state, matrices, collector, state.skin);
             renderedAsPig = true;
         } catch (Throwable t) {
             if (!warnedRenderFailure) {
@@ -122,9 +136,8 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
         }
     }
 
-    private void renderAsPig(AvatarRenderState state, PoseStack matrices, SubmitNodeCollector collector) {
-        PlayerSkin skin = state.skin;
-
+    private void renderAsPig(AvatarRenderState state, PoseStack matrices,
+                             SubmitNodeCollector collector, PlayerSkin skin) {
         matrices.pushPose();
         try {
             float baseScale = state.scale;
@@ -133,7 +146,7 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
             matrices.scale(-1.0f, -1.0f, 1.0f);
             matrices.translate(0.0, -1.501, 0.0);
 
-            PigRenderState pigState = this.pigState;
+            PigRenderState pigState = new PigRenderState();
             pigState.bodyRot = state.bodyRot;
             pigState.yRot = state.yRot;
             pigState.xRot = state.xRot;
@@ -143,7 +156,12 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
             pigState.isBaby = false;
 
             this.pigModel.setupAnim(pigState);
-            this.pigHead.visible = skin == null;
+            // ★ 26.3 的模型提交是延迟执行的: submitModel 只存模型引用, 真正渲染时
+            // 才读取 ModelPart.visible。这里必须在提交前隐藏猪头, 且**不能**在方法结束前
+            // 恢复 visible —— 否则猪头 (包括 26.3 新增的鼻子方块) 会在本帧稍后重新出现,
+            // 盖住玩家头。猪头隐藏后不再需要恢复; 玩家头由 renderPlayerHead 单独画在
+            // 猪头原来的轴心上。
+            this.pigHead.visible = false;
             collector.submitModel(
                     this.pigModel,
                     pigState,
@@ -153,26 +171,8 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
                     OverlayTexture.NO_OVERLAY,
                     state.outlineColor);
 
-            if (skin != null) {
-                try {
-                    renderPlayerHead(state, matrices, collector, skin);
-                } catch (Throwable t) {
-                    if (!warnedHeadFailure) {
-                        warnedHeadFailure = true;
-                        LOGGER.error("[RandomPerks] pig morph: player-head render failed, falling back to pig head", t);
-                    }
-                    this.pigHead.visible = true;
-                    collector.submitModelPart(
-                            this.pigHead,
-                            matrices,
-                            RenderTypes.entityCutout(PIG_TEXTURE),
-                            state.lightCoords,
-                            OverlayTexture.NO_OVERLAY,
-                            null);
-                }
-            }
-
-            this.pigHead.visible = true;
+            // 猪头已经完全不渲染, 在它原来的位置画玩家自己的头。
+            renderPlayerHead(state, matrices, collector, skin);
         } finally {
             matrices.popPose();
         }
@@ -180,12 +180,15 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
 
     private void renderPlayerHead(AvatarRenderState state, PoseStack matrices,
                                   SubmitNodeCollector collector, PlayerSkin skin) {
-        ModelPart head = this.headModel.head;
+        PlayerModel headModel = this.headModels.computeIfAbsent(
+                state.id,
+                id -> new PlayerModel(this.context.bakeLayer(ModelLayers.PLAYER), false));
+        ModelPart head = headModel.head;
 
         head.loadPose(this.pigHead.storePose());
         head.xRot = state.xRot * 0.017453292f;
         head.yRot = state.yRot * 0.017453292f;
-        this.headModel.hat.visible = state.showHat;
+        headModel.hat.visible = state.showHat;
 
         matrices.pushPose();
         try {
