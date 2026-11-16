@@ -41,6 +41,15 @@ object PerkCounterService {
 
         disarm(state)
 
+        // 被反制的词条同样消耗一次使用次数 (多次使用的贮藏词条只扣一次)
+        val sourceState = PerkStateManager.get(source.uuid)
+        val sourcePerk = sourceState?.ownedPerks?.firstOrNull { it.id == perkId }
+        if (sourceState != null && sourcePerk != null) {
+            sourceState.consumeUse(sourcePerk)
+            PerkGrantService.notifyPerkListChanged(source)
+            PerkGrantService.syncAbilities(source)
+        }
+
         val perkName = Component.translatable("random-perks-bingo.perk.$perkId.name")
         val targetMessage = Component.translatable(
             "random-perks-bingo.message.counter_triggered_target",

@@ -91,7 +91,11 @@ object StealService {
             player.sendSystemMessage(Component.translatable("random-perks-bingo.message.steal_no_target"), true)
             return
         }
-        if (PerkCounterService.tryCounter(target, player, PERK_ID)) return
+        if (PerkCounterService.tryCounter(target, player, PERK_ID)) {
+            // 被反制: 词条已消耗, 清掉锁定的目标, 避免之后被"再蓄"刷新时沿用旧目标
+            state.memory.remove(TARGET_KEY)
+            return
+        }
         val taken = target.inventory.removeItemNoUpdate(index)
         if (taken.isEmpty) return
 
