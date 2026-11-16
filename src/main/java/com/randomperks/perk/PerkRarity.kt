@@ -11,10 +11,10 @@ package com.randomperks.perk
  */
 enum class PerkRarity(val color: Int, val weight: Int) {
     /** 粗糙 (绿): 比普通更低级的品质 */
-    GREEN(0xFF4CAF50.toInt(), 300),
+    GREEN(0xFF4CAF50.toInt(), 200),
     BLUE(0xFF4A90D9.toInt(), 800),
-    PURPLE(0xFF9B59B6.toInt(), 315),
-    GOLD(0xFFF1C40F.toInt(), 62),
+    PURPLE(0xFF9B59B6.toInt(), 385),
+    GOLD(0xFFF1C40F.toInt(), 92),
 
     /** 禁忌 (红): 高于传说、低于神话 */
     RED(0xFFFF4444.toInt(), 20),
