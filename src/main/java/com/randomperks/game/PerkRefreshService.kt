@@ -28,7 +28,7 @@ object PerkRefreshService {
         if (state.currentOffer() == null) return
         if (PerkRefreshCharges.charges(state) <= 0) return
 
-        val options = when {
+        var options = when {
             // "蔚蓝"机会: 重抽时仍然只从蓝色词条里选
             state.currentOfferKind() == OfferKind.BLUE -> PerkRollService.rollBlueOptions(
                 state,
@@ -52,6 +52,16 @@ object PerkRefreshService {
                 extraExcluded = PerkStateManager.globallyOwnedMythicIds(),
             )
         }
+
+        // "专研": 重抽后继续保持保底; 蓝机会不参与 (全是蓝色候选)
+        if (state.currentOfferKind() == OfferKind.NORMAL &&
+            (PerkStreakBonus.isPending(state) || PerkStreakBonus.isCurrent(state))
+        ) {
+            val adjusted = options.toMutableList()
+            PerkStreakBonus.applyToOffer(state, adjusted)
+            options = adjusted
+        }
+
         if (options.isEmpty()) {
             player.sendSystemMessage(
                 Component.translatable("random-perks-bingo.message.refresh_empty"),

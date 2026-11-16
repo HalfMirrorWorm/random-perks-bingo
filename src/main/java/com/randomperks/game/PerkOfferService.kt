@@ -61,12 +61,25 @@ object PerkOfferService {
                     }
                 }
 
+                // "专研": 下一次普通机会保底出现一个选定流派的紫/金词条。
+                // 如果这是"精选"机会, 只能保底金色, 不能破坏金/红三选一的承诺。
+                if (state.currentOfferKind() == OfferKind.NORMAL && PerkStreakBonus.isPending(state)) {
+                    val raw = state.currentOffer()
+                    val current = raw?.mapNotNull { PerkRegistry.byId(it) }?.toMutableList()
+                    if (raw != null && current != null && current.size == raw.size) {
+                        PerkStreakBonus.applyToOffer(state, current)
+                        state.pendingOffers[0] = current.map { it.id }
+                    }
+                }
+
                 val finalOffer = state.currentOffer() ?: return
                 val options = finalOffer.mapNotNull { PerkRegistry.byId(it) }
                 if (options.isEmpty()) {
                     // 数据异常: 丢弃该组, 避免卡住队列
                     RandomPerksMod.logger.warn("[RandomPerks] offer for {} contains no valid perks", player.name.string)
                     state.consumeOffer()
+                    PerkHighRarityOffer.clearCurrent(state)
+                    PerkStreakBonus.clearCurrent(state)
                     return
                 }
 
@@ -155,12 +168,15 @@ object PerkOfferService {
 
         state.consumeOffer()
         PerkHighRarityOffer.clearCurrent(state)
+        PerkStreakBonus.clearCurrent(state)
         state.ownedPerks.add(perk)
         com.randomperks.stats.PerkStatsService.recordPicked(perk.id)
         com.randomperks.recap.RecapService.recordPerkPick(player, perk.id)
         perk.onAcquire(PerkContext(player, state))
         // 词条列表已变化: 触发"同流派联动"类词条的即时重算
         PerkGrantService.notifyPerkListChanged(player)
+        // "专研"进度: 统计这次选择是否属于选定流派
+        PerkStreakBonus.recordPick(player, state, perk)
 
         // 反馈
         val rarityName = when (perk.rarity) {

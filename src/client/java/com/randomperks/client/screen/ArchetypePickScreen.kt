@@ -12,7 +12,18 @@ import net.minecraft.network.chat.Component
  *
  * Esc 关闭不会消耗选择机会; 可以之后在 V 界面点击该特质重新打开。
  */
-class ArchetypePickScreen : Screen(Component.translatable("random-perks-bingo.screen.choose_archetype")) {
+class ArchetypePickScreen(
+    private val purpose: String = "specialization",
+) : Screen(
+    Component.translatable(
+        if (purpose == "streak") "random-perks-bingo.screen.choose_streak_archetype"
+        else "random-perks-bingo.screen.choose_archetype",
+    ),
+) {
+
+    private val hintKey =
+        if (purpose == "streak") "random-perks-bingo.screen.choose_streak_archetype.hint"
+        else "random-perks-bingo.screen.choose_archetype.hint"
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -52,7 +63,7 @@ class ArchetypePickScreen : Screen(Component.translatable("random-perks-bingo.sc
         context.centeredText(font, title, width / 2, 16, ScreenStyle.TEXT_NAME)
         context.centeredText(
             font,
-            Component.translatable("random-perks-bingo.screen.choose_archetype.hint"),
+            Component.translatable(hintKey),
             width / 2, 32, ScreenStyle.TEXT_DIM,
         )
 
@@ -92,7 +103,7 @@ class ArchetypePickScreen : Screen(Component.translatable("random-perks-bingo.sc
         if (event.button() == 1) {
             val index = cardAt(event.x(), event.y())
             if (index in archetypes.indices) {
-                ClientPerkNetworking.pickArchetype(archetypes[index].ordinal)
+                ClientPerkNetworking.pickArchetype(purpose, archetypes[index].ordinal)
                 onClose()
                 return true
             }

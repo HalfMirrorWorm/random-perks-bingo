@@ -116,9 +116,9 @@ object ClientPerkNetworking {
             }
         }
 
-        ClientPlayNetworking.registerGlobalReceiver(ArchetypePickS2C.ID) { _, context ->
+        ClientPlayNetworking.registerGlobalReceiver(ArchetypePickS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().gui.setScreen(ArchetypePickScreen())
+                context.client().gui.setScreen(ArchetypePickScreen(payload.purpose))
             }
         }
 
@@ -391,10 +391,10 @@ object ClientPerkNetworking {
         ClientPlayNetworking.send(PerkRefreshC2S())
     }
 
-    /** 提交"专精"选择的流派 */
-    fun pickArchetype(ordinal: Int) {
+    /** 提交流派选择 (purpose 区分"专精"与"专研") */
+    fun pickArchetype(purpose: String, ordinal: Int) {
         if (!ClientPlayNetworking.canSend(ArchetypePickC2S.ID)) return
-        ClientPlayNetworking.send(ArchetypePickC2S(ordinal))
+        ClientPlayNetworking.send(ArchetypePickC2S(purpose, ordinal))
     }
 
     /** 提交"净化"选择的词条 */

@@ -103,7 +103,10 @@ object PerkNetworking {
             val player = context.player()
             val ordinal = payload.archetypeOrdinal
             context.server().execute {
-                com.randomperks.perk.content.TraitPerks.ArchetypeBias.handlePick(player, ordinal)
+                when (payload.purpose) {
+                    "streak" -> TraitPerks.ArchetypeStreak.handlePick(player, ordinal)
+                    else -> TraitPerks.ArchetypeBias.handlePick(player, ordinal)
+                }
             }
         }
 
@@ -253,9 +256,10 @@ object PerkNetworking {
     }
 
     /** 打开"专精"流派选择器 */
-    fun sendArchetypePick(player: ServerPlayer) {
+    /** 打开流派选择器 (purpose 区分"专精"与"专研") */
+    fun sendArchetypePick(player: ServerPlayer, purpose: String = "specialization") {
         if (!ServerPlayNetworking.canSend(player, ArchetypePickS2C.ID)) return
-        runCatching { ServerPlayNetworking.send(player, ArchetypePickS2C()) }
+        runCatching { ServerPlayNetworking.send(player, ArchetypePickS2C(purpose)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send archetype picker: {}", it.toString()) }
     }
 
