@@ -190,6 +190,32 @@ class DownsidePickC2S(val perkId: String) : CustomPacketPayload {
     override fun type() = ID
 }
 
+/** S2C: 打开"升华"的蓝色词条选择器 */
+class TransmuteOpenS2C(val options: List<PerkOptionData>) : CustomPacketPayload {
+    companion object {
+        val ID = CustomPacketPayload.Type<TransmuteOpenS2C>(Identifier.fromNamespaceAndPath("random-perks-bingo", "transmute_open"))
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, TransmuteOpenS2C> = StreamCodec.ofMember(
+            { value, buf -> writeCards(buf, value.options) },
+            { buf -> TransmuteOpenS2C(readCards(buf)) },
+        )
+    }
+
+    override fun type() = ID
+}
+
+/** C2S: 升华选择的蓝色词条 id */
+class TransmutePickC2S(val perkId: String) : CustomPacketPayload {
+    companion object {
+        val ID = CustomPacketPayload.Type<TransmutePickC2S>(Identifier.fromNamespaceAndPath("random-perks-bingo", "transmute_pick"))
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, TransmutePickC2S> = StreamCodec.ofMember(
+            { value, buf -> buf.writeUtf(value.perkId) },
+            { buf -> TransmutePickC2S(buf.readUtf()) },
+        )
+    }
+
+    override fun type() = ID
+}
+
 /** C2S: 玩家请求查看已获得的词条列表 */
 class PerkListRequestC2S : CustomPacketPayload {
     companion object {

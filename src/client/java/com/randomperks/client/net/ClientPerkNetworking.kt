@@ -12,7 +12,7 @@ import com.randomperks.client.screen.PerkChoiceScreen
 import com.randomperks.client.screen.PerkListScreen
 import com.randomperks.client.screen.TraitChoiceScreen
 import com.randomperks.client.screen.ArchetypePickScreen
-import com.randomperks.client.screen.DownsidePickScreen
+import com.randomperks.client.screen.OwnedPerkPickScreen
 import com.randomperks.client.screen.StealScreen
 import com.randomperks.client.screen.TargetPickScreen
 import com.randomperks.client.screen.LastGameRecapScreen
@@ -41,6 +41,8 @@ import com.randomperks.network.ArchetypePickS2C
 import com.randomperks.network.ArchetypePickC2S
 import com.randomperks.network.DownsideOpenS2C
 import com.randomperks.network.DownsidePickC2S
+import com.randomperks.network.TransmuteOpenS2C
+import com.randomperks.network.TransmutePickC2S
 import com.randomperks.network.ActionTargetPickC2S
 import com.randomperks.network.ActionTargetsS2C
 import com.randomperks.network.BigSnowballS2C
@@ -122,7 +124,25 @@ object ClientPerkNetworking {
 
         ClientPlayNetworking.registerGlobalReceiver(DownsideOpenS2C.ID) { payload, context ->
             context.client().execute {
-                context.client().gui.setScreen(DownsidePickScreen(payload.options))
+                context.client().gui.setScreen(
+                    OwnedPerkPickScreen(
+                        "random-perks-bingo.screen.choose_downside",
+                        "random-perks-bingo.screen.choose_downside.hint",
+                        payload.options,
+                    ) { id -> pickDownside(id) },
+                )
+            }
+        }
+
+        ClientPlayNetworking.registerGlobalReceiver(TransmuteOpenS2C.ID) { payload, context ->
+            context.client().execute {
+                context.client().gui.setScreen(
+                    OwnedPerkPickScreen(
+                        "random-perks-bingo.screen.choose_transmute",
+                        "random-perks-bingo.screen.choose_transmute.hint",
+                        payload.options,
+                    ) { id -> pickTransmute(id) },
+                )
             }
         }
 
@@ -381,6 +401,12 @@ object ClientPerkNetworking {
     fun pickDownside(perkId: String) {
         if (!ClientPlayNetworking.canSend(DownsidePickC2S.ID)) return
         ClientPlayNetworking.send(DownsidePickC2S(perkId))
+    }
+
+    /** 提交"升华"选择的蓝色词条 */
+    fun pickTransmute(perkId: String) {
+        if (!ClientPlayNetworking.canSend(TransmutePickC2S.ID)) return
+        ClientPlayNetworking.send(TransmutePickC2S(perkId))
     }
 
     /** 界面被关闭 (未选择) */

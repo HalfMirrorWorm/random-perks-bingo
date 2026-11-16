@@ -1,5 +1,6 @@
 package com.randomperks.perk.content
 
+import com.randomperks.RandomPerksMod
 import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkCounterService
 import com.randomperks.game.PerkDownsideSuppression
@@ -33,7 +34,8 @@ import java.util.UUID
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
  * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄、`trait_06` 精选、
- * `trait_07` 蔚蓝、`trait_08` 天赐、`trait_09` 反制、`trait_10` 转移, 其余 3 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
+ * `trait_07` 蔚蓝、`trait_08` 天赐、`trait_09` 反制、`trait_10` 转移、`trait_11` 升华, 其余 2 条仍是预留占位
+ * (名称/描述在语言文件里, 效果待填充)。
  */
 object TraitPerks {
 
@@ -51,7 +53,8 @@ object TraitPerks {
         add(Windfall)
         add(Counter)
         add(ChoiceTransfer)
-        for (i in 11..COUNT) add(Trait(i))
+        add(Transmute)
+        for (i in 12..COUNT) add(Trait(i))
     }
 
     /**
@@ -362,6 +365,103 @@ object TraitPerks {
             val team = player.team?.name ?: return emptyList()
             return player.level().getServer().playerList.players.filter {
                 it !== player && it.isAlive && !it.isSpectator && it.team?.name == team
+            }
+        }
+    }
+
+    /**
+     * 升华: 选择一个自己拥有的蓝色词条, 随机变成紫色词条。
+     *
+     * <p>替换时先执行旧词条的 onRemove 清理效果, 再执行新词条的 onAcquire;
+     * 新词条从当前未拥有、未在待选队列中的紫色词条里随机抽取。
+     */
+    object Transmute : PerkDefinition {
+        override val id = "trait_11"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override val isOneTime = true
+        override fun icon(): ItemStack = ItemStack(Items.AMETHYST_SHARD)
+
+        override fun onAcquire(ctx: PerkContext) = openPicker(ctx.player)
+
+        override fun onActivate(ctx: PerkContext) = openPicker(ctx.player)
+
+        private fun openPicker(player: ServerPlayer) {
+            val state = PerkStateManager.get(player.uuid) ?: return
+            val bluePerks = state.ownedPerks.filter { it.rarity == PerkRarity.BLUE }
+            if (bluePerks.isEmpty()) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.transmute_no_blue"),
+                    true,
+                )
+                return
+            }
+            if (purpleCandidates(state).isEmpty()) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.transmute_purple_empty"),
+                    true,
+                )
+                return
+            }
+
+            PerkNetworking.sendTransmuteOpen(
+                player,
+                bluePerks.map {
+                    PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime)
+                },
+            )
+        }
+
+        /** 客户端选择了要升华的蓝色词条 id */
+        fun handlePick(player: ServerPlayer, perkId: String) {
+            val state = PerkStateManager.get(player.uuid) ?: return
+            val traitPerk = state.ownedPerks.firstOrNull { it.id == id } ?: return
+            if (state.usesRemaining(traitPerk) <= 0) return
+
+            val oldPerk = state.ownedPerks.firstOrNull { it.id == perkId } ?: return
+            if (oldPerk.rarity != PerkRarity.BLUE) return
+
+            val candidates = purpleCandidates(state)
+            if (candidates.isEmpty()) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.transmute_purple_empty"),
+                    true,
+                )
+                return
+            }
+            val newPerk = candidates.random()
+
+            state.ownedPerks.remove(oldPerk)
+            state.usedPerks.remove(oldPerk.id)
+            state.useCounts.remove(oldPerk.id)
+            state.cooldowns.remove(oldPerk.id)
+            runCatching { oldPerk.onRemove(PerkContext(player, state)) }
+                .onFailure { RandomPerksMod.logger.error("[RandomPerks] perk {} onRemove failed", oldPerk.id, it) }
+
+            state.ownedPerks.add(newPerk)
+            runCatching { newPerk.onAcquire(PerkContext(player, state)) }
+                .onFailure { RandomPerksMod.logger.error("[RandomPerks] perk {} onAcquire failed", newPerk.id, it) }
+
+            state.consumeUse(traitPerk)
+            PerkGrantService.notifyPerkListChanged(player)
+            PerkGrantService.syncAbilities(player)
+
+            player.sendSystemMessage(
+                Component.translatable(
+                    "random-perks-bingo.message.transmute_done",
+                    Component.translatable("random-perks-bingo.perk.${oldPerk.id}.name"),
+                    Component.translatable("random-perks-bingo.perk.${newPerk.id}.name"),
+                ),
+                false,
+            )
+        }
+
+        /** 未拥有、未在待选队列里的紫色词条 */
+        private fun purpleCandidates(state: PlayerPerkState): List<PerkDefinition> {
+            val excluded = state.ownedPerks.mapTo(mutableSetOf()) { it.id }
+            state.pendingOffers.forEach { excluded.addAll(it) }
+            return PerkRegistry.all.filter {
+                it.rarity == PerkRarity.PURPLE && it.id !in excluded
             }
         }
     }

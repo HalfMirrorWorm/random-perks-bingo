@@ -1,6 +1,5 @@
 package com.randomperks.client.screen
 
-import com.randomperks.client.net.ClientPerkNetworking
 import com.randomperks.network.PerkOptionData
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
@@ -8,13 +7,16 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
 
 /**
- * "净化"特质的词条选择器: 列出自己已拥有、且带有可净化负面效果的词条。
+ * "已拥有词条"选择器: 由净化、升华等特质共用。
  *
- * Esc 关闭不会消耗选择机会; 之后可以在 V 界面点击该特质重新打开。
+ * 传入不同的标题/提示 key 和选择回调; Esc 关闭不会消耗使用次数。
  */
-class DownsidePickScreen(
+class OwnedPerkPickScreen(
+    private val titleKey: String,
+    private val hintKey: String,
     private val options: List<PerkOptionData>,
-) : Screen(Component.translatable("random-perks-bingo.screen.choose_downside")) {
+    private val onPick: (String) -> Unit,
+) : Screen(Component.translatable(titleKey)) {
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()
@@ -55,7 +57,7 @@ class DownsidePickScreen(
         context.centeredText(font, title, width / 2, 16, ScreenStyle.TEXT_NAME)
         context.centeredText(
             font,
-            Component.translatable("random-perks-bingo.screen.choose_downside.hint"),
+            Component.translatable(hintKey),
             width / 2, 32, ScreenStyle.TEXT_DIM,
         )
 
@@ -100,7 +102,7 @@ class DownsidePickScreen(
         if (event.button() == 1) {
             val index = cardAt(event.x(), event.y())
             if (index in options.indices) {
-                ClientPerkNetworking.pickDownside(options[index].id)
+                onPick(options[index].id)
                 onClose()
                 return true
             }

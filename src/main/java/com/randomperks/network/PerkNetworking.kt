@@ -31,6 +31,7 @@ object PerkNetworking {
         PayloadTypeRegistry.clientboundPlay().register(TraitOfferS2C.ID, TraitOfferS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(ArchetypePickS2C.ID, ArchetypePickS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(DownsideOpenS2C.ID, DownsideOpenS2C.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(TransmuteOpenS2C.ID, TransmuteOpenS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkListS2C.ID, PerkListS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkCatalogS2C.ID, PerkCatalogS2C.CODEC)
         PayloadTypeRegistry.clientboundPlay().register(PerkAbilitySyncS2C.ID, PerkAbilitySyncS2C.CODEC)
@@ -42,6 +43,7 @@ object PerkNetworking {
         PayloadTypeRegistry.serverboundPlay().register(TraitPickC2S.ID, TraitPickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(ArchetypePickC2S.ID, ArchetypePickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(DownsidePickC2S.ID, DownsidePickC2S.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(TransmutePickC2S.ID, TransmutePickC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkListRequestC2S.ID, PerkListRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkCatalogRequestC2S.ID, PerkCatalogRequestC2S.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(PerkActivateC2S.ID, PerkActivateC2S.CODEC)
@@ -110,6 +112,14 @@ object PerkNetworking {
             val perkId = payload.perkId
             context.server().execute {
                 com.randomperks.perk.content.TraitPerks.Cleanse.handlePick(player, perkId)
+            }
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(TransmutePickC2S.ID) { payload, context ->
+            val player = context.player()
+            val perkId = payload.perkId
+            context.server().execute {
+                TraitPerks.Transmute.handlePick(player, perkId)
             }
         }
 
@@ -254,6 +264,13 @@ object PerkNetworking {
         if (!ServerPlayNetworking.canSend(player, DownsideOpenS2C.ID)) return
         runCatching { ServerPlayNetworking.send(player, DownsideOpenS2C(options)) }
             .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send downside picker: {}", it.toString()) }
+    }
+
+    /** 打开"升华"的蓝色词条选择器 */
+    fun sendTransmuteOpen(player: ServerPlayer, options: List<PerkOptionData>) {
+        if (!ServerPlayNetworking.canSend(player, TransmuteOpenS2C.ID)) return
+        runCatching { ServerPlayNetworking.send(player, TransmuteOpenS2C(options)) }
+            .onFailure { RandomPerksMod.logger.warn("[RandomPerks] failed to send transmute picker: {}", it.toString()) }
     }
 
     /** 下发所有在线玩家的词条列表 */
