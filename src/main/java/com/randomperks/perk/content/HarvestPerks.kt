@@ -36,13 +36,17 @@ import net.minecraft.resources.Identifier
  */
 object HarvestPerks {
 
-    /** 紫 · 丰饶: **田园修补** —— 收获成熟作物时, 自动为全身装备 (护甲 4 件 + 主副手)
+    /** 紫 · 丰饶: **田园修补** —— 获得时得到 10 个骨粉;
+     *  收获成熟作物时, 自动为全身装备 (护甲 4 件 + 主副手)
      *  各修复 10 点耐久 (只修有损耗的物品, 不消耗经验/材料)。 */
     object FieldMender : PerkDefinition {
         override val id = "harvest_field_mender"
         override val rarity = PerkRarity.PURPLE
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.WHEAT)
+
+        /** 获得时赠送的骨粉数量 */
+        private const val BONE_MEAL_COUNT = 10
 
         /** 修复范围: 护甲四件 + 主手 + 副手 */
         private val EQUIPMENT_SLOTS = arrayOf(
@@ -53,6 +57,10 @@ object HarvestPerks {
             EquipmentSlot.MAINHAND,
             EquipmentSlot.OFFHAND,
         )
+
+        override fun onAcquire(ctx: PerkContext) {
+            PerkEffects.giveStack(ctx.player, ItemStack(Items.BONE_MEAL, BONE_MEAL_COUNT))
+        }
 
         override fun onBlockBreak(ctx: PerkContext, pos: BlockPos, blockState: BlockState) {
             if (!PerkBoostQuery.isMatureCrop(blockState)) return
