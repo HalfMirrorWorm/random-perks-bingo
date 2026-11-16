@@ -72,6 +72,8 @@
   "random-perks-bingo.screen.choose_archetype.hint": "点击一个类型 · Esc 稍后再选",
   "random-perks-bingo.screen.choose_streak_archetype": "选择专研类型",
   "random-perks-bingo.screen.choose_streak_archetype.hint": "每选择 3 个该类型词条, 下一次普通三选一会出现该类型的紫色或金色词条",
+  "random-perks-bingo.screen.choose_exclude_archetype": "选择要屏蔽的流派",
+  "random-perks-bingo.screen.choose_exclude_archetype.hint": "该流派的词条将不再出现在你的词条选择中",
   "random-perks-bingo.screen.choose_archetype.card": "词条类型",
   "random-perks-bingo.screen.choose_downside": "选择要净化的词条",
   "random-perks-bingo.screen.choose_downside.hint": "点击一个词条 · Esc 稍后再选",
@@ -113,6 +115,7 @@
   "random-perks-bingo.message.streak_archetype_chosen": "已选择专研类型：%s。每选择 3 个该类型词条，下一次普通三选一会出现该类型的紫色或金色词条。",
   "random-perks-bingo.message.streak_progress": "专研进度：%s/3",
   "random-perks-bingo.message.streak_ready": "专研已就绪：下一次普通三选一会出现该类型的紫色或金色词条。",
+  "random-perks-bingo.message.exclusion_archetype_chosen": "已屏蔽词条类型：%s。之后的词条选择不会再出现该类型词条。",
   "random-perks-bingo.message.choices_available": "你有 %s 次选择待选。",
   "random-perks-bingo.message.game_started": "随机词条 Bingo: 开局先选择 1 个特质, 然后获得 1 次词条选择!",
   "random-perks-bingo.message.acquired": "获得 %s %s",
@@ -541,8 +544,8 @@
   "random-perks-bingo.perk.trait_11.desc": "选择一个你拥有的蓝色词条，使其随机变成紫色词条。",
   "random-perks-bingo.perk.trait_12.name": "专研",
   "random-perks-bingo.perk.trait_12.desc": "选择一个词条类型。之后每选择 3 个该类型词条，下一次普通三选一必定出现一个该类型的紫色或金色词条。",
-  "random-perks-bingo.perk.trait_13.name": "预留特质 13",
-  "random-perks-bingo.perk.trait_13.desc": "占位特质，效果待定。"
+  "random-perks-bingo.perk.trait_13.name": "屏蔽",
+  "random-perks-bingo.perk.trait_13.desc": "选择一个词条类型，之后你的词条选择中不会再出现该类型的词条。"
 }
 
 

@@ -16,14 +16,19 @@ class ArchetypePickScreen(
     private val purpose: String = "specialization",
 ) : Screen(
     Component.translatable(
-        if (purpose == "streak") "random-perks-bingo.screen.choose_streak_archetype"
-        else "random-perks-bingo.screen.choose_archetype",
+        when (purpose) {
+            "streak" -> "random-perks-bingo.screen.choose_streak_archetype"
+            "exclude" -> "random-perks-bingo.screen.choose_exclude_archetype"
+            else -> "random-perks-bingo.screen.choose_archetype"
+        },
     ),
 ) {
 
-    private val hintKey =
-        if (purpose == "streak") "random-perks-bingo.screen.choose_streak_archetype.hint"
-        else "random-perks-bingo.screen.choose_archetype.hint"
+    private val hintKey = when (purpose) {
+        "streak" -> "random-perks-bingo.screen.choose_streak_archetype.hint"
+        "exclude" -> "random-perks-bingo.screen.choose_exclude_archetype.hint"
+        else -> "random-perks-bingo.screen.choose_archetype.hint"
+    }
 
     private companion object {
         const val DIM_BACKGROUND = 0x90000000.toInt()

@@ -5,6 +5,7 @@ import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkCounterService
 import com.randomperks.game.PerkDownsideSuppression
 import com.randomperks.game.PerkDownsides
+import com.randomperks.game.PerkExclusionService
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkHighRarityOffer
 import com.randomperks.game.PerkRefreshCharges
@@ -17,6 +18,7 @@ import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
+import com.randomperks.roll.PerkExclusion
 import com.randomperks.roll.PerkRollBias
 import com.randomperks.roll.PerkRollService
 import com.randomperks.state.ChoiceKind
@@ -34,9 +36,9 @@ import java.util.UUID
  * 特质 (灰): 只能通过"特质选择"获得的特殊词条。
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
- * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄、`trait_06` 精选、
- * `trait_07` 蔚蓝、`trait_08` 天赐、`trait_09` 反制、`trait_10` 转移、`trait_11` 升华、`trait_12` 专研,
- * 剩余 1 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
+ * 13 条已全部实现: `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄、
+ * `trait_06` 精选、`trait_07` 蔚蓝、`trait_08` 天赐、`trait_09` 反制、`trait_10` 转移、`trait_11` 升华、
+ * `trait_12` 专研、`trait_13` 屏蔽。
  */
 object TraitPerks {
 
@@ -56,7 +58,7 @@ object TraitPerks {
         add(ChoiceTransfer)
         add(Transmute)
         add(ArchetypeStreak)
-        for (i in 13..COUNT) add(Trait(i))
+        add(ArchetypeExclusion)
     }
 
     /**
@@ -82,13 +84,6 @@ object TraitPerks {
                 runCatching { perk.onAcquire(ctx) }
             }
         }
-    }
-
-    private class Trait(index: Int) : PerkDefinition {
-        override val id = "trait_${index.toString().padStart(2, '0')}"
-        override val rarity = PerkRarity.TRAIT
-        override val archetype = PerkArchetype.TRAIT
-        override fun icon(): ItemStack = ItemStack(Items.DYE.gray())
     }
 
     /**
@@ -516,6 +511,52 @@ object TraitPerks {
 
         override fun onRemove(ctx: PerkContext) {
             PerkStreakBonus.clearAll(ctx.state)
+        }
+    }
+
+    /**
+     * 屏蔽: 选择一个流派, 之后的词条选择不再出现该流派词条。
+     */
+    object ArchetypeExclusion : PerkDefinition {
+        override val id = "trait_13"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override val isOneTime = true
+        override fun icon(): ItemStack = ItemStack(Items.BARRIER)
+
+        override fun onAcquire(ctx: PerkContext) = openPicker(ctx.player)
+
+        override fun onActivate(ctx: PerkContext) = openPicker(ctx.player)
+
+        private fun openPicker(player: ServerPlayer) {
+            PerkNetworking.sendArchetypePick(player, "exclude")
+        }
+
+        /** 客户端选择了一个流派 (ordinal, 排除 TRAIT) */
+        fun handlePick(player: ServerPlayer, ordinal: Int) {
+            val state = PerkStateManager.get(player.uuid) ?: return
+            val perk = state.ownedPerks.firstOrNull { it.id == id } ?: return
+            if (state.usesRemaining(perk) <= 0) return
+
+            val archetype = PerkArchetype.entries.getOrNull(ordinal) ?: return
+            if (archetype == PerkArchetype.TRAIT) return
+
+            PerkExclusion.set(state, archetype)
+            state.consumeUse(perk)
+            PerkExclusionService.rerollPendingOffers(state)
+            PerkGrantService.notifyPerkListChanged(player)
+            PerkGrantService.syncAbilities(player)
+            player.sendSystemMessage(
+                Component.translatable(
+                    "random-perks-bingo.message.exclusion_archetype_chosen",
+                    Component.translatable("random-perks-bingo.archetype.${archetype.id}"),
+                ),
+                false,
+            )
+        }
+
+        override fun onRemove(ctx: PerkContext) {
+            PerkExclusion.clear(ctx.state)
         }
     }
 

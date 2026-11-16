@@ -4,6 +4,7 @@ import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
+import com.randomperks.roll.PerkExclusion
 import com.randomperks.roll.PerkRollBias
 import com.randomperks.state.PlayerPerkState
 import com.randomperks.stats.PerkStatsService
@@ -104,6 +105,8 @@ object PerkStreakBonus {
             clearAll(state)
             return false
         }
+        // 该流派被"屏蔽"时, 保底永远无法兑现, 不再注入
+        if (PerkExclusion.archetype(state) == archetype) return false
 
         val highOnly = PerkHighRarityOffer.isCurrentHigh(state)
         fun qualifies(perk: PerkDefinition): Boolean =

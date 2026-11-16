@@ -105,6 +105,7 @@ object PerkNetworking {
             context.server().execute {
                 when (payload.purpose) {
                     "streak" -> TraitPerks.ArchetypeStreak.handlePick(player, ordinal)
+                    "exclude" -> TraitPerks.ArchetypeExclusion.handlePick(player, ordinal)
                     else -> TraitPerks.ArchetypeBias.handlePick(player, ordinal)
                 }
             }

@@ -3,6 +3,7 @@ package com.randomperks.game
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
+import com.randomperks.roll.PerkExclusion
 import com.randomperks.roll.PerkRollBias
 import com.randomperks.state.PlayerPerkState
 import kotlin.random.Random
@@ -50,14 +51,18 @@ object PerkHighRarityOffer {
         excluded.addAll(extraExcluded)
         state.pendingOffers.forEach { excluded.addAll(it) }
 
+        val excludedArchetype = PerkExclusion.archetype(state)
         val pool = PerkRegistry.all.filter {
-            (it.rarity == PerkRarity.GOLD || it.rarity == PerkRarity.RED) && it.id !in excluded
+            (it.rarity == PerkRarity.GOLD || it.rarity == PerkRarity.RED) &&
+                it.archetype != excludedArchetype && it.id !in excluded
         }
         val options = pool.shuffled(Random.Default).take(3).toMutableList()
 
         // "专精"保底: 金/红池里若还有选定流派的词条, 保证它出现在候选里
         val archetype = PerkRollBias.bias(state)
-        if (archetype != null && options.isNotEmpty() && options.none { it.archetype == archetype }) {
+        if (archetype != null && archetype != excludedArchetype &&
+            options.isNotEmpty() && options.none { it.archetype == archetype }
+        ) {
             val candidates = pool.filter { it.archetype == archetype && it !in options }
             if (candidates.isNotEmpty()) options[options.lastIndex] = candidates.random(Random.Default)
         }
