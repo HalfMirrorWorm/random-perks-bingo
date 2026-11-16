@@ -4,17 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.animal.pig.PigModel;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.PigRenderState;
@@ -23,7 +19,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,20 +61,6 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
     private final ModelPart pigHead;
     private final PlayerModel headModel;
 
-    /**
-     * 玩家头 + 帽子 + 头盔的渲染状态。
-     *
-     * 头盔不是自己画的: 交给原版的 {@link HumanoidArmorLayer}, 它才认得护甲纹理、
-     * 皮革染色、附魔光效和自定义 ArmorRenderer。唯一要喂给它的是"头上的装备"。
-     */
-    private final AvatarRenderState armorState = new AvatarRenderState();
-
-    private final HumanoidArmorLayer<AvatarRenderState, PlayerModel,
-            HumanoidModel<AvatarRenderState>> armorRenderer;
-
-    /** 26.3 的头盔渲染器不会再从上下文模型复制变换, 需要自己把它的头轴心对齐到猪头 */
-    private final HumanoidModel<AvatarRenderState> helmetModel;
-
     private final PigRenderState pigState = new PigRenderState();
 
     private PigMorphRenderer(EntityRendererProvider.Context context, boolean slimArms) {
@@ -90,25 +71,6 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
         this.pigHead = pigRoot.getChild("head");
 
         this.headModel = new PlayerModel(context.bakeLayer(ModelLayers.PLAYER), false);
-
-        // 头盔模型: 26.3 的 HumanoidArmorLayer 直接把盔甲模型交给 EquipmentLayerRenderer,
-        // 不会再从上下文模型复制变换 (1.21.8 的 copyTransforms 那一步没了)。
-        // 因此这里保留头盔模型引用, 渲染前手动把它的头轴心对齐到猪头。
-        ArmorModelSet<HumanoidModel<AvatarRenderState>> armorModels = ArmorModelSet.bake(
-                ModelLayers.PLAYER_ARMOR,
-                context.getModelSet(),
-                part -> new HumanoidModel<>(part));
-        this.helmetModel = armorModels.head();
-        this.armorRenderer = new HumanoidArmorLayer<>(
-                new HeadFeatureContext(this.headModel),
-                armorModels,
-                context.getEquipmentRenderer());
-
-        // 只画头盔: 其余三个槽位保持空, renderArmor 遇到空槽会直接返回
-        this.armorState.headEquipment = ItemStack.EMPTY;
-        this.armorState.chestEquipment = ItemStack.EMPTY;
-        this.armorState.legsEquipment = ItemStack.EMPTY;
-        this.armorState.feetEquipment = ItemStack.EMPTY;
     }
 
     /** 由 RendererContextMixin 在 Context 构造完成后调用 */
@@ -246,34 +208,8 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
                     null,
                     -1,
                     state.outlineColor);
-
-            this.armorState.headEquipment = state.headEquipment;
-            if (!state.headEquipment.isEmpty()) {
-                // 26.3 的盔甲层只从 armorState 复制旋转, 不会复制上下文模型的位置。
-                // 先把头盔模型的头轴心对齐到猪头, 再喂入玩家头的旋转; setupAnim 只会改旋转,
-                // 所以头盔会跟着玩家头一起移动。
-                this.armorState.xRot = state.xRot;
-                this.armorState.yRot = state.yRot;
-                this.helmetModel.head.loadPose(this.pigHead.storePose());
-                this.armorRenderer.submit(matrices, collector, state.lightCoords, this.armorState, 0.0f, 0.0f);
-            }
         } finally {
             matrices.popPose();
-        }
-    }
-
-    /**
-     * 喂给 {@link HumanoidArmorLayer} 的上下文: 模型用我们的 headModel。
-     *
-     * 1.21.7 的 FeatureRendererContext 只剩 getModel() —— 纹理由各自的渲染器自己解决
-     * (头盔的纹理归 EquipmentRenderer 按护甲材质决定), 所以这里没有纹理回调。
-     */
-    private record HeadFeatureContext(PlayerModel model)
-            implements RenderLayerParent<AvatarRenderState, PlayerModel> {
-
-        @Override
-        public PlayerModel getModel() {
-            return this.model;
         }
     }
 }
