@@ -5,6 +5,7 @@ import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.perk.PerkRarity
 import com.randomperks.state.ChoiceKind
+import com.randomperks.state.OfferKind
 import com.randomperks.state.PlayerPerkState
 import net.minecraft.world.item.ItemStack
 import java.util.UUID
@@ -125,6 +126,40 @@ class PerkRollServiceTest {
                 "seed=$seed options=${options.map { it.id }}",
             )
         }
+    }
+
+    @Test
+    fun `removeLastPerkChoices removes the newest normal choices and keeps trait order`() {
+        val state = newState()
+        state.pendingOffers.add(listOf("a"))
+        state.pendingOfferKinds.add(OfferKind.NORMAL)
+        state.pendingOrder.add(ChoiceKind.PERK)
+        state.pendingOrder.add(ChoiceKind.TRAIT)
+        state.pendingOffers.add(listOf("b"))
+        state.pendingOfferKinds.add(OfferKind.BLUE)
+        state.pendingOrder.add(ChoiceKind.PERK)
+        state.pendingOffers.add(listOf("c"))
+        state.pendingOfferKinds.add(OfferKind.NORMAL)
+        state.pendingOrder.add(ChoiceKind.PERK)
+
+        assertTrue(state.removeLastPerkChoices(2))
+        assertEquals(listOf(ChoiceKind.PERK, ChoiceKind.TRAIT), state.pendingOrder)
+        assertEquals(listOf(listOf("a")), state.pendingOffers)
+        assertEquals(listOf(OfferKind.NORMAL), state.pendingOfferKinds)
+        assertEquals(listOf("a"), state.currentOffer())
+    }
+
+    @Test
+    fun `removeLastPerkChoices refuses when there are not enough normal choices`() {
+        val state = newState()
+        state.pendingOffers.add(listOf("a"))
+        state.pendingOfferKinds.add(OfferKind.NORMAL)
+        state.pendingOrder.add(ChoiceKind.PERK)
+        state.pendingOrder.add(ChoiceKind.TRAIT)
+
+        assertTrue(!state.removeLastPerkChoices(2))
+        assertEquals(1, state.pendingOffers.size)
+        assertEquals(2, state.pendingOrder.size)
     }
 
     @Test

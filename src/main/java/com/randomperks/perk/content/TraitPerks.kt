@@ -9,25 +9,31 @@ import com.randomperks.game.PerkHighRarityOffer
 import com.randomperks.game.PerkRefreshCharges
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PerkOptionData
+import com.randomperks.network.PlayerTargetEntry
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.roll.PerkRollBias
+import com.randomperks.roll.PerkRollService
+import com.randomperks.state.ChoiceKind
+import com.randomperks.state.OfferKind
 import com.randomperks.state.PerkStateManager
 import com.randomperks.state.PlayerPerkState
+import com.randomperks.stats.PerkStatsService
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import java.util.UUID
 
 /**
  * 特质 (灰): 只能通过"特质选择"获得的特殊词条。
  *
  * <p>特质不参与普通三选一抽取, 也不计入流派联动 (archetype = TRAIT)。
  * 13 条中 `trait_01` 回放、`trait_02` 专精、`trait_03` 刷新、`trait_04` 净化、`trait_05` 再蓄、`trait_06` 精选、
- * `trait_07` 蔚蓝、`trait_08` 天赐、`trait_09` 反制, 其余 4 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
+ * `trait_07` 蔚蓝、`trait_08` 天赐、`trait_09` 反制、`trait_10` 转移, 其余 3 条仍是预留占位 (名称/描述在语言文件里, 效果待填充)。
  */
 object TraitPerks {
 
@@ -44,7 +50,8 @@ object TraitPerks {
         add(BlueChoice)
         add(Windfall)
         add(Counter)
-        for (i in 10..COUNT) add(Trait(i))
+        add(ChoiceTransfer)
+        for (i in 11..COUNT) add(Trait(i))
     }
 
     /**
@@ -241,6 +248,123 @@ object TraitPerks {
 
         override fun onRemove(ctx: PerkContext) {
             PerkCounterService.disarm(ctx.state)
+        }
+    }
+
+    /**
+     * 转移: 将自己的最后两次普通词条选择机会转给一名队友。
+     *
+     * <p>转移的是"机会"而不是具体候选: 移除自己队尾两次普通机会,
+     * 再按队友自己的词条池重新抽两组候选给他。自己至少要有两次待选普通机会。
+     * 选择器可以 Esc 关掉, 之后在 V 界面点击特质重新打开。
+     */
+    object ChoiceTransfer : PerkDefinition {
+        override val id = "trait_10"
+        override val rarity = PerkRarity.TRAIT
+        override val archetype = PerkArchetype.TRAIT
+        override val isOneTime = true
+        override fun icon(): ItemStack = ItemStack(Items.ENDER_CHEST)
+
+        private const val PURPOSE = "transfer_choices"
+        private const val TRANSFER_COUNT = 2
+
+        override fun onAcquire(ctx: PerkContext) = openPicker(ctx.player)
+
+        override fun onActivate(ctx: PerkContext) = openPicker(ctx.player)
+
+        private fun openPicker(player: ServerPlayer) {
+            val state = PerkStateManager.get(player.uuid) ?: return
+            if (state.pendingOrder.count { it == ChoiceKind.PERK } < TRANSFER_COUNT) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.transfer_choices_no_choices"),
+                    true,
+                )
+                return
+            }
+
+            val candidates = candidates(player)
+            if (candidates.isEmpty()) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.transfer_choices_no_target"),
+                    true,
+                )
+                return
+            }
+            PerkNetworking.sendActionTargets(
+                player,
+                PURPOSE,
+                candidates.map { PlayerTargetEntry(it.uuid, it.name.string) },
+            )
+        }
+
+        /** 客户端选中队友: 扣掉自己的两次普通机会, 按对方的词条池补两组新候选 */
+        fun handleTargetPick(player: ServerPlayer, uuid: UUID) {
+            val state = PerkStateManager.get(player.uuid) ?: return
+            val perk = state.ownedPerks.firstOrNull { it.id == id } ?: return
+            if (state.usesRemaining(perk) <= 0) return
+
+            val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
+            if (state.pendingOrder.count { it == ChoiceKind.PERK } < TRANSFER_COUNT) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.transfer_choices_no_choices"),
+                    true,
+                )
+                return
+            }
+
+            val targetState = PerkStateManager.getOrCreate(target.uuid)
+            val baseExcluded = PerkStateManager.globallyOwnedMythicIds()
+            val first = PerkRollService.rollOptions(targetState, extraExcluded = baseExcluded)
+            val second = PerkRollService.rollOptions(
+                targetState,
+                extraExcluded = baseExcluded + first.map { it.id },
+            )
+            if (first.isEmpty() || second.isEmpty()) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.transfer_choices_target_empty"),
+                    true,
+                )
+                return
+            }
+
+            // 如果队首的普通机会正好是被移走的最后一次 (队里只有这两次), 清掉"精选"标记
+            val removingHeadHigh = state.pendingOrder.firstOrNull() == ChoiceKind.PERK &&
+                state.pendingOrder.count { it == ChoiceKind.PERK } == TRANSFER_COUNT &&
+                PerkHighRarityOffer.isCurrentHigh(state)
+
+            if (!state.removeLastPerkChoices(TRANSFER_COUNT)) return
+            if (removingHeadHigh) PerkHighRarityOffer.clearCurrent(state)
+
+            for (offer in listOf(first, second)) {
+                val ids = offer.map { it.id }
+                targetState.pendingOffers.add(ids)
+                targetState.pendingOfferKinds.add(OfferKind.NORMAL)
+                targetState.pendingOrder.add(ChoiceKind.PERK)
+                PerkStatsService.recordOffered(ids)
+            }
+
+            state.consumeUse(perk)
+            PerkGrantService.notifyChoices(player)
+            PerkGrantService.notifyChoices(target)
+            PerkGrantService.notifyPerkListChanged(player)
+            PerkGrantService.syncAbilities(player)
+
+            player.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.transfer_choices_sent", target.name),
+                false,
+            )
+            target.sendSystemMessage(
+                Component.translatable("random-perks-bingo.message.transfer_choices_received", player.name),
+                false,
+            )
+        }
+
+        /** 候选: 同队、在线、存活、非旁观, 且不含自己 */
+        private fun candidates(player: ServerPlayer): List<ServerPlayer> {
+            val team = player.team?.name ?: return emptyList()
+            return player.level().getServer().playerList.players.filter {
+                it !== player && it.isAlive && !it.isSpectator && it.team?.name == team
+            }
         }
     }
 

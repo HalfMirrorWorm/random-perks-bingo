@@ -128,6 +128,26 @@ class PlayerPerkState(val uuid: UUID) {
         if (pendingOrder.firstOrNull() == ChoiceKind.TRAIT) pendingOrder.removeAt(0)
     }
 
+    /**
+     * 移除最后 [count] 个普通词条机会, 并同步移除对应的候选和候选规则。
+     * 特质机会与其余普通机会的先后顺序保持不变。
+     *
+     * @return 普通机会不足 [count] 时返回 false, 且不做任何修改
+     */
+    fun removeLastPerkChoices(count: Int): Boolean {
+        if (count <= 0) return false
+        val perkPositions = pendingOrder.indices.filter { pendingOrder[it] == ChoiceKind.PERK }
+        if (perkPositions.size < count) return false
+
+        for (orderIndex in perkPositions.takeLast(count).sortedDescending()) {
+            val offerIndex = pendingOrder.subList(0, orderIndex).count { it == ChoiceKind.PERK }
+            pendingOrder.removeAt(orderIndex)
+            if (offerIndex in pendingOffers.indices) pendingOffers.removeAt(offerIndex)
+            if (offerIndex in pendingOfferKinds.indices) pendingOfferKinds.removeAt(offerIndex)
+        }
+        return true
+    }
+
     fun reset() {
         pendingOffers.clear()
         pendingOfferKinds.clear()

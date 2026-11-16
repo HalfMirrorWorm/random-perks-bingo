@@ -209,6 +209,7 @@ object ClientPerkNetworking {
                     "hodgepodge" -> "random-perks-bingo.screen.hodgepodge_target" to "random-perks-bingo.hodgepodge_target.hint"
                     "swap" -> "random-perks-bingo.screen.swap_target" to "random-perks-bingo.swap_target.hint"
                     "resonance" -> "random-perks-bingo.screen.resonance_target" to "random-perks-bingo.resonance_target.hint"
+                    "transfer_choices" -> "random-perks-bingo.screen.transfer_choices_target" to "random-perks-bingo.transfer_choices_target.hint"
                     else -> "random-perks-bingo.screen.lightning_target" to "random-perks-bingo.lightning_target.hint"
                 }
                 context.client().gui.setScreen(

@@ -13,6 +13,7 @@ import com.randomperks.perk.content.MythicPerks
 import com.randomperks.perk.content.SeekerPerks
 import com.randomperks.perk.content.SummonPerks
 import com.randomperks.perk.content.SwiftPerks
+import com.randomperks.perk.content.TraitPerks
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.world.item.ItemStack
@@ -202,6 +203,7 @@ object PerkNetworking {
                     "hodgepodge" -> MythicPerks.Hodgepodge.handleTargetPick(player, uuid)
                     "swap" -> SummonPerks.Swap.handleTargetPick(player, uuid)
                     "resonance" -> SummonPerks.Resonance.handleTargetPick(player, uuid)
+                    "transfer_choices" -> TraitPerks.ChoiceTransfer.handleTargetPick(player, uuid)
                 }
             }
         }
