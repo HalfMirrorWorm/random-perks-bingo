@@ -138,6 +138,8 @@ object HunterPerks {
         }
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
+            // 防御: 允许被其它词条复用抽奖函数, 但必须先确认自己真的拥有该词条
+            if (!ctx.state.hasPerk(id)) return
             // "怪物"必须用 Monster 接口判定: HostileEntity 只是个抽象类, 史莱姆 / 岩浆怪 / 恶魂 /
             // 幻翼 / 潜影贝 / 疣猪兽 / 末影龙 都只实现 Monster 接口而不继承它, 用类判定会把这批全漏掉
             if (victim !is Enemy) return
@@ -157,6 +159,7 @@ object HunterPerks {
         private const val CHANCE = 0.10f
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
+            if (!ctx.state.hasPerk(id)) return
             // 同"剥皮专家": 用 Monster 接口判定 (HostileEntity 会漏掉史莱姆/恶魂/幻翼/末影龙等)
             if (victim !is Enemy) return
             if (ctx.player.random.nextFloat() >= CHANCE) return
@@ -778,6 +781,7 @@ object HunterPerks {
         private const val EXTRA_DROP_CHANCE = 0.5f
 
         override fun onKill(ctx: PerkContext, victim: LivingEntity) {
+            if (!ctx.state.hasPerk(id)) return
             if (victim !is Mob) return                                    // 只有生物有掉落表 (玩家/盔甲架没有)
             if (ctx.player.random.nextFloat() >= EXTRA_DROP_CHANCE) return      // 每次击杀掷一次, 不是每件物品
             val world = ctx.player.level() as? ServerLevel ?: return

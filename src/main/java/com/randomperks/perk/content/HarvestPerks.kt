@@ -422,6 +422,7 @@ object HarvestPerks {
         )
 
         override fun onKill(ctx: PerkContext, victim: net.minecraft.world.entity.LivingEntity) {
+            if (!ctx.state.hasPerk(id)) return
             if (victim !is net.minecraft.world.entity.animal.feline.Cat) return
             val world = ctx.player.level() as? ServerLevel ?: return
             victim.spawnAtLocation(world, ItemStack(Items.STRING, 3))
