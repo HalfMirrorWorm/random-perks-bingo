@@ -116,6 +116,7 @@
   "random-perks-bingo.message.streak_progress": "专研进度：%s/3",
   "random-perks-bingo.message.streak_ready": "专研已就绪：下一次普通三选一会出现该类型的紫色或金色词条。",
   "random-perks-bingo.message.exclusion_archetype_chosen": "已屏蔽词条类型：%s。之后的词条选择不会再出现该类型词条。",
+  "random-perks-bingo.message.trait_pool_empty": "特质已全部拥有，跳过了 %s 次特质选择。",
   "random-perks-bingo.message.choices_available": "你有 %s 次选择待选。",
   "random-perks-bingo.message.game_started": "随机词条 Bingo: 开局先选择 1 个特质, 然后获得 1 次词条选择!",
   "random-perks-bingo.message.acquired": "获得 %s %s",

@@ -122,6 +122,13 @@ object PerkGrantService {
         for (player in players) {
             val state = PerkStateManager.getOrCreate(player.uuid)
             val remaining = TraitPerks.available(state).size
+            if (remaining <= 0) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.trait_pool_empty", count),
+                    false,
+                )
+                continue
+            }
             val grant = minOf(count, remaining)
             if (grant <= 0) continue
 

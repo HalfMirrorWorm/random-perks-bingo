@@ -100,7 +100,17 @@ object PerkOfferService {
         val options = TraitPerks.available(state)
         if (options.isEmpty()) {
             // 特质池已经抽完: 丢掉队首连续的特质机会, 继续后面的机会
-            while (state.nextChoiceKind() == ChoiceKind.TRAIT) state.consumeTraitChoice()
+            var skipped = 0
+            while (state.nextChoiceKind() == ChoiceKind.TRAIT) {
+                state.consumeTraitChoice()
+                skipped++
+            }
+            if (skipped > 0) {
+                player.sendSystemMessage(
+                    Component.translatable("random-perks-bingo.message.trait_pool_empty", skipped),
+                    false,
+                )
+            }
             PerkGrantService.notifyChoices(player)
             return
         }
