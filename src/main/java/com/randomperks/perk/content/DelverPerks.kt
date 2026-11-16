@@ -302,6 +302,9 @@ object DelverPerks {
             spawnPos: net.minecraft.core.BlockPos,
             decisionPos: net.minecraft.core.BlockPos,
         ) {
+            // 八十/连锁挖矿也会对额外方块调用这里; 必须确认玩家**真的拥有幸运矿工**,
+            // 否则只要持有八十/连锁就会凭空掉随机物品 (看起来像幸运矿工跨局残留)
+            if (!ctx.state.hasPerk(id)) return
             if (ctx.player.isCreative) return                             // 创造模式不触发
             if (!ctx.player.mainHandItem.`is`(ItemTags.PICKAXES)) return   // 用镐子挖
 
