@@ -2,6 +2,7 @@ package com.randomperks.game
 
 import com.randomperks.network.MorphS2C
 import com.randomperks.network.PerkNetworking
+import com.randomperks.server.ServerHolder
 import com.randomperks.state.PerkStateManager
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
@@ -58,6 +59,16 @@ object PigMorphService {
 
     /** 立即按当前词条状态刷新某位玩家 (获得词条 / 重生时调用) */
     fun refresh(player: ServerPlayer) = apply(player)
+
+    /** 对局重置: 立刻把所有变形状态清掉并通知客户端, 不等下一次每秒对账 */
+    fun clear() {
+        val server = ServerHolder.server ?: return
+        for (uuid in MorphState.players()) {
+            MorphState.setMorphed(uuid, false)
+            broadcast(server, MorphS2C(uuid, false))
+            server.playerList.getPlayer(uuid)?.refreshDimensions()
+        }
+    }
 
     private fun reconcile(server: MinecraftServer) {
         val online = server.playerList.players

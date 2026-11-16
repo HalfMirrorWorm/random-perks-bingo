@@ -6,6 +6,7 @@ import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkOrphanCleanup
 import com.randomperks.game.DragonTamerService
 import com.randomperks.game.LayFlatService
+import com.randomperks.game.PigMorphService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.ResonanceService
 import com.randomperks.game.RewindService
@@ -48,16 +49,45 @@ object BingoLifecycle {
     private fun resetAll() {
         // 必须在清空 memory 之前: 让还处于"灵魂出窍"状态的玩家结束灵魂相机
         SoulOutService.clear()
+
+        // GAME_ENDED 之外的生命周期入口 (GAME_RESET / CLOSE / 直接开下一局) 也必须
+        // 走一遍 onRemove, 否则词条自己的清理逻辑 (物品、召唤物、天气、服务状态等) 会被跳过
+        runOnRemoveForOnlinePlayers()
+
         PerkStateManager.resetAll()
         VerminSwarmService.clear()
         LayFlatService.clear()
         DragonTamerService.clear()
         SwapService.clear()
         ResonanceService.clear()
+        SharedFortuneService.clear()
+        PigMorphService.clear()
         RandomPerksHooks.resetLineCounts()
-        // 状态已经清空: 在线玩家身上可能还留着上一局的属性 / 无限效果 (GAME_RESET / CLOSE
-        // 不走 onRemove); 离线玩家则由加入时的 PerkOrphanCleanup.onJoin 兜底
-        ServerHolder.server?.playerList?.players?.forEach { PerkOrphanCleanup.clean(it) }
+        // 状态已经清空: 在线玩家身上可能还留着上一局的属性 / 无限效果 (离线玩家则由加入时的
+        // PerkOrphanCleanup.onJoin 兜底)
+        ServerHolder.server?.playerList?.players?.forEach {
+            PerkOrphanCleanup.clean(it)
+            // 客户端侧的矿透等能力也立即关掉, 不等到下一局开局再同步
+            PerkGrantService.syncAbilities(it)
+        }
+    }
+
+    /** 对在线玩家逐个执行 onRemove, 但不清空状态本身 (由调用方决定何时清空) */
+    private fun runOnRemoveForOnlinePlayers() {
+        val server = ServerHolder.server ?: return
+        for (state in PerkStateManager.all()) {
+            val player = server.playerList.getPlayer(state.uuid) ?: continue
+            val ctx = PerkContext(player, state)
+            // 先从列表移除再逐个 onRemove —— 与命令/偷窃路径的约定一致:
+            // onRemove 里的装备操作会同步触发"装备变化→词条回调"分发, 若此时词条仍在
+            // 列表中, "风之翼"等词条会把自己的回收操作当成"装备被换下"而立即补装
+            val perks = state.ownedPerks.toList()
+            state.ownedPerks.clear()
+            for (perk in perks) {
+                runCatching { perk.onRemove(ctx) }
+                    .onFailure { RandomPerksMod.logger.error("[RandomPerks] perk {} onRemove failed", perk.id, it) }
+            }
+        }
     }
 
     private fun onGameStarted() {
@@ -106,27 +136,7 @@ object BingoLifecycle {
      * 对局结束时 / 关闭词条系统时调用。
      */
     fun clearAllPerkState() {
-        val server = ServerHolder.server
-        if (server != null) {
-            for (state in PerkStateManager.all()) {
-                val player = server.playerList.getPlayer(state.uuid) ?: continue
-                val ctx = PerkContext(player, state)
-                // 先从列表移除再逐个 onRemove —— 与命令/偷窃路径的约定一致:
-                // onRemove 里的装备操作会同步触发"装备变化→词条回调"分发, 若此时词条仍在
-                // 列表中, "风之翼"等词条会把自己的回收操作当成"装备被换下"而立即补装
-                val perks = state.ownedPerks.toList()
-                state.ownedPerks.clear()
-                for (perk in perks) {
-                    runCatching { perk.onRemove(ctx) }
-                        .onFailure { RandomPerksMod.logger.error("[RandomPerks] perk {} onRemove failed", perk.id, it) }
-                }
-            }
-        }
-        SharedFortuneService.clear()
         resetAll()
         RandomPerksMod.logger.info("[RandomPerks] perk state cleared")
-
-        // 清空后同步能力状态 (客户端关闭矿透等)
-        server?.playerList?.players?.forEach { PerkGrantService.syncAbilities(it) }
     }
 }

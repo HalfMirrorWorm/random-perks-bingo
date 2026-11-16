@@ -115,6 +115,16 @@ object LayFlatService {
 
     /** 对局结束 / 重置时清理 */
     fun clear() {
+        // 开摆的失明/缓慢是有限时长, 不会进 PermanentEffects 的孤儿清理;
+        // 如果只是清掉 active, 效果会跟着玩家进入下一局
+        val server = com.randomperks.server.ServerHolder.server
+        if (server != null) {
+            for (uuid in active.keys.toList()) {
+                val player = server.playerList.getPlayer(uuid) ?: continue
+                player.removeEffect(MobEffects.BLINDNESS)
+                player.removeEffect(MobEffects.SLOWNESS)
+            }
+        }
         active.clear()
         failed.clear()
     }

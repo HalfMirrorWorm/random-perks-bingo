@@ -3,6 +3,7 @@ package com.randomperks.game
 import com.randomperks.effect.PermanentEffects
 import com.randomperks.state.PerkStateManager
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.ai.attributes.Attributes
 
 /**
@@ -51,6 +52,14 @@ object PerkOrphanCleanup {
             }
         }
         PermanentEffects.removeAllOrphans(player)
+        // "开摆"的失明/缓慢是有限时长, 离线跨局时 onRemove 没跑到, 也会留到下一局。
+        // 只清持续时间较长且增幅等级对得上的实例, 避免误删短暂药水效果。
+        player.getEffect(MobEffects.BLINDNESS)?.let {
+            if (it.amplifier == 0 && it.duration > 20 * 20) player.removeEffect(MobEffects.BLINDNESS)
+        }
+        player.getEffect(MobEffects.SLOWNESS)?.let {
+            if (it.amplifier == 3 && it.duration > 20 * 20) player.removeEffect(MobEffects.SLOWNESS)
+        }
         // 大背包的 >64 堆叠同理: 离线跨局时 onRemove 没跑到, 加入时拆回合法数量
         BigBackpackService.normalize(player)
     }
