@@ -254,9 +254,9 @@ object TraitPerks {
     /**
      * 转移: 将自己的最后两次普通词条选择机会转给一名队友。
      *
-     * <p>转移的是"机会"而不是具体候选: 移除自己队尾两次普通机会,
-     * 再按队友自己的词条池重新抽两组候选给他。自己至少要有两次待选普通机会。
-     * 选择器可以 Esc 关掉, 之后在 V 界面点击特质重新打开。
+     * <p>获得后作为贮藏词条留在 V 列表, **不会自动打开选择器**; 等自己攒够两次待选普通机会后,
+     * 在 V 界面点击它再选择队友。转移的是"机会"而不是具体候选: 移除自己队尾两次普通机会,
+     * 再按队友自己的词条池重新抽两组候选给他。
      */
     object ChoiceTransfer : PerkDefinition {
         override val id = "trait_10"
@@ -267,8 +267,6 @@ object TraitPerks {
 
         private const val PURPOSE = "transfer_choices"
         private const val TRANSFER_COUNT = 2
-
-        override fun onAcquire(ctx: PerkContext) = openPicker(ctx.player)
 
         override fun onActivate(ctx: PerkContext) = openPicker(ctx.player)
 
