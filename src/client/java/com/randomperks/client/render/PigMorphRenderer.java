@@ -2,6 +2,8 @@ package com.randomperks.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.animal.pig.PigModel;
 import net.minecraft.client.model.player.PlayerModel;
@@ -226,9 +228,15 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
         matrices.pushPose();
         try {
             // 猪头: 轴心 z=-6, 立方体 z ∈ [-8, 0] (中心 -4)
-            // 玩家头: 立方体 z ∈ [-4, 4] (中心 0) —— 只对齐 Y 的话玩家头会整体靠后 4 单位。
-            // 所以 Y +4 单位 (+0.25 格)、Z -4 单位 (-0.25 格), 两个头的中心才真正重合。
-            matrices.translate(0.0f, 0.25f, -0.25f);
+            // 玩家头: 立方体 z ∈ [-4, 4] (中心 0) —— 需要 Y +4、Z -4 模型单位。
+            //
+            // 关键: 这个偏移必须跟着头的旋转一起转。如果直接 translate(0, 0.25, -0.25),
+            // 只有头朝正前方时两个立方体中心才重合; 玩家一转头/抬头, 玩家头就会相对
+            // 猪头漂移。这里用 head 的 ZYX 旋转把局部偏移转到父空间, 与 ModelPart
+            // translateAndRotate 的旋转顺序一致。
+            Quaternionf headRotation = new Quaternionf().rotationZYX(head.zRot, head.yRot, head.xRot);
+            Vector3f headOffset = headRotation.transform(new Vector3f(0.0f, 0.25f, -0.25f));
+            matrices.translate(headOffset.x, headOffset.y, headOffset.z);
             collector.submitModelPart(
                     head,
                     matrices,
