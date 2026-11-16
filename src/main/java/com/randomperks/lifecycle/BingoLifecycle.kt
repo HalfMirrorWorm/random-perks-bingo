@@ -38,6 +38,7 @@ object BingoLifecycle {
             if (currentGameId == event.id) {
                 // "继续游戏": 词条、特质、待选机会和逆转快照全部保留,
                 // 不重置、不重新发开局选择; 只把客户端状态重新同步一次。
+                RewindService.resumeGame()
                 ServerHolder.server?.playerList?.players?.forEach {
                     PerkGrantService.syncAbilities(it)
                     val pending = PerkStateManager.get(it.uuid)?.totalPending ?: 0
@@ -52,7 +53,8 @@ object BingoLifecycle {
         }
         BingoEvents.GAME_ENDED.register { event ->
             // 结束不等于真正结束这一局: 玩家可以从结算界面选择"继续游戏"。
-            // 这里不做任何清理, 真正的清理在 GAME_RESET / CLOSE / 下一局开局。
+            // 暂停逆转记录但保留检查点; 词条/特质/待选机会全部保留。
+            RewindService.pauseGame()
             RandomPerksMod.logger.info("[RandomPerks] game ended ({}); keeping perks for keep-playing", event.id)
         }
         BingoEvents.GAME_RESET.register {
@@ -67,6 +69,11 @@ object BingoLifecycle {
             RewindService.stopGame()
             resetAll()
         }
+    }
+
+    /** 服务器重启后从存档恢复了词条状态: 记住这局的 id, 之后同 id 的 GAME_STARTED 视为继续游戏 */
+    fun onPerkStateRestored(gameId: UUID) {
+        currentGameId = gameId
     }
 
     /** 清空词条状态 + 一切与对局绑定的持续效果 */

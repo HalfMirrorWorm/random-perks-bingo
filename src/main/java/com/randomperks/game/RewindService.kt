@@ -300,6 +300,30 @@ object RewindService {
         RandomPerksMod.logger.info("[Rewind] started checkpoint capture (interval {} min)", CHECKPOINT_INTERVAL_TICKS / 1200)
     }
 
+    /**
+     * 对局结束但玩家可能选择"继续游戏": 暂停记录, **保留**当前检查点和已捕获的方块变更。
+     * 不调用 [stopGame], 否则继续游戏后「逆转时间」就没有可回溯的检查点了。
+     */
+    fun pauseGame() {
+        capturing = false
+        pending = null
+    }
+
+    /** 从结算界面继续游戏: 恢复检查点记录, 不重置已有的检查点 */
+    fun resumeGame() {
+        val server = ServerHolder.server ?: return
+        if (checkpoint == null) {
+            // 服务器重启后检查点只在内存里, 已经没了; 重新开始记录,
+            // 让「逆转时间」在继续游戏后仍然可用 (只是无法回到重启前)。
+            startGame()
+            return
+        }
+        capturing = true
+        restoring = false
+        pending = null
+        nextCheckpointTick = server.tickCount + CHECKPOINT_INTERVAL_TICKS
+    }
+
     fun stopGame() {
         capturing = false
         restoring = false

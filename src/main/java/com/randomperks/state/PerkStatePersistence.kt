@@ -4,6 +4,7 @@ import com.randomperks.RandomPerksMod
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkSession
 import com.randomperks.game.RewindService
+import com.randomperks.lifecycle.BingoLifecycle
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkRegistry
 import com.randomperks.server.ServerHolder
@@ -225,8 +226,12 @@ object PerkStatePersistence {
 
         // 对局没在运行: 这份文件属于上一局, 丢掉。
         // LOADING / COUNTDOWN 的 status 是 STARTING, 进行中是 PLAYING。
+        // POSTGAME 也要恢复: 玩家可能从结算界面选择"继续游戏", 此时词条应保留。
         val running = bingo.state.status
-        if (running != BingoGameStatus.STARTING && running != BingoGameStatus.PLAYING) {
+        if (running != BingoGameStatus.STARTING &&
+            running != BingoGameStatus.PLAYING &&
+            running != BingoGameStatus.POSTGAME
+        ) {
             deleteFile(server)
             gameActive = false
             return
@@ -251,6 +256,8 @@ object PerkStatePersistence {
         }
 
         nextAutosaveTick = server.tickCount + AUTOSAVE_TICKS
+        currentGameId = bingo.gameId
+        BingoLifecycle.onPerkStateRestored(bingo.gameId)
         RandomPerksMod.logger.info(
             "[RandomPerks] restored perk state for {} player(s) from the previous server run",
             pendingApply.size,
