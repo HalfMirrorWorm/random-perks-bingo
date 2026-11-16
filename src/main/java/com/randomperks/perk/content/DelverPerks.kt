@@ -569,8 +569,8 @@ object DelverPerks {
     }
 
     /** 金 · 深掘: **灵魂出窍** (贮藏) —— 参考 FreeCam 类 mod: 在 V 界面点击使用后
-     *  灵魂 (相机) 离体 60 秒, 可自由飞行并穿过方块; 身体留在原地、仍会受伤,
-     *  期间无法移动/攻击/使用物品。 */
+     *  灵魂 (相机) 离体 30 秒, 可自由飞行并穿过方块; 身体留在原地、仍会受伤,
+     *  期间无法移动/攻击/使用物品。可使用 3 次。 */
     object SoulOut : PerkDefinition {
         override val id = "delver_soul_out"
         override val rarity = PerkRarity.GOLD
@@ -578,6 +578,7 @@ object DelverPerks {
         override fun icon() = ItemStack(Items.SOUL_LANTERN)
 
         override val isOneTime = true
+        override val maxUses = 3
 
         override fun onActivate(ctx: PerkContext) = SoulOutService.activate(ctx)
         override fun onTick(ctx: PerkContext) = SoulOutService.tick(ctx)

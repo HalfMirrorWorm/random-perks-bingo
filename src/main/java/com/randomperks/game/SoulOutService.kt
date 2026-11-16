@@ -20,14 +20,14 @@ import net.minecraft.network.chat.Component
  *   会正常受重力影响 (悬空时激活要自己承担摔落风险);
  * - 客户端在灵魂状态下接管相机: 可以自由飞行、穿过方块 (纯客户端, 服务端不需要
  *   移动校验), 同时冻结身体的移动/攻击/使用物品输入;
- * - 60 秒后服务端发 SoulOutS2C(false), 客户端相机自动回到身体。
+ * - 每次持续 30 秒, 可使用 3 次; 到时服务端发 SoulOutS2C(false), 客户端相机自动回到身体。
  */
 object SoulOutService {
 
     const val PERK_ID = "delver_soul_out"
 
-    /** 灵魂出窍持续时间: 60 秒 */
-    private const val DURATION_TICKS = 60 * 20
+    /** 每次灵魂出窍持续时间: 30 秒 */
+    private const val DURATION_TICKS = 30 * 20
 
     private const val KEY_END = "soul_out_end"
 
@@ -36,14 +36,15 @@ object SoulOutService {
         val player = ctx.player
         val state = ctx.state
 
-        if (state.isUsed(PERK_ID)) return
+        val perk = state.ownedPerks.firstOrNull { it.id == PERK_ID } ?: return
+        if (state.usesRemaining(perk) <= 0) return
         if (isActive(player)) return
 
         val server = player.level().getServer()
         val now = server.tickCount.toLong()
 
         state.memory[KEY_END] = (now + DURATION_TICKS).toString()
-        state.markUsed(PERK_ID)
+        state.consumeUse(perk)
         PerkNetworking.sendSoulOut(player, true)
 
         player.level().playSound(
@@ -56,6 +57,10 @@ object SoulOutService {
             24, 0.35, 0.6, 0.35, 0.02,
         )
         player.sendSystemMessage(Component.translatable("random-perks-bingo.message.soul_out_start"), false)
+
+        // 只刷新词条联动；不要在灵魂开始时下发 PerkListS2C —— 客户端会把它当成
+        // "打开 V 界面"，刚关掉的列表会被重新打开，灵魂相机也会因为界面打开而停止移动。
+        PerkGrantService.notifyPerkListChanged(player)
     }
 
     /** 每秒驱动一次: 时间到了就结束 (客户端相机随之归位), 否则在快捷栏上方显示剩余秒数 */
