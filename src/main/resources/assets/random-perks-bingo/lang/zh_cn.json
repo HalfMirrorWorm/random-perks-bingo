@@ -249,7 +249,7 @@
   "random-perks-bingo.perk.harvest_bounty.name": "丰收之息",
   "random-perks-bingo.perk.harvest_bounty.desc": "获得 32 根胡萝卜和一把时运 III 的钻石锄头。",
   "random-perks-bingo.perk.harvest_bountiful_meal.name": "丰盛大餐",
-  "random-perks-bingo.perk.harvest_bountiful_meal.desc": "饱食度满时吃食物，随机获得一种谜之炖菜的正向效果，时长为 2 倍。",
+  "random-perks-bingo.perk.harvest_bountiful_meal.desc": "吃食物后饱食度为满，则随机获得一种谜之炖菜的正向效果，时长为 2 倍。",
   "random-perks-bingo.perk.harvest_gourmet.name": "小鸟胃",
   "random-perks-bingo.perk.harvest_gourmet.desc": "食用任意食物时, 恢复的饥饿值与饱和度提升 100%。",
 
