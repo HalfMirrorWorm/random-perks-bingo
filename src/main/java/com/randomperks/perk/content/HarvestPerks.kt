@@ -129,25 +129,27 @@ object HarvestPerks {
         }
     }
 
-    /** 绿 · 樵夫之手: 砍**未去皮**的原木时, 20% 概率额外掉落一根**其他种类**的去皮原木
-     *  (掉落在原方块位置, 不进背包)。去皮原木自身不再触发。 */
+    /** 绿 · 樵夫之手: 砍**未去皮**的原木 / 木头 / 菌柄 / 菌核时,
+     *  50% 概率额外掉落一根**其他种类**的原木 (掉落在原方块位置, 不进背包)。
+     *  同种木材 (含 log / wood / stem / hyphae 变体) 会被排除。 */
     object Timber : PerkDefinition {
         override val id = "harvest_timber"
         override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.OAK_LOG)
 
-        private const val CHANCE = 0.20f
+        private const val CHANCE = 0.50f
 
-        /** 可掉落的去皮原木 (含下界菌柄) */
-        private val STRIPPED_LOGS = listOf(
-            Items.STRIPPED_OAK_LOG, Items.STRIPPED_SPRUCE_LOG, Items.STRIPPED_BIRCH_LOG,
-            Items.STRIPPED_JUNGLE_LOG, Items.STRIPPED_ACACIA_LOG, Items.STRIPPED_DARK_OAK_LOG,
-            Items.STRIPPED_MANGROVE_LOG, Items.STRIPPED_CHERRY_LOG, Items.STRIPPED_PALE_OAK_LOG,
-            Items.STRIPPED_CRIMSON_STEM, Items.STRIPPED_WARPED_STEM,
+        /** 可掉落的未去皮原木 / 菌柄 */
+        private val LOG_POOL = listOf(
+            Items.OAK_LOG, Items.SPRUCE_LOG, Items.BIRCH_LOG,
+            Items.JUNGLE_LOG, Items.ACACIA_LOG, Items.DARK_OAK_LOG,
+            Items.MANGROVE_LOG, Items.CHERRY_LOG, Items.PALE_OAK_LOG,
+            Items.CRIMSON_STEM, Items.WARPED_STEM,
         )
 
         override fun onBlockBreak(ctx: PerkContext, pos: net.minecraft.core.BlockPos, blockState: net.minecraft.world.level.block.state.BlockState) {
+            if (ctx.player.isCreative) return
             if (!blockState.`is`(net.minecraft.tags.BlockTags.LOGS)) return
 
             // 只认未去皮的。原版没有 stripped_logs 标签 (LOGS 把去皮和未去皮混在一起),
@@ -159,14 +161,26 @@ object HarvestPerks {
             if (ctx.player.random.nextFloat() >= CHANCE) return
 
             val world = ctx.player.level() as? ServerLevel ?: return
-            // 排除"被砍这一种"的去皮版本 (oak_log → stripped_oak_log), 剩下的里随机挑一种
-            val ownStripped = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(
-                net.minecraft.resources.Identifier.fromNamespaceAndPath(choppedId.namespace, "stripped_" + choppedId.path),
-            )
-            val candidates = STRIPPED_LOGS.filter { it != ownStripped }
+            // 按"木材家族"排除同种: oak_log / oak_wood 都算 oak,
+            // crimson_stem / crimson_hyphae 都算 crimson
+            val ownFamily = woodFamily(choppedId.path)
+            val candidates = LOG_POOL.filter {
+                val id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(it)
+                woodFamily(id.path) != ownFamily
+            }
+            if (candidates.isEmpty()) return
+
             val drop = candidates[ctx.player.random.nextInt(candidates.size)]
             net.minecraft.world.level.block.Block.popResource(world, pos, ItemStack(drop))
         }
+
+        /** oak_log / oak_wood / crimson_stem / crimson_hyphae → oak / crimson */
+        private fun woodFamily(path: String): String =
+            path.removePrefix("stripped_")
+                .removeSuffix("_log")
+                .removeSuffix("_wood")
+                .removeSuffix("_stem")
+                .removeSuffix("_hyphae")
     }
 
     /** 蓝 · 丰饶: **一键伐木** —— 手持斧破坏原木时, 一键砍倒整棵相连的同种树
