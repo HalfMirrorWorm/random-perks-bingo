@@ -744,6 +744,11 @@ object HarvestPerks {
             PigMorphService.refresh(ctx.player)
         }
 
+        override fun onRemove(ctx: PerkContext) {
+            // 词条被移除时立刻恢复, 不等下一秒的对账
+            PigMorphService.refresh(ctx.player)
+        }
+
         override fun onTick(ctx: PerkContext) {
             val seconds = (ctx.state.memory[CARROT_TIMER_KEY]?.toIntOrNull() ?: 0) + 1
             if (seconds < CARROT_INTERVAL_SECONDS) {

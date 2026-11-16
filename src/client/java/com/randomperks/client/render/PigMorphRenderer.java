@@ -162,6 +162,11 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
             // 盖住玩家头。猪头隐藏后不再需要恢复; 玩家头由 renderPlayerHead 单独画在
             // 猪头原来的轴心上。
             this.pigHead.visible = false;
+
+            // 先提交玩家头, 再提交猪身: 如果玩家头渲染失败, 外层 catch 会退回普通玩家模型,
+            // 此时还没有把猪身提交进队列, 不会出现"猪身 + 玩家模型"叠在一起。
+            renderPlayerHead(state, matrices, collector, skin);
+
             collector.submitModel(
                     this.pigModel,
                     pigState,
@@ -170,9 +175,6 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
                     state.lightCoords,
                     OverlayTexture.NO_OVERLAY,
                     state.outlineColor);
-
-            // 猪头已经完全不渲染, 在它原来的位置画玩家自己的头。
-            renderPlayerHead(state, matrices, collector, skin);
         } finally {
             matrices.popPose();
         }
@@ -180,6 +182,11 @@ public class PigMorphRenderer extends AvatarRenderer<AbstractClientPlayer> {
 
     private void renderPlayerHead(AvatarRenderState state, PoseStack matrices,
                                   SubmitNodeCollector collector, PlayerSkin skin) {
+        // 实体 id 会被新实体复用; 长时间运行/切服后缓存可能积累。超过上限整体丢弃,
+        // 本帧已经提交的模型仍被队列持有, 不影响正在渲染的内容。
+        if (this.headModels.size() > 64) {
+            this.headModels.clear();
+        }
         PlayerModel headModel = this.headModels.computeIfAbsent(
                 state.id,
                 id -> new PlayerModel(this.context.bakeLayer(ModelLayers.PLAYER), false));
