@@ -13,7 +13,7 @@
 - 少数词条后来换了流派，但 id 沿用旧前缀以免旧存档对不上（如 `seeker_ender_supply`、`artisan_waypoint_clock` 现属疾风）；
   分组与联动一律以代码里的 `archetype` 字段为准
 - **语言 key**：`random-perks-bingo.perk.<id>.name` / `.desc`（中英各一份）
-- **稀有度与抽取权重**：`green` 200 / `blue` 800 / `purple` 385 / `gold` 92 / `red` 20 / `mythic` 3
+- **稀有度与抽取权重**：`green` 200 / `blue` 720 / `purple` 465 / `gold` 92 / `red` 20 / `mythic` 3
   （合计 1500：绿 20% / 蓝 53.3% / 紫 21% / 金 4.1% / 红 1.3% / 神话 0.2%）
 - 绿色品质（粗糙）比普通更低级，已加入抽取体系
 - 红色品质（禁忌）高于传说、低于神话
