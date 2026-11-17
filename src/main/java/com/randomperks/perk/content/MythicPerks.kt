@@ -72,6 +72,7 @@ object MythicPerks {
     /** 红 · 唤法: **游戏BUG** —— 获得时立即弹出玩家选择器, 选中一名玩家后,
      *  随机把他**主背包** (9~35 格, 不含快捷栏) 里**一半**的物品各自随机变成另一种物品
      *  (数量不变; 奇数向上取整, 至少有物品时必定换 1 格)
+     *  可贮藏 **2 次**: 第一次用完后词条仍留在 V 界面, 可以再点一次
      *  (获得瞬间弹出选择器, 不进入 V 界面) */
     object Hodgepodge : PerkDefinition {
         override val id = "mythic_hodgepodge"
@@ -85,6 +86,9 @@ object MythicPerks {
 
         /** 贮藏标记: 选择器被关掉之后, 可以再从 V 界面点一次 */
         override val isOneTime = true
+
+        /** 贮藏 2 次; 第一次使用后仍留在 V 界面, 直到两次都用完 */
+        override val maxUses = 2
 
         override fun onAcquire(ctx: PerkContext) {
             openPicker(ctx.player)
@@ -114,7 +118,7 @@ object MythicPerks {
 
             val state = PerkStateManager.get(player.uuid) ?: return
             if (!state.hasPerk(id)) return
-            if (state.isUsed(id)) return
+            if (state.usesRemaining(this) <= 0) return
 
             // 校验: 必须是当下的合法候选 (防止客户端伪造 uuid)
             val target = candidates(player).firstOrNull { it.uuid == uuid } ?: return
@@ -153,7 +157,7 @@ object MythicPerks {
                 }
                 changed++
             }
-            state.markUsed(id)
+            state.consumeUse(this)
             PerkApplicationHistory.record(target, id, player)
 
             player.sendSystemMessage(

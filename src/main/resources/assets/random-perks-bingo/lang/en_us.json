@@ -380,7 +380,7 @@
   "random-perks-bingo.perk.summon_big_snowball.name": "Snowball Fight",
   "random-perks-bingo.perk.summon_big_snowball.desc": "Gain 32 snowballs; yours are bigger, deal 3 damage and knock targets back.",
   "random-perks-bingo.perk.mythic_hodgepodge.name": "Glitch",
-  "random-perks-bingo.perk.mythic_hodgepodge.desc": "Choose any player: half of the items in their main inventory (hotbar excluded) become random different items.",
+  "random-perks-bingo.perk.mythic_hodgepodge.desc": "Choose any player: half of the items in their main inventory (hotbar excluded) become random different items. 2 uses.",
   "random-perks-bingo.perk.hunter_demon_pact.name": "Demon Pact",
   "random-perks-bingo.perk.hunter_demon_pact.desc": "You deal double damage but also take double damage from everything; kills have a 50% chance to drop an extra copy of loot.",
   "random-perks-bingo.perk.hunter_pearl_gauntlet.name": "Pearl Gauntlet",
