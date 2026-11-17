@@ -114,7 +114,6 @@
 | `hunter_predator` | 我饥饿 | Me Hungry | 蓝 |
 | `hunter_headhunter` | SMP玩家 | SMP Player | 紫 |
 | `hunter_veteran` | 老玩家 | Veteran | 金 |
-| `hunter_lunge_spear` | 突进铁矛 | Lunge Spear | 蓝 |
 | `hunter_roly_poly` | 不倒翁 | Roly-Poly | 绿 |
 | `hunter_homing_bow` | 这不是挂？ | Is This a Hack? | 紫 |
 | `hunter_demon_pact` | 恶魔契约 | Demon Pact | 金 |
@@ -160,6 +159,7 @@
 | `swift_elytra_bond` | 风之翼 | Wings of the Wind | 金 |
 | `swift_life_bucket` | 落地，水 | MLG Water | 绿 |
 | `swift_gura_shark` | 古拉鲨鱼 | Gura Shark | 红 |
+| `swift_cavalry` | 骑兵 | Cavalry | 紫 |
 | `swift_omnimovement` | 全向移动 | Omnimovement | 蓝 |
 | `swift_edible_sugar` | 冰！ | Ice! | 蓝 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |

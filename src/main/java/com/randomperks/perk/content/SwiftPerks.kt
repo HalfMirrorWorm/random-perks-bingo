@@ -247,6 +247,34 @@ object SwiftPerks {
         }
     }
 
+    /** 紫 · 疾风: **骑兵** —— 获得一把**突进 III** 的铁矛;
+     *  接触到水时会获得**缓慢 I** (离开水面后约 2 秒自然消失)。
+     *  被"净化"选中后不再受水缓慢影响。 */
+    object Cavalry : PerkDefinition {
+        override val id = "swift_cavalry"
+        override val rarity = PerkRarity.PURPLE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.IRON_SPEAR)
+
+        private const val LUNGE_LEVEL = 3
+
+        /** 短时长反复续期: 离开水后自然过期。
+         *  不用 removeEffect 手动摘 —— 那会把玩家自己喝的缓慢药水也一起摘掉。 */
+        private const val WATER_SLOWNESS_TICKS = 40
+
+        override fun onAcquire(ctx: PerkContext) {
+            val spear = ItemStack(Items.IRON_SPEAR)
+            PerkEffects.enchant(ctx.player, spear, Enchantments.LUNGE, LUNGE_LEVEL)
+            PerkEffects.giveStack(ctx.player, spear)
+        }
+
+        override fun onTick(ctx: PerkContext) {
+            if (!ctx.player.isInWater) return
+            if (PerkDownsideSuppression.isSuppressed(ctx.state, id)) return
+            ctx.player.addEffect(MobEffectInstance(MobEffects.SLOWNESS, WATER_SLOWNESS_TICKS, 0))
+        }
+    }
+
     /** 蓝 · 疾风: **全向移动** —— 八个方向都能疾跑, 而不是单纯加移速。
      *
      *  原版疾跑判定只认"前进": ClientPlayerEntity 的 canStartSprinting / shouldStopSprinting /
@@ -348,6 +376,7 @@ object SwiftPerks {
         com.randomperks.perk.PerkRegistry.register(ElytraBond)
         com.randomperks.perk.PerkRegistry.register(LifeBucket)
         com.randomperks.perk.PerkRegistry.register(GuraShark)
+        com.randomperks.perk.PerkRegistry.register(Cavalry)
         com.randomperks.perk.PerkRegistry.register(Omnimovement)
         com.randomperks.perk.PerkRegistry.register(EdibleSugar)
         com.randomperks.perk.PerkRegistry.register(Dash)

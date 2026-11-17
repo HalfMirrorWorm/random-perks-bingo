@@ -588,34 +588,6 @@ object HunterPerks {
         override fun onRemove(ctx: PerkContext) {}
     }
 
-    /** 蓝 · 猎杀: **突进铁矛** —— 获得一把**突进 III** 的铁矛;
-     *  接触到水时会获得**缓慢 I** (离开水面后约 2 秒自然消失)。
-     *  被"净化"选中后不再受水缓慢影响。 */
-    object LungeSpear : PerkDefinition {
-        override val id = "hunter_lunge_spear"
-        override val rarity = PerkRarity.BLUE
-        override val archetype = PerkArchetype.HUNTER
-        override fun icon() = ItemStack(Items.IRON_SPEAR)
-
-        private const val LUNGE_LEVEL = 3
-
-        /** 短时长反复续期: 离开水后自然过期。
-         *  不用 removeEffect 手动摘 —— 那会把玩家自己喝的缓慢药水也一起摘掉。 */
-        private const val WATER_SLOWNESS_TICKS = 40
-
-        override fun onAcquire(ctx: PerkContext) {
-            val spear = ItemStack(Items.IRON_SPEAR)
-            PerkEffects.enchant(ctx.player, spear, Enchantments.LUNGE, LUNGE_LEVEL)
-            PerkEffects.giveStack(ctx.player, spear)
-        }
-
-        override fun onTick(ctx: PerkContext) {
-            if (!ctx.player.isInWater) return
-            if (PerkDownsideSuppression.isSuppressed(ctx.state, id)) return
-            ctx.player.addEffect(MobEffectInstance(MobEffects.SLOWNESS, WATER_SLOWNESS_TICKS, 0))
-        }
-    }
-
     /** 绿 · 猎杀: **不倒翁** —— 受到的击退效果降低 80% */
     object RolyPoly : PerkDefinition {
         override val id = "hunter_roly_poly"
@@ -944,7 +916,6 @@ object HunterPerks {
         PerkRegistry.register(Fireball)
         PerkRegistry.register(CallLightning)
         PerkRegistry.register(Veteran)
-        PerkRegistry.register(LungeSpear)
         PerkRegistry.register(RolyPoly)
         PerkRegistry.register(Nuclear)
         PerkRegistry.register(HomingBow)
