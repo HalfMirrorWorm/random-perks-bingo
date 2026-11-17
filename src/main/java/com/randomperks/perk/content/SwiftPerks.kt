@@ -4,11 +4,14 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.effect.PermanentEffects
 import com.randomperks.game.PerkAbilityService
 import com.randomperks.game.PerkBoostQuery
+import com.randomperks.game.PerkDownsideSuppression
+import com.randomperks.state.PlayerPerkState
 import com.randomperks.perk.PerkArchetype
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.PerkDefinition
 import com.randomperks.perk.PerkRarity
 import net.minecraft.core.component.DataComponents
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.component.Fireworks
 import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
@@ -155,6 +158,7 @@ object SwiftPerks {
         override fun icon() = ItemStack(Items.ELYTRA)
 
         private val MOD_SPEED = Identifier.fromNamespaceAndPath("random-perks-bingo", "elytra_bond_speed")
+        private const val SPEED_PENALTY = -0.3
 
         override fun onAcquire(ctx: PerkContext) {
             applySpeed(ctx)
@@ -172,12 +176,18 @@ object SwiftPerks {
 
         override fun onRespawn(ctx: PerkContext) = applySpeed(ctx)
 
-        /** 移动速度降低 30% (总速度 x0.7) */
-        private fun applySpeed(ctx: PerkContext) {
-            PerkEffects.setAttribute(
-                ctx.player, Attributes.MOVEMENT_SPEED, MOD_SPEED,
-                -0.3, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
-            )
+        /** 移动速度降低 30% (总速度 x0.7); "净化"后不再降低 */
+        private fun applySpeed(ctx: PerkContext) = refresh(ctx.player, ctx.state)
+
+        fun refresh(player: ServerPlayer, state: PlayerPerkState) {
+            if (PerkDownsideSuppression.isSuppressed(state, id)) {
+                PerkEffects.removeAttribute(player, Attributes.MOVEMENT_SPEED, MOD_SPEED)
+            } else {
+                PerkEffects.setAttribute(
+                    player, Attributes.MOVEMENT_SPEED, MOD_SPEED,
+                    SPEED_PENALTY, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+                )
+            }
         }
 
         override fun onRemove(ctx: PerkContext) {

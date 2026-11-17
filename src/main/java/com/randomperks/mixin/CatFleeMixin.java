@@ -1,6 +1,7 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
+import com.randomperks.game.PerkDownsideSuppression;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -31,7 +32,9 @@ public class CatFleeMixin {
             index = 5)
     private static Predicate<LivingEntity> randomperks$ignoreOldWu(Predicate<LivingEntity> original) {
         return original.and(entity ->
-            !(entity instanceof ServerPlayer player && PerkBoostQuery.INSTANCE.hasYowl(player))
+            !(entity instanceof ServerPlayer player
+                && PerkBoostQuery.INSTANCE.hasYowl(player)
+                && !PerkDownsideSuppression.INSTANCE.isSuppressed(player, "harvest_yowl"))
         );
     }
 }

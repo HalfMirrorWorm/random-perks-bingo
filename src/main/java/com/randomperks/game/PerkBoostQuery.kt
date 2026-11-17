@@ -140,6 +140,7 @@ object PerkBoostQuery {
         val key = decisionKey(player, pos)
 
         val suppress = state.hasPerk(XRAY_PERK) &&
+            !PerkDownsideSuppression.isSuppressed(state, XRAY_PERK) &&
             player.mainHandItem.`is`(ItemTags.PICKAXES) &&
             !player.isCreative &&
             player.random.nextFloat() < XRAY_SUPPRESS_CHANCE

@@ -6,6 +6,7 @@ import com.randomperks.game.ChickenDyeService
 import com.randomperks.game.FungalInfectionService
 import com.randomperks.game.KelpToBoneService
 import com.randomperks.game.PerkBoostQuery
+import com.randomperks.game.PerkDownsideSuppression
 import com.randomperks.game.PerkGrantService
 import com.randomperks.game.PerkOfferService
 import com.randomperks.game.PigMorphService
@@ -817,6 +818,8 @@ object HarvestPerks {
         }
 
         override fun onTick(ctx: PerkContext) {
+            // "净化"只关掉自身感染, 攻击敌方玩家时的那半仍然生效
+            if (PerkDownsideSuppression.isSuppressed(ctx.state, id)) return
             val seconds = (ctx.state.memory[SELF_TIMER_KEY]?.toIntOrNull() ?: 0) + 1
             if (seconds < SELF_INTERVAL_SECONDS) {
                 ctx.state.memory[SELF_TIMER_KEY] = seconds.toString()

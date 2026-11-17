@@ -4,6 +4,7 @@ import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
 import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkCounterService
+import com.randomperks.game.PerkDownsideSuppression
 import com.randomperks.game.PerkSession
 import com.randomperks.network.PerkNetworking
 import com.randomperks.network.PlayerTargetEntry
@@ -823,6 +824,7 @@ object HunterPerks {
         private const val EXTRA_EXHAUSTION_PER_SECOND = 0.5f
 
         override fun onTick(ctx: PerkContext) {
+            if (PerkDownsideSuppression.isSuppressed(ctx.state, id)) return
             ctx.player.causeFoodExhaustion(EXTRA_EXHAUSTION_PER_SECOND)
         }
     }

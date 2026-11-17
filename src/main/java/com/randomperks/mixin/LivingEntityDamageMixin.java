@@ -1,6 +1,7 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
+import com.randomperks.game.PerkDownsideSuppression;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -60,7 +61,9 @@ public class LivingEntityDamageMixin {
         if (!((Object) this instanceof ServerPlayer player)) return amount;
 
         // "恶魔契约": 受到任何伤害翻倍 (含摔落/岩浆等环境伤害)
-        if (PerkBoostQuery.INSTANCE.hasDemonPact(player)) {
+        // "净化"只关掉受害者侧的翻倍, 攻击者侧的增伤保留
+        if (PerkBoostQuery.INSTANCE.hasDemonPact(player)
+                && !PerkDownsideSuppression.INSTANCE.isSuppressed(player, "hunter_demon_pact")) {
             amount *= 2.0f;
         }
 

@@ -1,6 +1,7 @@
 package com.randomperks.mixin;
 
 import com.randomperks.game.PerkBoostQuery;
+import com.randomperks.game.PerkDownsideSuppression;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.feline.Cat;
@@ -34,6 +35,7 @@ public class CatTargetMixin {
             (entity, world) -> !self.isTame()
                 && entity instanceof ServerPlayer player
                 && PerkBoostQuery.INSTANCE.hasYowl(player)
+                && !PerkDownsideSuppression.INSTANCE.isSuppressed(player, "harvest_yowl")
         ));
     }
 }

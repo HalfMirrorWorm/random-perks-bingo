@@ -23,6 +23,12 @@ object PerkDownsideSuppression {
         "hunter_pearl_gauntlet",    // 剑不能横扫
         "hunter_veteran",           // 剑不能横扫
         "swift_gura_shark",         // 陆地不能疾跑
+        "hunter_demon_pact",        // 受到的伤害翻倍
+        "swift_elytra_bond",        // 移动速度 -30%
+        "hunter_satiation_strike",  // 额外饥饿
+        "delver_xray_vision",       // 35% 掉落消失
+        "harvest_yowl",             // 猫主动攻击
+        "harvest_fungal_infection", // 自己主背包周期自转化
     )
 
     fun suppressedFor(state: PlayerPerkState): String? =

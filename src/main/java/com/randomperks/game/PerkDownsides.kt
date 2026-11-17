@@ -3,6 +3,7 @@ package com.randomperks.game
 import com.randomperks.perk.PerkContext
 import com.randomperks.perk.content.ArtisanPerks
 import com.randomperks.perk.content.DelverPerks
+import com.randomperks.perk.content.SwiftPerks
 import com.randomperks.state.PlayerPerkState
 import net.minecraft.server.level.ServerPlayer
 
@@ -26,6 +27,9 @@ object PerkDownsides {
         }
         if (state.hasPerk("delver_gluttonous_snake")) {
             DelverPerks.GluttonousSnake.refresh(PerkContext(player, state))
+        }
+        if (state.hasPerk("swift_elytra_bond")) {
+            SwiftPerks.ElytraBond.refresh(player, state)
         }
     }
 }
