@@ -70,13 +70,18 @@ object MythicPerks {
     }
 
     /** 红 · 唤法: **游戏BUG** —— 获得时立即弹出玩家选择器, 选中一名玩家后,
-     *  他背包里的**每一种物品各自随机变成另一种物品** (数量不变)
+     *  随机把他**主背包** (9~35 格, 不含快捷栏) 里**一半**的物品各自随机变成另一种物品
+     *  (数量不变; 奇数向上取整, 至少有物品时必定换 1 格)
      *  (获得瞬间弹出选择器, 不进入 V 界面) */
     object Hodgepodge : PerkDefinition {
         override val id = "mythic_hodgepodge"
         override val rarity = PerkRarity.RED
         override val archetype = PerkArchetype.SUMMON
         override fun icon() = ItemStack(Items.BUNDLE)
+
+        /** 主背包 27 格; 快捷栏 0~8 不动 */
+        private const val BACKPACK_START = 9
+        private const val BACKPACK_END = 36
 
         /** 贮藏标记: 选择器被关掉之后, 可以再从 V 界面点一次 */
         override val isOneTime = true
@@ -117,9 +122,21 @@ object MythicPerks {
             val registry = target.level().getServer().registryAccess().lookupOrThrow(Registries.ITEM) ?: return
 
             var changed = 0
-            val main = target.inventory.nonEquipmentItems
-            for (index in 0 until main.size) {
-                val stack = main.get(index)
+            // 只动主背包 (9~35 格), 快捷栏 0~8 原样保留
+            val slots = (BACKPACK_START until BACKPACK_END)
+                .filter { !target.inventory.getItem(it).isEmpty }
+                .toMutableList()
+
+            // 随机挑一半; 奇数向上取整, 至少换 1 格
+            for (i in slots.indices.reversed()) {
+                val j = target.random.nextInt(i + 1)
+                val tmp = slots[i]
+                slots[i] = slots[j]
+                slots[j] = tmp
+            }
+
+            for (index in slots.take((slots.size + 1) / 2)) {
+                val stack = target.inventory.getItem(index)
                 if (stack.isEmpty) continue
                 val replacement = randomItem(registry, target.random, stack.count, stack.item) ?: continue
 
@@ -127,7 +144,7 @@ object MythicPerks {
                 // 放得下的放进原格, 多出来的按上限分堆掉在脚下, 不允许凭空消失
                 val max = ItemStack(replacement).maxStackSize
                 val newCount = minOf(stack.count, max)
-                main.set(index, ItemStack(replacement, newCount))
+                target.inventory.setItem(index, ItemStack(replacement, newCount))
                 var excess = stack.count - newCount
                 while (excess > 0) {
                     val chunk = minOf(excess, max)
