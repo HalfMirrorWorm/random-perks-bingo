@@ -29,6 +29,7 @@ object PerkDownsideSuppression {
         "delver_xray_vision",       // 35% 掉落消失
         "harvest_yowl",             // 猫主动攻击
         "harvest_fungal_infection", // 自己主背包周期自转化
+        "hunter_lunge_spear",       // 接触水时缓慢 I
     )
 
     fun suppressedFor(state: PlayerPerkState): String? =

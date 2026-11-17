@@ -114,6 +114,7 @@
 | `hunter_predator` | 我饥饿 | Me Hungry | 蓝 |
 | `hunter_headhunter` | SMP玩家 | SMP Player | 紫 |
 | `hunter_veteran` | 老玩家 | Veteran | 金 |
+| `hunter_lunge_spear` | 突进铁矛 | Lunge Spear | 蓝 |
 | `hunter_roly_poly` | 不倒翁 | Roly-Poly | 绿 |
 | `hunter_homing_bow` | 这不是挂？ | Is This a Hack? | 紫 |
 | `hunter_demon_pact` | 恶魔契约 | Demon Pact | 金 |

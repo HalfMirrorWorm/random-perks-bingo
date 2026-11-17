@@ -369,6 +369,8 @@
   "random-perks-bingo.perk.harvest_bone_meal_flowers.desc": "对草方块使用骨粉时, 额外长出 2 朵随机花。",
   "random-perks-bingo.perk.hunter_veteran.name": "老玩家",
   "random-perks-bingo.perk.hunter_veteran.desc": "你的剑变为 1.9 版本以前的剑。",
+  "random-perks-bingo.perk.hunter_lunge_spear.name": "突进铁矛",
+  "random-perks-bingo.perk.hunter_lunge_spear.desc": "获得一把突进 III 的铁矛；接触到水时会获得缓慢 I。",
   "random-perks-bingo.perk.hunter_roly_poly.name": "不倒翁",
   "random-perks-bingo.perk.hunter_roly_poly.desc": "受到的击退效果 -80%。",
   "random-perks-bingo.perk.hunter_easy_nuke.name": "核电轻而易举",
