@@ -161,6 +161,7 @@
 | `swift_gura_shark` | 古拉鲨鱼 | Gura Shark | 红 |
 | `swift_cavalry` | 骑兵 | Cavalry | 紫 |
 | `swift_omnimovement` | 全向移动 | Omnimovement | 蓝 |
+| `swift_use_on_move` | 边走边用 | Use on the Move | 蓝 |
 | `swift_edible_sugar` | 冰！ | Ice! | 蓝 |
 | `swift_escape_plan` | 逃跑计划 | Escape Plan | 蓝 |
 | `swift_deep_breath` | 深海之息 | Deep Breath | 蓝 |

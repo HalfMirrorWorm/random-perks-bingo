@@ -182,6 +182,8 @@
 
   "random-perks-bingo.item.treasure_map": "Treasure Map",
 
+  "random-perks-bingo.perk.swift_use_on_move.name": "Use on the Move",
+  "random-perks-bingo.perk.swift_use_on_move.desc": "Using items no longer slows you down or prevents sprinting.",
   "random-perks-bingo.perk.swift_speed.name": "Light Feet",
   "random-perks-bingo.perk.swift_speed.desc": "+8% movement speed.",
   "random-perks-bingo.perk.swift_feather_fall.name": "Soft Soles",

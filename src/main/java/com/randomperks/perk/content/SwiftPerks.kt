@@ -47,6 +47,15 @@ object SwiftPerks {
             PerkEffects.removeAttribute(ctx.player, Attributes.MOVEMENT_SPEED, MOD_SPEED)
     }
 
+    /** 蓝 · 疾风: **边走边用** —— 使用物品 (进食/喝药/拉弓/举盾等) 时不再减速, 也不会因此被禁止疾跑。
+     *  (原版减速在客户端 LocalPlayer.modifyInput / isSlowDueToUsingItem, 由 UseItemSpeedClientMixin 处理) */
+    object UseOnMove : PerkDefinition {
+        override val id = "swift_use_on_move"
+        override val rarity = PerkRarity.BLUE
+        override val archetype = PerkArchetype.SWIFT
+        override fun icon() = ItemStack(Items.COOKED_BEEF)
+    }
+
     /** 紫 · 疾风: **传送时钟** —— 获得一个时钟; 手持右键消耗时钟,
      *  随机传送到当前维度 2000 格以内的安全地面上。 */
     object WaypointClock : PerkDefinition {
@@ -367,6 +376,7 @@ object SwiftPerks {
         com.randomperks.perk.PerkRegistry.register(DeepBreath)
         com.randomperks.perk.PerkRegistry.register(EscapePlan)
         com.randomperks.perk.PerkRegistry.register(Speed)
+        com.randomperks.perk.PerkRegistry.register(UseOnMove)
         com.randomperks.perk.PerkRegistry.register(WaypointClock)
         com.randomperks.perk.PerkRegistry.register(FeatherFall)
         com.randomperks.perk.PerkRegistry.register(Jump)
