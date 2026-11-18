@@ -2,6 +2,7 @@ package com.randomperks.perk.content
 
 import com.randomperks.effect.PerkEffects
 import com.randomperks.game.GlowMarkService
+import com.randomperks.game.NukeExplosionService
 import com.randomperks.game.PerkApplicationHistory
 import com.randomperks.game.PerkCounterService
 import com.randomperks.game.PerkDownsideSuppression
@@ -612,7 +613,8 @@ object HunterPerks {
     }
 
     /** 蓝 · 唤法: **核电轻而易举** —— 在 V 界面点击使用后弹出玩家选择器, 选中一名玩家后**在他头顶**生成一只
-     *  **高亮显示的闪电苦力怕** (charged creeper), 并直接让它仇恨该玩家 */
+     *  **高亮显示的闪电苦力怕** (charged creeper), 并直接让它仇恨该玩家;
+     *  爆炸炸掉的方块会变成随机矿石 (NukeExplosionMixin) */
     object Nuclear : PerkDefinition {
         override val id = "hunter_easy_nuke"
         override val rarity = PerkRarity.BLUE
@@ -685,6 +687,8 @@ object HunterPerks {
             creeper.setGlowingTag(true)     // 高亮: 隔着墙也能看到它
             // 仇恨: 没有目标时 CreeperIgniteGoal 不会启动, 苦力怕就只会站着不动
             creeper.setTarget(target)
+            // 标记: 只有这只苦力怕的爆炸会把方块变成矿石
+            NukeExplosionService.mark(creeper)
             world.addFreshEntity(creeper)
             return true
         }

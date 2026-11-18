@@ -376,7 +376,7 @@
   "random-perks-bingo.perk.hunter_roly_poly.name": "Roly-Poly",
   "random-perks-bingo.perk.hunter_roly_poly.desc": "Knockback taken -80%.",
   "random-perks-bingo.perk.hunter_easy_nuke.name": "Easy Nuke",
-  "random-perks-bingo.perk.hunter_easy_nuke.desc": "Choose any player: a glowing charged creeper spawns above them.",
+  "random-perks-bingo.perk.hunter_easy_nuke.desc": "Choose any player: a glowing charged creeper spawns above them; blocks destroyed by its explosion turn into random ores.",
   "random-perks-bingo.perk.hunter_homing_bow.name": "Is This a Hack?",
   "random-perks-bingo.perk.hunter_homing_bow.desc": "Gain a bow and 4 tipped arrows every 2 min; arrows lock onto the enemy closest to your crosshair within 64 blocks (walls ignored) and pass through blocks while homing.",
   "random-perks-bingo.perk.harvest_pig_morph.name": "Groupmate",

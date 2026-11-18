@@ -376,7 +376,7 @@
   "random-perks-bingo.perk.hunter_roly_poly.name": "不倒翁",
   "random-perks-bingo.perk.hunter_roly_poly.desc": "受到的击退效果 -80%。",
   "random-perks-bingo.perk.hunter_easy_nuke.name": "核电轻而易举",
-  "random-perks-bingo.perk.hunter_easy_nuke.desc": "选择任意一名玩家, 在他头顶生成一只高亮显示的闪电苦力怕。",
+  "random-perks-bingo.perk.hunter_easy_nuke.desc": "选择任意一名玩家, 在他头顶生成一只高亮显示的闪电苦力怕；爆炸炸掉的方块会变成随机矿石。",
   "random-perks-bingo.perk.hunter_homing_bow.name": "这不是挂？",
   "random-perks-bingo.perk.hunter_homing_bow.desc": "获得弓，每 2 分钟得 4 支随机药水箭；箭会锁定准心 64 格内夹角最小的敌人（可隔墙），追踪时穿方块。",
   "random-perks-bingo.perk.harvest_pig_morph.name": "变群友",

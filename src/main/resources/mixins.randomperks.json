@@ -48,6 +48,7 @@
     "DoomsdayMixin",
     "PlayerEntityInvoker",
     "CreeperChargedAccessor",
+    "NukeExplosionMixin",
     "HomingArrowMixin",
     "BigSnowballMixin",
     "BigSnowballHitboxMixin",
