@@ -328,7 +328,7 @@
   "random-perks-bingo.perk.summon_call_lightning.name": "Call Lightning",
   "random-perks-bingo.perk.summon_call_lightning.desc": "Pick any player and summon lightning on them; nearby lightning rods redirect it.",
   "random-perks-bingo.perk.summon_dragon_tamer.name": "Dragon Tamer",
-  "random-perks-bingo.perk.summon_dragon_tamer.desc": "Right-click any mob to ride it (players and bosses excluded): WASD to move, jump to climb, flying mounts follow your crosshair and hover when released; right-click for its special move, sneak to dismount.",
+  "random-perks-bingo.perk.summon_dragon_tamer.desc": "Right-click any mob to ride it (players and bosses excluded; 15s cooldown): WASD to move, jump to climb, flying mounts follow your crosshair and hover when released; right-click for its special move, sneak to dismount.",
   "random-perks-bingo.message.end_portal_announce": "「End It」%s opened an End portal at %s (%s, %s, %s)!",
   "random-perks-bingo.perk.artisan_nya_axe.name": "Nya Axe",
   "random-perks-bingo.perk.artisan_nya_axe.desc": "Gain a one-use one-hit-kill axe; gain permanent Weakness I after using it.",

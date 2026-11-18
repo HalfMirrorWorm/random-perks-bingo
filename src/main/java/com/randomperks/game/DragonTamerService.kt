@@ -37,6 +37,7 @@ import java.util.UUID
  * "驯龙高手" (金 · 唤法) 的服务端逻辑。
  *
  * - 右键任意生物 → `startRiding(mob, true)` 骑上去 (玩家与 Boss 除外);
+ *   骑乘有 **15 秒冷却**, 从成功骑上那一刻开始计时 (存在 state.cooldowns 里);
  * - 骑乘时停掉坐骑 AI。移动由客户端按 [DragonTamerMotion] 直接驾驶
  *   (地面 WASD + 跳跃起跳; 飞行沿准星, 跳跃上升, 松手悬停), 服务端收载具移动包;
  * - 右键 → 让坐骑使出它自己的招式, 冷却按招式长短分开, 见 [DragonTamerAbility]。
@@ -47,6 +48,10 @@ import java.util.UUID
 object DragonTamerService {
 
     const val PERK_ID = "summon_dragon_tamer"
+
+    /** 骑乘冷却: 15 秒, 从**成功骑上**那一刻开始计时 */
+    private const val MOUNT_COOLDOWN_TICKS = 15L * 20L
+    private const val MOUNT_COOLDOWN_KEY = "dragon_tamer_mount"
 
     /** 能力选敌的最大距离 (格) */
     private const val TARGET_RANGE = 24.0
@@ -143,7 +148,12 @@ object DragonTamerService {
         if (!mob.isAlive || mob.isRemoved) return false
         if (isForbidden(mob)) return false
 
+        val state = PerkStateManager.get(rider.uuid) ?: return false
+        val now = rider.level().getServer().tickCount.toLong()
+        if (now < (state.cooldowns[MOUNT_COOLDOWN_KEY] ?: 0L)) return false
+
         if (!rider.startRiding(mob, true, true)) return false
+        state.cooldowns[MOUNT_COOLDOWN_KEY] = now + MOUNT_COOLDOWN_TICKS
 
         // 有鞍的马/猪/炽足兽, 以及套了挽具的快乐恶魂这类"玩家就是控制者"的生物,
         // 原版已经用跳跃键上升, 不要再关掉 AI 跟它抢方向。
