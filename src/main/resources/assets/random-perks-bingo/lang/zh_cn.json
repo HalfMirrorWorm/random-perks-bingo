@@ -364,7 +364,7 @@
   "random-perks-bingo.perk.summon_loyal_guard.name": "忠心护主",
   "random-perks-bingo.perk.summon_loyal_guard.desc": "受到伤害时，由附近属于你的宠物替你承受 2 倍伤害。",
   "random-perks-bingo.perk.summon_insomnia.name": "失眠",
-  "random-perks-bingo.perk.summon_insomnia.desc": "在词条列表点击使用, 选择一名玩家, 在他附近生成 3 只幻翼。",
+  "random-perks-bingo.perk.summon_insomnia.desc": "在词条列表点击使用, 选择一名玩家：在他附近生成 3 只幻翼, 并给他一把多重射击的弩和 16 根光灵箭。",
   "random-perks-bingo.perk.harvest_kelp_to_bone.name": "海带成骨",
   "random-perks-bingo.perk.harvest_kelp_to_bone.desc": "右键干海带块可以把它变成骨块。",
   "random-perks-bingo.perk.harvest_bone_meal_flowers.name": "骨粉撒花",

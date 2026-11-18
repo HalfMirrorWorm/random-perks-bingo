@@ -23,6 +23,7 @@ import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.network.chat.Component
@@ -368,7 +369,8 @@ object SummonPerks {
         }
     }
 
-    /** 蓝 · 唤法 · 贮藏: **失眠** —— 点击使用并选择一名玩家, 在他附近生成 3 只幻翼 */
+    /** 蓝 · 唤法 · 贮藏: **失眠** —— 点击使用并选择一名玩家, 在他附近生成 3 只幻翼,
+     *  并给他一把**多重射击**的弩和 16 根光灵箭 */
     object Insomnia : PerkDefinition {
         override val id = "summon_insomnia"
         override val rarity = PerkRarity.BLUE
@@ -441,6 +443,12 @@ object SummonPerks {
             }
 
             if (spawned <= 0) return
+
+            // 被选中的玩家会拿到一把多重射击的弩和 16 根光灵箭
+            val crossbow = ItemStack(Items.CROSSBOW)
+            PerkEffects.enchant(target, crossbow, Enchantments.MULTISHOT, 1)
+            PerkEffects.giveStack(target, crossbow)
+            PerkEffects.giveStack(target, ItemStack(Items.SPECTRAL_ARROW, 16))
 
             state.markUsed(id)
             PerkApplicationHistory.record(target, id, player)

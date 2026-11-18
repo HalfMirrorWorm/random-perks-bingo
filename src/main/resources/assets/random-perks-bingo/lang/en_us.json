@@ -364,7 +364,7 @@
   "random-perks-bingo.perk.summon_loyal_guard.name": "Loyal Guardian",
   "random-perks-bingo.perk.summon_loyal_guard.desc": "When you take damage, a nearby pet of yours takes double damage instead.",
   "random-perks-bingo.perk.summon_insomnia.name": "Insomnia",
-  "random-perks-bingo.perk.summon_insomnia.desc": "Activate from the perk list, choose a player, and spawn 3 phantoms near them.",
+  "random-perks-bingo.perk.summon_insomnia.desc": "Activate from the perk list, choose a player: spawn 3 phantoms near them, and give them a Multishot crossbow and 16 spectral arrows.",
   "random-perks-bingo.perk.harvest_kelp_to_bone.name": "Kelp to Bone",
   "random-perks-bingo.perk.harvest_kelp_to_bone.desc": "Right-click a dried kelp block to turn it into a bone block.",
   "random-perks-bingo.perk.harvest_bone_meal_flowers.name": "Bone Meal Bloom",
