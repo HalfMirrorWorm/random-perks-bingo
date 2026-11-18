@@ -603,11 +603,11 @@ object ArtisanPerks {
         override fun icon() = ItemStack(Items.TOTEM_OF_UNDYING)
     }
 
-    /** 蓝 · 匠造: **便携工作台** —— 手持工作台右键直接打开 3×3 合成界面;
+    /** 绿 · 匠造: **便携工作台** —— 手持工作台右键直接打开 3×3 合成界面;
      *  潜行右键保留原版放置 (PortableCraftingService)。 */
     object PortableCrafting : PerkDefinition {
         override val id = "artisan_portable_crafting"
-        override val rarity = PerkRarity.BLUE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.ARTISAN
         override fun icon() = ItemStack(Items.CRAFTING_TABLE)
     }

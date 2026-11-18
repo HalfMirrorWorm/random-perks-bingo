@@ -830,11 +830,11 @@ object HarvestPerks {
         }
     }
 
-    /** 紫 · 丰饶: **细嚼慢咽** —— 进食食物期间, 受到的伤害 -75%
+    /** 绿 · 丰饶: **细嚼慢咽** —— 进食食物期间, 受到的伤害 -75%
      *  (伤害修正在 LivingEntityDamageMixin) */
     object SlowChewing : PerkDefinition {
         override val id = "harvest_slow_chewing"
-        override val rarity = PerkRarity.PURPLE
+        override val rarity = PerkRarity.GREEN
         override val archetype = PerkArchetype.HARVEST
         override fun icon() = ItemStack(Items.BREAD)
     }

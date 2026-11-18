@@ -430,7 +430,7 @@ object PerkBoostQuery {
     fun hasFungalInfection(player: ServerPlayer): Boolean =
         PerkStateManager.get(player.uuid)?.hasPerk("harvest_fungal_infection") == true
 
-    // ---- "细嚼慢咽" (紫): 进食食物期间受到伤害 -65% ----
+    // ---- "细嚼慢咽" (绿): 进食食物期间受到伤害 -75% ----
 
     /** 玩家是否持有"细嚼慢咽" */
     fun hasSlowChewing(player: ServerPlayer): Boolean =

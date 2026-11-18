@@ -43,7 +43,7 @@
 | `artisan_barely_a_scratch` | 不痛不痒 | Barely a Scratch | 金 |
 | `artisan_turtle_master` | 神龟护体 | Turtle Master | 绿 |
 | `artisan_trimmed_armor` | 纹饰护体 | Trimmed Armor | 紫 |
-| `artisan_portable_crafting` | 便携工作台 | Portable Crafting Table | 蓝 |
+| `artisan_portable_crafting` | 便携工作台 | Portable Crafting Table | 绿 |
 | `artisan_big_backpack` | 大背包 | Big Backpack | 蓝 |
 | `artisan_toughness` | 坚韧 | Toughness | 蓝 |
 | `artisan_iron_skin` | 皇帝新衣 | Emperor's New Clothes | 蓝 |
@@ -95,7 +95,7 @@
 | `harvest_kelp_to_bone` | 海带成骨 | Kelp to Bone | 蓝 |
 | `harvest_bone_meal_flowers` | 骨粉撒花 | Bone Meal Bloom | 绿 |
 | `harvest_fungal_infection` | 苔藓侵蚀 | Moss Erosion | 金 |
-| `harvest_slow_chewing` | 细嚼慢咽 | Slow Chewing | 紫 |
+| `harvest_slow_chewing` | 细嚼慢咽 | Slow Chewing | 绿 |
 | `harvest_well_fed` | 饱食终日 | Well-Fed | 金 |
 | `harvest_always_rain` | 世界一直下雨 | Always Raining | 绿 |
 
