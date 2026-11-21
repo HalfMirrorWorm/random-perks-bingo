@@ -468,7 +468,7 @@
   "random-perks-bingo.perk.seeker_ender_supply.name": "Ender Supply",
   "random-perks-bingo.perk.seeker_ender_supply.desc": "Gain an ender pearl, then another every 3 minutes.",
   "random-perks-bingo.perk.seeker_puny.name": "Puny!?",
-  "random-perks-bingo.perk.seeker_puny.desc": "Choose a player: they get 4 of a random mineral, then a silverfish spawns within 5 blocks of them every 6s for 2 min.",
+  "random-perks-bingo.perk.seeker_puny.desc": "Give a player 4 of a random mineral, then a silverfish spawns within 5 blocks of them every 6s for 2 min.",
   "random-perks-bingo.menu.perks.title": "Perks",
   "random-perks-bingo.menu.perks.name": "Perks",
   "random-perks-bingo.menu.perks.tooltip": "When your team completes a cell or a line, choose one of three perks",

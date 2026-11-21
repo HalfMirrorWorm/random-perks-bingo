@@ -468,7 +468,7 @@
   "random-perks-bingo.perk.seeker_ender_supply.name": "末影补给",
   "random-perks-bingo.perk.seeker_ender_supply.desc": "获得一枚末影珍珠, 之后每 3 分钟再获得一枚。",
   "random-perks-bingo.perk.seeker_puny.name": "!?区区!?",
-  "random-perks-bingo.perk.seeker_puny.desc": "选择一名玩家：他获得 4 个随机矿物，之后 2 分钟内每 6 秒在他 5 格内生成一只蠹虫。",
+  "random-perks-bingo.perk.seeker_puny.desc": "让一名玩家获得 4 个随机矿物，之后 2 分钟内每 6 秒在他 5 格内生成一只蠹虫。",
   "random-perks-bingo.menu.perks.title": "词条",
   "random-perks-bingo.menu.perks.name": "随机词条",
   "random-perks-bingo.menu.perks.tooltip": "当团队完成格子或连线时，可以三选一词条效果",
