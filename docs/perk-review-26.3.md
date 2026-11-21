@@ -4,7 +4,7 @@
 - 分支：`26.3`（与 `main` 同步）
 - 审查基线：`1f7636a`
 - 状态：**「会丢东西或复制」5 条、「伤害和攻击」5 条、「和描述不一致」18 组已修复**；
-  仅剩「计时和持续状态」5 组
+  「计时和持续状态」：#30 已修复，#31 经用户确认保持现状；剩 #32–#34
 - 对照：`zh_cn.json` 的玩家描述，以及获得、重生、移除、每秒 `onTick`、一次性点击
 
 ## 2026-11-05 修复记录（第 3 批补充）
@@ -224,15 +224,21 @@
 
 `seeker_supply_line`、`seeker_ender_supply`、`seeker_ender_cache`、`seeker_alchemist` 把下次发放时间写成绝对 `server.tickCount`，并随词条状态存档。`tickCount` 不进世界存档，新进程从 0 计。重启后当前 tick 远小于存下来的截止 tick，`onTick` 会一直认为冷却未到。对局若已进行几十分钟，下一份补给会再等那么久。
 
+**2026-11-21 复核：已修复**（`1b10ec5`）—— 存档写入 `saved_at_tick`，读档时用 `remapAbsoluteTick` 把 `cooldowns` 与 memory 里的绝对 tick 换算到本次进程；停机期间不计时。
+
 ### 31. 灵魂出窍 `delver_soul_out`
 
 `onRespawn` 无条件调用 `SoulOutService.end`。死亡后结束是合理的。读档重挂和回溯也走 `onRespawn`（`PerkStatePersistence.kt`、`RewindService.kt`），不会再次 `onAcquire`。中途重启或回溯到仍在出窍的快照时，词条已经 `markUsed`，剩余时间被清掉。截止时间本身是绝对 `tickCount`，新进程从 0 计。
 
 描述要求期间身体无法移动、攻击或使用物品。服务端激活时不清除速度、不取消鞘翅、不锁定位置。已经在滑翔的身体会继续沿当前速度飞。`SoulOutService.kt`。
 
+**2026-11-21 用户确认：保持现状** —— 读档 / 回溯时 `onRespawn` 结束灵魂出窍是按设计的行为；服务端不额外锁身体（正常客户端已经冻结输入）。
+
 ### 32. 开摆 `seeker_lay_flat`
 
 五分钟到期和中途死亡的石斧标记只存在 `LayFlatService` 的内存集合里。到期时玩家离线就不再发放自然罗盘和结构罗盘。重启后两个集合都空，失明和缓慢 IV 写在玩家实体上，会留下来，罗盘和石斧都不会补。对局结束时 `LayFlatService.clear` 只清 map，词条没有 `onRemove`，这两个效果不会被摘掉。
+
+**2026-11-21 复核**：跨局残留已由 `1b98f41` 修复（`clear()` 会摘掉在线玩家的失明/缓慢并清 map，`BingoLifecycle.resetAll` 会调用）；**重启 / 到期时离线丢奖励仍待处理**。
 
 ### 33. !?区区!? `seeker_puny`
 
