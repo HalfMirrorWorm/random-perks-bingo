@@ -14,6 +14,10 @@ data class PerkOptionData(
     val icon: ItemStack,
     /** 是否带"贮藏"标记 —— 可以在 V 界面点击执行的一次性词条 */
     val storable: Boolean = false,
+    /** 贮藏总格数 (仅 storable 有意义; 非贮藏恒为 1) */
+    val maxUses: Int = 1,
+    /** 当前剩余格数 (候选/百科未拥有时等于 maxUses; 已获得列表里是真实剩余) */
+    val remainingUses: Int = 1,
 )
 
 private fun writeCards(buf: RegistryFriendlyByteBuf, cards: List<PerkOptionData>) {
@@ -24,6 +28,8 @@ private fun writeCards(buf: RegistryFriendlyByteBuf, cards: List<PerkOptionData>
         buf.writeVarInt(card.archetypeOrdinal)
         ItemStack.STREAM_CODEC.encode(buf, card.icon)
         buf.writeBoolean(card.storable)
+        buf.writeVarInt(card.maxUses)
+        buf.writeVarInt(card.remainingUses)
     }
 }
 
@@ -36,7 +42,9 @@ private fun readCards(buf: RegistryFriendlyByteBuf): List<PerkOptionData> {
         val archetype = buf.readVarInt()
         val icon = ItemStack.STREAM_CODEC.decode(buf)
         val storable = buf.readBoolean()
-        list.add(PerkOptionData(id, rarity, archetype, icon, storable))
+        val maxUses = buf.readVarInt()
+        val remainingUses = buf.readVarInt()
+        list.add(PerkOptionData(id, rarity, archetype, icon, storable, maxUses, remainingUses))
     }
     return list
 }

@@ -224,12 +224,12 @@ class PerkCatalogScreen(
             if (owned) ScreenStyle.TEXT_DIM else LOCKED_SUB,
         )
         if (perk.storable) {
-            PerkTagRenderer.draw(
+            PerkBatteryRenderer.draw(
                 context,
-                font,
-                Component.translatable("random-perks-bingo.tag.storable"),
                 x + 27 + font.width(archetypeLabel) + 4,
                 y + 15,
+                perk.maxUses,
+                perk.remainingUses,
                 dimmed = !owned,
             )
         }

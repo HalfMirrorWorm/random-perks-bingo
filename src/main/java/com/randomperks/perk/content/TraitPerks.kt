@@ -409,7 +409,11 @@ object TraitPerks {
             PerkNetworking.sendTransmuteOpen(
                 player,
                 bluePerks.map {
-                    PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime)
+                    PerkOptionData(
+                        it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime,
+                        it.maxUses,
+                        if (it.isOneTime) state.usesRemaining(it) else it.maxUses,
+                    )
                 },
             )
         }
@@ -596,7 +600,13 @@ object TraitPerks {
             }
             PerkNetworking.sendDownsideOpen(
                 player,
-                options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
+                options.map {
+                    PerkOptionData(
+                        it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime,
+                        it.maxUses,
+                        if (it.isOneTime) state.usesRemaining(it) else it.maxUses,
+                    )
+                },
             )
         }
 

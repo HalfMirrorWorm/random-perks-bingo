@@ -86,7 +86,9 @@ object PerkOfferService {
 
                 PerkNetworking.sendOffer(
                     player,
-                    options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
+                    options.map {
+                        PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime, it.maxUses, it.maxUses)
+                    },
                     PerkRefreshCharges.charges(state),
                 )
                 return
@@ -117,7 +119,9 @@ object PerkOfferService {
 
         PerkNetworking.sendTraitOffer(
             player,
-            options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
+            options.map {
+                PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime, it.maxUses, it.maxUses)
+            },
         )
     }
 
@@ -254,7 +258,11 @@ object PerkOfferService {
                 other.uuid,
                 other.name.string,
                 visiblePerks.map {
-                    PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime)
+                    PerkOptionData(
+                        it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime,
+                        it.maxUses,
+                        if (it.isOneTime) (otherState?.usesRemaining(it) ?: it.maxUses) else it.maxUses,
+                    )
                 },
                 visiblePerks
                     .filter { it.isOneTime && (otherState?.usesRemaining(it) ?: 0) > 0 }
@@ -329,7 +337,10 @@ object PerkOfferService {
         PerkNetworking.sendCatalog(
             player,
             state.ownedPerks.map { it.id },
-            PerkRegistry.all.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
+            PerkRegistry.all.map {
+                val remaining = if (it.isOneTime && state.hasPerk(it.id)) state.usesRemaining(it) else it.maxUses
+                PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime, it.maxUses, remaining)
+            },
         )
     }
 }

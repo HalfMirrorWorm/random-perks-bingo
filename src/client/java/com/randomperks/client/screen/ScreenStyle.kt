@@ -23,6 +23,10 @@ object ScreenStyle {
     const val TAG_STORABLE_TEXT = 0xFFAAFFAA.toInt()
     const val TAG_STORABLE_TEXT_DIM = 0xFF5A8A5A.toInt()
 
+    // 贮藏电池里"已经用掉"的格子 (剩余格复用上面的 TAG_STORABLE_TEXT)
+    const val BATTERY_EMPTY = 0xFF1A301A.toInt()
+    const val BATTERY_EMPTY_DIM = 0xFF101A10.toInt()
+
     fun rarity(ordinal: Int): PerkRarity =
         PerkRarity.entries.getOrElse(ordinal) { PerkRarity.BLUE }
 

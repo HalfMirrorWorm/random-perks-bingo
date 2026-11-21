@@ -375,19 +375,16 @@ class PerkListScreen(
             context.fill(x, y, x + 1, y + CARD_HEIGHT, glow)
             context.fill(x + cardWidth - 1, y, x + cardWidth, y + CARD_HEIGHT, glow)
         }
-        // 流派名称 + "贮藏"标签 (绿色方框, 画在流派名称右侧)
+        // 流派名称 + 贮藏电池 (每格 = 一次机会, 亮格 = 剩余次数)
         val archetypeLabel = Component.translatable("random-perks-bingo.archetype.${archetype.id}")
-        val tagLabel = if (perk.storable) {
-            Component.translatable("random-perks-bingo.tag.storable")
-        } else null
-        val tagX = x + 30 + font.width(archetypeLabel) + 4
-        val tagWidth = tagLabel?.let { PerkTagRenderer.width(font, it) } ?: 0
+        val batteryX = x + 30 + font.width(archetypeLabel) + 4
+        val batteryWidth = if (perk.storable) PerkBatteryRenderer.width(perk.maxUses) else 0
 
         if (pending) {
             val hint = Component.translatable("random-perks-bingo.list.click_to_use")
             val hintX = x + cardWidth - 6 - font.width(hint)
-            // 窗口很窄时提示会和标签重叠, 这时只保留闪烁绿边
-            if (tagLabel == null || hintX > tagX + tagWidth + 4) {
+            // 窗口很窄时提示会和电池重叠, 这时只保留闪烁绿边
+            if (!perk.storable || hintX > batteryX + batteryWidth + 4) {
                 context.text(font, hint, hintX, y + 15, ScreenStyle.TEXT_HIGHLIGHT)
             }
         }
@@ -402,8 +399,8 @@ class PerkListScreen(
             x + 30, y + 5, displayColor,
         )
         context.text(font, archetypeLabel, x + 30, y + 15, ScreenStyle.TEXT_DIM)
-        if (tagLabel != null) {
-            PerkTagRenderer.draw(context, font, tagLabel, tagX, y + 15)
+        if (perk.storable) {
+            PerkBatteryRenderer.draw(context, batteryX, y + 15, perk.maxUses, perk.remainingUses)
         }
     }
 

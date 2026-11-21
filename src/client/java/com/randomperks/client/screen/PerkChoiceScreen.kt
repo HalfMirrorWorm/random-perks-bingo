@@ -137,13 +137,16 @@ class PerkChoiceScreen(
         // 分隔线
         context.fill(x + 12, y + 118, x + cardWidth - 12, y + 119, ScreenStyle.DIVIDER)
 
-        // 贮藏标记: 放在分隔线下方、词条描述上一行 (神话词条不允许贮藏)
+        // 贮藏电池: 候选阶段画满格, 每格代表一次使用机会 (神话词条不允许贮藏)
         val showStorable = option.storable && rarity != com.randomperks.perk.PerkRarity.MYTHIC
         if (showStorable) {
-            context.centeredText(
-                font,
-                Component.translatable("random-perks-bingo.option.storable"),
-                centerX, y + 123, ScreenStyle.TEXT_HIGHLIGHT,
+            val batteryWidth = PerkBatteryRenderer.width(option.maxUses)
+            PerkBatteryRenderer.draw(
+                context,
+                centerX - batteryWidth / 2,
+                y + 123,
+                option.maxUses,
+                option.remainingUses,
             )
         }
 

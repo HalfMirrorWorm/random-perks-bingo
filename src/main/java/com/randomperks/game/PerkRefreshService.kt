@@ -77,7 +77,9 @@ object PerkRefreshService {
 
         PerkNetworking.sendOffer(
             player,
-            options.map { PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime) },
+            options.map {
+                PerkOptionData(it.id, it.rarity.ordinal, it.archetype.ordinal, it.icon(), it.isOneTime, it.maxUses, it.maxUses)
+            },
             PerkRefreshCharges.charges(state),
         )
     }
